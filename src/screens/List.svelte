@@ -19,16 +19,22 @@
   // Each script's facts, remembered in this browser and checked against its files (AP-40).
   // svelte-ignore state_referenced_locally
   const list = new ScriptList(folder, name);
-  let scripts = $derived(list.ready ? Object.values(list.entries).sort((a, b) => b.edited - a.edited) : null);
+  // Newest first, templates (AP-15) at the bottom.
+  let scripts = $derived(list.ready ? Object.values(list.entries).sort((a, b) => +!!a.template - +!!b.template || b.edited - a.edited) : null);
+  let templates = $derived((scripts ?? []).filter((s) => s.template));
   let error = $state('');
   let isOneScript = $state(false); // the picked folder is a single script's folder, not the one above it
   let adding = $state(false);
+  let menu = $state(false); // the arrow beside New script: templates and New template (AP-15)
+  let from = $state<Entry | null>(null); // the template the new script starts from
+  let makingTemplate = $state(false);
   let newName = $state('');
   let addError = $state('');
   let onlyMine = $state(recall('list-for-me') === '1'); // the All · For me switch, kept in this browser
   const show = (forMeOnly: boolean) => keep('list-for-me', (onlyMine = forMeOnly) ? '1' : '');
-  let mineCount = $derived(scripts?.filter((s) => waiting(s.counts?.mine)).length ?? 0);
-  let shown = $derived(onlyMine ? (scripts ?? []).filter((s) => waiting(s.counts?.mine)) : (scripts ?? []));
+  const forMe = (s: Entry) => !s.template && waiting(s.counts?.mine);
+  let mineCount = $derived(scripts?.filter(forMe).length ?? 0);
+  let shown = $derived(onlyMine ? (scripts ?? []).filter(forMe) : (scripts ?? []));
 
   // The script's length as Play times it, at the speaking speed. Recorded once every row has a take.
   function lengthOf(script: Entry): { text: string; recorded: boolean } | null {
@@ -65,11 +71,22 @@
     event.preventDefault();
     addError = '';
     try {
-      const made = await createScript(folder, newName, name);
+      const source = from && (await findScript(folder, from.path));
+      if (from && !source) throw new Error(`The template "${from.title}" isn't in the folder any more.`);
+      const made = await createScript(folder, newName, name, { from: source || undefined, template: makingTemplate });
       location.hash = routeHash([made]);
     } catch (e) {
       addError = e instanceof Error && !(e instanceof DOMException) ? e.message : problem("The script couldn't be created.", 'creating a script', e);
     }
+  }
+
+  // Opens the name box: a blank script, one from a template, or a new template.
+  function start(template: Entry | null = null, asTemplate = false) {
+    menu = false;
+    from = template;
+    makingTemplate = asTemplate;
+    addError = '';
+    adding = true;
   }
 
   let browsing = $state(false); // Files in every script (AS-1b)
@@ -77,14 +94,33 @@
   const label: Record<string, string> = { draft: 'Draft', 'in review': 'In review', approved: 'Approved' };
 </script>
 
-<svelte:window onfocus={load} />
+<svelte:window onfocus={load} onkeydown={(e) => e.key === 'Escape' && (menu = false)} onclick={(e) => menu && !(e.target as Element).closest('.split') && (menu = false)} />
 
 <header>
   <span class="folder">{folder.name}</span>
   <button class="link" onclick={onChangeFolder}>Change folder</button>
   <button class="outline small" onclick={() => (browsing = true)}>Files</button>
   <button class="outline small" onclick={() => (meeting = true)}>People</button>
-  <button class="primary small" onclick={() => (adding = true)}>New script</button>
+  <span class="split">
+    <button class="primary small" onclick={() => start()}>New script</button>
+    <button class="primary small more" aria-label="More ways to start" aria-expanded={menu} onclick={() => (menu = !menu)}>
+      <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg>
+    </button>
+    {#if menu}
+      <div class="menu" role="menu">
+        {#if templates.length}
+          <p>From a template</p>
+          {#each templates as t (t.path.join('/'))}
+            <button role="menuitem" onclick={() => start(t)}>{t.title}</button>
+          {/each}
+          <hr />
+        {/if}
+        <button role="menuitem" class="add" onclick={() => start(null, true)}>
+          <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>New template
+        </button>
+      </div>
+    {/if}
+  </span>
 </header>
 {#if browsing}<SharedFiles root={folder} onClose={() => (browsing = false)} />{/if}
 {#if meeting}<People root={folder} me={name} onClose={() => (meeting = false)} />{/if}
@@ -92,13 +128,14 @@
 <main>
   {#if adding}
     <form class="new" onsubmit={create}>
-      <label for="new-name">Name of the new script</label>
+      <label for="new-name">{makingTemplate ? 'Name of the new template' : 'Name of the new script'}</label>
       <div class="new-row">
         <!-- svelte-ignore a11y_autofocus -->
-        <input id="new-name" bind:value={newName} placeholder="Episode 05 - Food Chains" autofocus maxlength="120" />
+        <input id="new-name" bind:value={newName} placeholder={makingTemplate ? 'Lesson' : 'Episode 05 - Food Chains'} autofocus maxlength="120" />
         <button class="primary small" type="submit">Create</button>
         <button class="link" type="button" onclick={() => { adding = false; addError = ''; }}>Cancel</button>
       </div>
+      {#if from}<p class="from">From the {from.title} template</p>{/if}
       {#if addError}<p class="error" role="alert">{addError}<CopyDetails message={addError} /></p>{/if}
     </form>
   {/if}
@@ -134,7 +171,11 @@
           {@const me = script.counts?.mine}
           <a class="row" href={routeHash(script.path)} data-name={script.path[0]} use:watch>
             <span class="title-cell"><span class="title">{script.title}</span>{#if script.counts?.flagged}<span class="flagged"><FlagIcon size={12} />{script.counts.flagged} flagged</span>{/if}{#if script.counts?.missing}<span class="missing">{script.counts.missing} missing</span>{/if}{#if me?.review}<span class="mine"><svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"></path><circle cx="12" cy="12" r="3"></circle></svg>Your review</span>{/if}{#if me?.replies}<span class="mine"><svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.8 7L3 21l2-6.2A8 8 0 1 1 21 12z"></path></svg>{me.replies === 1 ? '1 reply' : `${me.replies} replies`}</span>{/if}{#if me?.back}<span class="mine"><svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5M4 9h11a5 5 0 0 1 0 10h-3"></path></svg>Sent back to you</span>{/if}</span>
-            <span class="status"><span class="dot {script.status.replace(' ', '-')}" aria-hidden="true"></span>{label[script.status] ?? script.status}</span>
+            {#if script.template}
+              <span class="status"><span class="dot template" aria-hidden="true"></span>Template</span>
+            {:else}
+              <span class="status"><span class="dot {script.status.replace(' ', '-')}" aria-hidden="true"></span>{label[script.status] ?? script.status}</span>
+            {/if}
             <span class="length" title={long ? (long.recorded ? 'Recorded voice-over, every row' : `Read time at ${speaking.wpm} words a minute`) : undefined}>
               {long?.text ?? ''}{#if long?.recorded}<svg role="img" aria-label="recorded" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v3"></path></svg>{/if}
             </span>
@@ -177,6 +218,17 @@
   .dot { width: 8px; height: 8px; border-radius: 50%; background: #b8b8b8; }
   .dot.in-review { background: #e08a1e; }
   .dot.approved { background: #1f8a4c; }
+  .dot.template { border-radius: 2px; background: #7a7a7a; }
+  .split { position: relative; display: inline-flex; }
+  .split > .small:first-child { border-radius: 8px 0 0 8px; padding-right: 16px; }
+  .split .more { width: 40px; padding: 0; border-left: 1px solid #5c82e3; border-radius: 0 8px 8px 0; display: inline-flex; align-items: center; justify-content: center; }
+  .menu { position: absolute; right: 0; top: 50px; z-index: 20; width: 260px; padding: 6px; box-sizing: border-box; border: 1px solid var(--line); border-radius: 10px; background: #fff; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12); }
+  .menu p { margin: 0; padding: 8px 10px 4px; font-size: 12px; color: var(--muted); }
+  .menu button { display: flex; align-items: center; gap: 8px; width: 100%; min-height: 40px; padding: 0 10px; border: 0; border-radius: 6px; background: none; text-align: left; font: inherit; font-size: 14px; color: var(--ink); cursor: pointer; }
+  .menu button:hover { background: #f5f5f5; }
+  .menu .add { color: var(--accent); }
+  .menu hr { height: 1px; margin: 6px 4px; border: 0; background: #eee; }
+  .from { margin: 0; font-size: 13px; color: var(--muted); }
   .when { font-size: 14px; color: var(--muted); }
   .empty { text-align: center; padding-top: 10vh; }
   .empty h1 { margin: 0 0 8px; font-size: 22px; font-weight: 600; }

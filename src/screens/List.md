@@ -22,4 +22,7 @@ first; New script; Change folder; Files, to browse every script's files (`Shared
 - The length is kept as the takes' seconds plus the words in rows with none (`length` in `lib/scriptlist.svelte.ts`),
   so it follows the speaking speed without reading the script again; it matches how Play times it. It shows a mic, "recorded", only once every row
   with dialogue or a take has a take. Two scripts with the same title can't be told apart by tests: give them others.
+- Templates (AP-15, board 67): New script stays one click for a blank script; the arrow beside it opens a menu of the
+  templates, then New template. Templates sort last, show "Template" as their status and are left out of For me.
+  The menu closes on Escape or a click outside it. **Tests:** `tests/e2e/templates.spec.ts`.
 - People (AP-31) opens `People.svelte`, beside Files.

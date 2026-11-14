@@ -66,7 +66,8 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
   https://claude.ai/artifact/FT4p8XLBVTSrEQMow71NDb.
 - Queue (the user's order, 2026-11-14), mock-ups first, built one at a time: AP-44 (shortcuts, done), AP-43 (hide help
   text, done), then SB-1 (storyboard timeline, done 2026-11-14), then AP-47 (the tour and the example catch up, done).
-  The rest (AP-15, AP-8, EX-19 …) waits
+  Then (asked by the user, 2026-11-14): AP-15 (templates, done), then EX-19 (export to Resolve and Premiere).
+  The rest (AP-8 …) waits
   for the user's next ranking; "Last" in ROADMAP.md (EX-5, CC-1) waits until everything else is done.
 - Mock-ups (one board per design, numbered): https://claude.ai/artifact/2XDZmS7J5NEPZsz91RQMiL (private to the user).
 

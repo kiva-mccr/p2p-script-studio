@@ -14,6 +14,9 @@ and the files in its `assets/`.
   the characters OneDrive refuses (`safeName`).
 - `isCopyOf` tells whether a Files line is a copy `addAsset` made of a file of that name (RV-12's "In row").
 - A file picked for a row is copied into `assets/`, never moved; a name already there gets " 2", " 3" …
+- `createScript` with `from` (AP-15) copies the template's intro, sections and rows with new row ids, and the
+  `assets/` files its rows use (a missing one is skipped); never History, comments, takes, plan.md or credits. The
+  copy is written before script.md, so the list never shows it with missing files. `template` adds `template: true`.
 - `scriptHead` is one folder's line in the list (title, status, last edit, editor); `listScripts` is every folder's.
   The script list itself goes through `lib/scriptlist.svelte.ts` (AP-40), which calls `scriptHead` only for scripts
   the browser hasn't seen or whose files changed.
