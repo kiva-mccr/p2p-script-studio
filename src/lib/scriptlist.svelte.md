@@ -18,6 +18,8 @@ screen first, four at a time.
 - A file being written shows as `name.crswap` for a moment: the fingerprint changes twice and the script is read
   twice. Harmless.
 - Anything that can't be read keeps what was shown and is read next time (mid-sync).
+- History is read only back to the newest send for review (`sinceSend`, PF-3): a big History made the first visit read
+  115 MB for 60 scripts. An approved script's History isn't read at all.
 - A first visit on a computer still reads every script once; the shared summary file per script was set aside by the
   user (expand later if first visits are slow on the network drive).
 - Changes waiting in `.studio/changes/` (FX-2) aren't counted until the keeper writes script.md, as before.
