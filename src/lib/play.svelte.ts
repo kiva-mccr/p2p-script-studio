@@ -1,9 +1,8 @@
 // Play the script (AU-2, mock-up 14): the rows in order, each for as long as its take, with the take's sound. A row
 // with no take waits in silence for its read time, so the timing stays true (the user's choice over skipping it).
-import { countWords } from './readtime.svelte';
-import type { Row, Script } from './script';
+import type { Script } from './script';
 import { layout } from './timeline';
-import { Sound, takeFile, takeLength, type Take } from './voice.svelte';
+import { rowLength, Sound, takeFile, type Take } from './voice.svelte';
 
 // One turn: a row (its id), or a hold or placeholder after one (SB-1: "hold:<id>", "placeholder:<id>", always
 // silent); how long it lasts, whether it has a take to hear, and when it starts (seconds from the top).
@@ -13,11 +12,7 @@ export type Step = { id: string; seconds: number; take: boolean; start: number }
 // with no take lasts its dialogue's read time at `speed` words a minute; a row with no take and no dialogue is
 // skipped. No gap between rows, like the exported voice-over.
 export function plan(script: Script, takes: Record<string, Take>, speed: number): Step[] {
-  const length = (row: Row) => {
-    const take = takes[row.id];
-    return take ? { seconds: takeLength(take), take: true } : { seconds: (countWords(row.dialogue) / speed) * 60, take: false };
-  };
-  return layout(script, length).blocks.map((b) => ({ id: b.id, seconds: b.seconds, take: b.kind === 'row' && b.take, start: b.start }));
+  return layout(script, rowLength(takes, speed)).blocks.map((b) => ({ id: b.id, seconds: b.seconds, take: b.kind === 'row' && b.take, start: b.start }));
 }
 
 const TICK = 100; // ms between looks at how far it has played

@@ -14,7 +14,7 @@ async function openExport(page: Page, item: string) {
 test('the export screen opens on the picked format, in place of the script, and goes back', async ({ page }) => {
   await openExport(page, 'Final Draft (.fdx)');
   await expect(page.getByRole('navigation', { name: 'Export as' }).getByRole('button')).toHaveText(
-    ['Print / PDF', 'Fountain (.fountain)', 'Final Draft (.fdx)', 'Voice-over (.wav)']);
+    ['Print / PDF', 'Fountain (.fountain)', 'Final Draft (.fdx)', 'Voice-over (.wav)', 'Resolve / Premiere (.zip)']);
   await expect(page.getByRole('button', { name: 'Final Draft (.fdx)' })).toHaveAttribute('aria-pressed', 'true');
   await expect(page.getByLabel('Dialogue, row 1')).toHaveCount(0);
   const preview = page.getByLabel('Preview');

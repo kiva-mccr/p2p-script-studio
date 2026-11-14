@@ -1,11 +1,11 @@
 # `src/screens/Export.svelte`
 
 The export screen (EX-9, board 27): opened from an item under Export in Export / Share, in place of the script.
-Formats on the left (Print / PDF, Fountain, Final Draft, Voice-over), the real result in the middle, settings and
+Formats on the left (Print / PDF, Fountain, Final Draft, Voice-over, Resolve / Premiere), the real result in the middle, settings and
 Print… or Save on the right. Back to the script, the title in the breadcrumb, or Esc returns.
 
 - **Used by:** `screens/Editor.svelte` (`openExport`, which saves what is waiting and works out the version first).
-  **Tests:** `tests/e2e/export.spec.ts`, `print.spec.ts`, `editor.spec.ts`, `voice.spec.ts`.
+  **Tests:** `tests/e2e/export.spec.ts`, `print.spec.ts`, `editor.spec.ts`, `voice.spec.ts`, `editexport.spec.ts`.
 
 ## Rules and pitfalls
 
@@ -27,3 +27,6 @@ Print… or Save on the right. Back to the script, the title in the breadcrumb, 
 - Messages (no takes, takes that can't be read) are shown in the preview, not as the Editor's toasts.
 - The Credits switch (AP-31) is one setting for Print, Fountain and Final Draft (`printing.credits`, kept as
   `export-credits`), shown only when the script has credits.
+- Resolve / Premiere (EX-19): the takes are read once (`readTakes`) for their lengths, the plan is redrawn as the
+  settings change, and the media are only made on Save .zip (`editZip`). Its preview is `EditPreview.svelte`.
+  Settings are kept as `export-edit`. Files that couldn't be read are named under the preview after saving.

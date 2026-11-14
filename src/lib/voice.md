@@ -8,6 +8,8 @@ id as state, with start, stop, play, current, remove and load), `readTakes` (a f
 
 ## Rules and pitfalls
 
+- `rowLength` is the one rule for how long a row lasts (its take, else its read time): the timeline, Play and the
+  Resolve / Premiere export all use it. Change it there, not in a copy.
 - A take is voice/row-<id>.webm plus voice/row-<id>.json (by, at, seconds, text). The length is timed while
   recording and kept in the JSON: Chrome's recorded webm has no duration in it.
 - `text` is the dialogue as it was read; the take is "Outdated" once the line no longer matches it.

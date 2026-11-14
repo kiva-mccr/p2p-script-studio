@@ -12,8 +12,8 @@ offers its pictures, Sequence or Collage, + Add a picture (only for the timeline
 
 - Mostly a view: every choice goes into the row's `Timeline:` line through `onTimeline` (or its Files through
   `onFiles`), so it saves, merges and shows in History like any edit. Never keep timeline state anywhere else.
-- Lengths come from `layout` (`lib/timeline.ts`) with the same rule as Play the script: the take's length, else
-  the read time at the speaking speed. A row with neither is left off.
+- Lengths come from `layout` (`lib/timeline.ts`) with `rowLength` (`lib/voice.svelte.ts`), as Play the script and
+  the Resolve / Premiere export: the take's length, else the read time at the speaking speed. A row with neither is left off.
 - Blocks are placed with `left`/`width` in % of the whole length, inside a box zoomed by its width; the box scrolls
   sideways, the page doesn't.
 - Pictures and waveforms are only made once the timeline comes near the screen (`use:near`, as AP-39): made at

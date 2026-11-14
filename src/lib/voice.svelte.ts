@@ -57,6 +57,15 @@ export function wpm(take: Take, dialogue: string): number {
 // How long a take plays: cropped or whole, as set in Settings.
 export const takeLength = (take: Take): number => span(take).seconds;
 
+// How long a row lasts on the timeline, in Play and in the Resolve / Premiere export: its take, or without one its
+// dialogue's read time at `wpm` words a minute.
+export function rowLength(takes: Record<string, Take>, wpm: number) {
+  return (row: { id: string; dialogue: string }) => {
+    const take = takes[row.id];
+    return take ? { seconds: takeLength(take), take: true } : { seconds: (countWords(row.dialogue) / wpm) * 60, take: false };
+  };
+}
+
 // A take's sound, ready to play its cropped part at its gain (as set in Settings). Through Web Audio, so the crop is
 // exact and the gain can go above 1. Pause and carry on by suspending its own context.
 export class Sound {
