@@ -737,6 +737,14 @@ and suggestions, keeps every version, and exports them for production.
   are no longer combined on opening. Messages say "the shared folder", not OneDrive (the user's ask). Not seen for
   real: two computers on the network drive.
 
+- [x] **PF-2** Opening a script stops looking at every History file (fix 2 of the speed check, 2026-11-14; nothing
+  visible changes, so no mock-up): the browser kept versions keyed by name, size and time, so every open looked at all
+  2,000 files' sizes before using them. Now kept by script folder and file name (History files never change), so an
+  open lists the folder and opens only new files; a kept version counts only if its id matches the file's name.
+  Measured on the made-up big script (2,000 versions), background reading after opening: simulated network drive
+  56 s → 15.5 s, fast drive 2.9 s → 2.0 s; folder calls 5,900 → 1,890; the script still shows in about 0.5 s. The rest
+  is comments, takes and files, not History. Not seen for real: the network drive.
+
 ## Last (the user's order: these wait until everything above is done)
 
 - [x] **AS-1** A shared asset browser between scripts (asked by the user): browse and reuse the files of every
