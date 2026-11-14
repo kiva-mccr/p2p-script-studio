@@ -121,8 +121,12 @@ and suggestions, keeps every version, and exports them for production.
   Built: Tab and Shift+Tab go between the text boxes only (section titles, Dialogue, On screen), past the row's
   buttons and files; Ctrl+Enter adds a row below (or a section's first row, from its title) and puts the cursor in it;
   Alt+Up / Alt+Down move the row (or section) and the cursor stays where it was.
-- [ ] **AP-15** New script from a template (suggested, the user agreed): New script can start as a copy of a script
+- [x] **AP-15** New script from a template (suggested, the user agreed): New script can start as a copy of a script
   the person picks (its sections and rows, not its history or comments). The look is agreed before building.
+  Built (board 67, the user's changes: an easy way to make a template, and nothing intrusive): New script stays one
+  click; an arrow beside it opens a menu of templates and New template. A template is a script with `template: true`,
+  listed last with "Template" as its status, never under For me. Starting from one copies its sections, rows, words
+  and the assets/ files the rows use; not History, comments, takes, the plan or credits.
 - [x] **AP-16** A better place for the save status (asked by the user: where it sat, between Send for review and
   Export, "felt awkward and not matching"). Three places mocked up (board 17); the user picked A: the status sits
   right after the script's name, like Word and Google Docs. The voice-over total shortens to "3 of 4 · 0:14" and stays

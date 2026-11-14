@@ -3,9 +3,10 @@
 
 import { addVersion, lastEditor } from './history';
 import { patiently, writeText } from './files';
-import { frontValue, newId, parseScript } from './script';
+import { frontValue, parseScript, readFileRef, rows, writeScript, type Block } from './script';
 
-export type ScriptInfo = { path: string[]; title: string; status: string; edited: number; who: string };
+// `template`: a script to start others from (AP-15), `template: true` in its front matter.
+export type ScriptInfo = { path: string[]; title: string; status: string; edited: number; who: string; template?: boolean };
 
 const SCRIPT = 'script.md';
 // Characters Windows and OneDrive refuse in a file or folder name.
@@ -33,6 +34,7 @@ export async function scriptHead(dir: FileSystemDirectoryHandle): Promise<Script
     status: frontValue(front, 'status') || 'draft',
     edited: file.lastModified,
     who: await lastEditor(dir),
+    template: frontValue(front, 'template') === 'true',
   };
 }
 
@@ -56,30 +58,48 @@ export async function writeScriptFile(dir: FileSystemDirectoryHandle, text: stri
   await writeText(dir, SCRIPT, text);
 }
 
-// Makes a new script folder with one empty row. Returns the folder's name, or throws a plain-language Error.
-export async function createScript(root: FileSystemDirectoryHandle, name: string, author: string): Promise<string> {
+// Makes a new script folder, or a template with `template` (AP-15). It starts with one empty row, or with a copy of
+// `from`'s intro, sections and rows (new row ids) and the assets/ files its rows use; never its history, comments,
+// takes, plan or credits. Returns the folder's name, or throws a plain-language Error.
+export async function createScript(
+  root: FileSystemDirectoryHandle,
+  name: string,
+  author: string,
+  { from, template }: { from?: FileSystemDirectoryHandle; template?: boolean } = {},
+): Promise<string> {
   const folderName = safeName(name);
-  if (!folderName) throw new Error('Type a name for the script.');
+  if (!folderName) throw new Error(template ? 'Type a name for the template.' : 'Type a name for the script.');
   if (await exists(root, folderName)) throw new Error(`There is already a script called "${folderName}".`);
+  const source = from ? parseScript(await readScript(from)) : null;
+  const empty: Block = { type: 'row', id: '', dialogue: '', onScreen: '', files: [], timeline: '', note: '' };
+  const blocks = source?.blocks.length ? source.blocks.map((b) => (b.type === 'row' ? { ...b, id: '' } : b)) : [empty];
+  const front = [`title: ${name.trim()}`, 'status: draft', `authors: [${author}]`, ...(template ? ['template: true'] : [])];
+  const text = writeScript({ front: front.join('\n'), intro: source?.intro ?? '', blocks });
   const dir = await root.getDirectoryHandle(folderName, { create: true });
-  const text = [
-    '---',
-    `title: ${name.trim()}`,
-    'status: draft',
-    `authors: [${author}]`,
-    '---',
-    '',
-    `## 1 <!-- id: ${newId(new Set())} -->`,
-    'Dialogue:',
-    '',
-    'On screen:',
-    '',
-    'Files:',
-    '',
-  ].join('\n');
+  if (from && source) await copyAssets(from, dir, source.blocks);
   await writeScriptFile(dir, text);
   await addVersion(dir, { parents: [], who: author, kind: 'edit', text });
   return folderName;
+}
+
+// The assets/ files the rows use, copied to the same paths in the new script; a missing one is skipped.
+async function copyAssets(from: FileSystemDirectoryHandle, to: FileSystemDirectoryHandle, blocks: Block[]): Promise<void> {
+  const paths = new Set(
+    rows({ front: null, intro: '', blocks })
+      .flatMap((row) => row.files.map(readFileRef))
+      .filter((ref) => ref.kind === 'path' && ref.target.startsWith('assets/'))
+      .map((ref) => ref.target),
+  );
+  for (const path of paths) {
+    const file = await assetFile(from, path);
+    if (!file) continue;
+    const parts = path.split('/').filter((p) => p && p !== '.' && p !== '..');
+    let at = to;
+    for (const part of parts.slice(0, -1)) at = await at.getDirectoryHandle(part, { create: true });
+    const writable = await (await at.getFileHandle(parts.at(-1)!, { create: true })).createWritable();
+    await writable.write(file);
+    await writable.close();
+  }
 }
 
 // Copies a file the person picked into the script's assets/ folder. Returns its path for the Files column.
