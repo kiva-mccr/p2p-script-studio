@@ -3,7 +3,7 @@
 A script's history: one JSON file per version in `.studio/versions/` (docs/studio-folder.md), written once and
 never changed. Also what changed between two versions: a title ("Edited rows 3 and 4") and each changed field.
 
-- **Used by:** `lib/folder.ts`, `lib/saving.svelte.ts`, `screens/Editor.svelte`, `screens/History.svelte`, `screens/Print.svelte` (through Editor). **Tests:**
+- **Used by:** `lib/scriptlist.svelte.ts` (`sinceSend`), `lib/folder.ts`, `lib/saving.svelte.ts`, `screens/Editor.svelte`, `screens/History.svelte`, `screens/Print.svelte` (through Editor). **Tests:**
   `tests/unit/history.test.ts`, `tests/e2e/history.spec.ts`.
 
 ## Rules and pitfalls
@@ -15,6 +15,10 @@ never changed. Also what changed between two versions: a title ("Edited rows 3 a
   calling `listVersions` often is cheap. Files the browser kept are found by name (PF-2), so no old file is
   opened at all. Calls for one script wait for each other: when a script opens several
   screens ask at once, and without that each did the slow first read (2,000 versions: about 3 s each).
+- `sinceSend` (PF-3) reads names newest first, 25 at a time, and stops at the newest "Sent for review": the script
+  list's For me needs nothing older (the newest send, review change and hold end are all at or after it). Versions in
+  the same second as the send come too (names keep only the second). With no send, it reads everything. Its tests
+  check For me gives the same answers as with the whole History; keep it so if `forMe` starts using older versions.
 - Rows are matched by id, so a moved row is not "edited".
 - A row's `Change` carries its `row` id and `field` (as comments name it, `on_screen`), so History can put a comment
   under it (RV-6); a removed row has only `row`.

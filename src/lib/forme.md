@@ -15,5 +15,7 @@ them ("For me").
   review" in History (status typed by hand) waits for everyone.
 - Names are compared trimmed and ignoring case; with no name, nothing waits.
 - `threads()` already leaves out deleted comments and replies, and keeps the newest text.
+- The script list passes only the versions from the newest send on (`sinceSend`, PF-3). Anything added here that
+  looks further back than the newest send needs `listVersions` instead (and the first visit gets slow again).
 - Comments on hold (RV-19) don't count as answered replies until a send or a version brings them back
   (`holdEnds(versions)`).

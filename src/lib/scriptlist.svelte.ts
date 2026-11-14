@@ -6,7 +6,7 @@ import { assetList, countMissing } from './assets';
 import { flags, listNotes } from './comments';
 import { fileIn, readScript, scriptHead, type ScriptInfo } from './folder';
 import { forMe, type ForMe } from './forme';
-import { listVersions } from './history';
+import { sinceSend } from './history';
 import { countWords } from './readtime.svelte';
 import { keep, recall } from './remember';
 import { parseScript, rows } from './script';
@@ -44,8 +44,9 @@ export async function readCounts(dir: FileSystemDirectoryHandle, me: string, sta
     else words += countWords(row.dialogue);
   }
   const notes = await listNotes(dir);
-  // History only matters for a review or a send back, so an approved script's isn't read.
-  const versions = status === 'approved' ? [] : await listVersions(dir);
+  // History only matters for a review or a send back, so an approved script's isn't read, and the rest only back
+  // to the newest send for review (PF-3).
+  const versions = status === 'approved' ? [] : await sinceSend(dir);
   const paths = assetList(script).flatMap((a) => (a.kind === 'path' ? [a.target] : []));
   return {
     missing: await countMissing(dir, script),

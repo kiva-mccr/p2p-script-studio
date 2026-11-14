@@ -39,10 +39,45 @@ const reading = new WeakMap<FileSystemDirectoryHandle, Promise<Version[]>>();
 async function readVersions(dir: FileSystemDirectoryHandle): Promise<Version[]> {
   const folder = await versionsFolder(dir, false);
   if (!folder) return [];
+  const names = (await jsonNames(folder)).sort();
+  const read = await readNamed(dir, folder, names);
+  return inOrder(names.flatMap((name) => read.get(name) ?? []));
+}
+
+// The versions from the newest send for review on, oldest first: all the script list's For me needs (RV-14). Read
+// newest first, a few at a time, stopping at that send (PF-3), so a big History isn't read whole for the list. With no
+// send in History, every version.
+export async function sinceSend(dir: FileSystemDirectoryHandle): Promise<Version[]> {
+  const folder = await versionsFolder(dir, false);
+  if (!folder) return [];
+  const names = (await jsonNames(folder)).sort().reverse();
+  const read = new Map<string, Version>();
+  for (let i = 0; i < names.length; i += SEND_BATCH) {
+    const part = names.slice(i, i + SEND_BATCH);
+    for (const [name, version] of await readNamed(dir, folder, part)) read.set(name, version);
+    const send = part.find((name) => read.get(name) && isSend(read.get(name)!));
+    if (!send) continue;
+    // Names keep only the second, so versions made in the same second as the send (older names) come too.
+    const second = send.split('_')[0];
+    const same = names.slice(i + SEND_BATCH).filter((name) => name.split('_')[0] === second);
+    for (const [name, version] of await readNamed(dir, folder, same)) read.set(name, version);
+    const cut = names.indexOf(send);
+    const keep = names.filter((name, j) => j <= cut || name.split('_')[0] === second);
+    return inOrder(keep.flatMap((name) => read.get(name) ?? []));
+  }
+  return inOrder([...read.values()]);
+}
+const SEND_BATCH = 25;
+
+async function jsonNames(folder: FileSystemDirectoryHandle): Promise<string[]> {
   const names: string[] = [];
   for await (const name of folder.keys()) if (name.endsWith('.json')) names.push(name);
-  // Files never change, so only files not read before are read (HI-3): first this visit's, then this browser's,
-  // found by name alone (PF-2), so a script opened again opens only its new files.
+  return names;
+}
+
+// The versions in the named files, by name. Files never change, so only files not read before are read (HI-3): first
+// this visit's, then this browser's, found by name alone (PF-2), so a script opened again opens only its new files.
+async function readNamed(dir: FileSystemDirectoryHandle, folder: FileSystemDirectoryHandle, names: string[]): Promise<Map<string, Version>> {
   const known = remembered(dir);
   const unknown = names.filter((name) => !known.has(name));
   const kept = await recallVersions(unknown.map((name) => nameKey(dir, name)));
@@ -62,8 +97,12 @@ async function readVersions(dir: FileSystemDirectoryHandle): Promise<Version[]> 
     known.set(name, version);
   }
   void keepVersions(fresh);
-  const versions = names.sort().flatMap((name) => known.get(name) ?? []);
-  // Names sort by the second they were made; within the same second, by how many versions lie before (parents first).
+  return new Map(names.flatMap((name) => (known.has(name) ? [[name, known.get(name)!] as const] : [])));
+}
+
+// Oldest first. Names sort by the second they were made; within the same second, by how many versions lie before
+// (parents first).
+function inOrder(versions: Version[]): Version[] {
   const byId = new Map(versions.map((v) => [v.id, v]));
   const depth = new Map<string, number>();
   const depthOf = (v: Version, seen = new Set<string>()): number => {

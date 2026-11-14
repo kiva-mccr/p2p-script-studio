@@ -744,6 +744,13 @@ and suggestions, keeps every version, and exports them for production.
   Measured on the made-up big script (2,000 versions), background reading after opening: simulated network drive
   56 s → 15.5 s, fast drive 2.9 s → 2.0 s; folder calls 5,900 → 1,890; the script still shows in about 0.5 s. The rest
   is comments, takes and files, not History. Not seen for real: the network drive.
+- [x] **PF-3** The script list's first visit stops reading every History whole (fix 3 of the speed check, 2026-11-14;
+  nothing visible changes, so no mock-up): For me only needs History back to the newest send for review, so it is now
+  read newest first, 25 files at a time, stopping there (`sinceSend`); with no send it still reads all. Measured on
+  the made-up folder (60 scripts, one with 2,000 versions), until the list's counts finish: fast drive 8.5–9.2 s →
+  3.6–3.8 s, simulated network drive 84 s → 33 s; read 115 MB → 14 MB; folder calls 16,300 → 10,500. The list itself
+  still shows in about 0.4 s (1.9 s on the network). The rest is comments, takes and small Histories never sent for
+  review. Not seen for real: the network drive.
 
 ## Last (the user's order: these wait until everything above is done)
 
