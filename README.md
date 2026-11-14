@@ -68,7 +68,8 @@ Status: a first working version. What it does today:
   show in History too: under the change they led to, so it is clear why a line changed, or at the bottom of the
   version they were made on if nothing has changed for them yet (with "Open in Review" while still open).
   A long History lists the newest 50 first; "Show 50 older" loads more, and after that older ones load as you
-  scroll. Each History file is read once and remembered by the browser, so big histories stay quick.
+  scroll. Each History file is read once and remembered by the browser, so big histories stay quick: opening a script
+  again opens only History files it hasn't seen.
 - **Saved:** beside the script's name at the top, it says Editing… while what you typed waits to be saved (within 30
   seconds, or at once with Ctrl+S), then Saved. It's red when a save failed (after a few quiet tries), with the
   browser's reason: hover for all of it. What you typed is also kept in the browser until it's saved, so closing the

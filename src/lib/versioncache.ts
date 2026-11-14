@@ -15,17 +15,23 @@ export function remembered(dir: FileSystemDirectoryHandle): Map<string, Version>
   return known;
 }
 
-// The browser's key for a file: its name, size and time, so two scripts' files that share a name never mix.
-export const fileKey = (name: string, file: File) => `${name}|${file.size}|${file.lastModified}`;
+// The browser's key for a file: its script folder's name and its own. A file's name holds the second it was made and
+// a random id, so the same name in the same script is the same file: kept versions are found without opening a file.
+export const nameKey = (dir: FileSystemDirectoryHandle, name: string) => `${dir.name}/${name}`;
 
 // Versions this browser kept from an earlier visit, by key. Storage refused (a private window): none.
 export async function recallVersions(keys: string[]): Promise<Map<string, Version>> {
   const found = new Map<string, Version>();
   if (!keys.length) return found;
   try {
-    const store = (await db()).transaction(STORE, 'readonly').objectStore(STORE);
-    const got = await Promise.all(keys.map((key) => request<Version | undefined>(store.get(key))));
-    keys.forEach((key, i) => got[i] && found.set(key, got[i]));
+    // A hundred at a time, with a pause between, so a script opening with a big History still draws at once.
+    for (let i = 0; i < keys.length; i += 100) {
+      if (i) await new Promise((resolve) => setTimeout(resolve));
+      const part = keys.slice(i, i + 100);
+      const store = (await db()).transaction(STORE, 'readonly').objectStore(STORE);
+      const got = await Promise.all(part.map((key) => request<Version | undefined>(store.get(key))));
+      part.forEach((key, j) => got[j] && found.set(key, got[j]));
+    }
   } catch {
     // Read from the files instead.
   }
@@ -50,8 +56,12 @@ let opened: Promise<IDBDatabase> | null = null;
 function db(): Promise<IDBDatabase> {
   opened ??= new Promise((resolve, reject) => {
     if (typeof indexedDB === 'undefined') return reject(new Error('No IndexedDB'));
-    const open = indexedDB.open(DB, 1);
-    open.onupgradeneeded = () => open.result.createObjectStore(STORE);
+    // Version 2 keys by name (nameKey); version 1's keys held each file's size and time, so its entries are dropped.
+    const open = indexedDB.open(DB, 2);
+    open.onupgradeneeded = () => {
+      if (open.result.objectStoreNames.contains(STORE)) open.result.deleteObjectStore(STORE);
+      open.result.createObjectStore(STORE);
+    };
     open.onsuccess = () => resolve(open.result);
     open.onerror = () => reject(open.error);
   });

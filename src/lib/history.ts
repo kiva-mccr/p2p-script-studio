@@ -2,7 +2,7 @@
 // changed. Also what changed between two versions, in words.
 
 import { frontValue, parseScript, type Row, type Script } from './script';
-import { fileKey, keepVersions, recallVersions, remembered } from './versioncache';
+import { keepVersions, nameKey, recallVersions, remembered } from './versioncache';
 
 type Kind = 'edit' | 'review' | 'restore' | 'merge' | 'outside' | 'restart' | 'official';
 export type Version = {
@@ -41,27 +41,20 @@ async function readVersions(dir: FileSystemDirectoryHandle): Promise<Version[]> 
   if (!folder) return [];
   const names: string[] = [];
   for await (const name of folder.keys()) if (name.endsWith('.json')) names.push(name);
-  // Files never change, so only files not read before are read (HI-3): first this visit's, then this browser's.
+  // Files never change, so only files not read before are read (HI-3): first this visit's, then this browser's,
+  // found by name alone (PF-2), so a script opened again opens only its new files.
   const known = remembered(dir);
-  const files = new Map<string, File>();
-  for (const name of names) {
-    if (known.has(name)) continue;
-    try {
-      files.set(name, await (await folder.getFileHandle(name)).getFile());
-    } catch {
-      // Skipped: the shared folder may still be bringing it in.
-    }
-  }
-  const kept = await recallVersions([...files].map(([name, file]) => fileKey(name, file)));
+  const unknown = names.filter((name) => !known.has(name));
+  const kept = await recallVersions(unknown.map((name) => nameKey(dir, name)));
   const fresh: [string, Version][] = [];
-  for (const [name, file] of files) {
-    const key = fileKey(name, file);
+  for (const name of unknown) {
+    const key = nameKey(dir, name);
     let version = kept.get(key);
-    if (!version) {
+    if (!version || !name.endsWith(`_${version.id}.json`)) {
       try {
-        version = JSON.parse(await file.text());
+        version = JSON.parse(await (await (await folder.getFileHandle(name)).getFile()).text());
       } catch {
-        continue; // Half-synced: read again next time.
+        continue; // Gone, or half-synced (the shared folder may still be bringing it in): read again next time.
       }
       if (version?.v !== 1 || typeof version.text !== 'string') continue;
       fresh.push([key, version]);

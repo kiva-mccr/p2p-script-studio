@@ -299,6 +299,20 @@ test('a long History shows the newest 50, then older ones as you scroll, and is 
     };
   }));
   expect(kept).toBe(120);
+
+  // A later visit finds them by name (PF-2): no version file is opened, not even to look at its size and time.
+  await page.addInitScript(() => {
+    const getFile = FileSystemFileHandle.prototype.getFile;
+    (window as unknown as { opened: string[] }).opened = [];
+    FileSystemFileHandle.prototype.getFile = function () {
+      if (/_v\d{7}\.json$/.test(this.name)) (window as unknown as { opened: string[] }).opened.push(this.name);
+      return getFile.call(this);
+    };
+  });
+  await page.reload();
+  await page.getByRole('button', { name: 'History' }).click();
+  await expect(page.getByText('Showing the newest 50 of 120 versions.')).toBeVisible();
+  expect(await page.evaluate(() => (window as unknown as { opened: string[] }).opened)).toEqual([]);
 });
 
 test('a short History has no Show older', async ({ page }) => {
