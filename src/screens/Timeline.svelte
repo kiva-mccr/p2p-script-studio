@@ -2,12 +2,12 @@
   import { problem } from '../lib/problems';
   import { addAsset, assetFile } from '../lib/folder';
   import { plain } from '../lib/format';
-  import { clock, countWords, speaking } from '../lib/readtime.svelte';
+  import { clock, speaking } from '../lib/readtime.svelte';
   import { keep, recall } from '../lib/remember';
   import { markTimelineOnly, rows, type Row, type Script } from '../lib/script';
   import { changeChoices, cutPositions, dialogueWords, layout, pictureFiles, readChoices, type After, type TimeBlock } from '../lib/timeline';
   import type { Player } from '../lib/play.svelte';
-  import { takeLength, type VoiceOver } from '../lib/voice.svelte';
+  import { rowLength, type VoiceOver } from '../lib/voice.svelte';
   import { waveform, wavePath } from '../lib/waveform';
   import AfterEditor from './AfterEditor.svelte';
   import { near } from '../lib/near';
@@ -32,11 +32,7 @@
   let zoom = $state(1);
 
   // Each row lasts its take, or its read time without one, as Play the script times it.
-  const length = (row: Row) => {
-    const take = voice.takes[row.id];
-    return take ? { seconds: takeLength(take), take: true } : { seconds: (countWords(row.dialogue) / speaking.wpm) * 60, take: false };
-  };
-  const laid = $derived(layout(script, length));
+  const laid = $derived(layout(script, rowLength(voice.takes, speaking.wpm)));
   const total = $derived(laid.total);
   const byId = $derived(new Map(rows(script).map((r) => [r.id, r])));
   const numbers = $derived(new Map(rows(script).map((r, i) => [r.id, i + 1])));

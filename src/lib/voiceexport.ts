@@ -29,7 +29,7 @@ export async function readClips(dir: FileSystemDirectoryHandle, script: Script, 
 }
 
 // The take's notes (its crop and gain, AU-4), or none when they can't be read.
-async function readTake(voice: FileSystemDirectoryHandle, id: string) {
+export async function readTake(voice: FileSystemDirectoryHandle, id: string) {
   try {
     return JSON.parse(await (await (await voice.getFileHandle(`row-${id}.json`)).getFile()).text());
   } catch {

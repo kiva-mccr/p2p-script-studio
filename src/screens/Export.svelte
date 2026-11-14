@@ -3,7 +3,7 @@
   // Print's choices: a Notes column on each row, Notes lines on every page (how many), the text size in %, the columns that
   // print (EX-16), the page turned sideways (EX-18), and the credits after the rows (AP-31).
   export type PrintChoices = { column: boolean; lines: number; scale: number; hidden: Column[]; landscape: boolean; credits: boolean };
-  export type Format = 'print' | 'fountain' | 'fdx' | 'voice';
+  export type Format = 'print' | 'fountain' | 'fdx' | 'voice' | 'edit';
 </script>
 
 <script lang="ts">
@@ -23,6 +23,11 @@
   import { frontValue, rows, type Script } from '../lib/script';
   import { join, lineUp, readClips, wav, type Clip } from '../lib/voiceexport';
   import Print from './Print.svelte';
+  import EditPreview from './EditPreview.svelte';
+  import { EDIT, RATES, SIZES, plan as editPlan } from '../lib/editxml';
+  import { editZip } from '../lib/editmedia';
+  import { layout } from '../lib/timeline';
+  import { readTakes, rowLength, type Take } from '../lib/voice.svelte';
 
   // version: "v3", or "" for a draft (Editor's `version()`, which saved what was waiting).
   let { script, dir, folder, title, version, start, onPrint, onBack }: {
@@ -35,6 +40,7 @@
     { id: 'fountain', name: 'Fountain (.fountain)', action: 'Save .fountain' },
     { id: 'fdx', name: 'Final Draft (.fdx)', action: 'Save .fdx' },
     { id: 'voice', name: 'Voice-over (.wav)', action: 'Save .wav' },
+    { id: 'edit', name: 'Resolve / Premiere (.zip)', action: 'Save .zip' },
   ];
   // svelte-ignore state_referenced_locally (the screen opens on `start`; the list on the left changes it)
   let format = $state<Format>(start);
@@ -49,6 +55,7 @@
   let fountain = $state<Screenplay>(load('export-fountain', SCREENPLAY));
   let fdx = $state<Screenplay>(load('export-fdx', SCREENPLAY));
   let voiceHow = $state(load('export-voice', { gap: false, silence: false }));
+  let edit = $state(load('export-edit', EDIT));
   $effect(() => {
     keep('print-notes', printing.column ? '1' : '');
     keep('print-lines', printing.lines ? '1' : '');
@@ -60,6 +67,7 @@
     keep('export-fountain', JSON.stringify(fountain));
     keep('export-fdx', JSON.stringify(fdx));
     keep('export-voice', JSON.stringify(voiceHow));
+    keep('export-edit', JSON.stringify(edit));
   });
   // Ticks a column on or off; the hidden ones stay in the order they were unticked (their room goes in turns).
   function setLines(on: boolean, count = lineCount) {
@@ -136,7 +144,34 @@
     audio.play().catch(() => {});
   }
 
+  // Resolve / Premiere (EX-19): the storyboard timeline's layout, with each row's take length (read once) or read time,
+  // as the timeline under the script times it.
+  let takes = $state<Record<string, Take> | null>(null);
+  $effect(() => {
+    if (format === 'edit' && !takes) readTakes(dir).then((t) => (takes = t));
+  });
+  const laid = $derived(takes ? layout(script, rowLength(takes, speaking.wpm)) : null);
+  const edited = $derived(laid ? editPlan(script, laid, edit) : null);
+  let making = $state(false);
+  let leftOut = $state<string[]>([]);
+  const EDIT_FAILED = "The .zip couldn't be made. If the shared folder is still syncing, wait a moment and try again.";
+  async function saveEdit() {
+    if (!edited || making) return;
+    making = true;
+    leftOut = [];
+    try {
+      const made = await editZip(dir, edited, title, name, $state.snapshot(edit));
+      leftOut = made.missing;
+      download(`${name}.zip`, made.zip);
+    } catch (e) {
+      problem(EDIT_FAILED, 'making the Resolve / Premiere zip', e);
+    } finally {
+      making = false;
+    }
+  }
+
   function save() {
+    if (format === 'edit') return saveEdit();
     if (format === 'print') return onPrint($state.snapshot(printing));
     if (format === 'fountain') return download(`${name}.fountain`, fountainText);
     if (format === 'fdx') return download(`${name}.fdx`, toFdx(script, title, stand, date, fdx, creditsShown));
@@ -215,6 +250,13 @@
       <p class="caption">{name}.fdx</p>
       {@render look(fdx, true)}
       <p class="caption">Roughly how Final Draft shows it. The file itself is XML, so it isn't shown.</p>
+    {:else if format === 'edit'}
+      {#if edited}
+        <EditPreview plan={edited} how={edit} {name} />
+        {#if leftOut.length}<p class="message left-out" role="alert">Saved, but {leftOut.length === 1 ? 'one file' : `${leftOut.length} files`} couldn't be read and {leftOut.length === 1 ? 'is' : 'are'} left out (the editor sees {leftOut.length === 1 ? 'it' : 'them'} offline): {leftOut.join(', ')}.</p>{/if}
+      {:else}
+        <p class="message">Reading the takes…</p>
+      {/if}
     {:else}
       <p class="caption">{name} voice-over.wav · 48 kHz mono</p>
       {#if failed}
@@ -291,15 +333,32 @@
         {:else}
           <label><input type="checkbox" checked={fdx.numbers && fdx.files} onchange={(e) => (fdx.numbers = fdx.files = e.currentTarget.checked)} /> Row numbers and files</label>
         {/if}
+      {:else if format === 'edit'}
+        <label class="text">Frame size
+          <select bind:value={edit.size}>{#each SIZES as s (s.id)}<option value={s.id}>{s.name}</option>{/each}</select>
+        </label>
+        <fieldset class="plain">
+          <legend>Frames per second</legend>
+          <div class="rates">
+            {#each RATES as r (r)}<label><input type="radio" name="fps" checked={edit.fps === r} onchange={() => (edit.fps = r)} /> {r}</label>{/each}
+          </div>
+        </fieldset>
+        <fieldset class="plain">
+          <legend>Collages</legend>
+          <label><input type="radio" name="collage" checked={!edit.stacked} onchange={() => (edit.stacked = false)} /> One picture, side by side</label>
+          <label><input type="radio" name="collage" checked={edit.stacked} onchange={() => (edit.stacked = true)} /> Each picture on its own track</label>
+        </fieldset>
+        <label><input type="checkbox" bind:checked={edit.markers} /> A marker on each row, with its dialogue</label>
+        <label><input type="checkbox" bind:checked={edit.captions} /> Dialogue as captions (.srt)</label>
       {:else}
         <label><input type="checkbox" bind:checked={voiceHow.gap} /> Half a second between takes</label>
         <label><input type="checkbox" bind:checked={voiceHow.silence} /> Silence for rows with no take</label>
       {/if}
-      {#if credits.length && format !== 'voice'}
+      {#if credits.length && format !== 'voice' && format !== 'edit'}
         <label><input type="checkbox" bind:checked={printing.credits} /> {format === 'print' ? 'Credits after the rows' : 'Credits on the title page'}</label>
       {/if}
       <p class="kept">Remembered on this computer for next time.</p>
-      <button class="primary" disabled={format === 'voice' && !file} onclick={save}>{FORMATS.find((f) => f.id === format)?.action}</button>
+      <button class="primary" disabled={(format === 'voice' && !file) || (format === 'edit' && (!edited?.total || making))} onclick={save}>{format === 'edit' && making ? 'Making the .zip…' : FORMATS.find((f) => f.id === format)?.action}</button>
     </div>
   </aside>
 </div>
@@ -321,6 +380,7 @@
   .preview { flex: 1 1 520px; min-width: 0; }
   .caption { margin: 0 0 8px; font-size: 13px; color: var(--muted); }
   .preview > * + .caption { margin-top: 8px; }
+  .preview .message.left-out { margin-top: 16px; }
   .message { margin: 0; padding: 16px; border: 1px solid var(--line); border-radius: 10px; font-size: 14px; }
   .page { box-sizing: border-box; max-width: 790px; max-height: 75vh; overflow: auto; padding: 32px; background: #fff; border: 1px solid var(--line); box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08); }
   .page.landscape { max-width: 1030px; aspect-ratio: 11 / 8.5; }
@@ -366,6 +426,9 @@
   .kept { margin: 2px 0 0; font-size: 12px; color: var(--muted); }
   fieldset { display: flex; flex-direction: column; gap: 2px; margin: 0; padding: 0 0 10px; border: 0; border-bottom: 1px solid var(--line); }
   legend { padding: 0; margin-bottom: 4px; font-size: 12px; color: var(--muted); }
+  label.text select { min-height: 40px; padding: 0 8px; border: 1px solid #d6d6d6; border-radius: 6px; background: var(--ground); font: inherit; }
+  fieldset.plain { border-bottom: 0; padding-bottom: 0; }
+  .rates { display: flex; flex-wrap: wrap; gap: 4px 14px; }
   .primary { min-height: 44px; font-size: 14px; }
   .primary:disabled { opacity: 0.5; cursor: default; }
 </style>

@@ -687,10 +687,15 @@ and suggestions, keeps every version, and exports them for production.
   (`samsVersion`: docs/example's script.md stays as first sent): Ana sends it back, Sam slows the zoom, adds a cut on
   "running", a 2 s hold, a sketch only for the timeline and a 3 s placeholder, and sends it again (Review shows 4);
   Ana comments on "chloroplasts"; Leo's quiz idea is on hold with Sam's reply; Ana was here 3 h before.
-- [ ] **EX-19** A DaVinci Resolve or Premiere Pro project from the timeline (asked by the user; Premiere added
+- [x] **EX-19** A DaVinci Resolve or Premiere Pro project from the timeline (asked by the user; Premiere added
   2026-11-13): the app builds a file that DaVinci Resolve or Adobe Premiere Pro opens, with the timeline from SB-1
   (images, takes and timings in order), so editors pick it up and keep working on it there. To explore: both open the
   same timeline XML (Final Cut Pro 7 XML), so one file may serve both. Needs SB-1 first. Mock-up first.
+  Mock-up: board 68, agreed (2026-11-14, "let's do the final cut pro one"): Export › Resolve / Premiere (.zip), one
+  Final Cut Pro 7 XML for both apps (not FCPXML or EDL), in a .zip with copies of the media; takes become WAV and
+  .svg PNG; collages one picture side by side by default, or a track per picture; placeholders and rows with no
+  pictures as grey cards, a hold as the picture held longer (a video's last frame); row markers on, captions (.srt)
+  off by default. Built 2026-11-14 (lib/editxml.ts, lib/editmedia.ts, lib/zip.ts, screens/EditPreview.svelte).
 - [-] **EX-17** A shoot checklist (suggested; shelved by the user, to talk through later): the asset list (EX-6) with
   shared tick boxes for each row's on-screen shots and files, for the day of filming.
 - [-] **AP-45** Dictate dialogue into a row (suggested; shelved by the user, 2026-11-14, to consider later): speak into

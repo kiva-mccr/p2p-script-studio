@@ -66,7 +66,7 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
   https://claude.ai/artifact/FT4p8XLBVTSrEQMow71NDb.
 - Queue (the user's order, 2026-11-14), mock-ups first, built one at a time: AP-44 (shortcuts, done), AP-43 (hide help
   text, done), then SB-1 (storyboard timeline, done 2026-11-14), then AP-47 (the tour and the example catch up, done).
-  Then (asked by the user, 2026-11-14): AP-15 (templates, done), then EX-19 (export to Resolve and Premiere).
+  Then (asked by the user, 2026-11-14): AP-15 (templates, done), then EX-19 (export to Resolve and Premiere, done).
   The rest (AP-8 …) waits
   for the user's next ranking; "Last" in ROADMAP.md (EX-5, CC-1) waits until everything else is done.
 - Mock-ups (one board per design, numbered): https://claude.ai/artifact/2XDZmS7J5NEPZsz91RQMiL (private to the user).
@@ -138,4 +138,7 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
 - The storyboard timeline (SB-1) with real takes and camera files: waveforms and the preview were only seen with
   the fake WAV take and made-up SVGs; cut-on-a-word timing is an estimate from the line, never checked against a
   real voice; the pinned timeline and preview on a small real screen are unseen.
+- Resolve / Premiere export (EX-19): the FCP7 XML was never opened in real Resolve or Premiere (neither runs here);
+  only its tags, frames and the zip's files were checked. Relative media paths may need one relink; the mp4 in the
+  test isn't measured (test Chromium has no H.264), so a real camera video's scale and length in the XML are unseen.
 - Allow editing (AP-25) after Chrome really takes back access: tests fake the lost OK; how long Chrome waits is unseen.

@@ -73,8 +73,8 @@ Status: a first working version. What it does today:
   seconds, or at once with Ctrl+S), then Saved. It's red when a save failed (after a few quiet tries), with the
   browser's reason: hover for all of it. What you typed is also kept in the browser until it's saved, so closing the
   page first doesn't lose it.
-- **Export / Share** at the top right of a script holds Copy link and Copy for Teams, then Print, Fountain, Final Draft and
-  Voice-over; **the ⋯ menu** holds Find and replace (in Write), Teleprompter, Credits and Settings. Settings > Hide
+- **Export / Share** at the top right of a script holds Copy link and Copy for Teams, then Print, Fountain, Final Draft,
+  Voice-over and Resolve / Premiere; **the ⋯ menu** holds Find and replace (in Write), Teleprompter, Credits and Settings. Settings > Hide
   help text (off to start, kept in this browser) takes away the grey lines that explain how things work, for people
   who know the app.
 - **Credits and contacts:** ⋯ › Credits lists who worked on the script, each with a short blurb on what they did on
@@ -99,6 +99,13 @@ Status: a first working version. What it does today:
 - **Final Draft:** saves the script as an `.fdx` file for Final Draft, Fade In and WriterDuet, laid out the same
   way; the row number, its note and its files are a plain line above each row. Settings: the speaker's name,
   sections as scene headings or plain lines, and the row numbers and files line.
+- **Resolve / Premiere:** saves the storyboard timeline as a `.zip` for DaVinci Resolve and Adobe Premiere Pro: one
+  Final Cut Pro 7 XML timeline, which both import, and a media folder with copies of the pictures and videos, the
+  takes as WAV, .svg pictures as PNG, grey cards for placeholders and rows with no pictures, and each collage drawn
+  as one picture. V1 has the pictures, A1 the takes, with the timeline's timings (holds keep the picture longer), and
+  a marker on each row carries its number, section and dialogue (and any link that isn't in the zip). Settings: frame
+  size, frames per second, collages as one picture or a track per picture, markers, and the dialogue as captions
+  (`.srt`). The preview draws the tracks roughly as the apps show them and lists the zip's files.
 - **Read time:** each section shows how long its dialogue takes to read aloud, and the top bar the whole script
   beside the save status ("Saved · 2:05"; with takes, "Saved · 0:14/2:05": recorded so far / the whole script, where
   rows with a take count their take). The speaking speed is set in
