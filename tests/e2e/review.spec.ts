@@ -133,6 +133,34 @@ test('someone else’s comment appears, and one on changed text says so', async 
   await expect.poll(() => marked(page)).toEqual(['sunlit']);
 });
 
+test('what you type is kept: Comment ↔ Suggest a change, and selecting other words; Cancel clears it (UX-9)', async ({ page }) => {
+  await openReview(page);
+  const form = page.getByRole('form', { name: 'New comment' });
+  await commentOn(page, 'Dialogue, row 3', 'catch');
+  await form.getByLabel('Comment', { exact: true }).fill('Too technical?');
+  await form.getByRole('button', { name: 'Suggest a change' }).click();
+  await expect(form.getByLabel('Replace with')).toHaveValue('catch');
+  await form.getByLabel('Replace with').fill('grab');
+  await form.getByRole('button', { name: 'Comment', exact: true }).click();
+  await expect(form.getByLabel('Comment', { exact: true })).toHaveValue('Too technical?');
+  await form.getByRole('button', { name: 'Suggest a change' }).click();
+  await expect(form.getByLabel('Replace with')).toHaveValue('grab');
+  // Other words: the unsent comment comes along; a suggestion starts from the new words.
+  await commentOn(page, 'Dialogue, row 1', 'tiny factory');
+  await expect(form.getByLabel('Comment', { exact: true })).toHaveValue('Too technical?');
+  await form.getByRole('button', { name: 'Suggest a change' }).click();
+  await expect(form.getByLabel('Replace with')).toHaveValue('tiny factory');
+  await form.getByRole('button', { name: 'Cancel' }).click();
+  await commentOn(page, 'Dialogue, row 1', 'tiny factory');
+  await expect(form.getByLabel('Comment', { exact: true })).toHaveValue('');
+  // Sent: the next comment starts empty.
+  await form.getByLabel('Comment', { exact: true }).fill('Nice.');
+  await form.getByRole('button', { name: 'Add comment' }).click();
+  await expect(form).toHaveCount(0);
+  await commentOn(page, 'Dialogue, row 3', 'catch');
+  await expect(form.getByLabel('Comment', { exact: true })).toHaveValue('');
+});
+
 async function suggestOn(page: Page, cell: string, text: string, replace: string) {
   await commentOn(page, cell, text);
   const form = page.getByRole('form', { name: 'New comment' });

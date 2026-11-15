@@ -42,6 +42,10 @@
   let draftFiles = $state<File[]>([]);
   let draftMissing = $state('');
   let suggesting = $state(false);
+  // What is typed is kept (UX-9): the comment while you try Suggest a change and back, and the changed words while
+  // you go back to Comment. Selecting other words keeps an unsent comment; only Cancel or sending clears it.
+  let said = '';
+  let changed = '';
   let showResolved = $state(false);
   let showHeld = $state(false);
   let box = $state<HTMLTextAreaElement>();
@@ -83,19 +87,32 @@
   }
 
   export function start(t: { row: string; field: Field; quote: string; on?: 'timeline' }) {
+    if (!target) clear();
+    if (suggesting) draft = said; // the new words' suggestion starts from them again
     target = t;
-    draft = '';
-    draftFiles = [];
+    changed = '';
     draftMissing = '';
     suggesting = false;
     queueMicrotask(() => box?.focus());
   }
 
-  // Suggesting starts from the selected words, ready to change.
+  function clear() {
+    draft = said = changed = '';
+    draftFiles = [];
+  }
+
+  function close() {
+    target = null;
+    clear();
+  }
+
+  // Suggesting starts from the selected words, ready to change. Picked files wait for the comment (a suggestion is
+  // only words).
   function suggest(on: boolean) {
+    if (on === suggesting) return;
+    if (on) (said = draft), (draft = changed || target!.quote);
+    else (changed = draft), (draft = said);
     suggesting = on;
-    draft = on ? target!.quote : '';
-    draftFiles = []; // a suggestion is only words
     draftMissing = '';
     queueMicrotask(() => box?.focus());
   }
@@ -106,11 +123,11 @@
     const { row, field, quote, on } = target;
     if (suggesting) {
       if (draft === quote) return void ((draftMissing = 'Change the text first.'), box?.focus());
-      if (await onAdd({ kind: 'suggestion', row, field, quote, replace: draft })) target = null;
+      if (await onAdd({ kind: 'suggestion', row, field, quote, replace: draft })) close();
       return;
     }
     if (!draft.trim() && !draftFiles.length) return void ((draftMissing = 'Write a comment first.'), box?.focus());
-    if (await onAdd({ kind: 'comment', row, field, quote, ...(on ? { on } : {}), text: draft.trim() }, draftFiles)) target = null;
+    if (await onAdd({ kind: 'comment', row, field, quote, ...(on ? { on } : {}), text: draft.trim() }, draftFiles)) close();
   }
 
   // Deleted ones stay in place as "… deleted. Undo" while their id is in `gone` (RV-7).
@@ -135,7 +152,7 @@
       {/snippet}
       {#snippet buttons()}
         <button class="primary small" type="submit">{suggesting ? 'Add suggestion' : 'Add comment'}</button>
-        <button class="link" type="button" onclick={() => (target = null)}>Cancel</button>
+        <button class="link" type="button" onclick={close}>Cancel</button>
       {/snippet}
       {#if suggesting}
         {@render typing()}

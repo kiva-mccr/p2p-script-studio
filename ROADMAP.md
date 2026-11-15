@@ -960,9 +960,11 @@ Fixes with no new look (UX-3, 5, 6, 8, 9) need no board.
   names or the top bar, slid in to stay inside the window.
 - [x] **UX-8** The timeline's hover text runs off the right edge for the last clips (seen, row 5 cut off). Fix: line
   it up with the clip's right edge near the end, as PR #165 did for the Feedback panel. Done 2026-11-15.
-- [ ] **UX-9** A new comment loses its words: switching Comment ↔ Suggest a change clears what was typed, and
+- [x] **UX-9** A new comment loses its words: switching Comment ↔ Suggest a change clears what was typed, and
   selecting other words and pressing Comment starts empty. Fix: keep the typed text across the switch, and keep the
   unsent draft (or ask in the page) before starting another.
+  Done 2026-11-15: both the comment and the changed words survive the switch; other words keep an unsent comment
+  (a suggestion starts from the new words); Cancel or sending clears it.
 - [x] **UX-10** Removing a file or link from a row (×) has no Undo (seen), while deleting a row does. Fix: the same
   Undo toast. Done 2026-11-15 (board 72): "leaf.jpg removed from row 1." with Undo; the file stays in assets/.
 - [x] **UX-11** Restore this version (History) replaces the script in one click and goes to Write, with no Undo. The
