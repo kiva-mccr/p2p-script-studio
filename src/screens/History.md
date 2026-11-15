@@ -14,6 +14,8 @@ official version (mock-up 7): a named version, v1, v2 …; with any, the small s
   the one it is compared with, so an official one gathers its folded saves. One placed under a cell the picked
   version's changes don't show (changed back since) goes to the bottom list. Read-only; "Open in Review" calls
   `onOpen`, which Editor sends to Review's card. `notes` come from Editor, read again as History opens.
+  PF-4: `placeComments` gets `from`, the oldest version a shown one covers, so only those get comments; it grows
+  as more are shown. Pass the covered range, not just the shown 50: an official version gathers saves far below.
 - The newest version is the current one: no Restore button on it.
 - An official version is compared with the official one before it (v1 with the version it was made from).
 - With official versions, History opens on the newest official one, not the newest save.
