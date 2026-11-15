@@ -415,6 +415,13 @@ and suggestions, keeps every version, and exports them for production.
   holds and placeholders play in silence), the preview and cut on a word; Review read only with comments "on the
   timeline". Cut words are timed by an estimate (each word as far into the row as it is into the line, by letters),
   not by a speech model reading the take: said to the user; a model can refine it later.
+- [x] **SB-2** Unpin the timeline while playing (asked by the user, 2026-11-15): the timeline pins to the bottom of
+  the screen while the script plays (SB-1); let people unpin it so it goes back under the last row and scrolls with
+  the page, and pin it again. Mock-up: board 69, agreed (2026-11-15) as drawn: the grey "Pinned to the bottom while
+  playing" became an Unpin / Pin to the bottom button; the choice is remembered in this browser for every script,
+  like Hide. The user's condition: the preview must never cover the timeline or its buttons. Built so: unpinned, the
+  preview waits in the screen's bottom right corner only while the timeline is off screen; once any of it shows,
+  the preview goes back above the timeline's right end.
 - [ ] **YT-1** The published video: link the final YouTube video and keep its title, description and thumbnail with
   the script.
 - [x] **AU-1** Recording audio for each line: record the dialogue of a row in the browser, kept beside the script

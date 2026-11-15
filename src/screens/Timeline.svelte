@@ -30,6 +30,19 @@
   let hidden = $state(recall(KEY) === '1');
   const hide = (on: boolean) => keep(KEY, (hidden = on) ? '1' : '');
   let zoom = $state(1);
+  // Unpin (SB-2, board 69): while playing, the timeline can go back under the last row; this browser remembers it.
+  const UNPIN = 'timeline-unpinned';
+  let unpinned = $state(recall(UNPIN) === '1');
+  const unpin = (on: boolean) => keep(UNPIN, (unpinned = on) ? '1' : '');
+  const pinned = $derived(player.started && !unpinned);
+  // Unpinned, the preview waits in the screen's bottom right corner, but only while the timeline is off screen: once
+  // any of it shows, the preview goes back above its right end, so it never covers the timeline or its buttons.
+  let onScreen = $state(false);
+  function watch(node: Element) {
+    const seen = new IntersectionObserver(([e]) => (onScreen = e.isIntersecting));
+    seen.observe(node);
+    return { destroy: () => seen.disconnect() };
+  }
 
   // Each row lasts its take, or its read time without one, as Play the script times it.
   const laid = $derived(layout(script, rowLength(voice.takes, speaking.wpm)));
@@ -165,9 +178,9 @@
   }
 </script>
 
-<section class="timeline" class:pinned={player.started} aria-label="Timeline" data-tour={readOnly ? 'review-timeline' : 'timeline'} use:near={() => (shown = true)}>
+<section class="timeline" class:pinned aria-label="Timeline" data-tour={readOnly ? 'review-timeline' : 'timeline'} use:near={() => (shown = true)} use:watch>
   {#if now}
-    <div class="preview" class:big role="img" aria-label="Preview: {showing.tag}">
+    <div class="preview" class:big class:corner={!pinned && !onScreen} role="img" aria-label="Preview: {showing.tag}">
       <div class="screen" class:collage-on={showing.paths.length > 1}>
         {#each showing.paths as path (path)}
           {#if isVideo(path) && urls[path]}
@@ -197,7 +210,7 @@
         <button aria-label="Zoom in" title="Zoom in" disabled={zoom >= 16} onclick={() => (zoom = Math.min(16, zoom * 2))}>+</button>
       </span>
     {/if}
-    {#if player.started}<span class="pin">Pinned to the bottom while playing</span>{/if}
+    {#if player.started}<button class="pin" aria-pressed={pinned} onclick={() => unpin(!unpinned)}>{pinned ? 'Unpin' : 'Pin to the bottom'}</button>{/if}
     <button class="link fold" aria-expanded={!hidden} onclick={() => hide(!hidden)}>{hidden ? '⌃ Show' : '⌄ Hide'}</button>
   </div>
 
@@ -335,10 +348,12 @@
 
 <style>
   .timeline.pinned { position: sticky; bottom: 0; z-index: 5; box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.08); }
-  .pin { font-size: 12px; color: var(--accent); }
+  .pin { min-height: 32px; padding: 0 12px; border: 1px solid var(--line-strong); border-radius: 8px; background: #fff; font-size: 13px; color: var(--accent); }
+  .pin[aria-pressed='true'] { background: #eef2fb; }
   .head { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: #d9480f; pointer-events: none; z-index: 2; }
   .blk.now { box-shadow: inset 0 0 0 2px #d9480f; }
   .preview { position: absolute; right: 16px; bottom: calc(100% + 12px); width: 320px; border-radius: 10px; overflow: hidden; background: #0b0b0b; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25); }
+  .preview.corner { position: fixed; right: 16px; bottom: 44px; z-index: 5; } /* clear of the GitHub link (AP-28) */
   .preview.big { width: min(720px, calc(100vw - 64px)); }
   .screen { position: relative; aspect-ratio: 16 / 9; display: flex; gap: 3px; }
   .screen.collage-on { padding: 8% 6%; box-sizing: border-box; }
@@ -354,7 +369,7 @@
   .word.cut { border-color: var(--accent); background: #eef2fb; color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); }
   .word:disabled { opacity: 0.5; }
   .words .help { flex-basis: 100%; font-size: 12px; color: var(--muted); }
-  .timeline { margin-top: 32px; padding: 14px 16px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--ground); }
+  .timeline { position: relative; margin-top: 32px; padding: 14px 16px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--ground); }
   .top { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin-bottom: 10px; }
   h2 { margin: 0; font-size: 14px; font-weight: 600; }
   .sum { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }

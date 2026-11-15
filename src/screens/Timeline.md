@@ -20,7 +20,7 @@ offers its pictures, Sequence or Collage, + Add a picture (only for the timeline
   once, they slowed opening a script enough to fail tests under load.
 - Pictures are blob URLs from the script's folder, made while the timeline is shown and revoked after; a missing
   file is a grey stand-in. Waveforms come from `lib/waveform.ts`, made once per take.
-- Playing: the section is `position: sticky; bottom: 0` while `player.started` (pinned to the bottom of the screen),
+- Playing: the section is `position: sticky; bottom: 0` while `pinned` (`player.started`, not unpinned),
   the panel is hidden, a playhead runs at `player.time`, and the preview (16:9, 320 px, ⤢ to 720 px) sits above the
   right end showing the picture of the moment: the sequence's shot at `player.elapsed`, a collage's all, a hold the
   last picture before it, a placeholder its words. Step ids are block ids (`plan` is made from `layout`).
@@ -29,6 +29,9 @@ offers its pictures, Sequence or Collage, + Add a picture (only for the timeline
   words lands on the first: a known limit.
 - `readOnly` (Review): no panel and no choices; a click on a block comments on its row (`onComment`; a hold or
   placeholder on the row before), saved with `on: 'timeline'`.
-- Hide is this browser's choice (`timeline-hidden`), for every script.
+- Hide is this browser's choice (`timeline-hidden`), for every script; so is Unpin (SB-2, `timeline-unpinned`).
+- Unpinned while playing, the preview is `.corner` (fixed, bottom right, above the GitHub link) only while no part
+  of the timeline is on screen (`use:watch`); once any shows it goes back above the right end, so it never covers
+  the timeline or its buttons (the user's condition). `.timeline` is `position: relative` so that works unpinned.
 - `selected` is shared with Write's bars (`TimelineBar.svelte`): picking a hold on the timeline opens its bar's
   editor in the script too.
