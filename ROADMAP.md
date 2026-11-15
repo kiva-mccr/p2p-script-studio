@@ -940,23 +940,26 @@ Fixes with no new look (UX-3, 5, 6, 8, 9) need no board.
 - [x] **UX-2** Recording a row again replaces its take as soon as the new one stops; the old one can't come back.
   Fix: keep the old take until the new one is kept, with "Undo, keep the old take" in the same toast.
   Done 2026-11-15 (board 72): the old take is read into memory just before the new one is written; Undo writes it back.
-- [ ] **UX-3** Switching tabs loses your place: Write scrolled to row 20, Review, back to Write lands at the top
+- [x] **UX-3** Switching tabs loses your place: Write scrolled to row 20, Review, back to Write lands at the top
   (seen). Fix: each tab keeps where it was, or opens at the row you were on.
+  Done 2026-11-15: each tab keeps its place (`lib/tabplace.ts`), held while the tab's height settles. Also fixed:
+  focusing a button in the top bar (Tab, a click) scrolled the page up, since html's scroll padding hid the bar's own place.
 - [x] **UX-4** The top bar (tabs, Saved, Send for review) scrolls away on a long script; to switch tabs you scroll to
   the top first (seen). It already stays up while playing. Fix: keep it up always (it is one thin line).
   Done 2026-11-15 (board 75, agreed by the user): the bar sticks always; what stuck to the top (column headings, Find,
   the side panel, Review's comments) sticks under it (`--bar-h`).
 - [ ] **UX-5** Clicking a section name on the unpinned timeline still jumps the page to its first row, as clips did
   before PR #166. Fix: the same rule as the clips (jump only while pinned; "↑ Go to the row" otherwise).
-- [ ] **UX-6** Clicking a card in the Comments panel always scrolls Write to its row, even when the row is already on
-  screen. Fix: scroll only when the row is out of view, as Write's other jumps do.
+  Dropped 2026-11-15: the timeline drawer (SB-4, agreed by the user) replaces Pin / Unpin, so there is no unpinned timeline.
+- [x] **UX-6** Clicking a card in the Comments panel always scrolls Write to its row, even when the row is already on
+  screen. Fix: scroll only when the row is out of view, as Write's other jumps do. Done 2026-11-15.
 - [x] **UX-7** The formatting toolbar (bold, italic, link) goes off the top of the screen when the field's top is at
   the top of the window (seen), and in a long paragraph it sits at the field's top, far from the selected words.
   Fix: put it above the selection, or below it when there is no room.
   Done 2026-11-15 (board 73): above the words from where they start (`lib/caret.ts`), below them under the column
   names or the top bar, slid in to stay inside the window.
-- [ ] **UX-8** The timeline's hover text runs off the right edge for the last clips (seen, row 5 cut off). Fix: line
-  it up with the clip's right edge near the end, as PR #165 did for the Feedback panel.
+- [x] **UX-8** The timeline's hover text runs off the right edge for the last clips (seen, row 5 cut off). Fix: line
+  it up with the clip's right edge near the end, as PR #165 did for the Feedback panel. Done 2026-11-15.
 - [ ] **UX-9** A new comment loses its words: switching Comment ↔ Suggest a change clears what was typed, and
   selecting other words and pressing Comment starts empty. Fix: keep the typed text across the switch, and keep the
   unsent draft (or ask in the page) before starting another.
@@ -966,8 +969,10 @@ Fixes with no new look (UX-3, 5, 6, 8, 9) need no board.
   old text is still in History, but that isn't obvious. Fix: "Restored v3. Undo" toast.
   Done 2026-11-15 (board 72): "Restored the version from Nov 9, 2:41 pm. Undo goes back to what you had." Undo saves
   the text as it was, as an ordinary save.
-- [ ] **UX-12** Play the script pulls the page back to the playing row every time it moves on, even when you have
+- [x] **UX-12** Play the script pulls the page back to the playing row every time it moves on, even when you have
   scrolled away to read something. Fix: stop following once you scroll; a "Back to the playing row" button.
+  Done 2026-11-15 (board 74, `lib/followrow.ts`): your own scrolling (wheel, touch, keys, scroll bar) stops it;
+  "↓ Back to row 6" sits under the top bar (not at the bottom, where the pinned timeline is) and follows again.
 - [x] **UX-13** Small ones: the top bar's buttons change with the tab (Send for review only in Write, Approve only in
   Review, Find and replace only in Write's ⋯), and Remove from the folder (People) has no Undo. Fix: say where the
   missing button is ("Approve is in Review"), and Undo for Remove.

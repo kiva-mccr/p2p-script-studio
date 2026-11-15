@@ -160,3 +160,22 @@ test('an outdated take shows Outdated in Review, with no × to hide it (AU-9)', 
   await expect(page.locator('.old')).toHaveText('Outdated');
   await expect(page.getByRole('button', { name: /hide Outdated/ })).toHaveCount(0);
 });
+
+test('scrolling yourself while it plays stops the page following; Back to row goes back (UX-12)', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 500 });
+  await openWithTakes(page, [1]); // row 3 has no take: it waits its read time, a few seconds
+  await page.getByRole('button', { name: 'Play from row 3' }).click();
+  await expect(playing(page).getByLabel('Dialogue, row 3')).toBeVisible();
+  await expect.poll(() => page.evaluate(() => scrollY)).toBeGreaterThan(300); // followed
+  await page.getByRole('button', { name: 'Pause the script' }).click(); // paused, so the test isn't racing the take
+  await page.mouse.move(640, 300);
+  await page.mouse.wheel(0, -5000); // you scroll back to the top
+  await expect.poll(() => page.evaluate(() => scrollY)).toBe(0);
+  await page.getByRole('button', { name: 'Carry on playing the script' }).click();
+  await expect(page.getByRole('button', { name: '↓ Back to row 3' })).toBeVisible();
+  await page.getByRole('button', { name: 'Pause the script' }).click();
+  expect(await page.evaluate(() => scrollY)).toBe(0); // the page stayed where you are
+  await page.getByRole('button', { name: '↓ Back to row 3' }).click();
+  await expect(playing(page).getByLabel('Dialogue, row 3')).toBeInViewport();
+  await expect(page.getByRole('button', { name: /Back to row/ })).toHaveCount(0);
+});

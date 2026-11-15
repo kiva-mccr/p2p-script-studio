@@ -23,6 +23,7 @@ export class Player {
   i = $state(-1); // the step being played, -1 when stopped
   on = $state(false); // playing (not paused)
   elapsed = $state(0); // seconds into the step
+  following = $state(true); // the page follows the row being played, until you scroll (UX-12, lib/followrow.ts)
   #dir: FileSystemDirectoryHandle | null = null;
   #takes: Record<string, Take> = {};
   #sound: Sound | null = null;
@@ -44,6 +45,7 @@ export class Player {
     this.#takes = takes;
     this.steps = steps;
     this.on = true;
+    this.following = true;
     this.#timer = setInterval(() => this.#tick(), TICK);
     await this.#go(from);
   }

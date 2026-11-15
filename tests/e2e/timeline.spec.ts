@@ -64,6 +64,19 @@ test('a click on a block stays on the timeline; Go to the row goes to the row', 
   await expect(dialogue).toBeInViewport();
 });
 
+test('the last blocks\' hover text stays inside the timeline (UX-8)', async ({ page }) => {
+  await setUp(page, '#/Episode%2003', files);
+  const t = timeline(page);
+  await t.locator('.blk').last().scrollIntoViewIfNeeded();
+  const last = t.locator('.blk').last();
+  await last.hover();
+  const tip = (await t.locator('.tip').boundingBox())!;
+  const box = (await t.locator('.scroll').boundingBox())!;
+  expect(tip.x + tip.width).toBeLessThanOrEqual(box.x + box.width + 1);
+  await t.locator('.blk').first().hover();
+  expect((await t.locator('.tip').boundingBox())!.x).toBeGreaterThanOrEqual(box.x - 1);
+});
+
 test('pictures: collage, leave one out', async ({ page }) => {
   await setUp(page, '#/Episode%2003', files);
   const t = timeline(page);

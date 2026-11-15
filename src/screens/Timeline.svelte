@@ -135,6 +135,14 @@
   }
 
   let tipFor = $state(''); // the block hovered or focused, whose dialogue shows above it
+  let tipEnd = $state(false); // the block is near the timeline's right edge: its text lines up with the block's right (UX-8)
+  function showTip(b: TimeBlock, e: Event) {
+    tipFor = b.id;
+    const el = e.currentTarget as HTMLElement;
+    const box = el.closest('.scroll')?.getBoundingClientRect();
+    tipEnd = !!box && el.getBoundingClientRect().left + TIP > Math.min(box.right, innerWidth);
+  }
+  const TIP = 280; // the hover text's width, padding included
 
   function pick(b: TimeBlock) {
     if (readOnly) return onComment(b.kind === 'row' ? b.id : b.after);
@@ -243,7 +251,7 @@
               {@const row = b.kind === 'row' ? byId.get(b.id) : undefined}
               <button class="blk {b.kind}" class:on={selected === b.id} class:now={now?.id === b.id} style:left="{pct(b.start)}%" style:width="{pct(b.seconds)}%"
                 aria-label={tip(b)} aria-pressed={selected === b.id} onclick={() => pick(b)}
-                onmouseenter={() => (tipFor = b.id)} onmouseleave={() => (tipFor = '')} onfocus={() => (tipFor = b.id)} onblur={() => (tipFor = '')}>
+                onmouseenter={(e) => showTip(b, e)} onmouseleave={() => (tipFor = '')} onfocus={(e) => showTip(b, e)} onblur={() => (tipFor = '')}>
                 {#if b.kind === 'row'}
                   {#if !b.picks.length}
                     <span class="card">{plain(row?.onScreen ?? '').trim() || 'No picture'}</span>
@@ -265,7 +273,7 @@
                 {:else}
                   <span class="ph-in">Placeholder · {secs(b.seconds)}<small>{b.label}</small></span>
                 {/if}
-                {#if tipFor === b.id}<span class="tip" aria-hidden="true">{tip(b)}</span>{/if}
+                {#if tipFor === b.id}<span class="tip" class:end={tipEnd} aria-hidden="true">{tip(b)}</span>{/if}
               </button>
             {/each}
           </div>
@@ -425,6 +433,7 @@
   .n, .mode { position: absolute; top: 4px; padding: 1px 5px; border-radius: 4px; background: rgba(255, 255, 255, 0.92); font-size: 11px; }
   .n { left: 4px; font-weight: 600; }
   .mode { right: 4px; font-size: 10px; color: #3d3d3d; }
+  .tip.end { left: auto; right: 0; }
   .tip { position: absolute; left: 0; bottom: calc(100% + 8px); z-index: 6; width: 260px; padding: 8px 10px; border-radius: 8px; background: #141414; color: #f5f5f5; font-size: 12px; line-height: 1.45; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2); }
   .vo { display: flex; align-items: center; justify-content: center; border-radius: 7px; background: #fafafa; overflow: hidden; }
   .vo.said { background: #f3f6fd; }

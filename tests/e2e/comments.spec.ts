@@ -200,6 +200,17 @@ test('a card takes Write to its row', async ({ page }) => {
   await expect(page.getByLabel('Dialogue, row 4')).toBeInViewport();
 });
 
+test('a card for a row already on screen leaves the page where it is (UX-6)', async ({ page }) => {
+  await open(page, [BEN]);
+  await page.getByLabel('Dialogue, row 4').evaluate((el) => el.scrollIntoView({ block: 'center' }));
+  const y = await page.evaluate(() => scrollY);
+  await page.getByRole('button', { name: 'Open comments, 1 open' }).click();
+  await page.getByRole('article', { name: 'Comment by Ben' }).click();
+  await page.waitForTimeout(600); // a smooth scroll would have started by now
+  expect(await page.evaluate(() => scrollY)).toBe(y);
+  await expect(page.getByLabel('Dialogue, row 4')).toBeInViewport();
+});
+
 test('after a send back by someone else, Write opens on Comments with their note, once (RV-13)', async ({ page }) => {
   await open(page, [SUGGEST, sentBack('Ana')]);
   const panel = page.getByRole('complementary', { name: 'Comments' });
