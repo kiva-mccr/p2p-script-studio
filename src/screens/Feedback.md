@@ -1,6 +1,7 @@
 # `src/screens/Feedback.svelte`
 
-Feedback mode (AP-48, board 71): the "Feedback" button beside GitHub in the bottom right (placed by `App.svelte`),
+Feedback mode (AP-48, board 71): started by Feedback… in the ? menu of the top bar (`HelpMenu.svelte`, through
+`lib/help.svelte.ts`; mounted once by `App.svelte`),
 the strip and orange outline while picking, and the panel by the picked part: a note, the picture (ticks: add it,
 blur the script's words, say which script), Open on GitHub, Copy instead, Cancel.
 

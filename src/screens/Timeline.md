@@ -30,8 +30,7 @@ offers its pictures, Sequence or Collage, + Add a picture (only for the timeline
 - Open, the tracks and panel scroll inside `.body` (at most about half the screen), never the section: overflow on
   the section would clip the preview above it.
 - `use:room` keeps the drawer's height as the page's `scroll-padding-bottom` (so `scrollIntoView` lands rows above
-  it) and as `--drawer`, which lifts the fixed corner links (App), Undo and the messages (Editor) above it; the
-  preview sits 40 px above the drawer to clear those links; code that scrolls only "when not in view" compares with `floor()` (`lib/floor.ts`), not `innerHeight`.
+  it) and as `--drawer`, which lifts Undo (App) and the messages (Editor) above it; code that scrolls only "when not in view" compares with `floor()` (`lib/floor.ts`), not `innerHeight`.
 - Folded, pictures are not made, except while playing (for the preview); waveforms only open.
 - Playing: the panel is hidden, a playhead runs at `player.time`, and the preview (16:9, 320 px, ⤢ to 720 px) sits above the
   drawer's right end, folded or open, so it never covers the timeline (the user's condition from SB-2), showing the picture of the moment: the sequence's shot at `player.elapsed`, a collage's all, a hold the

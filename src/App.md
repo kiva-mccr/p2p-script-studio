@@ -12,10 +12,9 @@ bar, and Open your scripts folder).
 
 - Colours come from the variables in `app.css`, never copied into a component.
 - The link's `#/…` is never touched by the first-time screen, so a link still opens its script after set-up.
-- A small GitHub link sits in the bottom right corner of every screen (asked by the user), clear of the messages
-  at the bottom centre. Its mirror in the bottom left is the live version, "PR #N" (AP-28, `lib/version.ts`): it
-  opens that pull request, and "dev" for any build that isn't the live site's. Feedback (AP-48, `Feedback.svelte`)
-  sits just left of GitHub, in the same box.
+- GitHub, the live version and Feedback are in the ? menu of every top bar (`HelpMenu.svelte`, SB-5); nothing sits
+  in the bottom corners any more (they floated over the script and the timeline's drawer). App only mounts
+  `Feedback.svelte` once, so its strip and panel outlive the top bars.
 - The editor is keyed by the script's path, so following a link to another script starts it fresh.
 - A link ending in `?review` (a shared link, RV-10) opens the script on Review. The mark is taken out of the address
   with `history.replaceState` (no hashchange), so a reload after moving to Write stays in Write.

@@ -14,6 +14,13 @@ async function openScript(page: Page) {
   await expect(page.getByLabel('Dialogue, row 1')).toHaveValue(firstLine);
 }
 
+// Feedback… is in the ? menu of the top bar (SB-5).
+async function startFeedback(page: Page) {
+  await page.getByRole('button', { name: 'Help and version' }).click();
+  await page.getByRole('menuitem', { name: 'Feedback…' }).click();
+  await expect(page.getByRole('menu', { name: 'Help and version' })).toHaveCount(0);
+}
+
 async function issueFrom(page: Page, click: () => Promise<void>) {
   const popup = page.waitForEvent('popup');
   await click();
@@ -23,7 +30,7 @@ async function issueFrom(page: Page, click: () => Promise<void>) {
 
 test('clicking a part opens a GitHub issue that says what and where, with the picture copied', async ({ page }) => {
   await openScript(page);
-  await page.getByRole('button', { name: 'Feedback' }).click();
+  await startFeedback(page);
   await expect(page.getByRole('status').filter({ hasText: 'click the part' })).toBeVisible();
 
   // The click picks the part; the page's own click is held back (no recording starts).
@@ -69,7 +76,7 @@ test('clicking a part opens a GitHub issue that says what and where, with the pi
 
 test('a text box says its column; the script can be named; Copy instead copies the same text', async ({ page }) => {
   await openScript(page);
-  await page.getByRole('button', { name: 'Feedback' }).click();
+  await startFeedback(page);
   await page.getByLabel('On screen, row 2').click();
   const panel = page.getByRole('region', { name: 'Feedback' });
   await expect(panel.getByRole('heading')).toHaveText('Feedback on: text box "On screen, row 2", row 2');
@@ -93,7 +100,7 @@ test('a text box says its column; the script can be named; Copy instead copies t
 
 test("a file's name is the script's, so it's left out of the part's name", async ({ page }) => {
   await openScript(page);
-  await page.getByRole('button', { name: 'Feedback' }).click();
+  await startFeedback(page);
   await page.getByRole('button', { name: 'leaf-closeup.jpg', exact: true }).click();
   const panel = page.getByRole('region', { name: 'Feedback' });
   await expect(panel.getByRole('heading')).toHaveText('Feedback on: button (a file), row 1');
@@ -105,7 +112,7 @@ test('the panel is always whole on screen, even in a short window (a bug the use
   await openScript(page);
   for (const [height, row] of [[520, 'Record row 2'], [800, 'Record row 4'], [800, 'Record row 1']] as const) {
     await page.setViewportSize({ width: 1280, height });
-    await page.getByRole('button', { name: 'Feedback' }).click();
+    await startFeedback(page);
     await page.getByRole('button', { name: row }).click();
     const panel = page.getByRole('region', { name: 'Feedback' });
     await expect(panel.getByRole('img', { name: 'The part, outlined' })).toBeVisible();
@@ -119,7 +126,7 @@ test('the panel is always whole on screen, even in a short window (a bug the use
 
 test('Esc stops picking, and the page works as before', async ({ page }) => {
   await openScript(page);
-  await page.getByRole('button', { name: 'Feedback' }).click();
+  await startFeedback(page);
   await page.keyboard.press('Escape');
   await expect(page.getByRole('status').filter({ hasText: 'click the part' })).toHaveCount(0);
   await page.getByLabel('Dialogue, row 1').click();
