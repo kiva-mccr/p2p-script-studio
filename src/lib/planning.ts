@@ -1,5 +1,7 @@
 // The planning panel's notes (AP-24): plan.md, a plain Markdown file beside script.md (docs/script-format.md).
 
+import { announce } from './news';
+
 const PLAN = 'plan.md';
 
 // The plan's text, '' if the script has none yet.
@@ -16,6 +18,7 @@ export async function writePlan(dir: FileSystemDirectoryHandle, text: string): P
   const writable = await (await dir.getFileHandle(PLAN, { create: true })).createWritable();
   await writable.write(text);
   await writable.close();
+  await announce(dir, 'plan');
 }
 
 // Two people changed the plan at once: yours, then the lines they added that you don't have, so nothing they

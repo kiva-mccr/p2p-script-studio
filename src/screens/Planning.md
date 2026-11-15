@@ -15,7 +15,8 @@ script already).
 - It saves itself, apart from the Editor: 1.5 s after typing, when the tab is hidden and on leaving; a failed save
   tries again every 6 s. No History versions: the plan is notes, not the script.
 - Before writing, plan.md is read again; someone else's save meanwhile is combined (`combinePlans`), so their new
-  lines are kept after yours. With nothing waiting, it looks every 5 s and shows their change quietly.
+  lines are kept after yours. With nothing waiting, it looks whenever the Editor's 5 s check looks inside the script (`looks`, PF-15: a note
+  about the script, or the full look) and shows their change quietly.
 - The panel pushes the columns (a flex item, `position: sticky`), never covers them. Its height is set from where it
   starts (`fit`), so the bottom line shows below the top bar too. In Review at 1280 px the comments go under the
   script while it is open.

@@ -5,6 +5,7 @@ import { cleaning, measure, span, type Measure } from './cleanup.svelte';
 import { chosenMic, openMic } from './mic';
 import { countWords } from './readtime.svelte';
 import { decoder } from './voiceexport';
+import { announce } from './news';
 
 // text: the dialogue as it was read, so a take whose line has changed since shows as outdated (asked by the user).
 // seconds: the whole recording, as timed. from, to and gain: where the speech is and how loud (AU-4), measured when
@@ -248,6 +249,7 @@ export class VoiceOver {
     const voice = await dir.getDirectoryHandle(FOLDER, { create: true });
     await write(voice, `row-${id}.webm`, blob);
     await write(voice, `row-${id}.json`, JSON.stringify(take));
+    await announce(dir, 'take');
     this.takes = { ...this.takes, [id]: take };
   }
 
@@ -283,6 +285,7 @@ export class VoiceOver {
     if (!take) return;
     const next = { ...take, text };
     await write(await dir.getDirectoryHandle(FOLDER), `row-${id}.json`, JSON.stringify(next));
+    await announce(dir, 'take');
     this.takes = { ...this.takes, [id]: next };
   }
 
@@ -290,6 +293,7 @@ export class VoiceOver {
     if (this.playing === id) this.stopPlaying();
     const voice = await dir.getDirectoryHandle(FOLDER);
     for (const name of [`row-${id}.webm`, `row-${id}.json`]) await voice.removeEntry(name).catch(() => {});
+    await announce(dir, 'take');
     const { [id]: _, ...rest } = this.takes;
     this.takes = rest;
   }

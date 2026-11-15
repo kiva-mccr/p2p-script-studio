@@ -31,13 +31,14 @@
   import { sinceVisit, visitKey, type Marks, type Visit } from '../lib/visit';
   import { reviewCount, seenKey, stamp, writeCount } from '../lib/tabcounts';
   import { addNote, flags, listNotes, threads, type Attachment, type Field, type Note } from '../lib/comments';
+  import { News } from '../lib/news';
 
   // review: opened from a shared link, so it starts on the Review tab (RV-10). tour: in the example only, the guided
   // tour (AP-34), a count that goes up when Take the tour is clicked.
   let { folder, path, name, review = false, tour }: { folder: FileSystemDirectoryHandle; path: string[]; name: string; review?: boolean; tour?: number } =
     $props();
 
-  const CHECK_EVERY = 5000; // ms between looks for someone else's save
+  const CHECK_EVERY = 5000; // ms between looks for someone else's save (in the news folder, PF-15)
   const HERE_EVERY = 30 * 1000; // the "… is editing" file is refreshed this often
 
   // The script on disk: reading, saving, History and clashes (lib/saving.svelte.ts).
@@ -185,6 +186,7 @@
   onMount(async () => {
     const opened = new Date().toISOString().replace(/\.\d+Z$/, 'Z');
     try {
+      await news.look(); // before reading, so a note written meanwhile is caught by the first check
       if (!(await file.open(path))) return void (missing = true);
       const key = visitKey(folder.name, path);
       const before = recall(key);
@@ -396,16 +398,25 @@
     field?.focus({ preventScroll: true });
   }
 
-  // The 5 s check: missing files, takes, who else is here, comments, and someone else's save.
+  // The 5 s check: who else is here, then, only when the news folder has a note about this script from someone else
+  // (PF-15) or a full look is due (every 2 minutes), missing files, takes, comments, someone else's save and the plan.
   // One at a time: on a slow drive a round can take longer than 5 s, and rounds piling up kept the folder busy.
+  const news = new News(untrack(() => folder));
   let checking = false;
+  let again = false; // a note came last round: looked once more, in case the file it names came in after it
+  let looks = $state(0); // rounds that looked inside the script, for the planning panel
   async function checkOutside() {
     if (checking || !file.dir || document.hidden || !(await file.checkAccess())) return;
     checking = true;
     try {
+      await file.readEditors();
+      const fresh = await news.look(true);
+      const noted = !!fresh?.has(file.dir.name);
+      if (fresh && !noted && !again) return;
+      again = noted;
+      looks++;
       const files = checkFiles();
       if (!voice.recording) await voice.load(file.dir);
-      await file.readEditors();
       const next = await listNotes(file.dir).catch(() => notes);
       if (next.length !== notes.length || next.some((n, i) => n.id !== notes[i].id)) notes = next;
       await file.sync();
@@ -537,7 +548,7 @@
     onDone={() => ((visit = null), (visitOn = ''))} />
 {/snippet}
 {#if script && dir && !clash && (mode === 'write' || mode === 'review')}
-  <Planning {dir} bind:open={sideOpen} bind:tab={sideTab} count={openCount} comments={mode === 'write' ? comments : undefined} />
+  <Planning {dir} {looks} bind:open={sideOpen} bind:tab={sideTab} count={openCount} comments={mode === 'write' ? comments : undefined} />
 {/if}
 {#if tour !== undefined && script && dir && !clash && !printing && !exporting}<Tour tab={mode} again={tour} />{/if}
 {#snippet comments()}

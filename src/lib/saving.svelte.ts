@@ -11,6 +11,7 @@ import { merge, type Merged, type Side } from './merge';
 import { diff, fold } from './changes';
 import { listChanges, readChange, readFolded, removeChange, writeChange, writeFolded } from './changefiles';
 import { Started } from './started';
+import { follow } from './news';
 import { errorText, problem } from './problems';
 
 // How long typing waits before it is saved (the user's pick: 30 s, or at once with Ctrl+S). Tests make it shorter
@@ -76,6 +77,7 @@ export class Saving {
   async open(path: string[]): Promise<boolean> {
     const dir = (this.dir = await findScript(this.folder, path));
     if (!dir) return false;
+    follow(this.folder, dir); // its writes leave a note in the news folder (PF-15)
     // Set before the page shows, since typing can start before opening is done; what was kept is read first.
     this.#backupKey = `unsaved:${this.folder.name}/${path.join('/')}`;
     const kept = this.#readBackup();

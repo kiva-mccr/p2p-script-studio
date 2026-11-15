@@ -4,6 +4,7 @@
 import { addVersion, lastEditor } from './history';
 import { patiently, writeText } from './files';
 import { frontValue, parseScript, readFileRef, rows, writeScript, type Block } from './script';
+import { announce } from './news';
 
 // `template`: a script to start others from (AP-15), `template: true` in its front matter.
 export type ScriptInfo = { path: string[]; title: string; status: string; edited: number; who: string; template?: boolean };
@@ -56,6 +57,7 @@ export async function readScript(dir: FileSystemDirectoryHandle): Promise<string
 // Only the keeper writes script.md (FX-2, lib/saving.svelte.ts); still retried, since the keeper can change hands.
 export async function writeScriptFile(dir: FileSystemDirectoryHandle, text: string): Promise<void> {
   await writeText(dir, SCRIPT, text);
+  await announce(dir, 'script');
 }
 
 // Makes a new script folder, or a template with `template` (AP-15). It starts with one empty row, or with a copy of
@@ -113,6 +115,7 @@ export async function addAsset(dir: FileSystemDirectoryHandle, file: File): Prom
   const writable = await (await assets.getFileHandle(name, { create: true })).createWritable();
   await writable.write(file);
   await writable.close();
+  await announce(dir, 'file');
   return `assets/${name}`;
 }
 

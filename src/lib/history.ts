@@ -3,6 +3,7 @@
 
 import { frontValue, parseScript, type Row, type Script } from './script';
 import { keepVersions, nameKey, recallVersions, remembered } from './versioncache';
+import { announce } from './news';
 
 type Kind = 'edit' | 'review' | 'restore' | 'merge' | 'outside' | 'restart' | 'official';
 export type Version = {
@@ -178,6 +179,7 @@ export async function addVersion(
   const writable = await (await folder.getFileHandle(name, { create: true })).createWritable();
   await writable.write(JSON.stringify(version, null, 2) + '\n');
   await writable.close();
+  await announce(dir, 'version');
   return version;
 }
 

@@ -7,6 +7,7 @@ import { flags, listNotes } from './comments';
 import { fileIn, readScript, scriptHead, type ScriptInfo } from './folder';
 import { forMe, type ForMe } from './forme';
 import { sinceSend } from './history';
+import { News } from './news';
 import { countWords } from './readtime.svelte';
 import { keep, recall } from './remember';
 import { parseScript, rows } from './script';
@@ -22,6 +23,10 @@ export type Counts = {
 };
 export type Entry = ScriptInfo & { counts?: Counts };
 type Kept = { print: string; entry: Entry };
+
+// The news folder as this tab's list last saw it (PF-15), kept while the tab is open, so coming back to the list or
+// to the window looks only at scripts with a new note (yours too), with a full look every 2 minutes.
+const watching = new WeakMap<FileSystemDirectoryHandle, News>();
 
 const WORKERS = 4; // scripts read at once: a network drive answers each call slowly, not several calls slowly
 
@@ -166,6 +171,8 @@ export class ScriptList {
   }
 
   async #pass() {
+    if (!watching.has(this.#root)) watching.set(this.#root, new News(this.#root));
+    const fresh = await watching.get(this.#root)!.look(); // null: look at every script
     const folders: FileSystemDirectoryHandle[] = [];
     for await (const entry of this.#root.values()) {
       if (entry.kind === 'directory' && !entry.name.startsWith('.')) folders.push(entry as FileSystemDirectoryHandle);
@@ -179,8 +186,9 @@ export class ScriptList {
       if (head) this.#put(dir.name, head);
     });
     this.ready = true;
-    // Then each script's counts: those on screen first.
-    await this.#each(folders, (dir) => this.#check(dir), true);
+    // Then each script's counts (only those with news, or never counted), those on screen first.
+    const due = fresh ? folders.filter((f) => fresh.has(f.name) || !this.#kept[f.name]?.entry.counts) : folders;
+    await this.#each(due, (dir) => this.#check(dir), true);
     this.#keep();
   }
 

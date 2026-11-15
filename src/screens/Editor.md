@@ -21,8 +21,11 @@ version (`Print.svelte`) and the teleprompter (`Teleprompter.svelte`, saves what
 - Saving's rules (History, saves at the same time, a lost OK, status changes) are in `lib/saving.md`. The Editor
   reads `file.script`, `file.dir`, `file.status` and `file.clash` through `$derived`, and binds Write's and Credits'
   `script` with a function binding that sets `file.script`.
-- The 5 s check (`checkOutside`): access first (`file.checkAccess`), then missing files, takes, who else is editing
-  (`file.readEditors`), comments, and last others' change files (`file.sync`). Ctrl+S saves at once (FX-2).
+- The 5 s check (`checkOutside`): access first (`file.checkAccess`), who else is editing (`file.readEditors`), then the
+  news folder (PF-15, `lib/news.ts`): only with a note about this script from someone else (and the round after), or
+  at the full look every 2 minutes, missing files, takes, comments, others' change files (`file.sync`), the tab
+  counts and the plan (`looks`, for `Planning.svelte`). So a keeper's History entry can come up to 2 minutes after
+  its 5 minutes when no one saves meanwhile. Ctrl+S saves at once (FX-2).
 - The check reads only what is new (PF-1): comment files by new names, take notes by a changed date or size, the
   Files column by one listing per folder. A round never starts while the last is still going (a slow drive made them
   pile up), and `notes` is only replaced when a note came or went, so Review isn't redrawn every 5 s.

@@ -60,7 +60,7 @@ test('saves inside five minutes share one entry; after five minutes a new one is
 test('a change made outside the app gets its own entry', async ({ page }) => {
   await openExample(page);
   await page.getByRole('link', { name: 'Video Scripts' }).click();
-  await writeFile(page, SCRIPT, example.replace('Slow push-in on a sunlit leaf.', 'Typed in Notepad.'));
+  await writeFile(page, SCRIPT, example.replace('Slow push-in on a sunlit leaf.', 'Typed in Notepad.'), { outside: true });
   await page.getByRole('link', { name: /How Photosynthesis Works/ }).click();
   await page.getByRole('button', { name: 'History' }).click();
   await expect(versions(page).first()).toContainText('Changed outside the app');
