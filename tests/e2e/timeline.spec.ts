@@ -15,6 +15,21 @@ const files = {
 const timeline = (page: Page) => page.getByRole('region', { name: 'Timeline' });
 const saved = (page: Page) => expect.poll(() => readFile(page, 'Episode 03/script.md'), { timeout: 15000 });
 
+// A made-up take: recording gives a 1.5 s WAV.
+const fakeTake = (page: Page) =>
+  page.addInitScript(() => {
+    const wav = () => {
+      const rate = 8000, n = rate * 1.5, buf = new DataView(new ArrayBuffer(44 + n * 2));
+      const text = (at: number, s: string) => [...s].forEach((c, i) => buf.setUint8(at + i, c.charCodeAt(0)));
+      text(0, 'RIFF'); buf.setUint32(4, 36 + n * 2, true); text(8, 'WAVEfmt '); buf.setUint32(16, 16, true);
+      buf.setUint16(20, 1, true); buf.setUint16(22, 1, true); buf.setUint32(24, rate, true); buf.setUint32(28, rate * 2, true);
+      buf.setUint16(32, 2, true); buf.setUint16(34, 16, true); text(36, 'data'); buf.setUint32(40, n * 2, true);
+      for (let i = 0.2 * rate; i < 1.3 * rate; i++) buf.setInt16(44 + i * 2, Math.round(8000 * Math.sin(i / 3)), true);
+      return new Blob([buf], { type: 'audio/wav' });
+    };
+    (window as unknown as { studioRecord: () => Promise<{ stop: () => Promise<Blob> }> }).studioRecord = async () => ({ stop: async () => wav() });
+  });
+
 test('the timeline lays out the rows; a click lights up the row and opens its pictures', async ({ page }) => {
   await setUp(page, '#/Episode%2003', files);
   const t = timeline(page);
@@ -105,19 +120,8 @@ test('cut on a word: a click on a word starts the next picture there', async ({ 
 });
 
 test('playing: the timeline pins to the bottom, the preview follows, a hold plays in silence', async ({ page }) => {
-  await page.addInitScript(() => {
-    localStorage.setItem('prompter-speed', '400');
-    const wav = () => {
-      const rate = 8000, n = rate * 1.5, buf = new DataView(new ArrayBuffer(44 + n * 2));
-      const text = (at: number, s: string) => [...s].forEach((c, i) => buf.setUint8(at + i, c.charCodeAt(0)));
-      text(0, 'RIFF'); buf.setUint32(4, 36 + n * 2, true); text(8, 'WAVEfmt '); buf.setUint32(16, 16, true);
-      buf.setUint16(20, 1, true); buf.setUint16(22, 1, true); buf.setUint32(24, rate, true); buf.setUint32(28, rate * 2, true);
-      buf.setUint16(32, 2, true); buf.setUint16(34, 16, true); text(36, 'data'); buf.setUint32(40, n * 2, true);
-      for (let i = 0.2 * rate; i < 1.3 * rate; i++) buf.setInt16(44 + i * 2, Math.round(8000 * Math.sin(i / 3)), true);
-      return new Blob([buf], { type: 'audio/wav' });
-    };
-    (window as unknown as { studioRecord: () => Promise<{ stop: () => Promise<Blob> }> }).studioRecord = async () => ({ stop: async () => wav() });
-  });
+  await fakeTake(page);
+  await page.addInitScript(() => localStorage.setItem('prompter-speed', '400'));
   await setUp(page, '#/Episode%2003', { ...files, 'Episode 03/script.md': script.replace('- assets/music-bed.mp3\n', '- assets/music-bed.mp3\n\nTimeline: then hold 1 s\n') });
   await page.getByRole('button', { name: 'Record row 2', exact: true }).click();
   await page.getByRole('button', { name: 'Stop recording row 2' }).click();
@@ -133,6 +137,37 @@ test('playing: the timeline pins to the bottom, the preview follows, a hold play
   await expect(page.locator('.preview.big')).toBeVisible();
   await page.keyboard.press('Escape'); // stops it (if the last rows haven't already)
   await expect(page.locator('.timeline.pinned')).toHaveCount(0);
+});
+
+test('unpin: the timeline goes back under the last row, the preview never covers it, and the choice is kept', async ({ page }) => {
+  await fakeTake(page);
+  await setUp(page, '#/Episode%2003', files);
+  await page.getByRole('button', { name: 'Record row 2', exact: true }).click();
+  await page.getByRole('button', { name: 'Stop recording row 2' }).click();
+  const t = timeline(page);
+  await page.getByRole('button', { name: 'Play from row 1' }).click();
+  await expect(page.locator('.timeline.pinned')).toBeVisible();
+  await t.getByRole('button', { name: 'Unpin' }).click();
+  await expect(page.locator('.timeline.pinned')).toHaveCount(0);
+  await expect.poll(() => page.evaluate(() => localStorage.getItem('timeline-unpinned'))).toBe('1');
+  // At the top of the script the timeline is off screen: the preview waits in the corner.
+  await page.evaluate(() => window.scrollTo(0, 0));
+  const preview = page.locator('.preview');
+  await expect(preview).toHaveClass(/corner/);
+  await expect(preview).toBeInViewport();
+  // Once the timeline shows, the preview goes back above it and never covers it.
+  await t.getByRole('button', { name: 'Pin to the bottom' }).scrollIntoViewIfNeeded();
+  await expect(preview).not.toHaveClass(/corner/);
+  const p = await preview.boundingBox(), top = await t.locator('.top').boundingBox();
+  expect(p!.y + p!.height).toBeLessThanOrEqual(top!.y);
+  await page.keyboard.press('Escape');
+  // Remembered: the next play stays unpinned until Pin to the bottom.
+  await page.getByRole('button', { name: 'Play from row 1' }).click();
+  await expect(t.getByRole('button', { name: 'Pin to the bottom' })).toBeVisible();
+  await expect(page.locator('.timeline.pinned')).toHaveCount(0);
+  await t.getByRole('button', { name: 'Pin to the bottom' }).click();
+  await expect(page.locator('.timeline.pinned')).toBeVisible();
+  await expect(t.getByRole('button', { name: 'Unpin' })).toBeVisible();
 });
 
 test('in Review the timeline is read only, and a click on a block comments on its row', async ({ page }) => {
