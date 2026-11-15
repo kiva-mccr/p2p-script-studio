@@ -33,6 +33,7 @@
   import { addNote, flags, listNotes, threads, type Attachment, type Field, type Note } from '../lib/comments';
   import { News } from '../lib/news';
   import { Away } from '../lib/away';
+  import { Undo } from '../lib/undo.svelte';
 
   // review: opened from a shared link, so it starts on the Review tab (RV-10). tour: in the example only, the guided
   // tour (AP-34), a count that goes up when Take the tour is clicked.
@@ -70,9 +71,8 @@
   const save = () => file.save();
   let missing = $state(false);
   let notice = $state('');
-  // The last delete, kept a few seconds so it can be undone (no browser dialogs: the user's rule).
-  let undo = $state<{ blocks: Block[]; what: string } | null>(null);
-  let undoTimer: ReturnType<typeof setTimeout> | undefined;
+  // The last delete (and other undoable steps, UX-1), offered a few seconds so it can be undone (no browser dialogs).
+  const undo = new Undo();
   let printing = $state<(PrintChoices & { version: string }) | null>(null); // the print version, while printing (EX-1)
   let exporting = $state<{ to: Format; version: string } | null>(null); // the export screen (EX-9), in place of the script
   let checker: ReturnType<typeof setInterval> | undefined;
@@ -261,9 +261,13 @@
     showLoose(id);
   }
 
+  // Restore (History) with Undo (UX-11): Undo puts back the script as it was, as an ordinary save.
   async function restore(version: Version) {
-    if (!(await file.restore(version))) return;
-    undo = null;
+    const before = await file.restore(version);
+    if (before === null) return;
+    const when = new Date(version.when).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+    undo.offer({ what: `Restored the version from ${when.replace(' AM', ' am').replace(' PM', ' pm')}. Undo goes back to what you had.`,
+      back: () => file.putBack(before) });
     switchMode('write');
   }
 
@@ -469,18 +473,17 @@
     await voice.load(dir);
   }
 
-  // A row or section was deleted in Write: kept a few seconds so it can be undone.
+  // A row or section was deleted in Write (or a paste made rows): the blocks as they were, for Undo.
   function deleted(blocks: Block[], what: string) {
-    undo = { blocks, what };
-    clearTimeout(undoTimer);
-    undoTimer = setTimeout(() => (undo = null), 10000);
+    undo.offer({ what, back: () => {
+      if (!script) return;
+      script.blocks = blocks;
+      changed();
+    } });
   }
 
-  function undoDelete() {
-    if (!script || !undo) return;
-    script.blocks = undo.blocks;
-    undo = null;
-    changed();
+  function undoNow() {
+    undo.take().catch((e) => (notice = problem("That couldn't be undone. If the shared folder is busy, wait a moment and try again.", 'undoing', e)));
   }
 
   // Print (EX-1): saves what is waiting, then shows the print version and opens the browser's print window once its
@@ -547,10 +550,10 @@
 
 <!-- Messages sit at the bottom of the window, so they are seen wherever you have scrolled to. -->
 <div class="toasts">
-  {#if undo}
+  {#if undo.shown}
     <div class="banner quiet" aria-live="polite">
-      <p>{undo.what}</p>
-      <button class="outline" onclick={undoDelete}>Undo</button>
+      <p>{undo.shown.what}</p>
+      <button class="outline" onclick={undoNow}>{undo.shown.label ?? 'Undo'}</button>
     </div>
   {/if}
   {#if notice}
@@ -589,7 +592,7 @@
     <History {dir} {notes} onRestore={restore} onPublish={(official) => file.publish(official)} onOpen={openComment} />
   {:else if script && dir}
     {#if showVisit && marks}{@render visitBar(marks)}{/if}
-    <Write bind:script={() => script!, (s) => (file.script = s)} bind:finding {dir} root={folder} folderName={path[0]} {voice} {player} canPlay={canPlay} onPlayFrom={play} {name} {flagged} onFlag={flag} onChange={changed} onDeleted={deleted} onNotice={(m) => (notice = m)}
+    <Write bind:script={() => script!, (s) => (file.script = s)} bind:finding {dir} root={folder} folderName={path[0]} {voice} {player} canPlay={canPlay} onPlayFrom={play} {name} {flagged} onFlag={flag} onChange={changed} onDeleted={deleted} onUndo={(o) => undo.offer(o)} onNotice={(m) => (notice = m)}
       talk={openThreads} {talking} onTalk={showComment} visit={marks} {came} started={file.started.rows} />
   {/if}
 </main>

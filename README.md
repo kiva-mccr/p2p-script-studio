@@ -34,7 +34,7 @@ Status: a first working version. What it does today:
   between Write, Review and History. Add section puts a new section right after the box you are typing in (or at the end); a section
   left with no title is removed once you click out of it. A row's § (hover it) turns it into a section heading right
   where it is, and a section's ¶ turns it back into a row. Paste a draft (from Word, say) into a Dialogue box and
-  each paragraph gets its own row; Undo at the bottom puts it back. Add a file (copied into the script's `assets` folder), a link, or a note of something to find.
+  each paragraph gets its own row; Undo at the bottom puts it back. Taking a file out of a row with × has Undo too. Add a file (copied into the script's `assets` folder), a link, or a note of something to find.
   "From other scripts…" lists the files and links of every other script in the folder: pick one and it is copied in.
   The script list's Files button shows the files of every script, to browse.
   Files show a small preview: a picture (also .tif, and a PDF's first page with its page count), a video that plays
@@ -63,7 +63,7 @@ Status: a first working version. What it does today:
   in Review. After a send back, Write opens on Comments with the reviewer's note at the top. A file on a comment
   can go straight into the script: "Use in script" under it copies it into assets/ and adds it to that comment's row.
 - **History:** Write · History at the top of a script. Every few minutes of editing is kept as a version: who, when
-  and what changed, word for word. Restore any version. Changes made outside the app (say, in Notepad) are noted.
+  and what changed, word for word. Restore any version (Undo at the bottom goes back to what you had). Changes made outside the app (say, in Notepad) are noted.
   Publish official version names the script as it is now (v1, v2 …); History then shows those, with the small
   saves between them folded away until you open them. Send for review also makes the next one, named "Sent for
   review", unless nothing has changed since the newest (then it stays, say, v2, and no copy is made). Comments
@@ -179,7 +179,8 @@ Status: a first working version. What it does today:
   Review shows them, the list counts them ("2 flagged"), and they are listed before Approve. Flags never change the
   script, never make a History version and never show in exports.
 - **Voice-over:** the mic beside each row's dialogue records a take of that line (grey: none yet; blue: there is
-  one). Play it back, see its length and words a minute, record again or delete it. A take says Outdated once its
+  one). Play it back, see its length and words a minute, record again or delete it (both with Undo at the bottom:
+  "Undo, keep the old take" puts back the take you had). A take says Outdated once its
   line changes; its × hides it when the take already says the edited line (words a minute then counts the new words,
   and the next edit shows Outdated again). Takes are kept in the script's `voice/` folder, so OneDrive shares them.
   The top bar shows the takes' length and the whole script's length beside the save status ("0:14/2:05").

@@ -13,6 +13,7 @@ import { subdir } from './dirs';
 // seconds: the whole recording, as timed. from, to and gain: where the speech is and how loud (AU-4), measured when
 // it was recorded; a take from before, or with nothing heard, has none and plays whole.
 export type Take = { by: string; at: number; seconds: number; text: string } & Partial<Measure>;
+export type Held = { take: Take; sound: Blob }; // a take kept in memory for Undo (UX-1, UX-2)
 // fellBack: the mic picked in Settings wasn't there, so the default is recording (AU-3).
 export type Recording = { stop: () => Promise<Blob>; fellBack?: boolean };
 
@@ -293,6 +294,29 @@ export class VoiceOver {
     await write(await subdir(dir, FOLDER), `row-${id}.json`, JSON.stringify(next));
     await announce(dir, 'take');
     this.takes = { ...this.takes, [id]: next };
+  }
+
+  // Undo (UX-1, UX-2): a row's take as it is now, its sound read into memory so it can be written back after a delete
+  // or a new take. Null when the row has none (or it can't be read).
+  async hold(dir: FileSystemDirectoryHandle, id: string): Promise<Held | null> {
+    const take = this.takes[id];
+    if (!take) return null;
+    try {
+      const file = await takeFile(dir, id);
+      return { take, sound: new Blob([await file.arrayBuffer()], { type: file.type }) };
+    } catch {
+      return null;
+    }
+  }
+
+  // Writes a held take back as it was (Undo).
+  async putBack(dir: FileSystemDirectoryHandle, id: string, held: Held) {
+    if (this.playing === id) this.stopPlaying();
+    const voice = await subdir(dir, FOLDER, true);
+    await write(voice, `row-${id}.webm`, held.sound);
+    await write(voice, `row-${id}.json`, JSON.stringify(held.take));
+    await announce(dir, 'take');
+    this.takes = { ...this.takes, [id]: held.take };
   }
 
   async remove(dir: FileSystemDirectoryHandle, id: string) {

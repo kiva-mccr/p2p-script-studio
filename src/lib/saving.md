@@ -13,6 +13,8 @@ back, `onEntry` says a status change's entry was written. `script`, `dir`, `stat
 
 ## Rules and pitfalls
 
+- `restore` returns the text as it was before (for Undo, UX-11) or null; `putBack(text)` saves it again as an ordinary
+  save, with no History entry of its own.
 - A failed save, restore or publish records its error with `problem()` (AP-41) for the copy icon. The copy OneDrive
   keeps beside script.md is headed "Two copies of this script were found": other sync tools may name copies alike.
 - Nothing but the keeper writes script.md, and no file is ever written by two computers (the field test on a Windows

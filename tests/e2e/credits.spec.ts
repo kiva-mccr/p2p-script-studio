@@ -91,6 +91,11 @@ test('People on the script list: how to reach everyone, the scripts that credit 
   await box.getByRole('button', { name: /^Lee/ }).click();
   await box.getByRole('button', { name: 'Remove from the folder' }).click();
   await expect(box.locator('.name')).toHaveText([/Jo/]);
+  await box.getByRole('button', { name: 'Undo' }).click(); // UX-13: Undo puts them back
+  await expect(box.locator('.name')).toHaveText([/Jo/, /Lee/]);
+  await box.getByRole('button', { name: /^Lee/ }).click();
+  await box.getByRole('button', { name: 'Remove from the folder' }).click();
+  await expect(box.locator('.name')).toHaveText([/Jo/]);
   await box.locator('.foot').getByRole('button', { name: 'Done' }).click();
 
   await page.getByRole('button', { name: 'People' }).click();

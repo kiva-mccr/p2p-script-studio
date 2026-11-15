@@ -65,7 +65,9 @@ version (`Print.svelte`) and the teleprompter (`Teleprompter.svelte`, saves what
 - Split up (cleanup asked by the user, twice): the header and Print's choices are `Header.svelte`, the rows are
   `Write.svelte` and `WriteRow.svelte`, finding two saves' heads and ancestor is `lib/history.ts`, and saving and
   History are `lib/saving.svelte.ts`. Put a new screen or panel in its own file, not in this one.
-- Deleting happens in Write, but the Undo bar and its 10 s timer are here, so it stays up across the tabs.
+- Deleting happens in Write, but the Undo bar and its 10 s timer are here (`lib/undo.svelte.ts`, UX-1), so it stays up
+  across the tabs. Write's `onDeleted` (blocks as they were) and `onUndo` (any `Offer`: a take, a file) feed it, and so
+  does Restore (UX-11: `file.restore` returns the text before, Undo is `file.putBack`). A failed Undo shows a message.
 - `Print.svelte` is mounted here, at the top level, never inside another element (its print CSS needs that).
 - Print saves what is waiting first. Its choices come from `Export.svelte`. It shows "v3" only while the newest version is
   official and script.md still matches it (`officialNumber`, through `version()`); otherwise "Draft".

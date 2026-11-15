@@ -4,6 +4,7 @@
   import { shortcuts, type Action } from '../lib/shortcuts.svelte';
   import { clock, sectionWords, speaking } from '../lib/readtime.svelte';
   import { emptyRow, type Block, type Script } from '../lib/script';
+  import type { Offer } from '../lib/undo.svelte';
   import { plain } from '../lib/format';
   import { QuoteMarks } from '../lib/quotemarks';
   import type { Marks } from '../lib/visit';
@@ -33,13 +34,13 @@
   // visit: rows others changed since this person last looked (RV-15), marked; the rows stay editable as ever.
   // came: a file just added to a row from a comment (RV-12), named under its chip.
   // started: each row's words when the script was opened (AP-38), shown under a cell you changed; Put it back.
-  let { script = $bindable(), finding = $bindable(), dir, root, folderName, voice, player, canPlay, name, flagged, talk, talking, visit, came = null, started, onChange, onDeleted, onNotice, onPlayFrom, onFlag, onTalk }: {
+  let { script = $bindable(), finding = $bindable(), dir, root, folderName, voice, player, canPlay, name, flagged, talk, talking, visit, came = null, started, onChange, onDeleted, onUndo, onNotice, onPlayFrom, onFlag, onTalk }: {
     script: Script; finding: boolean; dir: FileSystemDirectoryHandle; root: FileSystemDirectoryHandle; folderName: string; voice: VoiceOver; player: Player; canPlay: boolean; name: string;
     flagged: Map<string, Flag>; onFlag: (row: string, note: string | null) => Promise<boolean>;
     talk: Thread[]; talking: string; onTalk: (id: string) => void; visit: Marks | null; started: ReadonlyMap<string, Words>;
     came?: { row: string; line: string; from: string } | null;
     onChange: () => void; onPlayFrom: (id: string) => void;
-    onDeleted: (before: Block[], what: string) => void; onNotice: (message: string) => void;
+    onDeleted: (before: Block[], what: string) => void; onUndo: (offer: Offer) => void; onNotice: (message: string) => void;
   } = $props();
 
   const words = $derived(sectionWords(script)); // each section's read time (AP-12)
@@ -74,11 +75,19 @@
     return row?.type === 'row' ? row.dialogue : '';
   };
 
+  // A take recorded again replaces the old one when it stops; Undo writes the old one back (UX-2, board 72).
+  async function stopTake(id: string) {
+    const held = await voice.hold(dir, id);
+    await voice.stop(dir, name, lineOf(id));
+    const n = numbers.get(script.blocks.find((b) => b.type === 'row' && b.id === id)!);
+    if (held && voice.takes[id]) onUndo({ what: `New take for row ${n} saved.`, label: 'Undo, keep the old take', back: () => voice.putBack(dir, id, held) });
+  }
+
   async function mic(id: string) {
     try {
-      if (voice.recording === id) await voice.stop(dir, name, lineOf(id));
+      if (voice.recording === id) await stopTake(id);
       else {
-        if (voice.recording) await voice.stop(dir, name, lineOf(voice.recording));
+        if (voice.recording) await stopTake(voice.recording);
         const fellBack = await voice.start(id);
         if (fellBack) onNotice(`${chosenMic().name || 'The microphone picked in Settings'} isn't plugged in, so this take is recorded with the default microphone.`);
       }
@@ -411,7 +420,7 @@
     {:else}
       <WriteRow bind:block={() => block, (b) => (script.blocks[i] = b)} {i} n={numbers.get(block)} {columns} folded={folds.folded} {dir} {root} {folderName} {voice} {player} {canPlay} {name}
         lit={chosen === block.id} flag={flagged.get(block.id)} stepped={current === block.id} said={talkByRow.get(block.id) ?? []} talking={talkRow === block.id} {visit}
-        came={came?.row === block.id ? came : null} start={started.get(block.id)} onPutBack={(field) => putBack(block, field)} {onChange} {onNotice} {onPlayFrom} {onFlag} {onTalk}
+        came={came?.row === block.id ? came : null} start={started.get(block.id)} onPutBack={(field) => putBack(block, field)} {onChange} {onUndo} {onNotice} {onPlayFrom} {onFlag} {onTalk}
         onMove={(by) => move(i, by)} onInsert={() => insertRow(i + 1)} onRemove={() => remove(i)} onToSection={() => toSection(i)}
         onToggleFlag={() => toggleFlag(block.id)} onMic={() => mic(block.id)} onPaste={(lines, head, tail) => pasteRows(block, lines, head, tail)} />
       {@const after = readChoices(block.timeline).after}

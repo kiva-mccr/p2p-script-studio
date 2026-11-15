@@ -10,6 +10,7 @@
   import type { Player } from '../lib/play.svelte';
   import { chosenMic } from '../lib/mic';
   import type { VoiceOver } from '../lib/voice.svelte';
+  import type { Offer } from '../lib/undo.svelte';
   import FilesCell from './FilesCell.svelte';
   import FlagIcon from './FlagIcon.svelte';
   import Take from './Take.svelte';
@@ -24,18 +25,29 @@
   // onMove, onInsert, onRemove, onToSection and onToggleFlag are Write's (they change the blocks round it);
   // onMic: the mic (Write stops a take on another row first). onPaste: two or more paragraphs pasted into Dialogue (AP-13).
   let { block = $bindable(), i, n, columns, folded, dir, root, folderName, voice, player, canPlay, name, lit = false, flag, stepped, said, talking, visit, came, start,
-    onChange, onPutBack, onNotice, onPlayFrom, onFlag, onTalk, onMove, onInsert, onRemove, onToSection, onToggleFlag, onMic, onPaste }: {
+    onChange, onPutBack, onUndo, onNotice, onPlayFrom, onFlag, onTalk, onMove, onInsert, onRemove, onToSection, onToggleFlag, onMic, onPaste }: {
     block: Row; i: number; n: number | undefined; columns: string; folded: Set<string>; dir: FileSystemDirectoryHandle; root: FileSystemDirectoryHandle;
     folderName: string; voice: VoiceOver; player: Player; canPlay: boolean; name: string; lit?: boolean; flag: Flag | undefined; stepped: boolean;
     said: Thread[]; talking: boolean; visit: Marks | null; came: { row: string; line: string; from: string } | null;
     start: Words | undefined; onPutBack: (field: 'dialogue' | 'onScreen') => void;
-    onChange: () => void; onNotice: (message: string) => void; onPlayFrom: (id: string) => void;
+    onChange: () => void; onUndo: (offer: Offer) => void; onNotice: (message: string) => void; onPlayFrom: (id: string) => void;
     onFlag: (row: string, note: string | null) => Promise<boolean>; onTalk: (id: string) => void;
     onMove: (by: number) => void; onInsert: () => void; onRemove: () => void; onToSection: () => void; onToggleFlag: () => void; onMic: () => void;
     onPaste: (lines: string[], head: string, tail: string) => void;
   } = $props();
 
   const take = $derived(voice.takes[block.id]);
+
+  // Delete the take with Undo (UX-1, board 72): its sound is read first, so Undo writes the same recording back.
+  async function dropTake() {
+    try {
+      const held = await voice.hold(dir, block.id);
+      await voice.remove(dir, block.id);
+      if (held) onUndo({ what: `Take of row ${n} deleted.`, back: () => voice.putBack(dir, block.id, held) });
+    } catch (e) {
+      onNotice(problem("The take couldn't be deleted.", 'deleting a take', e));
+    }
+  }
   const recording = $derived(voice.recording === block.id);
   const here = $derived(player.row === block.id);
   const sounding = $derived(voice.playing === block.id || (here && player.on));
@@ -136,7 +148,7 @@
       <Take {take} dialogue={block.dialogue} n={n ?? 0} {sounding} at={here ? player.at : voice.playing === block.id ? voice.at : 0}
         onPlay={play}
         onCurrent={() => voice.current(dir, block.id, block.dialogue).catch((e) => onNotice(problem("Outdated couldn't be hidden.", 'hiding Outdated on a take', e)))}
-        onDrop={() => voice.remove(dir, block.id).catch((e) => onNotice(problem("The take couldn't be deleted.", 'deleting a take', e)))} />
+        onDrop={dropTake} />
     {:else if here}
       <p class="take" role="status">
         <span class="bar"><span style:width="{player.at * 100}%"></span></span>
@@ -155,7 +167,8 @@
   {/if}
   {#if folded.has('files')}{@render dot(block.files.length > 0, 'Images & files')}{:else}
     <FilesCell files={block.files} {dir} {root} here={folderName} row={n ?? 0} {onNotice} {came}
-      onChange={(files) => { block.files = files; onChange(); }} />
+      onChange={(files) => { block.files = files; onChange(); }}
+      onRemoved={(label, before) => onUndo({ what: `${label} removed from row ${n}.`, back: () => { block.files = before; onChange(); } })} />
   {/if}
   {#if flag}
     <div class="flag-note">

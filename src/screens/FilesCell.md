@@ -10,6 +10,7 @@ preview get their kind and size on the chip.
 
 ## Rules and pitfalls
 
+- × calls `onChange` with the shorter list, then `onRemoved(label, before)` so the row can offer Undo (UX-10).
 - Previews (`lib/preview.ts`) are made from the folder's files, their blob URLs revoked when the row's files change
   or it closes. A file that is missing shows only its chip; one not really its kind (no preview made, or a video or
   sound that won't play) shows its chip with kind and size.
