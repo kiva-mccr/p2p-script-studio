@@ -776,6 +776,13 @@ and suggestions, keeps every version, and exports them for production.
   switching to Review after typing no longer showed before this fix either (nor in PF-1's runs): 0.27–0.31 s longest task
   before, 0.21–0.27 s after (0.26 s → 0.20 s with no typing first). What's left per key is mostly the storyboard
   timeline's layout. Not seen for real: the network drive.
+- [x] **PF-7** Leaving a script frees its memory (fix 7 of the speed check, 2026-11-15; nothing visible changes, so
+  no mock-up): the file previews' page-long watcher (`lib/near.ts`, AP-39) was made inside the first call, so its
+  callback shared that call's variables and kept the first script opened in a visit alive for the rest of it: its
+  rows (30,000 page elements) and all 2,000 History texts (101 MB of the 112 MB). Now the watcher is made in its own
+  function. Measured on the made-up big script, heap after clean-up: back on the list 112 MB → 5.5 MB (the list alone
+  is 3.7 MB), opening it again 227 MB → 120 MB (the first open is 120 MB), four rounds alike. Not seen for real:
+  real Chrome/Edge on the user's computer.
 
 ## Last (the user's order: these wait until everything above is done)
 
