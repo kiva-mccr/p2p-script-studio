@@ -168,30 +168,62 @@ export function shots(paths: string[], seconds: number, c: Choices, words: Words
 
 // When each cut word is said: the first time it is heard after the previous cut.
 export function cutTimes(cuts: string[], words: Words): number[] {
-  const times: number[] = [];
-  let from = 0;
-  for (const cut of cuts) {
-    const want = plain(cut);
-    const i = words.findIndex((w, j) => j >= from && plain(w.word) === want);
-    if (i < 0) break;
-    times.push(words[i].start);
-    from = i + 1;
-  }
-  return times;
+  return cutPositions(words.map((w) => w.word), cuts).map((i) => words[i].start);
 }
 
 // The cut words of a row as positions in its dialogue's words (the n-th word, from 0), so the dialogue can show
-// them: each cut is the first match after the previous one.
+// them: each cut is the first match after the previous one. A cut can be a few words ("the leaf"): the first is
+// where it falls, the rest tell a repeated word apart (`cutWords`).
 export function cutPositions(dialogueWords: string[], cuts: string[]): number[] {
+  const said = dialogueWords.map(plain);
   const at: number[] = [];
   let from = 0;
   for (const cut of cuts) {
-    const i = dialogueWords.findIndex((w, j) => j >= from && plain(w) === plain(cut));
+    const want = cut.split(/\s+/).map(plain).filter(Boolean);
+    const i = want.length ? findFrom(said, want, from) : -1;
     if (i < 0) break;
     at.push(i);
     from = i + 1;
   }
   return at;
+}
+
+// The cuts to save for these positions: each its word, with as many words after it as it takes for the first match
+// after the previous cut to be this one (so a second "the" is saved as "the leaf", not found as the first "the").
+export function cutWords(dialogueWords: string[], positions: number[]): string[] {
+  const said = dialogueWords.map(plain);
+  const out: string[] = [];
+  let from = 0;
+  for (const at of positions) {
+    const i = said.findIndex((w, j) => j >= at && w); // a "word" of only marks ("—") cuts on the next word
+    if (i < 0) break;
+    const phrase: number[] = [];
+    for (let j = i; j < said.length; j++) {
+      if (!said[j]) continue;
+      phrase.push(j);
+      if (findFrom(said, phrase.map((k) => said[k]), from) === i) break;
+    }
+    out.push(phrase.map((k) => dialogueWords[k].replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, '')).join(' '));
+    from = i + 1;
+  }
+  return out;
+}
+
+// The first place from `from` on where the words `want` are said one after another (words of only marks skipped).
+function findFrom(said: string[], want: string[], from: number): number {
+  for (let i = from; i < said.length; i++) {
+    if (said[i] !== want[0]) continue;
+    let j = i + 1;
+    let k = 1;
+    for (; k < want.length; j++) {
+      if (j >= said.length) break;
+      if (!said[j]) continue;
+      if (said[j] !== want[k]) break;
+      k++;
+    }
+    if (k === want.length) return i;
+  }
+  return -1;
 }
 
 const plainText = (text: string) => clearMarks(text);

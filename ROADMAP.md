@@ -424,6 +424,17 @@ and suggestions, keeps every version, and exports them for production.
   the preview goes back above the timeline's right end.
   Fix (the user, 2026-11-15): a click on a block no longer scrolls up to its row unless the timeline is pinned;
   the row panel has "↑ Go to the row" for that.
+- [x] **SB-6** Which side of the word a cut falls on (asked by the user, 2026-11-15: "I'm not sure the cut on a word
+  is working, we also need to make it clear which side of the word it's cutting on with the highlighting of the
+  word"). Checked on the live site: cuts work, but with all cuts used every other word is greyed out until the old
+  cut is taken off, and a click on the first word looks pressed but changes nothing. Fixed first (nothing visible): a
+  repeated word saved alone was found as its first time ("the … the"); it is now saved with the words after it
+  that tell it apart (`cuts at "the sea"`). Mock-up: board 78 (a line with the next picture's number before the cut
+  word; A tints each picture's words, B only the line; a click with all cuts used moves the nearest; the first word
+  takes no cut), the user first picked A, then changed to B (2026-11-15): only the line with the number before
+  the cut word (outlined), no tints. Also asked by the user: taking
+  a cut off left the hover's dashed line on the word, which looked like a cut still there; the word just clicked now
+  shows no hover line until the pointer leaves it.
 - [x] **SB-4** The timeline as a drawer at the bottom (asked by the user, 2026-11-15): first "make pin and unpin
   available even when not playing", then "or better yet, make it a fold out on the bottom part of the screen". Mock-up:
   board 76, agreed (2026-11-15, "looks good") as drawn: the timeline lives in a drawer at the bottom of the screen in

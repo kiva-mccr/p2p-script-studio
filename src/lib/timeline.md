@@ -20,3 +20,6 @@ The video's shape (SB-3) is the front matter's `shape: upright`, else wide (`sha
 - Wide is the default and is never written: `withShape(…, 'wide')` removes the line (a front matter left empty is
   `null`, so no empty `---` block is written).
 - A cut word is matched by `plain` (lower case, letters and digits only), the first match after the previous cut.
+  A cut can be a few words: the first is where it falls, the rest only tell a repeated word apart. `cutWords` adds
+  words after it until the first match is the one picked (a word of only marks, "—", is skipped and cuts on the
+  next word). `cutTimes` goes through `cutPositions`, so the timeline, the preview and the exports always agree.

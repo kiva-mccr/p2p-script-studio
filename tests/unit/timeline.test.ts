@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { parseScript, readFileRef, rows, timelineOnly, markTimelineOnly, writeScript, type Row } from '../../src/lib/script';
-import { changeChoices, cutPositions, cutTimes, dialogueWords, estimateWords, layout, picks, pictureFiles, readChoices, shots, writeChoices } from '../../src/lib/timeline';
+import { changeChoices, cutPositions, cutTimes, cutWords, dialogueWords, estimateWords, layout, picks, pictureFiles, readChoices, shots, writeChoices } from '../../src/lib/timeline';
 
 const source = `# Intro
 
@@ -135,6 +135,25 @@ describe('pictures', () => {
 
   it('finds the cut words in the dialogue', () => {
     expect(cutPositions(['Water', 'and', 'more', 'water', 'carbon'], ['water', 'water'])).toEqual([0, 3]);
+  });
+
+  it('a repeated word is saved with the words after it, so the cut stays on the one picked', () => {
+    const words = ['The', 'sun', 'warms', 'the', 'sea', '—', 'and', 'the', 'sky.'];
+    // The second "the" alone would be found as the first.
+    expect(cutWords(words, [3])).toEqual(['the sea']);
+    expect(cutPositions(words, ['the sea'])).toEqual([3]);
+    expect(cutWords(words, [7])).toEqual(['the sky']);
+    // After a cut on the second "the", the third needs no more words: matching starts after the previous cut.
+    expect(cutWords(words, [3, 7])).toEqual(['the sea', 'the']);
+    expect(cutPositions(words, cutWords(words, [3, 7]))).toEqual([3, 7]);
+    // A word of only marks cuts on the next word; a phrase skips it.
+    expect(cutWords(words, [5])).toEqual(['and']);
+    expect(cutPositions(words, ['sea and'])).toEqual([4]);
+    // A word said once stays one word, as before.
+    expect(cutWords(words, [2])).toEqual(['warms']);
+    // Timed the same way from the take.
+    const timed = words.map((word, i) => ({ word, start: i }));
+    expect(cutTimes(['the sky'], timed)).toEqual([7]);
   });
 });
 

@@ -108,7 +108,7 @@ by commas:
 |------|---------|
 | `collage` | all the pictures at once, side by side, for the whole row (`sequence`, the default, is not written) |
 | `without assets/old.png` | leave this picture out (one part per picture) |
-| `cuts at "water" "carbon"` | the second picture starts on the word "water", the third on "carbon" (timed from the take) |
+| `cuts at "water" "carbon"` | the second picture starts on the word "water", the third on "carbon" (timed from the take). A word said more than once is followed by the words that tell it apart: `cuts at "the sea"` cuts on the "the" just before "sea" |
 | `then hold 2 s` | after the row, the last picture stays on screen, in silence |
 | `then placeholder 3 s "Drone shot"` | after the row, a placeholder of that length, with what goes there |
 
