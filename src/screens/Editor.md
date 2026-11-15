@@ -29,6 +29,8 @@ version (`Print.svelte`) and the teleprompter (`Teleprompter.svelte`, saves what
 - The check reads only what is new (PF-1): comment files by new names, take notes by a changed date or size, the
   Files column by one listing per folder. A round never starts while the last is still going (a slow drive made them
   pile up), and `notes` is only replaced when a note came or went, so Review isn't redrawn every 5 s.
+- Away (PF-14, `lib/away.ts`): after 2 minutes with no mouse, key or scroll (and nothing playing), the check and the
+  heartbeat do nothing; the first touch, or coming back to the tab, rejoins (`file.back()`) and checks at once.
 - "… is editing": `file` writes yours on opening and every 30 s (`heartbeat` here); leaving, the Editor writes a last
   one marked `left` (`file.here(true, who, dir)`, AP-37), with the name and folder read as the editor closes (leaving
   the example takes its props away first, which threw). Closing the tab tries the same from `beforeUnload`, best

@@ -32,6 +32,7 @@
   import { reviewCount, seenKey, stamp, writeCount } from '../lib/tabcounts';
   import { addNote, flags, listNotes, threads, type Attachment, type Field, type Note } from '../lib/comments';
   import { News } from '../lib/news';
+  import { Away } from '../lib/away';
 
   // review: opened from a shared link, so it starts on the Review tab (RV-10). tour: in the example only, the guided
   // tour (AP-34), a count that goes up when Take the tour is clicked.
@@ -196,7 +197,8 @@
       await readCounts();
       if (file.dir) await voice.load(file.dir);
       checker = setInterval(checkOutside, CHECK_EVERY);
-      heartbeat = setInterval(() => file.here(), HERE_EVERY);
+      heartbeat = setInterval(() => away.away || file.here(), HERE_EVERY);
+      unlisten = away.listen();
     } catch (e) {
       notice = problem("The script couldn't be opened. If the shared folder is still syncing, wait a moment and reload.", 'opening the script', e);
     }
@@ -208,6 +210,7 @@
     player.stop();
     clearInterval(checker);
     clearInterval(heartbeat);
+    unlisten();
     const d = file.dir;
     const who = name; // read now: leaving the example takes the props away before leave() is done
     file.leave().finally(() => file.here(true, who, d)); // "Sam was here" for the others (AP-37)
@@ -402,11 +405,15 @@
   // (PF-15) or a full look is due (every 2 minutes), missing files, takes, comments, someone else's save and the plan.
   // One at a time: on a slow drive a round can take longer than 5 s, and rounds piling up kept the folder busy.
   const news = new News(untrack(() => folder));
+  // Away (PF-14): 2 minutes with no touch and nothing playing stops the check and the "… is editing" file; the first
+  // touch rejoins and catches up at once.
+  const away = new Away(() => void file.back().then(checkOutside), () => player.on || !!voice.recording || !!voice.playing || prompting);
+  let unlisten = () => {};
   let checking = false;
   let again = false; // a note came last round: looked once more, in case the file it names came in after it
   let looks = $state(0); // rounds that looked inside the script, for the planning panel
   async function checkOutside() {
-    if (checking || !file.dir || document.hidden || !(await file.checkAccess())) return;
+    if (checking || !file.dir || document.hidden || away.away || !(await file.checkAccess())) return;
     checking = true;
     try {
       await file.readEditors();
@@ -481,7 +488,7 @@
 </script>
 
 <svelte:window onbeforeunload={beforeUnload} onafterprint={() => (printing = null)} onkeydown={(e) => (saveKey(e), playKeys(e))} />
-<svelte:document onfocusin={(e) => { const at = (e.target as HTMLElement).closest?.<HTMLElement>('[data-block]'); if (at) cursorBlock = Number(at.dataset.block); }} onvisibilitychange={() => (document.hidden ? status === 'waiting' && save() : checkOutside())} />
+<svelte:document onfocusin={(e) => { const at = (e.target as HTMLElement).closest?.<HTMLElement>('[data-block]'); if (at) cursorBlock = Number(at.dataset.block); }} onvisibilitychange={() => (document.hidden ? status === 'waiting' && save() : away.away ? away.touch() : checkOutside())} />
 
 {#if prompting && script}
   <Teleprompter {script} from={promptFrom} onClose={() => (prompting = false)} />

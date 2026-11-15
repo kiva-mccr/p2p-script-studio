@@ -106,6 +106,14 @@ export class Saving {
     await writeEditing(dir, entry).catch(() => {});
   }
 
+  // Back from away (PF-14, lib/away.ts): the "… is editing" file stopped, so others may have taken over as keeper.
+  // Rejoins as the newest here, so a keeper who took over keeps script.md, as when a laptop wakes after the next one
+  // took over; alone, this person is keeper again.
+  async back() {
+    this.#since = new Date().toISOString();
+    await this.here();
+  }
+
   // On opening: the newest version should match script.md. If not, the keeper wrote it since (its note says so),
   // or it was changed outside the app (Notepad), which gets its own entry. No versions: History starts.
   async #startHistory(dir: FileSystemDirectoryHandle, text: string, foldedSha: string) {
