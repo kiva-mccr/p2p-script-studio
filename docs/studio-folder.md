@@ -13,6 +13,7 @@ Episode 03 - How Photosynthesis Works/
     changes/    each person's saves: one file per save, only what changed (FX-2)
     editing/    a file for each person who has the script open, a new one every 30 s
     files/      files attached to comments, one folder per comment or reply
+    summary/    what the script list shows, for computers new to the folder (PF-12)
 ```
 
 The picked folder itself has a `.studio/` too, for what every script shares (AP-31):
@@ -48,6 +49,25 @@ when a note about it has come from someone else; the list, coming back to it or 
 scripts with a new note. Every 2 minutes both look at everything as before, since a change made outside the app
 (Notepad, Explorer) leaves no note, and remove notes over an hour old. "… is editing" files leave no note. When it
 looks inside, the open script lists `voice/` at most every 30 s, so another person's new take can show that late.
+
+## summary/: the list's summary (PF-12)
+
+When a computer's script list reads a script the slow way (its History and comments), it then writes
+`summary/20261115T081500123Z_k2m9qa.json` (time, a random id):
+
+```json
+{ "v": 1, "print": "<sha256 of the fingerprint>", "head": { "title": "…", "status": "in review", "edited": 1763190000000,
+  "who": "Sam" }, "counts": { "missing": 0, "flagged": 1, "takeSeconds": 42, "words": 120, "dirs": ["assets"] },
+  "forAll": { "by": { "ana": { "review": false, "replies": 1, "back": false } },
+              "anyone": { "review": true, "replies": 0, "back": false } },
+  "who": "Sam", "when": "2026-11-15T08:15:00.123Z" }
+```
+
+The fingerprint is the one the list keeps (script.md's size and date, the names in `versions/` and `comments/`, the
+takes' sizes and dates, the names in the folders the Files column points into), without the reader's name. A computer
+new to the folder takes the newest summary only while that fingerprint is still its files'; otherwise it reads the
+script and writes a new one. For me depends on who you are, so `forAll` holds it for each name it differs for, and
+for anyone else. The writer removes summaries over 2 minutes old. No news note: a summary changes nothing.
 
 ## The one rule: new files, never edits
 

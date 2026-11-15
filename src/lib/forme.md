@@ -17,5 +17,8 @@ them ("For me").
 - `threads()` already leaves out deleted comments and replies, and keeps the newest text.
 - The script list passes only the versions from the newest send on (`sinceSend`, PF-3). Anything added here that
   looks further back than the newest send needs `listVersions` instead (and the first visit gets slow again).
+- `forAll` (PF-12) gives everyone's at once for the list's shared summary: each name in History or the comments
+  whose answer differs from a stranger's, plus `anyone`. `pick` reads yours back; it must stay what `forMe` says
+  (unit test compares them).
 - Comments on hold (RV-19) don't count as answered replies until a send or a version brings them back
   (`holdEnds(versions)`).

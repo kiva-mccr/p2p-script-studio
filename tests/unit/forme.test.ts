@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Note } from '../../src/lib/comments';
-import { forMe, waiting } from '../../src/lib/forme';
+import { forAll, forMe, pick, waiting } from '../../src/lib/forme';
 import type { Version } from '../../src/lib/history';
 
 const version = (who: string, note: string, kind: Version['kind'] = 'review'): Version => ({
@@ -52,5 +52,20 @@ describe('forMe', () => {
     const f = forMe('', 'in review', [], []);
     expect(waiting(f)).toBe(false);
     expect(waiting(forMe('Kiva', 'in review', [], []))).toBe(true);
+  });
+});
+
+describe('forAll (PF-12, the shared summary)', () => {
+  it('gives each person what forMe gives them, keeping only the names that differ from anyone', () => {
+    const versions = [version('Ana', 'Sent for review'), version('Kiva', 'Sent back to writer')];
+    const notes = [
+      note('a', 'Kiva', 'comment', 0), note('a1', 'Sam', 'reply', 1, 'a'),
+      note('b', 'Ana', 'comment', 2),
+    ];
+    for (const status of ['draft', 'in review', 'approved']) {
+      const all = forAll(status, versions, notes);
+      for (const me of ['Kiva', ' kiva', 'Ana', 'Sam', 'Lee', '']) expect(pick(all, me)).toEqual(forMe(me, status, versions, notes));
+      expect(Object.keys(all.by)).not.toContain('lee');
+    }
   });
 });
