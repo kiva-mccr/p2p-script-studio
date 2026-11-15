@@ -2,6 +2,7 @@
 // matched by id. What only one side changed is taken without asking; a field both changed differently is a clash
 // the person picks for.
 
+import { shapeOf, withShape } from './timeline';
 import { frontList, frontValue, parseScript, setFrontValue, writeScript, type Block, type Row, type Script } from './script';
 import { mergeCredits, readCredits, writeCredits } from './people';
 
@@ -107,6 +108,9 @@ export function merge(baseText: string, mineText: string, theirsText: string): M
     const value = mv === was ? tv : mv;
     if (value !== frontValue(front, key)) front = setFrontValue(front, key, value);
   }
+  // The timeline's shape (SB-3): whoever changed it wins, never a clash.
+  const shape = shapeOf(mine.front) !== shapeOf(base.front) ? shapeOf(mine.front) : shapeOf(theirs.front);
+  if (shape !== shapeOf(front)) front = withShape(front, shape);
   const authors = [...new Set([...frontList(theirs.front, 'authors'), ...frontList(mine.front, 'authors')])];
   if (authors.length) front = setFrontValue(front, 'authors', `[${authors.join(', ')}]`);
   // Credits (AP-31): combined person by person, never a clash.

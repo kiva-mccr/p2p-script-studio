@@ -5,7 +5,7 @@
   import { clock, speaking } from '../lib/readtime.svelte';
   import { keep, recall } from '../lib/remember';
   import { markTimelineOnly, rows, type Row, type Script } from '../lib/script';
-  import { changeChoices, cutPositions, dialogueWords, layout, pictureFiles, readChoices, type After, type TimeBlock } from '../lib/timeline';
+  import { changeChoices, cutPositions, dialogueWords, layout, pictureFiles, readChoices, shapeOf, type After, type Shape, type TimeBlock } from '../lib/timeline';
   import type { Player } from '../lib/play.svelte';
   import { rowLength, type VoiceOver } from '../lib/voice.svelte';
   import { waveform, wavePath } from '../lib/waveform';
@@ -18,12 +18,12 @@
   // "placeholder:<id>"), shared with the bars in the script. onTimeline sets a row's Timeline line; onFiles its
   // Files; onRemoveAfter removes the hold or placeholder after a row (with Undo); onShow scrolls to a row.
   // readOnly (Review): no choices; a click on a block comments on its row (onComment), a hold or placeholder on the
-  // row before it.
+  // row before it. onShape sets the video's shape (SB-3), wide or upright, for the preview, its collages and the export.
   let { script, dir, voice, player, canPlay, selected = $bindable(), readOnly = false, onTimeline = () => {}, onFiles = () => {},
-    onRemoveAfter = () => {}, onShow = () => {}, onComment = () => {}, onPlayFrom, onNotice }: {
+    onRemoveAfter = () => {}, onShow = () => {}, onComment = () => {}, onShape = () => {}, onPlayFrom, onNotice }: {
     script: Script; dir: FileSystemDirectoryHandle; voice: VoiceOver; player: Player; canPlay: boolean; selected: string; readOnly?: boolean;
     onTimeline?: (id: string, line: string) => void; onFiles?: (id: string, files: string[]) => void; onRemoveAfter?: (id: string) => void;
-    onShow?: (id: string) => void; onComment?: (row: string) => void; onPlayFrom: (id: string) => void; onNotice: (message: string) => void;
+    onShow?: (id: string) => void; onComment?: (row: string) => void; onShape?: (shape: Shape) => void; onPlayFrom: (id: string) => void; onNotice: (message: string) => void;
   } = $props();
 
   const KEY = 'timeline-hidden';
@@ -45,6 +45,7 @@
   }
 
   // Each row lasts its take, or its read time without one, as Play the script times it.
+  const upright = $derived(shapeOf(script.front) === 'upright');
   const laid = $derived(layout(script, rowLength(voice.takes, speaking.wpm)));
   const total = $derived(laid.total);
   const byId = $derived(new Map(rows(script).map((r) => [r.id, r])));
@@ -180,7 +181,7 @@
 
 <section class="timeline" class:pinned aria-label="Timeline" data-tour={readOnly ? 'review-timeline' : 'timeline'} use:near={() => (shown = true)} use:watch>
   {#if now}
-    <div class="preview" class:big class:corner={!pinned && !onScreen} role="img" aria-label="Preview: {showing.tag}">
+    <div class="preview" class:big class:upright class:corner={!pinned && !onScreen} role="img" aria-label="Preview: {showing.tag}">
       <div class="screen" class:collage-on={showing.paths.length > 1}>
         {#each showing.paths as path (path)}
           {#if isVideo(path) && urls[path]}
@@ -204,6 +205,12 @@
     <h2>Timeline</h2>
     {#if total}<span class="sum">{clock(total)} <span class="help">· {readOnly ? 'click a block to comment on its row' : 'from the takes, read time where there is none'}</span></span>{/if}
     <span class="grow"></span>
+    {#if !hidden && total && !readOnly}
+      <span class="segs shape" role="group" aria-label="Video shape" title="The shape of the preview, its collages and the exported video">
+        <button aria-pressed={!upright} class:on={!upright} onclick={() => onShape('wide')}>Wide</button>
+        <button aria-pressed={upright} class:on={upright} onclick={() => onShape('upright')}>Upright</button>
+      </span>
+    {/if}
     {#if !hidden && total}
       <span class="zoom" role="group" aria-label="Zoom">
         <button aria-label="Zoom out" title="Zoom out" disabled={zoom <= 1} onclick={() => (zoom = Math.max(1, zoom / 2))}>−</button>
@@ -355,6 +362,12 @@
   .preview { position: absolute; right: 16px; bottom: calc(100% + 12px); width: 320px; border-radius: 10px; overflow: hidden; background: #0b0b0b; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25); }
   .preview.corner { position: fixed; right: 16px; bottom: 44px; z-index: 5; } /* clear of the GitHub link (AP-28) */
   .preview.big { width: min(720px, calc(100vw - 64px)); }
+  .preview.upright { width: 180px; }
+  .preview.upright.big { width: min(405px, calc(100vw - 64px)); }
+  .upright .screen { aspect-ratio: 9 / 16; flex-direction: column; }
+  .upright .screen.collage-on { padding: 6% 8%; }
+  .upright .screen img, .upright .screen video, .upright .screen .vid { min-height: 0; }
+  .shape button { min-height: 28px; padding: 0 10px; font-size: 12px; }
   .screen { position: relative; aspect-ratio: 16 / 9; display: flex; gap: 3px; }
   .screen.collage-on { padding: 8% 6%; box-sizing: border-box; }
   .screen img, .screen video, .screen .vid { flex: 1; min-width: 0; width: 100%; height: 100%; object-fit: contain; }

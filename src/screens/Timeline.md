@@ -29,6 +29,9 @@ offers its pictures, Sequence or Collage, + Add a picture (only for the timeline
   words lands on the first: a known limit.
 - `readOnly` (Review): no panel and no choices; a click on a block comments on its row (`onComment`; a hold or
   placeholder on the row before), saved with `on: 'timeline'`.
+- Wide / Upright (SB-3) is the script's (front matter `shape`, through `onShape`), not this browser's: the video export
+  and EX-19's collages follow it. Upright, the preview is 9:16 (180 px, ⤢ 405 px) and a collage stacks its pictures.
+  Not shown in Review (read only).
 - Hide is this browser's choice (`timeline-hidden`), for every script; so is Unpin (SB-2, `timeline-unpinned`).
 - Unpinned while playing, the preview is `.corner` (fixed, bottom right, above the GitHub link) only while no part
   of the timeline is on screen (`use:watch`); once any shows it goes back above the right end, so it never covers

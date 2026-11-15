@@ -422,6 +422,16 @@ and suggestions, keeps every version, and exports them for production.
   like Hide. The user's condition: the preview must never cover the timeline or its buttons. Built so: unpinned, the
   preview waits in the screen's bottom right corner only while the timeline is off screen; once any of it shows,
   the preview goes back above the timeline's right end.
+- [x] **SB-3** Export the timeline as a video (asked by the user, 2026-11-15): the storyboard timeline (SB-1) saved
+  as a video file: each row's pictures (collage or sequence, cut on a word), holds and placeholders, with the
+  voice-over takes, at the timeline's timings, made in the browser. Mock-up: board 70, agreed (2026-11-15, "looks
+  good") with one change from the user: upright needs the collage and the timeline's preview to support it too.
+  Built so: Export › Video (.mp4): MP4 (H.264) made with WebCodecs and mediabunny (MPL-2.0, loaded only when used),
+  WebM where MP4 can't be made; 720p or 1080p at 30 fps; captions off by default; rows with no take silent for
+  their read time (default) or left out; videos' own sound off unless ticked; cuts only. The shape is the script's:
+  Wide / Upright on the timeline, kept as `shape: upright` in the front matter (merged, never a clash); upright, the
+  timeline's preview is 9:16 and collages stack their pictures (in the preview, the video and EX-19's zip). The
+  preview draws any moment with the same code as the file, and plays the video once made.
 - [ ] **YT-1** The published video: link the final YouTube video and keep its title, description and thumbnail with
   the script.
 - [x] **AU-1** Recording audio for each line: record the dialogue of a row in the browser, kept beside the script

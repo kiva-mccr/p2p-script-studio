@@ -51,6 +51,7 @@ The block between the `---` lines at the very top.
 | `authors` | Who has written in it | a list of names |
 | `credits` | Who worked on it and what they did (AP-31) | one line of JSON: `[{"id": "…", "name": "Sam", "role": "Narrator"}]` |
 | `template` | A template to start new scripts from (AP-15) | `true`, or left out |
+| `shape` | The video's shape on the storyboard timeline and in the video export (SB-3) | `upright` (9:16), or left out for wide (16:9) |
 
 All are optional; a missing title falls back to the folder's name, a missing status means `draft`. Other keys
 are kept as they are. A credit's `id` is that person's in the folder's people list (`.studio/people/`, see

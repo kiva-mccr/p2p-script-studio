@@ -4,7 +4,7 @@ Makes the Resolve / Premiere .zip (EX-19): `editZip` reads each media file the p
 videos as they are, draws .svg pictures, cards and collages as PNGs at the frame's size, a video's last frame for a
 hold, turns takes into WAV, measures them for the XML, and zips the .xml (and .srt) with them.
 
-- **Used by:** `screens/Export.svelte`. **Tests:** `tests/e2e/editexport.spec.ts`.
+- **Used by:** `screens/Export.svelte`, `lib/video.ts` (drawing). **Tests:** `tests/e2e/editexport.spec.ts`.
 
 ## Rules and pitfalls
 
@@ -16,4 +16,6 @@ hold, turns takes into WAV, measures them for the XML, and zips the .xml (and .s
 - Videos are measured with a `<video>` element; one the browser can't play (test Chromium has no H.264) is still
   copied, without its size or length, and a hold after it can't get its last frame (left out, as above).
 - Object URLs are freed after use (images once loaded, videos once drawn or measured).
+- `collage` stacks the pictures one above the other in an upright frame (SB-3), side by side in a wide one. The
+  drawing helpers (`fit`, `card`, `collage`, `picture`) are shared with the video export (lib/video.ts).
 - Cards use the page's font at 1/16 of the frame's short side, at most eight lines.

@@ -113,6 +113,12 @@ Status: a first working version. What it does today:
   a marker on each row carries its number, section and dialogue (and any link that isn't in the zip). Settings: frame
   size, frames per second, collages as one picture or a track per picture, markers, and the dialogue as captions
   (`.srt`). The preview draws the tracks roughly as the apps show them and lists the zip's files.
+- **Video:** saves the storyboard timeline as a video, made in the browser, faster than playing it: each row's
+  pictures (videos play, collages side by side, or stacked when upright), holds and placeholders, with the takes as
+  its sound, at the timeline's timings. MP4 where the computer can make it, else WebM (the page says so). Settings:
+  720p or 1080p (wide or upright, as set on the timeline), the dialogue as captions on the picture, rows with no take
+  silent for their read time or left out, and videos' own sound kept under the voice. The preview shows any moment
+  (click a clip); once made, the video plays there. Stop ends it early.
 - **Read time:** each section shows how long its dialogue takes to read aloud, and the top bar the whole script
   beside the save status ("Saved · 2:05"; with takes, "Saved · 0:14/2:05": recorded so far / the whole script, where
   rows with a take count their take). The speaking speed is set in
@@ -201,7 +207,8 @@ Status: a first working version. What it does today:
   its right end shows the picture of the moment (⤢ makes it big). Unpin puts it back under the last row (Pin to the
   bottom brings it back; this browser remembers which): the preview then waits in the screen's bottom right corner,
   and goes back above the timeline whenever the timeline is on screen, so it never covers it. − and + zoom; Hide
-  folds the timeline away.
+  folds the timeline away. Wide / Upright sets the video's shape for everyone (kept in the script): the preview turns
+  upright and collages stack their pictures one above the other, here and in the exports.
   Review shows the same timeline, read only: click a block to comment on its row ("row 2, on the timeline"). Kept in the row's `Timeline:` line in script.md.
 - **Assets:** the Assets tab lists every file, link and "still to find" note in the script once, with the rows that
   use it, with a thumbnail for pictures, PDFs and videos: what is missing from the folder first, then what is still to find or film, then the rest (or by row).
