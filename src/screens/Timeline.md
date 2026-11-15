@@ -39,8 +39,8 @@ offers its pictures, Sequence or Collage, + Add a picture (only for the timeline
 - Cut on a word: the dialogue's words as buttons; a click toggles a cut there (at most one fewer than the
   pictures). Saved as the words (`cuts at "water"`), matched again in order; a repeated word is saved with the
   words after it that tell it apart (`cutWords`), never as the word alone, which would land on its first time.
-  The look (board 78): a blue line with the next picture's number before each cut word, each picture's words in its
-  tint (`t0`…`t3`, the same on the picked block's shots), a dashed line on hover where a cut would go. With every
+  The look (board 78, option B): a blue line with the next picture's number before each cut word, the word outlined,
+  a dashed line on hover where a cut would go. With every
   cut used, a click moves the nearest cut; the first word takes none. The word just clicked shows no hover line
   until the pointer leaves it (`quiet`): taking a cut off left the dashed line behind, which looked like a cut.
 - `readOnly` (Review): no panel and no choices; a click on a block comments on its row (`onComment`; a hold or

@@ -431,8 +431,8 @@ and suggestions, keeps every version, and exports them for production.
   repeated word saved alone was found as its first time ("the … the"); it is now saved with the words after it
   that tell it apart (`cuts at "the sea"`). Mock-up: board 78 (a line with the next picture's number before the cut
   word; A tints each picture's words, B only the line; a click with all cuts used moves the nearest; the first word
-  takes no cut), agreed (2026-11-15) as A with one change from the user: the first picture's words get their tint
-  too. Built so: the picked block's shots get the same tints along their bottom edge. Also asked by the user: taking
+  takes no cut), the user first picked A, then changed to B (2026-11-15): only the line with the number before
+  the cut word (outlined), no tints. Also asked by the user: taking
   a cut off left the hover's dashed line on the word, which looked like a cut still there; the word just clicked now
   shows no hover line until the pointer leaves it.
 - [x] **SB-4** The timeline as a drawer at the bottom (asked by the user, 2026-11-15): first "make pin and unpin
