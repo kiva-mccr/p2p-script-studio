@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { floor } from '../lib/floor';
   import { problem } from '../lib/problems';
   import { tick, untrack } from 'svelte';
   import { shortcuts, type Action } from '../lib/shortcuts.svelte';
@@ -370,7 +371,7 @@
     const el = table?.querySelector(`[data-row="${id}"]`);
     if (!el) return;
     const { top, bottom } = el.getBoundingClientRect();
-    if (top < 140 || bottom > innerHeight) el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    if (top < 140 || bottom > floor()) el.scrollIntoView({ block: 'center', behavior: 'smooth' });
   }
 
   const focusIf = (node: HTMLInputElement, on: boolean) => {

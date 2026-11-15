@@ -147,7 +147,7 @@
 <div class="corner repo"><Feedback /><a href={REPO} target="_blank" rel="noopener">GitHub</a></div>
 
 <style>
-  .corner { position: fixed; bottom: 6px; z-index: 5; padding: 4px 8px; border-radius: 6px; background: var(--ground);
+  .corner { position: fixed; bottom: calc(6px + var(--drawer, 0px)); z-index: 5; padding: 4px 8px; border-radius: 6px; background: var(--ground);
     font-size: 12px; color: var(--muted); text-decoration: none; }
   .corner:hover { color: var(--accent); }
   .repo { right: 12px; display: flex; gap: 2px; padding: 0; }
@@ -160,7 +160,7 @@
   .example b { color: var(--ink); font-weight: 600; }
   .example .start { color: var(--accent-dark); font-weight: 500; }
   .example .outline { min-height: 36px; border-color: #c9d5f2; }
-  .undo { position: fixed; z-index: 10; left: 50%; bottom: 24px; transform: translateX(-50%); width: min(720px, calc(100% - 32px));
+  .undo { position: fixed; z-index: 10; left: 50%; bottom: calc(24px + var(--drawer, 0px)); transform: translateX(-50%); width: min(720px, calc(100% - 32px));
     box-sizing: border-box; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 10px 16px;
     border-radius: 10px; background: var(--ground); border: 1px solid var(--line); box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08); }
   .undo p { margin: 0; flex: 1 1 300px; font-size: 14px; }

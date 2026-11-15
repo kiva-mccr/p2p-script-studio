@@ -1,6 +1,6 @@
 # `src/screens/Timeline.svelte`
 
-The storyboard timeline (SB-1, board 63), under the last row in Write: a ruler, the sections, the rows with their
+The storyboard timeline (SB-1, board 63), in a drawer at the bottom of the screen (SB-4, board 76) in Write and Review: a ruler, the sections, the rows with their
 pictures (sequence or collage, or the On screen words on a grey card), holds and placeholders, and the voice-over as
 a waveform (a dashed "no take" bar for read time). A click picks a block: its row lights up and the panel below
 offers its pictures, Sequence or Collage, + Add a picture (only for the timeline), + Hold or + Placeholder, and
@@ -22,9 +22,19 @@ offers its pictures, Sequence or Collage, + Add a picture (only for the timeline
   once, they slowed opening a script enough to fail tests under load.
 - Pictures are blob URLs from the script's folder, made while the timeline is shown and revoked after; a missing
   file is a grey stand-in. Waveforms come from `lib/waveform.ts`, made once per take.
-- Playing: the section is `position: sticky; bottom: 0` while `pinned` (`player.started`, not unpinned),
-  the panel is hidden, a playhead runs at `player.time`, and the preview (16:9, 320 px, ⤢ to 720 px) sits above the
-  right end showing the picture of the moment: the sequence's shot at `player.elapsed`, a collage's all, a hold the
+- The drawer (SB-4): the section is always `position: sticky; bottom: 0`, so it stays at the bottom of the screen and,
+  scrolled to the end, rests under the last row (the last row is never behind it). Its bar (`.foldbar`, not `.bar`:
+  that is TimelineBar's class, which tests look for) folds and unfolds it, playing or not; folded, a thin `.strip` of
+  the blocks and the playhead. Remembered in this browser for every script (`timeline-open`, '1' open); it starts
+  folded. It replaced SB-2's Unpin / Pin and the old Hide (`timeline-hidden`, `timeline-unpinned` are no longer read).
+- Open, the tracks and panel scroll inside `.body` (at most about half the screen), never the section: overflow on
+  the section would clip the preview above it.
+- `use:room` keeps the drawer's height as the page's `scroll-padding-bottom` (so `scrollIntoView` lands rows above
+  it) and as `--drawer`, which lifts the fixed corner links (App), Undo and the messages (Editor) above it; the
+  preview sits 40 px above the drawer to clear those links; code that scrolls only "when not in view" compares with `floor()` (`lib/floor.ts`), not `innerHeight`.
+- Folded, pictures are not made, except while playing (for the preview); waveforms only open.
+- Playing: the panel is hidden, a playhead runs at `player.time`, and the preview (16:9, 320 px, ⤢ to 720 px) sits above the
+  drawer's right end, folded or open, so it never covers the timeline (the user's condition from SB-2), showing the picture of the moment: the sequence's shot at `player.elapsed`, a collage's all, a hold the
   last picture before it, a placeholder its words. Step ids are block ids (`plan` is made from `layout`).
 - Cut on a word: the dialogue's words as buttons; a click toggles a cut there (at most one fewer than the
   pictures). Saved as the words (`cuts at "water"`), matched again in order, so picking the second of two equal
@@ -34,11 +44,7 @@ offers its pictures, Sequence or Collage, + Add a picture (only for the timeline
 - Wide / Upright (SB-3) is the script's (front matter `shape`, through `onShape`), not this browser's: the video export
   and EX-19's collages follow it. Upright, the preview is 9:16 (180 px, ⤢ 405 px) and a collage stacks its pictures.
   Not shown in Review (read only).
-- Hide is this browser's choice (`timeline-hidden`), for every script; so is Unpin (SB-2, `timeline-unpinned`).
-- Unpinned while playing, the preview is `.corner` (fixed, bottom right, above the GitHub link) only while no part
-  of the timeline is on screen (`use:watch`); once any shows it goes back above the right end, so it never covers
-  the timeline or its buttons (the user's condition). `.timeline` is `position: relative` so that works unpinned.
-- A click on a block scrolls to its row only while `pinned`: under the last row, the jump left the sequence or
-  collage being changed (the user, 2026-11-15). The row panel's "↑ Go to the row" does it on purpose.
+- A click on a block always brings its row into view (`onShow`), since the drawer never leaves the screen; SB-2's
+  "↑ Go to the row" went with it.
 - `selected` is shared with Write's bars (`TimelineBar.svelte`): picking a hold on the timeline opens its bar's
   editor in the script too.

@@ -62,7 +62,7 @@
         title="{clock(item.start)} to {clock(item.start + item.seconds)} · {label(item.name)}" onclick={() => pick(i)}>{label(item.name)}</button>
     {/each}
   </div>
-  <p class="help">The same pictures and timings as the storyboard timeline under the script. Click a block to see that moment{made ? '; the video you made plays above until you do' : ''}.</p>
+  <p class="help">The same pictures and timings as the storyboard timeline at the bottom of Write. Click a block to see that moment{made ? '; the video you made plays above until you do' : ''}.</p>
 </div>
 {#if progress !== null}
   <div class="making" role="status">

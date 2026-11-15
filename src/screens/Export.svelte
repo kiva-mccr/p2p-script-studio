@@ -419,7 +419,7 @@
             <label><input type="radio" name="vsize" checked={video.size === '720'} onchange={() => (video.size = '720')} /> 720p</label>
             <label><input type="radio" name="vsize" checked={video.size === '1080'} onchange={() => (video.size = '1080')} /> 1080p</label>
           </div>
-          <p class="kept help">{shape === 'upright' ? 'Upright' : 'Wide'}, as set on the timeline under the script.</p>
+          <p class="kept help">{shape === 'upright' ? 'Upright' : 'Wide'}, as set on the timeline at the bottom of Write.</p>
         </fieldset>
         <label><input type="checkbox" bind:checked={video.captions} /> Dialogue as captions on the picture</label>
         <fieldset class="plain">

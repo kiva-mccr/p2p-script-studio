@@ -145,7 +145,7 @@
 {/if}
 
 <style>
-  aside { position: sticky; top: var(--bar-h, 0px); flex: 0 0 auto; align-self: flex-start; }
+  aside { position: sticky; top: var(--bar-h, 0px); z-index: 6; flex: 0 0 auto; align-self: flex-start; } /* over the corner links, lifted by the timeline drawer (SB-4) */
   .edge { display: flex; flex-direction: column; gap: 8px; padding-top: 72px; }
   .tab { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 34px; min-height: 120px; padding: 12px 0;
     border: 1px solid #dadada; border-right: 0; border-radius: 8px 0 0 8px; background: #fafafa; color: #3d3d3d; font-size: 13px; font-weight: 500; }

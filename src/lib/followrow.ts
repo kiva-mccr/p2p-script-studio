@@ -1,13 +1,14 @@
 // While the script plays (AU-2) the page follows the row being played, until you scroll it yourself (UX-12, board 74).
 // "Yourself" is read from what you do (the wheel, a touch, scroll keys, the scroll bar), not from scroll events,
 // which the app's own smooth scrolling fires too.
+import { floor } from './floor';
 import type { Player } from './play.svelte';
 
-// Brings a row into view, only when it isn't all in view under the top bar.
+// Brings a row into view, only when it isn't all in view between the top bar and the timeline's drawer (SB-4).
 export function bring(el: Element) {
   const { top, bottom } = el.getBoundingClientRect();
   const ceiling = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--bar-h')) || 0;
-  if (top >= ceiling + 40 && bottom <= innerHeight) return;
+  if (top >= ceiling + 40 && bottom <= floor()) return;
   el.scrollIntoView({ block: 'center', behavior: 'smooth' });
 }
 

@@ -35,6 +35,7 @@
   import { Away } from '../lib/away';
   import { Undo } from '../lib/undo.svelte';
   import { bring, watchScroll } from '../lib/followrow';
+  import { floor } from '../lib/floor';
   import { Places } from '../lib/tabplace';
 
   // review: opened from a shared link, so it starts on the Review tab (RV-10). tour: in the example only, the guided
@@ -189,7 +190,7 @@
     if (!el) return void (playingAway = '');
     const { top, bottom } = el.getBoundingClientRect();
     const ceiling = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--bar-h')) || 0;
-    playingAway = bottom < ceiling ? 'up' : top > innerHeight ? 'down' : '';
+    playingAway = bottom < ceiling ? 'up' : top > floor() ? 'down' : ''; // below the drawer's top is out of view (SB-4)
   }
   $effect(() => {
     void player.row;
@@ -596,7 +597,7 @@
 {/if}
 
 {#if player.started && !player.following && playingAway && playingNumber}
-  <!-- Under the top bar, clear of the pinned timeline and the messages at the bottom (UX-12, board 74). -->
+  <!-- Under the top bar, clear of the timeline drawer and the messages at the bottom (UX-12, board 74). -->
   <button class="back-to-row" onclick={backToPlaying}>{playingAway === 'up' ? '↑' : '↓'} Back to row {playingNumber}</button>
 {/if}
 <!-- Messages sit at the bottom of the window, so they are seen wherever you have scrolled to. -->
@@ -666,7 +667,7 @@
   .back-to-row { position: fixed; z-index: 6; left: 50%; top: calc(var(--bar-h, 0px) + 12px); transform: translateX(-50%); min-height: 40px;
     padding: 0 16px; border: 1px solid #d6e0f7; border-radius: 999px; background: var(--ground); color: var(--accent); font-size: 14px;
     font-weight: 500; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1); }
-  .toasts { position: fixed; z-index: 10; left: 50%; bottom: 24px; transform: translateX(-50%); width: min(720px, calc(100% - 32px));
+  .toasts { position: fixed; z-index: 10; left: 50%; bottom: calc(24px + var(--drawer, 0px)); transform: translateX(-50%); width: min(720px, calc(100% - 32px));
     display: flex; flex-direction: column; gap: 8px; }
   .banner { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 10px 16px; border-radius: 10px;
     background: #fff7ed; border: 1px solid #f5d9b5; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08); }

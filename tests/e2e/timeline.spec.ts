@@ -12,6 +12,9 @@ const files = {
   'Episode 03/assets/sun.svg': svg('#b5651d'),
 };
 
+// The drawer (SB-4) starts folded; these tests open it, except the one about folding.
+test.beforeEach(({ page }) => page.addInitScript(() => localStorage.getItem('timeline-open') ?? localStorage.setItem('timeline-open', '1')));
+
 const timeline = (page: Page) => page.getByRole('region', { name: 'Timeline' });
 const saved = (page: Page) => expect.poll(() => readFile(page, 'Episode 03/script.md'), { timeout: 15000 });
 
@@ -47,21 +50,22 @@ test('the timeline lays out the rows; a click lights up the row and opens its pi
   await expect(t.getByRole('button', { name: /sun\.svg · timeline only/ })).toHaveAttribute('aria-pressed', 'true');
 });
 
-test('a click on a block stays on the timeline; Go to the row goes to the row', async ({ page }) => {
+test('a click on a block brings its row into view above the drawer, and the panel stays at hand', async ({ page }) => {
   await setUp(page, '#/Episode%2003', files);
   const t = timeline(page);
-  const row2 = t.getByRole('button', { name: /^Row 2 · / });
-  await row2.scrollIntoViewIfNeeded();
-  const y = await page.evaluate(() => scrollY);
-  expect(y).toBeGreaterThan(0);
-  const dialogue = page.getByLabel('Dialogue, row 2');
-  await row2.click();
-  await expect(t.locator('.panel strong')).toHaveText(/^Row 2 · /);
-  await page.waitForTimeout(600); // a smooth scroll would have started by now
-  expect(await page.evaluate(() => scrollY)).toBe(y);
-  await expect(dialogue).not.toBeInViewport();
-  await t.getByRole('button', { name: '↑ Go to the row' }).click();
+  // The drawer sits at the bottom of the screen from the start, while the script is at its top.
+  const drawer = await t.boundingBox();
+  expect(drawer!.y + drawer!.height).toBeGreaterThan(page.viewportSize()!.height - 2);
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight / 2));
+  const last = t.getByRole('button', { name: /^Row \d+ · / }).last();
+  const n = (await last.getAttribute('aria-label'))!.match(/^Row (\d+)/)![1];
+  await last.click();
+  await expect(t.locator('.panel strong')).toHaveText(new RegExp(`^Row ${n} · `));
+  const dialogue = page.getByLabel(`Dialogue, row ${n}`);
   await expect(dialogue).toBeInViewport();
+  await expect.poll(async () => (await dialogue.boundingBox())!.y + (await dialogue.boundingBox())!.height).toBeLessThanOrEqual((await t.boundingBox())!.y);
+  await expect(t.locator('.panel')).toBeInViewport();
+  await expect(t.getByRole('button', { name: '↑ Go to the row' })).toHaveCount(0);
 });
 
 test('the last blocks\' hover text stays inside the timeline (UX-8)', async ({ page }) => {
@@ -124,15 +128,26 @@ test('holds and placeholders: added from the panel, a bar in the script, changed
   await expect(page.getByRole('button', { name: /^Placeholder after row 4/ })).toBeVisible();
 });
 
-test('the timeline can be hidden, and stays hidden', async ({ page }) => {
+test('the drawer starts folded, folds and unfolds, and is remembered', async ({ page }) => {
+  await page.addInitScript(() => localStorage.removeItem('timeline-open')); // after beforeEach's: as for someone new
   await setUp(page, '#/Episode%2003', files);
   const t = timeline(page);
-  await t.getByRole('button', { name: '⌄ Hide' }).click();
+  const bar = t.getByRole('button', { name: /^Timeline/ });
+  // Folded: one slim bar at the bottom, with a strip of the blocks.
+  await expect(bar).toHaveAttribute('aria-expanded', 'false');
+  await expect(t.locator('.strip span').first()).toBeVisible();
   await expect(t.getByRole('button', { name: /^Row 1 · / })).toHaveCount(0);
-  // Opening the script again (from the list) keeps it hidden.
+  await bar.click();
+  await expect(bar).toHaveAttribute('aria-expanded', 'true');
+  await expect(t.getByRole('button', { name: /^Row 1 · / })).toBeVisible();
+  // Open, it takes at most about half the screen.
+  expect((await t.boundingBox())!.height).toBeLessThanOrEqual(page.viewportSize()!.height / 2 + 4);
+  // Opening the script again (from the list) keeps it open; folding is kept too.
   await page.getByRole('link', { name: 'Back to Video Scripts' }).click();
   await page.getByRole('link', { name: /How Photosynthesis Works/ }).click();
-  await expect(timeline(page).getByRole('button', { name: '⌃ Show' })).toBeVisible();
+  await expect(timeline(page).getByRole('button', { name: /^Timeline/ })).toHaveAttribute('aria-expanded', 'true');
+  await timeline(page).getByRole('button', { name: /^Timeline/ }).click();
+  await expect.poll(() => page.evaluate(() => localStorage.getItem('timeline-open') ?? '')).toBe('');
 });
 
 test('cut on a word: a click on a word starts the next picture there', async ({ page }) => {
@@ -149,7 +164,7 @@ test('cut on a word: a click on a word starts the next picture there', async ({ 
   await saved(page).not.toContain('cuts at');
 });
 
-test('playing: the timeline pins to the bottom, the preview follows, a hold plays in silence', async ({ page }) => {
+test('playing: the preview sits above the drawer, follows, a hold plays in silence', async ({ page }) => {
   await fakeTake(page);
   await page.addInitScript(() => localStorage.setItem('prompter-speed', '400'));
   await setUp(page, '#/Episode%2003', { ...files, 'Episode 03/script.md': script.replace('- assets/music-bed.mp3\n', '- assets/music-bed.mp3\n\nTimeline: then hold 1 s\n') });
@@ -159,45 +174,37 @@ test('playing: the timeline pins to the bottom, the preview follows, a hold play
   // The take shows as a waveform.
   await expect(t.getByRole('img', { name: /^Take, / })).toBeVisible();
   await page.getByRole('button', { name: 'Play from row 2' }).click();
-  await expect(page.locator('.timeline.pinned')).toBeVisible();
   await expect(t.getByRole('img', { name: /^Preview: Row 2/ })).toBeVisible();
+  const p = await page.locator('.preview').boundingBox(), top = await t.boundingBox();
+  expect(p!.y + p!.height).toBeLessThanOrEqual(top!.y);
   await expect(t.getByRole('img', { name: 'Preview: Hold' })).toBeVisible({ timeout: 10000 });
   await expect(page.locator('.bar.lit')).toBeVisible();
   await t.getByRole('button', { name: 'Make the preview big' }).click();
   await expect(page.locator('.preview.big')).toBeVisible();
   await page.keyboard.press('Escape'); // stops it (if the last rows haven't already)
-  await expect(page.locator('.timeline.pinned')).toHaveCount(0);
+  await expect(page.locator('.preview')).toHaveCount(0);
 });
 
-test('unpin: the timeline goes back under the last row, the preview never covers it, and the choice is kept', async ({ page }) => {
+test('folded while playing: the strip shows the playhead, the preview sits above the bar, and it can unfold', async ({ page }) => {
   await fakeTake(page);
   await setUp(page, '#/Episode%2003', files);
   await page.getByRole('button', { name: 'Record row 2', exact: true }).click();
   await page.getByRole('button', { name: 'Stop recording row 2' }).click();
   const t = timeline(page);
+  const bar = t.getByRole('button', { name: /^Timeline/ });
+  await bar.click();
+  await expect(bar).toHaveAttribute('aria-expanded', 'false');
   await page.getByRole('button', { name: 'Play from row 1' }).click();
-  await expect(page.locator('.timeline.pinned')).toBeVisible();
-  await t.getByRole('button', { name: 'Unpin' }).click();
-  await expect(page.locator('.timeline.pinned')).toHaveCount(0);
-  await expect.poll(() => page.evaluate(() => localStorage.getItem('timeline-unpinned'))).toBe('1');
-  // At the top of the script the timeline is off screen: the preview waits in the corner.
-  await page.evaluate(() => window.scrollTo(0, 0));
-  const preview = page.locator('.preview');
-  await expect(preview).toHaveClass(/corner/);
+  await expect(t.locator('.strip .head')).toBeVisible();
+  const preview = t.getByRole('img', { name: /^Preview: / });
   await expect(preview).toBeInViewport();
-  // Once the timeline shows, the preview goes back above it and never covers it.
-  await t.getByRole('button', { name: 'Pin to the bottom' }).scrollIntoViewIfNeeded();
-  await expect(preview).not.toHaveClass(/corner/);
-  const p = await preview.boundingBox(), top = await t.locator('.top').boundingBox();
+  const p = await preview.boundingBox(), top = await t.boundingBox();
   expect(p!.y + p!.height).toBeLessThanOrEqual(top!.y);
+  // Unfolds while playing: the tracks, with the playhead, and no panel until it stops.
+  await bar.click();
+  await expect(t.locator('.tracks .head')).toBeVisible();
+  await expect(t.locator('.panel')).toHaveCount(0);
   await page.keyboard.press('Escape');
-  // Remembered: the next play stays unpinned until Pin to the bottom.
-  await page.getByRole('button', { name: 'Play from row 1' }).click();
-  await expect(t.getByRole('button', { name: 'Pin to the bottom' })).toBeVisible();
-  await expect(page.locator('.timeline.pinned')).toHaveCount(0);
-  await t.getByRole('button', { name: 'Pin to the bottom' }).click();
-  await expect(page.locator('.timeline.pinned')).toBeVisible();
-  await expect(t.getByRole('button', { name: 'Unpin' })).toBeVisible();
 });
 
 test('in Review the timeline is read only, and a click on a block comments on its row', async ({ page }) => {

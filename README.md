@@ -203,19 +203,20 @@ Status: a first working version. What it does today:
   "↓ Back to row 6" button under the top bar takes you back and follows again. A row with no take waits in silence
   for its read time. With the mouse on a row, its number becomes ▶: click it to play from there (the row playing shows ❚❚); pause with the same button or Space, stop with ■ or
   Esc. It works the same in Review, where each line also shows its take to listen to, without the mic or delete.
-- **Storyboard timeline:** under the last row in Write, the script laid out in time: sections, then each row with its
-  pictures (every image or video in its Files, one after another, or side by side as a collage), then the voice-over
-  as a waveform (a row with no take gets its read time). Hover a block for its dialogue; click it to light up its row
-  (the page stays put; "↑ Go to the row" takes you there) and pick its pictures, switch Sequence or Collage, or add a picture just for the timeline (Files shows those
+- **Storyboard timeline:** a drawer at the bottom of the screen in Write and Review, the script laid out in time:
+  sections, then each row with its pictures (every image or video in its Files, one after another, or side by side as
+  a collage), then the voice-over as a waveform (a row with no take gets its read time). Click its bar to fold or
+  unfold it, playing or not; folded, it is one slim bar with a thin strip of the blocks. It starts folded, and this
+  browser remembers it for every script. Open, it takes at most about half the screen, and the script's last row
+  always clears it. Hover a block for its dialogue; click it to bring its row into view, light it up, and pick its
+  pictures, switch Sequence or Collage, or add a picture just for the timeline (Files shows those
   minimised, "+1 for the timeline"). A Hold (the last picture stays, in silence) or a Placeholder (a shot still to
   come, with its length) can follow any row; it shows as a bar between the rows too: click it to change it, ✕ to
   remove it (with Undo). In a sequence, click a word of the dialogue to start the next picture on it (cut on a word).
-  While the script plays, the timeline stays at the bottom of the screen with a playhead, and a small preview above
-  its right end shows the picture of the moment (⤢ makes it big). Unpin puts it back under the last row (Pin to the
-  bottom brings it back; this browser remembers which): the preview then waits in the screen's bottom right corner,
-  and goes back above the timeline whenever the timeline is on screen, so it never covers it. − and + zoom; Hide
-  folds the timeline away. Wide / Upright sets the video's shape for everyone (kept in the script): the preview turns
-  upright and collages stack their pictures one above the other, here and in the exports.
+  While the script plays, a playhead runs along it (along the strip when folded), and a small preview above the
+  drawer's right end shows the picture of the moment (⤢ makes it big). − and + zoom. Wide / Upright sets the video's
+  shape for everyone (kept in the script): the preview turns upright and collages stack their pictures one above the
+  other, here and in the exports.
   Review shows the same timeline, read only: click a block to comment on its row ("row 2, on the timeline"). Kept in the row's `Timeline:` line in script.md.
 - **Assets:** the Assets tab lists every file, link and "still to find" note in the script once, with the rows that
   use it, with a thumbnail for pictures, PDFs and videos: what is missing from the folder first, then what is still to find or film, then the rest (or by row).
