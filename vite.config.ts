@@ -2,6 +2,7 @@ import { defineConfig } from 'vitest/config';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { execSync } from 'node:child_process';
 import { parseMerge } from './src/lib/version';
+import { marks } from './src/lib/marks';
 
 // The live version (AP-28): only the deploy build (LIVE_BUILD, set in deploy.yml) reads the merge commit.
 function liveVersion() {
@@ -14,7 +15,7 @@ function liveVersion() {
 // https://kiva-mccr.github.io/Internal-Script-Studio/. Relative paths work at both.
 export default defineConfig({
   base: './',
-  plugins: [svelte()],
+  plugins: [marks(), svelte()], // marks: each element names its .svelte file, for feedback (AP-48)
   define: { __VERSION__: JSON.stringify(liveVersion()) },
   test: { include: ['tests/unit/**/*.test.ts'] },
 });
