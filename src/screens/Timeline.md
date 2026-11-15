@@ -37,8 +37,12 @@ offers its pictures, Sequence or Collage, + Add a picture (only for the timeline
   drawer's right end, folded or open, so it never covers the timeline (the user's condition from SB-2), showing the picture of the moment: the sequence's shot at `player.elapsed`, a collage's all, a hold the
   last picture before it, a placeholder its words. Step ids are block ids (`plan` is made from `layout`).
 - Cut on a word: the dialogue's words as buttons; a click toggles a cut there (at most one fewer than the
-  pictures). Saved as the words (`cuts at "water"`), matched again in order, so picking the second of two equal
-  words lands on the first: a known limit.
+  pictures). Saved as the words (`cuts at "water"`), matched again in order; a repeated word is saved with the
+  words after it that tell it apart (`cutWords`), never as the word alone, which would land on its first time.
+  The look (board 78): a blue line with the next picture's number before each cut word, each picture's words in its
+  tint (`t0`…`t3`, the same on the picked block's shots), a dashed line on hover where a cut would go. With every
+  cut used, a click moves the nearest cut; the first word takes none. The word just clicked shows no hover line
+  until the pointer leaves it (`quiet`): taking a cut off left the dashed line behind, which looked like a cut.
 - `readOnly` (Review): no panel and no choices; a click on a block comments on its row (`onComment`; a hold or
   placeholder on the row before), saved with `on: 'timeline'`.
 - Wide / Upright (SB-3) is the script's (front matter `shape`, through `onShape`), not this browser's: the video export

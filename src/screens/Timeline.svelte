@@ -5,7 +5,7 @@
   import { clock, speaking } from '../lib/readtime.svelte';
   import { keep, recall } from '../lib/remember';
   import { markTimelineOnly, rows, type Row, type Script } from '../lib/script';
-  import { changeChoices, cutPositions, dialogueWords, layout, pictureFiles, readChoices, shapeOf, type After, type Shape, type TimeBlock } from '../lib/timeline';
+  import { changeChoices, cutPositions, cutWords, dialogueWords, layout, pictureFiles, readChoices, shapeOf, type After, type Shape, type TimeBlock } from '../lib/timeline';
   import type { Player } from '../lib/play.svelte';
   import { rowLength, type VoiceOver } from '../lib/voice.svelte';
   import { waveform, wavePath } from '../lib/waveform';
@@ -125,14 +125,20 @@
     return { paths: [now.shots[i].path], card: '', tag: `Row ${n}${now.shots.length > 1 ? ` · ${i + 1} of ${now.shots.length}` : ''}` };
   });
 
-  // Cut on a word (the user's pick on board 63): in a sequence, a click on a word starts the next picture there.
+  // Cut on a word (the user's pick on board 63): in a sequence, a click on a word starts the next picture just
+  // before it (board 78). With every cut used, a click moves the nearest cut there; the first word takes none.
   function toggleCut(row: Row, at: number, room: number) {
+    if (at === 0) return;
     const words = dialogueWords(row.dialogue);
     const c = readChoices(row.timeline);
     const on = cutPositions(words, c.cuts);
-    const next = on.includes(at) ? on.filter((i) => i !== at) : [...on, at].sort((a, b) => a - b);
-    if (next.length > room) return;
-    onTimeline(row.id, changeChoices(row, (x) => (x.cuts = next.map((i) => words[i].replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, '')))));
+    let next = on.includes(at) ? on.filter((i) => i !== at) : [...on, at];
+    if (next.length > room) {
+      const near = on.reduce((a, b) => (Math.abs(b - at) < Math.abs(a - at) ? b : a));
+      next = next.filter((i) => i !== near);
+    }
+    next.sort((a, b) => a - b);
+    onTimeline(row.id, changeChoices(row, (x) => (x.cuts = cutWords(words, next))));
   }
 
   let tipFor = $state(''); // the block hovered or focused, whose dialogue shows above it
@@ -144,6 +150,8 @@
     tipEnd = !!box && el.getBoundingClientRect().left + TIP > Math.min(box.right, innerWidth);
   }
   const TIP = 280; // the hover text's width, padding included
+  let quiet = $state(-1); // the word just clicked: no "a cut would go here" line until the pointer leaves it
+  const TINTS = 4; // the colours a sequence's pictures take in turn, on the picked block and its words (board 78)
 
   function pick(b: TimeBlock) {
     if (readOnly) return onComment(b.kind === 'row' ? b.id : b.after);
@@ -272,8 +280,8 @@
                     </span>
                   {:else}
                     <span class="seq">
-                      {#each b.shots as shot (shot.path)}
-                        <span class="shot" style:width="{(shot.seconds / b.seconds) * 100}%">{@render picture(shot.path)}</span>
+                      {#each b.shots as shot, i (shot.path)}
+                        <span class="shot t{i % TINTS}" class:tinted={selected === b.id} style:width="{(shot.seconds / b.seconds) * 100}%">{@render picture(shot.path)}</span>
                       {/each}
                     </span>
                   {/if}
@@ -338,11 +346,18 @@
             {@const cuts = cutPositions(words, c.cuts)}
             <div class="line words" role="group" aria-label="Cut on a word">
               <span class="muted">Cut on a word:</span>
-              {#each words as w, i (i)}
-                <button class="word" class:cut={cuts.includes(i)} aria-pressed={cuts.includes(i)} disabled={!cuts.includes(i) && cuts.length >= block.picks.length - 1}
-                  onclick={() => toggleCut(selRow, i, block.picks.length - 1)}>{w}</button>
-              {/each}
-              <span class="help">{block.picks.length} pictures: up to {block.picks.length - 1} cuts; without them they share the time equally.</span>
+              <span class="said">
+                {#each words as w, i (i)}
+                  {@const n = cuts.filter((x) => x <= i).length}
+                  {#if cuts.includes(i)}<span class="mark" aria-hidden="true"><span class="num">{n + 1}</span></span>{/if}
+                  <button class="word t{n % TINTS}" class:start={i === 0 || cuts.includes(i)} class:end={i === words.length - 1 || cuts.includes(i + 1)}
+                    class:quiet={quiet === i} onmouseleave={() => (quiet = -1)}
+                    aria-pressed={cuts.includes(i)} disabled={i === 0}
+                    title={i === 0 ? 'Picture 1 starts here' : cuts.includes(i) ? `Picture ${n + 1} starts just before “${w}”: click to take the cut off` : `Cut just before “${w}”`}
+                    onclick={() => { quiet = i; toggleCut(selRow, i, block.picks.length - 1); }}>{w}</button>
+                {/each}
+              </span>
+              <span class="help">{block.picks.length} pictures: up to {block.picks.length - 1} cuts. Each starts the next picture just before its word; without them they share the time equally.</span>
             </div>
           {/if}
           <p class="foot">
@@ -409,9 +424,22 @@
   .pbar span { flex: 1; }
   .pbar button { min-width: 32px; min-height: 28px; border: 1px solid #555; border-radius: 6px; background: none; color: #eee; font-size: 12px; }
   .words { gap: 4px; }
-  .word { padding: 2px 6px; border: 1px solid transparent; border-radius: 6px; background: #fff; font-size: 13px; }
-  .word.cut { border-color: var(--accent); background: #eef2fb; color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); }
-  .word:disabled { opacity: 0.5; }
+  .said { display: flex; flex-wrap: wrap; align-items: center; row-gap: 6px; }
+  /* Each picture's words share its tint (board 78); a cut is a line with the next picture's number before its word. */
+  .word { position: relative; min-height: 28px; padding: 2px 4px; border: 0; border-radius: 0; font-size: 13px; color: inherit; }
+  .word.start { border-radius: 6px 0 0 6px; padding-left: 6px; }
+  .word.end { border-radius: 0 6px 6px 0; padding-right: 6px; margin-right: 6px; }
+  .word.start.end { border-radius: 6px; }
+  .word:disabled { cursor: default; opacity: 1; }
+  .word:not(:disabled):not([aria-pressed='true']):not(.quiet):hover::before { content: ''; position: absolute; left: -2px; top: -3px; bottom: -3px; border-left: 2px dashed var(--accent); }
+  .t0 { --tint: #e2efda; --edge: #7fae6b; }
+  .t1 { --tint: #e3ebfb; --edge: #6f92d8; }
+  .t2 { --tint: #fbebd3; --edge: #d4a04f; }
+  .t3 { --tint: #eee3f7; --edge: #a586cf; }
+  .word { background: var(--tint); }
+  .mark { display: inline-flex; align-items: center; align-self: stretch; gap: 3px; margin: 0 4px 0 0; }
+  .mark::before { content: ''; align-self: stretch; width: 2px; border-radius: 1px; background: var(--accent); }
+  .num { min-width: 16px; height: 16px; padding: 0 3px; box-sizing: border-box; border-radius: 8px; background: var(--accent); color: #fff; font-size: 10px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; }
   .words .help { flex-basis: 100%; font-size: 12px; color: var(--muted); }
   .top { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 16px; padding: 2px 0; }
   .timeline:not(.folded) .top { margin-bottom: 6px; }
@@ -437,7 +465,8 @@
   .blk:hover { filter: brightness(0.97); }
   .seq, .collage, .card, .hold-in, .ph-in { position: absolute; inset: 1px; display: flex; overflow: hidden; border-radius: 6px; }
   .seq { gap: 2px; padding: 2px; }
-  .shot { height: 100%; flex: none; overflow: hidden; border-radius: 3px; }
+  .shot { height: 100%; flex: none; overflow: hidden; border-radius: 3px; box-sizing: border-box; }
+  .shot.tinted { border-bottom: 4px solid var(--edge); }
   .collage { align-items: center; justify-content: center; background: #f4f4f4; }
   .collage img, .collage .vid, .collage .gap { height: 62px; width: auto; max-width: 48%; margin: 0 1px; }
   .seq img, .seq .vid, .seq .gap { width: 100%; height: 100%; object-fit: cover; display: block; }

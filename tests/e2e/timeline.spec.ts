@@ -158,10 +158,32 @@ test('cut on a word: a click on a word starts the next picture there', async ({ 
   await words.getByRole('button', { name: 'water,' }).click();
   await expect(words.getByRole('button', { name: 'water,' })).toHaveAttribute('aria-pressed', 'true');
   await saved(page).toContain('Timeline: cuts at "water"\n');
-  // Two pictures: one cut at most.
-  await expect(words.getByRole('button', { name: 'carbon' })).toBeDisabled();
-  await words.getByRole('button', { name: 'water,' }).click();
+  // Two pictures: one cut at most, so a click on another word moves it there (board 78).
+  await words.getByRole('button', { name: 'carbon' }).click();
+  await saved(page).toContain('Timeline: cuts at "carbon"\n');
+  await expect(words.getByRole('button', { name: 'water,' })).toHaveAttribute('aria-pressed', 'false');
+  // The first word takes no cut: picture 1 already starts there.
+  await expect(words.getByRole('button', { name: 'It', exact: true })).toBeDisabled();
+  await words.getByRole('button', { name: 'carbon' }).click();
   await saved(page).not.toContain('cuts at');
+  // Taken off, the word under the pointer shows no "a cut would go here" line until the pointer leaves it.
+  const line = () => words.getByRole('button', { name: 'carbon' }).evaluate((b) => getComputedStyle(b, '::before').content);
+  expect(await line()).toBe('none');
+  await words.getByRole('button', { name: 'and' }).hover();
+  await words.getByRole('button', { name: 'carbon' }).hover();
+  expect(await line()).not.toBe('none');
+});
+
+test('cut on a repeated word: the cut stays on the one picked', async ({ page }) => {
+  const twice = script.replace('It needs three simple ingredients: sunlight, water, and carbon dioxide.', 'It needs water, light and water, and carbon dioxide.');
+  await setUp(page, '#/Episode%2003', { ...files, 'Episode 03/script.md': twice });
+  const t = timeline(page);
+  await t.getByRole('button', { name: /^Row 2 · / }).click();
+  const words = t.getByRole('group', { name: 'Cut on a word' });
+  await words.getByRole('button', { name: 'water,' }).nth(1).click();
+  await saved(page).toContain('Timeline: cuts at "water and"\n');
+  await expect(words.getByRole('button', { name: 'water,' }).nth(1)).toHaveAttribute('aria-pressed', 'true');
+  await expect(words.getByRole('button', { name: 'water,' }).first()).toHaveAttribute('aria-pressed', 'false');
 });
 
 test('playing: the preview sits above the drawer, follows, a hold plays in silence', async ({ page }) => {

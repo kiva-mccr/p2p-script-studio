@@ -212,7 +212,9 @@ Status: a first working version. What it does today:
   pictures, switch Sequence or Collage, or add a picture just for the timeline (Files shows those
   minimised, "+1 for the timeline"). A Hold (the last picture stays, in silence) or a Placeholder (a shot still to
   come, with its length) can follow any row; it shows as a bar between the rows too: click it to change it, ✕ to
-  remove it (with Undo). In a sequence, click a word of the dialogue to start the next picture on it (cut on a word).
+  remove it (with Undo). In a sequence, click a word of the dialogue to start the next picture just before it (cut on a word): a blue line
+  with the picture's number marks the cut, each picture's words share its colour, and with every cut used a click
+  moves the nearest one.
   While the script plays, a playhead runs along it (along the strip when folded), and a small preview above the
   drawer's right end shows the picture of the moment (⤢ makes it big). − and + zoom. Wide / Upright sets the video's
   shape for everyone (kept in the script): the preview turns upright and collages stack their pictures one above the
