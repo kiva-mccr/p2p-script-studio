@@ -17,7 +17,8 @@ Print… or Save on the right. Back to the script, the title in the breadcrumb, 
   setting added later gets its default. Defaults are what the exports did before EX-9.
 - Final Draft's one checkbox, "Row numbers and files", sets both `numbers` and `files` (board 27 drew one).
 - Voice-over takes are decoded once, the first time the format is picked; the settings only line them up again
-  (`lineUp`, `join`), so ticking a box doesn't decode again. Silence for a row lasts its read time at the speaking
+  (`lineUp`, `wavFile`), so ticking a box doesn't decode again. The file is made a slice at a time (PF-6); Save
+  stays greyed until it's ready, and a newer setting drops a file still being made. Silence for a row lasts its read time at the speaking
   speed (Settings). A row in the list plays the file from where that row starts.
 - Esc goes back, but not from a text field (the speaker name).
 - Printing still goes through the Editor (`onPrint`): it mounts the real `Print.svelte` at the top level, which
