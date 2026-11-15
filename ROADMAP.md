@@ -432,7 +432,7 @@ and suggestions, keeps every version, and exports them for production.
   Wide / Upright on the timeline, kept as `shape: upright` in the front matter (merged, never a clash); upright, the
   timeline's preview is 9:16 and collages stack their pictures (in the preview, the video and EX-19's zip). The
   preview draws any moment with the same code as the file, and plays the video once made.
-- [ ] **AP-48** Feedback mode (asked by the user, 2026-11-15): a quiet "Feedback" in the corner turns the pointer
+- [x] **AP-48** Feedback mode (asked by the user, 2026-11-15): a quiet "Feedback" in the corner turns the pointer
   into a picker; the person clicks the part of the screen that is giving them trouble or could be better (it is
   outlined as they hover), writes a short note, and sends it to GitHub as an issue. Built so it is useful to Claude
   when it picks the issue up to fix (the user's ask): each issue has the label `feedback` and the same template, with
@@ -445,6 +445,13 @@ and suggestions, keeps every version, and exports them for production.
   public, so no script text, names or file names go in by default; the person sees everything before it is sent.
   Mock-up first; open choices: where the button lives, the screenshot (whole screen or just around the element),
   and whether the script's name may be included.
+  Mock-up: board 71, agreed (2026-11-15, "looks perfect"): "Feedback" beside GitHub in the bottom right; a picture
+  of just the part and what's round it, script words blurred by default; the script's name off by default (a tick
+  box); Copy instead for people without GitHub. Built so: every element is marked at build time with the .svelte
+  file it is written in (`data-c`, lib/marks.ts, a Vite plugin), so the issue's Code line names the file; the
+  picture is drawn with modern-screenshot (MIT, loaded only when used), the part's row or bar at most, outlined in
+  orange; in rows, file names are blurred too and left out of the part's name. One change from the board: the
+  "click the part" strip sits at the bottom of the window, not under the top bar, so it never covers a part to pick.
 - [ ] **YT-1** The published video: link the final YouTube video and keep its title, description and thumbnail with
   the script.
 - [x] **AU-1** Recording audio for each line: record the dialogue of a row in the browser, kept beside the script

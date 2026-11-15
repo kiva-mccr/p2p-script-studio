@@ -8,6 +8,7 @@
   import Setup from './screens/Setup.svelte';
   import { openExample, startOver } from './lib/example';
   import { versionLabel, versionTip, type Version } from './lib/version';
+  import Feedback from './screens/Feedback.svelte';
 
   const REPO = 'https://github.com/kiva-mccr/p2p-script-studio';
   const version: Version | null = __VERSION__; // set at build time (vite.config.ts)
@@ -142,13 +143,16 @@
 
 <!-- The live version and the code, in the bottom corners of every screen (asked by the user). -->
 <a class="corner version" href={version ? `${REPO}/pull/${version.pr}` : REPO} title={versionTip(version)} target="_blank" rel="noopener">{versionLabel(version)}</a>
-<a class="corner repo" href={REPO} target="_blank" rel="noopener">GitHub</a>
+<!-- Feedback (AP-48) sits just left of GitHub. -->
+<div class="corner repo"><Feedback /><a href={REPO} target="_blank" rel="noopener">GitHub</a></div>
 
 <style>
   .corner { position: fixed; bottom: 6px; z-index: 5; padding: 4px 8px; border-radius: 6px; background: var(--ground);
     font-size: 12px; color: var(--muted); text-decoration: none; }
   .corner:hover { color: var(--accent); }
-  .repo { right: 12px; }
+  .repo { right: 12px; display: flex; gap: 2px; padding: 0; }
+  .repo a { padding: 4px 8px; color: inherit; text-decoration: none; }
+  .repo a:hover { color: var(--accent); }
   .version { left: 12px; }
   .example { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 16px; padding: 4px 24px; background: #eef2fb;
     font-size: 14px; }

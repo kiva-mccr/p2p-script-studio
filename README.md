@@ -234,6 +234,12 @@ Status: a first working version. What it does today:
   copies the details for whoever is fixing it: what the app was doing, the browser's own error, the folder's name,
   the page, the live version, the browser and the time (plain text, ready to paste into Teams or an email). Hints
   such as "Give it a name first." have no icon.
+- **Feedback:** "Feedback" in the bottom-right corner, beside GitHub. Click it, then click the part of the screen
+  that's giving you trouble or could be better (it gets an orange outline), and write a short note. Open on GitHub
+  opens a new issue with your note and where the part is filled in, and copies a picture of the part to paste in
+  (Ctrl+V); you sign in to GitHub and press Submit there. GitHub is public, so the script's words are blurred in the
+  picture and its name is left out unless you tick them. No GitHub account? Copy instead copies the same text for
+  Teams or an email.
 
 Needs Chrome or Edge on a desktop computer. The code is on GitHub (the link in the bottom-right corner). The bottom-left corner shows the live version, "PR #62" for
 example: after a refresh it tells you whether a new version is live, hovering shows what that version added and when,
