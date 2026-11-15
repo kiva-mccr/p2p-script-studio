@@ -776,7 +776,6 @@ and suggestions, keeps every version, and exports them for production.
   switching to Review after typing no longer showed before this fix either (nor in PF-1's runs): 0.27–0.31 s longest task
   before, 0.21–0.27 s after (0.26 s → 0.20 s with no typing first). What's left per key is mostly the storyboard
   timeline's layout. Not seen for real: the network drive.
-
 - [x] **PF-6** The voice-over preview stops freezing (fix 6 of the speed check, 2026-11-15; nothing visible changes,
   so no mock-up): decoding the takes was already one at a time; the freeze was joining all of them and turning them
   into one WAV in a single go. Now the WAV is made a slice (about 20 ms) at a time with a pause between, straight
@@ -784,6 +783,13 @@ and suggestions, keeps every version, and exports them for production.
   made-up big script (150 takes, 13 min), Export > Voice-over, three runs each: longest freeze 0.69 s → 0.07 s,
   longest frame 0.70 s → 0.10–0.12 s; the takes still list in about 4 s (that's decoding 150 takes) and the file is
   the same, byte for byte. Not seen for real: real webm takes on the user's computer.
+- [x] **PF-7** Leaving a script frees its memory (fix 7 of the speed check, 2026-11-15; nothing visible changes, so
+  no mock-up): the file previews' page-long watcher (`lib/near.ts`, AP-39) was made inside the first call, so its
+  callback shared that call's variables and kept the first script opened in a visit alive for the rest of it: its
+  rows (30,000 page elements) and all 2,000 History texts (101 MB of the 112 MB). Now the watcher is made in its own
+  function. Measured on the made-up big script, heap after clean-up: back on the list 112 MB → 5.5 MB (the list alone
+  is 3.7 MB), opening it again 227 MB → 120 MB (the first open is 120 MB), four rounds alike. Not seen for real:
+  real Chrome/Edge on the user's computer.
 
 ## Last (the user's order: these wait until everything above is done)
 

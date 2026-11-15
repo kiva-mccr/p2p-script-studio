@@ -70,7 +70,8 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
   Then the speed check's fixes, one thread each (the user, 2026-11-14), before and after measured with perf/ in the
   project files: PF-1 (the 5 s check reads only what's new, done), PF-2 (History by name, done), PF-3 (the list reads
   History only back to the latest send, done), PF-4 (History places comments only for the versions shown, done),
-  PF-5 (typing redoes only the comment marks it changed, done), PF-6 (the voice-over preview made in slices, done).
+  PF-5 (typing redoes only the comment marks it changed, done), PF-6 (the voice-over preview made in slices, done),
+  PF-7 (leaving a script frees its memory, done).
   The rest (AP-8 …) waits
   for the user's next ranking; "Last" in ROADMAP.md (EX-5, CC-1) waits until everything else is done.
 - Mock-ups (one board per design, numbered): https://claude.ai/artifact/2XDZmS7J5NEPZsz91RQMiL (private to the user).
