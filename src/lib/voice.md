@@ -8,6 +8,8 @@ id as state, with start, stop, play, current, remove and load), `readTakes` (a f
 
 ## Rules and pitfalls
 
+- Undo (UX-1, UX-2): `hold` reads a take's sound into memory (a `Held`) before it is deleted or recorded over;
+  `putBack` writes those bytes and the JSON back. Write holds the old take just before `stop` writes the new one.
 - `readTakes` reads the take files eight at a time (PF-10, `lib/atonce.ts`).
 - `rowLength` is the one rule for how long a row lasts (its take, else its read time): the timeline, Play and the
   Resolve / Premiere export all use it. Change it there, not in a copy.

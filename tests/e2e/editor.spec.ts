@@ -139,6 +139,17 @@ test('a delete can be undone, without any browser dialog', async ({ page }) => {
   expect(await readFile(page, SCRIPT)).toBe(example);
 });
 
+test('a file taken out of a row comes back with Undo (UX-10)', async ({ page }) => {
+  await openExample(page);
+  await page.getByRole('button', { name: 'Remove leaf-closeup.jpg' }).click();
+  await expect(page.getByRole('button', { name: 'Remove leaf-closeup.jpg' })).toHaveCount(0);
+  await expect(page.locator('.toasts')).toContainText('leaf-closeup.jpg removed from row 1.');
+  await page.locator('.toasts').getByRole('button', { name: 'Undo' }).click();
+  await expect(page.getByRole('button', { name: 'Remove leaf-closeup.jpg' })).toBeAttached();
+  await saved(page);
+  expect(await readFile(page, SCRIPT)).toBe(example);
+});
+
 test('a row turns into a section where it is, and a section back into a row, with Undo (AP-30)', async ({ page }) => {
   // Row 2 reads like a heading, with a mark and a line break, and nothing in its other columns.
   const script = example.replace(/It needs three simple ingredients[^]*?music-bed\.mp3\n/, 'Part **two**:\nmaking sugar\n');

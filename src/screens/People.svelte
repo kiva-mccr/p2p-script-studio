@@ -5,7 +5,8 @@
   // nobody has to open a script to find someone. A name opens their contact details and the scripts that credit
   // them; someone no script credits can be taken out of the list. People are added from a script's Credits.
   import type { ScriptInfo } from '../lib/folder';
-  import { creditedOn, linkedinUrl, listPeople, removePerson, type Person } from '../lib/people';
+  import { creditedOn, linkedinUrl, listPeople, removePerson, savePerson, type Person } from '../lib/people';
+  import { Undo } from '../lib/undo.svelte';
   import { routeHash } from '../lib/route';
   import Contact from './Contact.svelte';
 
@@ -47,11 +48,17 @@
     open = '';
   }
 
+  // Remove from the folder, with Undo in the window (UX-13, board 72): Undo saves them again, as they were.
+  const undo = new Undo();
   async function remove(person: Person) {
     try {
       await removePerson(root, person, me);
       people = people!.filter((p) => p.id !== person.id);
       open = '';
+      undo.offer({ what: `${person.name} removed from the folder.`, back: async () => {
+        await savePerson(root, person, me);
+        people = [...(people ?? []), person].sort((a, b) => a.name.localeCompare(b.name));
+      } });
     } catch (e) {
       error = problem(`Couldn't remove ${person.name}. If the shared folder is still syncing, wait a moment and try again.`, 'removing a person', e);
     }
@@ -74,6 +81,9 @@
     </div>
     <div class="body">
       {#if error}<p class="error" role="alert">{error}<CopyDetails message={error} /></p>{/if}
+      {#if undo.shown}
+        <div class="undo" aria-live="polite"><p>{undo.shown.what}</p><button class="outline" onclick={() => undo.take().catch((e) => (error = problem("They couldn't be put back. If the shared folder is still syncing, wait a moment and try again.", 'putting a person back', e)))}>Undo</button></div>
+      {/if}
       {#if people && !people.length && !error}
         <p class="empty">Nobody yet.<span class="help"> People are added from a script: ⋯, then Credits.</span></p>
       {/if}
@@ -137,6 +147,8 @@
   .credited a { color: var(--accent); }
   .empty { margin: 16px 0; font-size: 14px; color: var(--muted); }
   .error { margin: 12px 0 0; font-size: 13px; color: var(--danger); }
+  .undo { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin: 12px 0 0; padding: 8px 12px; border: 1px solid var(--line); border-radius: 10px; }
+  .undo p { margin: 0; flex: 1 1 200px; font-size: 14px; }
   .foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px 20px; border-top: 1px solid #eee;
     font-size: 12px; color: var(--muted); }
   .dark { min-height: 44px; padding: 0 18px; border: 0; border-radius: 8px; background: var(--ink); color: #fff; font-size: 14px; font-weight: 500; }

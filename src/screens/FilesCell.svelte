@@ -19,6 +19,7 @@
     here,
     row,
     onChange,
+    onRemoved = () => {},
     onNotice,
   }: {
     files: string[];
@@ -28,6 +29,7 @@
     here: string;
     row: number;
     onChange: (files: string[]) => void;
+    onRemoved?: (label: string, before: string[]) => void; // a line taken out with ×, and the list before (Undo, UX-10)
     onNotice: (message: string) => void;
   } = $props();
 
@@ -144,7 +146,7 @@
       {:else}
         <span class="words">{ref.label}</span>
       {/if}
-      <button class="remove" aria-label="Remove {ref.label}" onclick={() => onChange(files.filter((_, j) => j !== i))}>×</button>
+      <button class="remove" aria-label="Remove {ref.label}" onclick={() => { const before = [...files]; onChange(files.filter((_, j) => j !== i)); onRemoved(ref.label, before); }}>×</button>
     </span>
     {#if copied?.line === line}<span class="copied">Copied from {copied.from}</span>
     {:else if came?.line === line}<span class="copied">From {came.from}</span>{/if}

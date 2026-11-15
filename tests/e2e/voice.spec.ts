@@ -91,6 +91,31 @@ test('deleting a take takes it out of the folder; someone else’s take appears'
   await expect(page.getByRole('button', { name: 'Record row 2 again' })).toBeVisible();
 });
 
+test('a deleted take comes back with Undo, and a take recorded again can be undone to keep the old one (UX-1, UX-2)', async ({ page }) => {
+  await openExample(page);
+  await page.getByRole('button', { name: 'Record row 1', exact: true }).click();
+  await page.getByRole('button', { name: 'Stop recording row 1' }).click();
+  await expect(page.locator('.take')).toHaveCount(1); // written
+  const first = await readFile(page, 'Episode 03/voice/row-k3f9a.json');
+  const sound = (await readFile(page, 'Episode 03/voice/row-k3f9a.webm')).length;
+  await page.getByRole('button', { name: 'Delete the take of row 1' }).click();
+  await expect(page.locator('.take')).toHaveCount(0);
+  await expect(page.locator('.toasts')).toContainText('Take of row 1 deleted.');
+  await page.locator('.toasts').getByRole('button', { name: 'Undo' }).click();
+  await expect(page.locator('.take')).toHaveCount(1);
+  expect(await readFile(page, 'Episode 03/voice/row-k3f9a.json')).toBe(first);
+  expect((await readFile(page, 'Episode 03/voice/row-k3f9a.webm')).length).toBe(sound);
+
+  await page.waitForTimeout(20); // a new take has a later time
+  await page.getByRole('button', { name: 'Record row 1 again' }).click();
+  await page.getByRole('button', { name: 'Stop recording row 1' }).click();
+  await expect(page.locator('.toasts')).toContainText('New take for row 1 saved.');
+  await expect.poll(() => readFile(page, 'Episode 03/voice/row-k3f9a.json')).not.toBe(first);
+  await page.getByRole('button', { name: 'Undo, keep the old take' }).click();
+  await expect.poll(() => readFile(page, 'Episode 03/voice/row-k3f9a.json')).toBe(first);
+  await expect(page.locator('.toasts')).toBeEmpty();
+});
+
 test('a blocked microphone says what to do, in the page', async ({ page }) => {
   await page.addInitScript(() => {
     (window as unknown as { studioRecord: () => Promise<never> }).studioRecord = async () => {

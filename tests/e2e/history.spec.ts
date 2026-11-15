@@ -43,6 +43,19 @@ test('an earlier version can be restored, and the restore is in History', async 
   await expect(versions(page).first()).toContainText(/Restored the version from \w{3} \d+, \d{4}/);
 });
 
+test('a restore can be undone: the script goes back to what you had (UX-11)', async ({ page }) => {
+  await openExample(page);
+  await page.getByLabel('Dialogue, row 1').fill('A different opening.');
+  await page.getByRole('button', { name: 'History' }).click();
+  await versions(page).last().click();
+  await page.getByRole('button', { name: 'Restore this version' }).click();
+  await expect(page.getByLabel('Dialogue, row 1')).toHaveValue('Every leaf you have ever seen is running a tiny factory.');
+  await expect(page.locator('.toasts')).toContainText(/Restored the version from .*Undo goes back to what you had\./);
+  await page.locator('.toasts').getByRole('button', { name: 'Undo' }).click();
+  await expect(page.getByLabel('Dialogue, row 1')).toHaveValue('A different opening.');
+  await expect.poll(() => readFile(page, SCRIPT)).toContain('A different opening.');
+});
+
 test('saves inside five minutes share one entry; after five minutes a new one is made', async ({ page }) => {
   await page.clock.install();
   await openExample(page);

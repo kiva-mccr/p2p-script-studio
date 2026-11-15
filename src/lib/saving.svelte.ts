@@ -328,20 +328,28 @@ export class Saving {
   }
 
   // Puts an older version back as the script. False if it couldn't be written (a message is shown).
-  async restore(version: Version): Promise<boolean> {
-    if (!this.dir) return false;
+  // Returns the script as it was just before, for Undo (UX-11), or null when it couldn't be restored.
+  async restore(version: Version): Promise<string | null> {
+    if (!this.dir) return null;
     try {
       await this.leave();
+      const before = this.shared;
       this.#show(version.text);
       await this.save();
       if (this.status !== 'saved') throw new Error('not saved');
       const when = new Date(version.when).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
       await this.#entry('restore', `Restored the version from ${when.replace(' AM', ' am').replace(' PM', ' pm')}`);
-      return true;
+      return before;
     } catch (e) {
       this.notice(problem("That version couldn't be restored. If the shared folder is busy, wait a moment and try again.", 'restoring a version', e));
-      return false;
+      return null;
     }
+  }
+
+  // Undo of a restore (UX-11): the script as it was goes back into the page and is saved, as an ordinary save.
+  async putBack(text: string) {
+    this.#show(text);
+    await this.save();
   }
 
   // An entry of its own kind, now, for the script as everyone has it.
