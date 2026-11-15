@@ -42,7 +42,7 @@ version (`Print.svelte`) and the teleprompter (`Teleprompter.svelte`, saves what
   test that times the alone pace sets its own.
 - Away (PF-14, `lib/away.ts`): after 2 minutes with no mouse, key or scroll (and nothing playing), the check and the
   heartbeat do nothing; the first touch, or coming back to the tab, rejoins (`file.back()`) and checks at once.
-- "… is editing": `file` writes yours on opening and every 30 s (`heartbeat` here); leaving, the Editor writes a last
+- "… is editing": `file` writes yours on opening and every 60 s (`heartbeat` here, PF-18); leaving, the Editor writes a last
   one marked `left` (`file.here(true, who, dir)`, AP-37), with the name and folder read as the editor closes (leaving
   the example takes its props away first, which threw). Closing the tab tries the same from `beforeUnload`, best
   effort: if the tab is gone first, the others see "last seen" instead of "was here".

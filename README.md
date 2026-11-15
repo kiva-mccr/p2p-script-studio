@@ -217,7 +217,9 @@ Status: a first working version. What it does today:
   every few seconds (an open script every 5 seconds while someone else is in it, every 30 when you're alone, so
   someone who just opened it shows up to 30 seconds later) and open a script's files only when it has news, with a full look every 2 minutes for edits
   made outside the app. Someone else's new take can take up to 30 seconds to show. A script left open with nobody at the computer for 2 minutes (no mouse, key or scroll)
-  stops looking altogether, and catches up the moment you move; the others see you as "last seen".
+  stops looking altogether, and catches up the moment you move; the others see you as "last seen". Each open script
+  tells the others it is still open once a minute, so a laptop closed without leaving shows as editing for up to 3
+  minutes.
   Where it does read many files (History, comments, takes, Save .zip's media), it reads eight at a time, so a slow
   drive keeps you waiting far less.
 - **When something goes wrong:** the message says so in plain words, with a small grey copy icon after it. The icon

@@ -21,7 +21,7 @@ back, `onEntry` says a status change's entry was written. `script`, `dir`, `stat
   save is `diff(shared, page)`; a change from someone else is folded into `shared` as it is and into the page with
   this person's unsaved typing kept. Saves and `sync` run one at a time (`#saving`), since both change `shared`.
 - The keeper is the earliest `since` among fresh editing files (this person included); it's worked out again at each
-  check, so the next takes over when the keeper leaves or its laptop closes (2 min).
+  check, so the next takes over when the keeper leaves or its laptop closes (3 min, `FRESH_FOR` in lib/editing.ts).
 - The keeper also packs History into chapters (PF-13, `#tidy`, lib/pack.md): one step after its work, never awaited,
   so a save never waits for a chapter; again at the next check while there's more, else every 10 minutes.
 - Back from away (PF-14, `back()`): `since` becomes now, so the person rejoins as the newest and a keeper who took

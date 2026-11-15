@@ -58,7 +58,7 @@
       return 30_000;
     }
   })();
-  const HERE_EVERY = 30 * 1000; // the "… is editing" file is refreshed this often
+  const HERE_EVERY = 60 * 1000; // the "… is editing" file is refreshed this often (PF-18: was 30 s)
 
   // The script on disk: reading, saving, History and clashes (lib/saving.svelte.ts).
   const file = new Saving(untrack(() => folder), () => name, (message) => (notice = message), () => readReview());

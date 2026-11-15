@@ -1,12 +1,12 @@
 // "Sam is editing": one small file per person in .studio/editing/ (docs/studio-folder.md). Each person writes a new
-// one every 30 s and removes their own older ones; on leaving, a last one marked `left` stays ("Sam was here", AP-37).
+// one every 60 s and removes their own older ones; on leaving, a last one marked `left` stays ("Sam was here", AP-37).
 import { jsonNames, readJson, stamp, writeText } from './files';
 import { ago, at } from './when';
 
 // left: when the person left the script (their last file, AP-37); never editing then.
 export type Editing = { v: 1; who: string; since: string; seen: string; last_written: string; left?: string };
 
-const FRESH_FOR = 2 * 60 * 1000; // older than this, the person has gone (closed laptop)
+const FRESH_FOR = 3 * 60 * 1000; // older than this, the person has gone (closed laptop): 3 heartbeats (PF-18)
 const QUIET_FOR = 2 * 60 * 60 * 1000; // gone without leaving: "last seen" (amber) until this old, then "was here"
 const BAR_FOR = 7 * 24 * 60 * 60 * 1000; // the top bar names the last person here up to this far back
 export const KEEP_FOR = 30 * 24 * 60 * 60 * 1000; // older editing files are removed, and not listed
@@ -51,7 +51,7 @@ async function ownFiles(folder: FileSystemDirectoryHandle, who: string): Promise
 
 const base = (who: string) => fileName(who).slice(0, -'.json'.length);
 
-// Has the script open now: seen in the last 2 minutes, and hasn't left.
+// Has the script open now: seen in the last 3 minutes, and hasn't left.
 export const isEditing = (e: Editing, now = Date.now()) => !e.left && now - Date.parse(e.seen) < FRESH_FOR;
 
 // The other people who have the script open now.

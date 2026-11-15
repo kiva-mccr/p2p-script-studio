@@ -882,9 +882,10 @@ and suggestions, keeps every version, and exports them for production.
 - [ ] **PF-17** Keep folder handles for the visit: each round looks up the script folder, `.studio/` and its folders
   again by name (about 15 look-ups a round, 400+ while opening the big script). Kept once found, and looked up again
   only if a call fails (folder renamed or moved). No change to the drive's files; small but free.
-- [ ] **PF-18** A slower "… is editing" heartbeat: a new file every 60 s instead of 30 s (each costs a write, a listing
+- [x] **PF-18** A slower "… is editing" heartbeat: a new file every 60 s instead of 30 s (each costs a write, a listing
   and a removal), with "gone" after 3 minutes instead of 2. Half the heartbeat traffic. Trade-off: a closed laptop
-  shows as editing up to a minute longer, and the keeper hands over a minute later.
+  shows as editing up to a minute longer, and the keeper hands over a minute later. Built 2026-11-15 as specified
+  (`HERE_EVERY`, `FRESH_FOR`); measured in perf/pf-18 of the project files.
 
 ## Last (the user's order: these wait until everything above is done)
 
