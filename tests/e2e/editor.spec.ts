@@ -139,6 +139,30 @@ test('a delete can be undone, without any browser dialog', async ({ page }) => {
   expect(await readFile(page, SCRIPT)).toBe(example);
 });
 
+test('each tab keeps your place: Write, Review and back lands where you were (UX-3)', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 600 });
+  await openExample(page);
+  await page.getByLabel('Dialogue, row 4').evaluate((el) => el.scrollIntoView({ block: 'center' }));
+  await expect.poll(() => page.evaluate(() => scrollY)).toBeGreaterThan(400);
+  const write = await page.evaluate(() => scrollY);
+  // A button in the top bar takes the focus without moving the page (html's scroll padding counted it as hidden).
+  await page.getByRole('button', { name: /^Review/ }).focus();
+  expect(await page.evaluate(() => scrollY)).toBe(write);
+  await page.getByRole('button', { name: /^Review/ }).click();
+  await expect(page.getByRole('button', { name: /^Review/ })).toHaveAttribute('aria-current', 'page');
+  await expect.poll(() => page.evaluate(() => scrollY)).toBe(0); // Review opens at its top the first time
+  await page.mouse.wheel(0, 300);
+  await expect.poll(() => page.evaluate(() => scrollY)).toBeGreaterThan(200);
+  const review = await page.evaluate(() => scrollY);
+  await page.getByRole('button', { name: 'Write', exact: true }).click();
+  await expect.poll(() => page.evaluate(() => scrollY)).toBe(write);
+  await page.waitForTimeout(500); // Write's height settles after it shows: the place is held through that
+  expect(await page.evaluate(() => scrollY)).toBe(write);
+  await expect(page.getByLabel('Dialogue, row 4')).toBeInViewport();
+  await page.getByRole('button', { name: /^Review/ }).click();
+  await expect.poll(() => page.evaluate(() => scrollY)).toBe(review);
+});
+
 test('a file taken out of a row comes back with Undo (UX-10)', async ({ page }) => {
   await openExample(page);
   await page.getByRole('button', { name: 'Remove leaf-closeup.jpg' }).click();

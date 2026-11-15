@@ -252,6 +252,9 @@
   header { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; padding: 10px 24px; border-bottom: 1px solid var(--line); }
   /* The bar stays at the top of the window (UX-4, board 75); its height is --bar-h, for what sticks under it. */
   header { position: sticky; top: 0; z-index: 7; background: var(--ground); } /* over the pinned timeline and its preview (z 5) */
+  /* html's scroll-padding-top counts the bar's own place as hidden, so focusing a button in it (Tab, a click)
+     scrolled the page to "show" it. Each thing in the bar counts as drawn one bar lower: always in view. */
+  header :global(*) { scroll-margin: calc(-1 * var(--bar-h, 0px)) 0 var(--bar-h, 0px); }
   .crumbs { display: flex; align-items: center; gap: 6px; flex: 1 1 280px; min-width: 0; } /* below that the bar wraps */
   /* The long "Not saved" and Allow editing don't fit beside the tabs: the bar wraps instead of hiding them. */
   .crumbs.locked { flex: 1 0 auto; max-width: 100%; }

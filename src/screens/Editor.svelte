@@ -34,6 +34,8 @@
   import { News } from '../lib/news';
   import { Away } from '../lib/away';
   import { Undo } from '../lib/undo.svelte';
+  import { bring, watchScroll } from '../lib/followrow';
+  import { Places } from '../lib/tabplace';
 
   // review: opened from a shared link, so it starts on the Review tab (RV-10). tour: in the example only, the guided
   // tour (AP-34), a count that goes up when Take the tour is clicked.
@@ -78,6 +80,19 @@
   let checker: ReturnType<typeof setInterval> | undefined;
   let heartbeat: ReturnType<typeof setInterval> | undefined;
   let mode = $state<'write' | 'review' | 'history' | 'assets'>(untrack(() => review) ? 'review' : 'write');
+  // Each tab keeps where you were in it (UX-3, lib/tabplace.md). A jump to a row (a card, a missing file, Find)
+  // comes after this, so it wins.
+  const places = new Places();
+  let placed = untrack(() => mode);
+  $effect(() => {
+    const now = mode;
+    untrack(() => {
+      if (now === placed) return;
+      placed = now;
+      places.go(now);
+    });
+  });
+  $effect(() => () => places.stop());
   // The Files column's paths that aren't in the folder (EX-6): the Assets tab's count and list. Checked again when
   // the files change, when the tab opens and with the 5 s check, since OneDrive may bring a file in at any time.
   let lostFiles = $state<Set<string>>(new Set());
@@ -115,8 +130,11 @@
     sideOpen = true;
   }
   // A card in the panel: Write scrolls to its row.
+  // Only when the row isn't already in view (UX-6): picking a card for a row on screen left the page moving.
   function showRow(id: string) {
-    document.querySelector(`[data-row="${id}"]`)?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    places.stop();
+    const row = document.querySelector(`[data-row="${id}"]`);
+    if (row) bring(row);
   }
   // Flagged rows (AP-9), in row order; kept with the comments.
   const flagged = $derived(flags(notes, script ? rows(script).map((row) => row.id) : []));
@@ -162,6 +180,33 @@
     const steps = plan(script, voice.takes, speaking.wpm);
     player.start(dir, steps, from === undefined ? 0 : Math.max(0, steps.findIndex((s) => s.id === from)), voice.takes);
   }
+  // Scrolling yourself while it plays stops the page following the row (UX-12, board 74); a button goes back.
+  $effect(() => watchScroll(player));
+  let playingAway = $state<'' | 'up' | 'down'>(''); // where the playing row is when it is out of view
+  function lookForRow() {
+    const id = player.row.replace(/^(hold|placeholder):/, '');
+    const el = id && document.querySelector(`[data-row="${id}"], [data-play="${id}"]`);
+    if (!el) return void (playingAway = '');
+    const { top, bottom } = el.getBoundingClientRect();
+    const ceiling = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--bar-h')) || 0;
+    playingAway = bottom < ceiling ? 'up' : top > innerHeight ? 'down' : '';
+  }
+  $effect(() => {
+    void player.row;
+    if (!player.following) lookForRow();
+  });
+  const playingNumber = $derived.by(() => {
+    const id = player.row.replace(/^(hold|placeholder):/, '');
+    const at = script ? rows(script).findIndex((r) => r.id === id) : -1;
+    return at + 1;
+  });
+  function backToPlaying() {
+    player.following = true;
+    const id = player.row.replace(/^(hold|placeholder):/, '');
+    const el = document.querySelector(`[data-row="${id}"], [data-play="${id}"]`);
+    if (el) bring(el);
+  }
+
   // Space pauses and Esc stops, unless you are typing (Space on a button is that button's).
   function playKeys(event: KeyboardEvent) {
     const el = event.target as HTMLElement;
@@ -408,6 +453,7 @@
     if (id.startsWith('flag:')) {
       switchMode('write');
       await tick();
+      places.stop();
       const row = document.querySelector(`[data-row="${id.slice(5)}"]`);
       row?.scrollIntoView({ block: 'center' });
       return row?.querySelector<HTMLElement>('.flag-note input')?.focus({ preventScroll: true });
@@ -421,6 +467,7 @@
   async function jump(row: number) {
     switchMode('write');
     await tick();
+    places.stop();
     const field = document.querySelector<HTMLElement>(`[aria-label="Dialogue, row ${row}"]`);
     field?.scrollIntoView({ block: 'center' });
     field?.focus({ preventScroll: true });
@@ -533,7 +580,7 @@
   }
 </script>
 
-<svelte:window onbeforeunload={beforeUnload} onafterprint={() => (printing = null)} onkeydown={(e) => (saveKey(e), findKey(e), playKeys(e))} />
+<svelte:window onscroll={() => (places.note(mode, scrollY), player.started && !player.following && lookForRow())} onbeforeunload={beforeUnload} onafterprint={() => (printing = null)} onkeydown={(e) => (saveKey(e), findKey(e), playKeys(e))} />
 <svelte:document onfocusin={(e) => { const at = (e.target as HTMLElement).closest?.<HTMLElement>('[data-block]'); if (at) cursorBlock = Number(at.dataset.block); }} onvisibilitychange={() => (document.hidden ? status === 'waiting' && save() : away.away ? away.touch() : checkOutside())} />
 
 {#if prompting && script}
@@ -548,6 +595,10 @@
   <Print {script} {dir} title={title ?? ''} version={printing.version} column={printing.column} lines={printing.lines} scale={printing.scale / 100} hidden={printing.hidden} landscape={printing.landscape} credits={printing.credits ? shownCredits(script.front) : []} onReady={() => window.print()} />
 {/if}
 
+{#if player.started && !player.following && playingAway && playingNumber}
+  <!-- Under the top bar, clear of the pinned timeline and the messages at the bottom (UX-12, board 74). -->
+  <button class="back-to-row" onclick={backToPlaying}>{playingAway === 'up' ? '↑' : '↓'} Back to row {playingNumber}</button>
+{/if}
 <!-- Messages sit at the bottom of the window, so they are seen wherever you have scrolled to. -->
 <div class="toasts">
   {#if undo.shown}
@@ -612,6 +663,9 @@
 </div>
 {/if}
 <style>
+  .back-to-row { position: fixed; z-index: 6; left: 50%; top: calc(var(--bar-h, 0px) + 12px); transform: translateX(-50%); min-height: 40px;
+    padding: 0 16px; border: 1px solid #d6e0f7; border-radius: 999px; background: var(--ground); color: var(--accent); font-size: 14px;
+    font-weight: 500; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1); }
   .toasts { position: fixed; z-index: 10; left: 50%; bottom: 24px; transform: translateX(-50%); width: min(720px, calc(100% - 32px));
     display: flex; flex-direction: column; gap: 8px; }
   .banner { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 10px 16px; border-radius: 10px;

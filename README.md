@@ -83,6 +83,7 @@ Status: a first working version. What it does today:
   page first doesn't lose it.
 - **The top bar** of a script stays at the top of the window as you scroll. Where a review button is on the other
   tab it says so: "In review · Approve in Review" in Write, "Send for review in Write" in Review (each a link there).
+  Each tab keeps where you were: going to Review and back to Write lands where you left Write.
 - **Export / Share** at the top right of a script holds Copy link and Copy for Teams, then Print, Fountain, Final Draft,
   Voice-over and Resolve / Premiere; **the ⋯ menu** holds Find and replace (in Write), Teleprompter, Credits and Settings. Settings > Hide
   help text (off to start, kept in this browser) takes away the grey lines that explain how things work, for people
@@ -197,7 +198,8 @@ Status: a first working version. What it does today:
   clean-up: crop the silence, the browser's noise reduction, and making every take equally loud. The recording itself is
   kept whole, so turning crop or loudness off brings it back.
 - **Play the script:** once a row has a take, ▶ Play in the top bar goes through the script line by line and plays
-  each take in time; the line being spoken is tinted and the page follows it. A row with no take waits in silence
+  each take in time; the line being spoken is tinted and the page follows it, until you scroll yourself: then a
+  "↓ Back to row 6" button under the top bar takes you back and follows again. A row with no take waits in silence
   for its read time. With the mouse on a row, its number becomes ▶: click it to play from there (the row playing shows ❚❚); pause with the same button or Space, stop with ■ or
   Esc. It works the same in Review, where each line also shows its take to listen to, without the mic or delete.
 - **Storyboard timeline:** under the last row in Write, the script laid out in time: sections, then each row with its

@@ -10,6 +10,8 @@ offers its pictures, Sequence or Collage, + Add a picture (only for the timeline
 
 ## Rules and pitfalls
 
+- The hover text (UX-8) lines up with the block's right edge (`.tip.end`) when it would run past the timeline's box or
+  the window on the right (`showTip` measures; `TIP` is its width with padding).
 - Mostly a view: every choice goes into the row's `Timeline:` line through `onTimeline` (or its Files through
   `onFiles`), so it saves, merges and shows in History like any edit. Never keep timeline state anywhere else.
 - Lengths come from `layout` (`lib/timeline.ts`) with `rowLength` (`lib/voice.svelte.ts`), as Play the script and

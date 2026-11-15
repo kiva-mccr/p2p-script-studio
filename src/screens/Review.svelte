@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { bring } from '../lib/followrow';
   import { problem } from '../lib/problems';
   import { tick } from 'svelte';
   import { fieldText as text, threads, type Field, type Flag, type Note } from '../lib/comments';
@@ -94,12 +95,10 @@
     await voice.play(dir, id).catch((e) => onNotice(problem("That take couldn't be played. If someone just recorded it, the shared folder may still be syncing.", 'playing a take', e)));
   }
 
-  // The page follows the row being played, as in Write.
+  // The page follows the row being played, as in Write, until you scroll yourself (UX-12).
   $effect(() => {
-    const row = player.row && table?.querySelector(`[data-play="${player.row}"]`);
-    if (!row) return;
-    const { top, bottom } = row.getBoundingClientRect();
-    if (top < 140 || bottom > innerHeight) row.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    const row = player.following && player.row && table?.querySelector(`[data-play="${player.row}"]`);
+    if (row) bring(row);
   });
 
   // What's changed since the last review (RV-4, mock-up 28). On unless this person turned it off; Show the edits is

@@ -8,6 +8,8 @@ Play the script (AU-2, board 14): `plan` (the rows in order, each with how long 
 
 ## Rules and pitfalls
 
+- `following` (UX-12) is true from `start` until you scroll yourself (`lib/followrow.ts`); Write and Review only bring
+  the playing row into view while it is true.
 - `plan` is the storyboard timeline's `layout` (SB-1): holds and placeholders are silent steps after their row
   (ids `hold:<row>`, `placeholder:<row>`), so the timeline and Play always agree.
 - A row with no take waits in silence for its read time (its words at the teleprompter's speed), so the timing

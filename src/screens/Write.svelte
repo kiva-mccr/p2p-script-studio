@@ -5,6 +5,7 @@
   import { clock, sectionWords, speaking } from '../lib/readtime.svelte';
   import { emptyRow, type Block, type Script } from '../lib/script';
   import type { Offer } from '../lib/undo.svelte';
+  import { bring } from '../lib/followrow';
   import { plain } from '../lib/format';
   import { QuoteMarks } from '../lib/quotemarks';
   import type { Marks } from '../lib/visit';
@@ -99,14 +100,11 @@
     }
   }
 
-  // The page follows the row being played.
+  // The page follows the row being played, until you scroll yourself (UX-12).
   let table = $state<HTMLElement>();
   $effect(() => {
-    const row = player.row && table?.querySelector(`[data-row="${player.row}"]`);
-    if (!row) return;
-    const { top, bottom } = row.getBoundingClientRect();
-    // Only when it isn't all in view (under the top bar, which stays up while playing).
-    if (top < 140 || bottom > innerHeight) row.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    const row = player.following && player.row && table?.querySelector(`[data-row="${player.row}"]`);
+    if (row) bring(row);
   });
 
   // Flags (AP-9, mock-up 22). A new flag puts the cursor in its note; ‹ › step through them in row order.

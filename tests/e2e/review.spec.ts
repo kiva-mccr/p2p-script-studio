@@ -444,7 +444,8 @@ test('the top bar stays up on a long script and points to the other tab\'s butto
   await openReview(page, ALL_FILES); // the example is "in review"
   await page.getByRole('button', { name: 'Write', exact: true }).click();
   await expect(page.getByText('In review', { exact: true })).toBeVisible();
-  await page.evaluate(() => scrollTo(0, document.body.scrollHeight));
+  await page.mouse.move(640, 400);
+  await page.mouse.wheel(0, 100000); // as you would: a script's scrollTo could be pulled back while Write settles (UX-3)
   const bar = page.locator('header').filter({ has: page.getByRole('navigation', { name: 'Mode' }) });
   await expect.poll(async () => (await bar.boundingBox())?.y).toBe(0); // still at the top of the window
   const height = (await bar.boundingBox())!.height;
