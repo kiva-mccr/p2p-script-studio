@@ -21,7 +21,7 @@
   import { COLUMNS, readHidden } from '../lib/printcolumns';
   import { keep, recall } from '../lib/remember';
   import { frontValue, rows, type Script } from '../lib/script';
-  import { join, lineUp, readClips, wav, type Clip } from '../lib/voiceexport';
+  import { lineUp, readClips, wavFile, type Clip } from '../lib/voiceexport';
   import Print from './Print.svelte';
   import EditPreview from './EditPreview.svelte';
   import { EDIT, RATES, SIZES, plan as editPlan } from '../lib/editxml';
@@ -128,7 +128,19 @@
     }
     return out;
   });
-  const file = $derived(clips?.length ? new Blob([wav(join(lined, RATE, gap), RATE)], { type: 'audio/wav' }) : null);
+  // The joined file is made a slice at a time (PF-6), again when the settings change; Save waits for it.
+  let file = $state<Blob | null>(null);
+  $effect(() => {
+    const clipsNow = lined;
+    const gapNow = gap;
+    file = null;
+    if (!clips?.length) return;
+    let stale = false;
+    wavFile(clipsNow, RATE, gapNow, () => stale).then((made) => {
+      if (!stale) file = made;
+    });
+    return () => (stale = true);
+  });
   let sound = $state('');
   $effect(() => {
     if (!file) return;

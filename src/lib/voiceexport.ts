@@ -69,25 +69,46 @@ export function lineUp(clips: Clip[], seconds: number[], rate: number, silence: 
   });
 }
 
-// The clips one after another, with `gap` seconds of silence between them.
-export function join(clips: Clip[], rate: number, gap: number): Float32Array {
-  const pause = Math.round(gap * rate);
-  const out = new Float32Array(clips.reduce((n, c) => n + c.samples.length, 0) + pause * Math.max(0, clips.length - 1));
-  let at = 0;
-  for (const clip of clips) {
-    out.set(clip.samples, at);
-    at += clip.samples.length + pause;
-  }
-  return out;
-}
-
 // Mono 16-bit PCM WAV.
 export function wav(samples: Float32Array, rate: number): Uint8Array<ArrayBuffer> {
-  const bytes = new Uint8Array(new ArrayBuffer(44 + samples.length * 2));
+  const bytes = new Uint8Array(44 + samples.length * 2);
+  bytes.set(header(samples.length, rate));
+  bytes.set(pcm(samples), 44);
+  return bytes;
+}
+
+// The clips one after another as a WAV, with `gap` seconds of silence between them (not after the last). Made a
+// slice at a time with a pause between slices, so the page never freezes (PF-6: 150 takes in one go held it for
+// 0.7 s). Gives null if `stale()` turns true meanwhile.
+export async function wavFile(clips: Clip[], rate: number, gap: number, stale = () => false): Promise<Blob | null> {
+  const pause = new Uint8Array(Math.round(gap * rate) * 2);
+  const length = clips.reduce((n, c) => n + c.samples.length, 0) + (pause.length / 2) * Math.max(0, clips.length - 1);
+  const parts: Uint8Array<ArrayBuffer>[] = [header(length, rate)];
+  let since = 0;
+  for (const [i, clip] of clips.entries()) {
+    if (i && pause.length) parts.push(pause);
+    for (let at = 0; at < clip.samples.length; at += SLICE) {
+      const part = clip.samples.subarray(at, at + SLICE);
+      parts.push(pcm(part));
+      since += part.length;
+      if (since < SLICE) continue;
+      since = 0;
+      await new Promise((r) => setTimeout(r));
+      if (stale()) return null;
+    }
+  }
+  return new Blob(parts, { type: 'audio/wav' });
+}
+
+// About 20 ms of work between pauses.
+const SLICE = 1 << 20;
+
+function header(length: number, rate: number): Uint8Array<ArrayBuffer> {
+  const bytes = new Uint8Array(44);
   const view = new DataView(bytes.buffer);
   const text = (at: number, s: string) => [...s].forEach((c, i) => view.setUint8(at + i, c.charCodeAt(0)));
   text(0, 'RIFF');
-  view.setUint32(4, 36 + samples.length * 2, true);
+  view.setUint32(4, 36 + length * 2, true);
   text(8, 'WAVEfmt ');
   view.setUint32(16, 16, true);
   view.setUint16(20, 1, true); // PCM
@@ -97,10 +118,17 @@ export function wav(samples: Float32Array, rate: number): Uint8Array<ArrayBuffer
   view.setUint16(32, 2, true);
   view.setUint16(34, 16, true);
   text(36, 'data');
-  view.setUint32(40, samples.length * 2, true);
+  view.setUint32(40, length * 2, true);
+  return bytes;
+}
+
+// The samples as 16-bit little-endian PCM.
+function pcm(samples: Float32Array): Uint8Array<ArrayBuffer> {
+  const bytes = new Uint8Array(samples.length * 2);
+  const view = new DataView(bytes.buffer);
   for (let i = 0; i < samples.length; i++) {
     const s = Math.max(-1, Math.min(1, samples[i]));
-    view.setInt16(44 + i * 2, s < 0 ? s * 0x8000 : s * 0x7fff, true);
+    view.setInt16(i * 2, s < 0 ? s * 0x8000 : s * 0x7fff, true);
   }
   return bytes;
 }
