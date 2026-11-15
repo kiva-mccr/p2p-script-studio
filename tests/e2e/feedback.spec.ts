@@ -101,6 +101,22 @@ test("a file's name is the script's, so it's left out of the part's name", async
   await expect(panel).toHaveCount(0);
 });
 
+test('the panel is always whole on screen, even in a short window (a bug the user hit)', async ({ page }) => {
+  await openScript(page);
+  for (const [height, row] of [[520, 'Record row 2'], [800, 'Record row 4'], [800, 'Record row 1']] as const) {
+    await page.setViewportSize({ width: 1280, height });
+    await page.getByRole('button', { name: 'Feedback' }).click();
+    await page.getByRole('button', { name: row }).click();
+    const panel = page.getByRole('region', { name: 'Feedback' });
+    await expect(panel.getByRole('img', { name: 'The part, outlined' })).toBeVisible();
+    const box = (await panel.boundingBox())!;
+    expect(box.y).toBeGreaterThanOrEqual(0);
+    expect(box.y + box.height).toBeLessThanOrEqual(height);
+    expect(box.x + box.width).toBeLessThanOrEqual(1280);
+    await panel.getByRole('button', { name: 'Cancel' }).click();
+  }
+});
+
 test('Esc stops picking, and the page works as before', async ({ page }) => {
   await openScript(page);
   await page.getByRole('button', { name: 'Feedback' }).click();

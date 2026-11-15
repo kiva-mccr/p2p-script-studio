@@ -176,3 +176,20 @@ export function blurWords(root: Element) {
     if (typed || h.getAttribute('contenteditable') === 'true' || (own && scripted)) h.style.filter = 'blur(4px)';
   }
 }
+
+const GAP = 10;
+const EDGE = 8;
+
+/** Where the panel goes: below the part if it fits, else above, else wherever it is whole on screen (over the part
+ * if it must). Never past an edge of the window. */
+export function placePanel(part: { left: number; top: number; bottom: number } | null, panel: { width: number; height: number },
+  view: { width: number; height: number }): { left: number; top: number } {
+  const clamp = (v: number, max: number) => Math.max(EDGE, Math.min(v, max));
+  const maxLeft = view.width - panel.width - EDGE;
+  const maxTop = view.height - panel.height - EDGE;
+  if (!part) return { left: clamp(maxLeft, maxLeft), top: clamp(maxTop, maxTop) };
+  const left = clamp(part.left, maxLeft);
+  if (part.bottom + GAP + panel.height <= view.height - EDGE) return { left, top: part.bottom + GAP };
+  if (part.top - GAP - panel.height >= EDGE) return { left, top: part.top - GAP - panel.height };
+  return { left, top: clamp(part.bottom + GAP, maxTop) };
+}
