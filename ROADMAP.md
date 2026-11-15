@@ -844,11 +844,16 @@ and suggestions, keeps every version, and exports them for production.
   leaves one after reading a script the slow way; For me per name plus "anyone". Measured (perf/pf-12, made-up folder,
   10 ms a call): a new computer's list 10,393 calls / 10.6 s → 1,319 calls / 1.9 s; the folder's very first visit
   pays +421 calls once.
-- [ ] **PF-13** History in chapters (left for later in HI-3): every 100 older versions are packed into one written-once,
+- [x] **PF-13** History in chapters (left for later in HI-3): every 100 older versions are packed into one written-once,
   compressed file (whole copies kept, as decided), and the single files are removed after a while, like change files.
   Every listing of History shrinks from 2,000 names to about 20 (the 5 s check, the list's fingerprint, History), and a
   new computer reads about 20 files and roughly 25 MB instead of 2,000 files and 100 MB. Trade-off: the biggest change
   to `.studio/` (docs/studio-folder.md); a single version can no longer be opened in Notepad from Explorer.
+  Built: `.studio/chapters/` (gzip, named by the first and last version file and a random id); the keeper packs one
+  chapter per check once 125 are loose (25+ newest stay single), and removes the single files a chapter holds 3 days
+  after packing (computers still syncing, tabs on an older copy of the app). Measured (perf/pf-13, made-up folder,
+  simulated drive): History on a new computer 5,545 calls and 95 MB → 127 calls and 22 MB; the big script's History
+  2,000 files → 100 files + 19 chapters.
 - [x] **PF-14** No checks while you're away (the user's idea, 2026-11-15): a tab in the background already skips the 5 s
   check (and checks at once when you come back); now a script left open with no mouse, key or scroll for 2 minutes
   stops checking too, and catches up the moment you move. The "… is editing" file also stops, so others see "last

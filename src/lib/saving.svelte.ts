@@ -9,6 +9,7 @@ import { fileName, isEditing, readEditing, othersEditing, whoWasHere, writeEditi
 import { addVersion, heads, listVersions, officialNumber, OUTSIDE, recentVersions, sendVersion, sha256, type Version } from './history';
 import { merge, type Merged, type Side } from './merge';
 import { diff, fold } from './changes';
+import { tidyHistory } from './pack';
 import { listChanges, readChange, readFolded, removeChange, writeChange, writeFolded } from './changefiles';
 import { Started } from './started';
 import { follow } from './news';
@@ -25,6 +26,7 @@ const SAVE_EVERY = (() => {
 })();
 const RETRY_AFTER = 6000; // a failed save, tried again
 const ENTRY_EVERY = 5 * 60 * 1000; // a History entry at most every 5 minutes of editing (docs/studio-folder.md)
+const TIDY_EVERY = 10 * 60 * 1000; // History looked at for packing this often, when there's nothing to pack
 const KEEP_CHANGES = 2 * 60 * 1000; // change files already in script.md are removed once this old
 const STALE_AFTER = 60 * 1000; // a change this much older than script.md was surely folded in already
 
@@ -276,10 +278,26 @@ export class Saving {
       for (const name of await listChanges(dir)) {
         if (this.#seen.has(name) && Date.now() - Date.parse(fromStamp(name)) > KEEP_CHANGES) await removeChange(dir, name);
       }
+      this.#tidy(dir);
     } catch {
       // Tried again at the next check (the next keeper, if this computer goes).
     }
   }
+
+  // History packed into chapters (PF-13, lib/pack.ts), one step at a time beside the keeper's work, never holding up a
+  // save: again at the next check while there is more to do, otherwise every 10 minutes.
+  #tidy(dir: FileSystemDirectoryHandle) {
+    if (this.#tidying || Date.now() < this.#tidyAt) return;
+    this.#tidying = true;
+    tidyHistory(dir)
+      .catch(() => false)
+      .then((more) => {
+        this.#tidyAt = more ? 0 : Date.now() + TIDY_EVERY;
+        this.#tidying = false;
+      });
+  }
+  #tidying = false;
+  #tidyAt = 0;
 
   // A History entry for `text`: at most every 5 minutes, or now when `now` is set; after the newest entry, so two
   // people's entries follow one another. Credited to whoever's changes it holds.

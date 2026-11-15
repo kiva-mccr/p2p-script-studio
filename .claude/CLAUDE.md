@@ -75,7 +75,7 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
   Then less network drive traffic (all of PF-8 to PF-18 queued by the user, 2026-11-15; nothing visible, so no mock-ups),
   one thread each, measured before and after with perf/ (perf/pf-ideas/probe.js counts calls by folder), by impact
   (the user's order): PF-15 (one news folder, done), PF-14 (no checks while away, done), PF-8 (quieter check, done), PF-16 (fast only
-  with others, done), PF-9 (comments remembered, done), PF-10 (reads at once, done early, asked by the coordinator), PF-13 (History chapters), PF-11 (recent History on open, done), PF-12 (summary
+  with others, done), PF-9 (comments remembered, done), PF-10 (reads at once, done early, asked by the coordinator), PF-13 (History chapters, done), PF-11 (recent History on open, done), PF-12 (summary
   per script, done), PF-18 (slower heartbeat), PF-17 (keep folder handles).
   When all are done: a report of their effects (the user's ask), before (perf/pf-ideas/probe-out.txt) against after,
   same probe, same made-up folder.
@@ -171,4 +171,7 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
 - Recent History on open (PF-11) on the real network drive: only the made-up folder with a 10 ms delay was measured.
 - The list's summary per script (PF-12) with two real computers: a summary matches only if both see the same file
   dates (script.md, takes); whether SMB gives every computer the same dates is unseen.
+- History in chapters (PF-13) on the real network drive and with older app tabs open: packing and the 3-day removal
+  were only seen in test Chromium (knobs `chapter-size`, `chapter-keep`); a chapter written while another computer
+  reads History is unseen.
 - Allow editing (AP-25) after Chrome really takes back access: tests fake the lost OK; how long Chrome waits is unseen.

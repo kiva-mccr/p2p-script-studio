@@ -1,7 +1,7 @@
 # `src/lib/history.ts`
 
-A script's history: one JSON file per version in `.studio/versions/` (docs/studio-folder.md), written once and
-never changed. Also what changed between two versions: a title ("Edited rows 3 and 4") and each changed field.
+A script's history: one JSON file per version in `.studio/versions/`, and older ones packed 100 to a file in
+`.studio/chapters/` (PF-13, lib/chapters.ts) (docs/studio-folder.md), written once and never changed. Also what changed between two versions: a title ("Edited rows 3 and 4") and each changed field.
 
 - **Used by:** `lib/scriptlist.svelte.ts` (`sinceSend`), `lib/folder.ts`, `lib/saving.svelte.ts`, `screens/Editor.svelte`, `screens/History.svelte`, `screens/Print.svelte` (through Editor); `recentVersions` by saving and the Editor. **Tests:**
   `tests/unit/history.test.ts`, `tests/e2e/history.spec.ts`.
@@ -28,6 +28,10 @@ never changed. Also what changed between two versions: a title ("Edited rows 3 a
   check For me gives the same answers as with the whole History; keep it so if `forMe` starts using older versions.
 - Files not kept are read eight at a time (PF-10, `lib/atonce.ts`); `known` is filled in name order afterwards, so
   the answer never depends on which read finished first.
+- History is the single files and the chapters together, a version counted once by its file's name (PF-13).
+  `readBack` reads single files first, then lists chapters only if they weren't enough (newest first): a chapter holds
+  only versions older than every loose single file. A version in the same second as the oldest needed may sit in a
+  chapter, so those are looked at too when the oldest needed is the oldest single file's second.
 - Rows are matched by id, so a moved row is not "edited".
 - A row's `Change` carries its `row` id and `field` (as comments name it, `on_screen`), so History can put a comment
   under it (RV-6); a removed row has only `row`.

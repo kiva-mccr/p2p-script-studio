@@ -9,6 +9,7 @@ Episode 03 - How Photosynthesis Works/
   assets/
   .studio/
     versions/   one file per history entry
+    chapters/   older history entries packed 100 to a file (PF-13)
     comments/   one file per comment, reply, or change to one
     changes/    each person's saves: one file per save, only what changed (FX-2)
     editing/    a file for each person who has the script open, a new one every 30 s
@@ -153,6 +154,26 @@ except as the `who` of what they write.
 A send for review is also the next official version (RV-9): its `review` entry then has `official: true` and counts
 in the numbering ("v3 · Sent for review"). It has none when the script is the same as the newest official version,
 leaving out the `status` and `authors` lines, so a version is never made twice.
+
+### chapters/: older History packed (PF-13)
+
+`chapters/20261101T090000Z_aa11bb22_20261103T170500Z_cc33dd44_k3f9a1.json.gz`: 100 older versions in one gzip
+file, written once by the keeper. Its name is the first and last version file it holds (without `.json`), then a
+random id, so two keepers packing at once never write the same file. Inside, unpacked:
+
+```json
+{ "v": 1, "packed": "2026-11-15T09:00:00.000Z", "versions": { "20261101T090000Z_aa11bb22.json": { "v": 1, "id": "aa11bb22", … } } }
+```
+
+- Each version is whole, as in its own file, under its file's name. History is the version files and the chapters
+  together; a version in both (or in two chapters) counts once.
+- The keeper packs the oldest 100 version files newer than the newest chapter, once there are 125 of them, so at
+  least 25 recent versions always stay single files (what opening a script and the list mostly read). One chapter at
+  a time, beside its other work.
+- The single files stay **3 days** after packing (for computers still syncing the chapter, and tabs open on an older
+  copy of the app, which doesn't know chapters), then the keeper removes those the chapter really holds. A version
+  file that arrived late from another computer stays, and is read as it is.
+- A chapter can't be opened in Notepad: use History in the app (or unzip it with 7-Zip).
 
 Official versions are numbered from the order they were published, so the number is never stored. Once a script
 has one, History shows the official versions and folds the small saves between them into one line ("6 changes

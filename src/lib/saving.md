@@ -22,6 +22,8 @@ back, `onEntry` says a status change's entry was written. `script`, `dir`, `stat
   this person's unsaved typing kept. Saves and `sync` run one at a time (`#saving`), since both change `shared`.
 - The keeper is the earliest `since` among fresh editing files (this person included); it's worked out again at each
   check, so the next takes over when the keeper leaves or its laptop closes (2 min).
+- The keeper also packs History into chapters (PF-13, `#tidy`, lib/pack.md): one step after its work, never awaited,
+  so a save never waits for a chapter; again at the next check while there's more, else every 10 minutes.
 - Back from away (PF-14, `back()`): `since` becomes now, so the person rejoins as the newest and a keeper who took
   over meanwhile stays keeper. A laptop that slept over 2 minutes comes back away too, so its first touch does the same.
 - `#show` replaces the page's script, which clears the save timer (`load`); it calls `changed()` again when the page
