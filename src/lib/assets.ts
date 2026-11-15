@@ -36,13 +36,34 @@ export function assetList(script: Script): Asset[] {
   return [...new Set(assetRows(script).flatMap((row) => row.assets))];
 }
 
-// The paths in the Files column that aren't in the script's folder.
+// The paths in the Files column that aren't in the script's folder. Each folder they name is listed once (it was a
+// look-up for every file); a name not in its folder's list is looked up as before, so a path whose letters differ in
+// case from the file (fine on Windows) still counts as there.
 export async function missingFiles(dir: FileSystemDirectoryHandle, assets: Asset[]): Promise<Set<string>> {
   const missing = new Set<string>();
+  const listed = new Map<string, Promise<Set<string> | null>>();
   for (const asset of assets) {
-    if (asset.kind === 'path' && !(await assetFile(dir, asset.target))) missing.add(asset.target);
+    if (asset.kind !== 'path') continue;
+    const parts = asset.target.split('/').filter((p) => p && p !== '.' && p !== '..');
+    const where = parts.slice(0, -1).join('/');
+    if (!listed.has(where)) listed.set(where, fileNames(dir, parts.slice(0, -1)));
+    if ((await listed.get(where))?.has(parts.at(-1)!)) continue;
+    if (!(await assetFile(dir, asset.target))) missing.add(asset.target);
   }
   return missing;
+}
+
+// The names of the files in a folder inside the script's folder; null if it isn't there.
+async function fileNames(dir: FileSystemDirectoryHandle, path: string[]): Promise<Set<string> | null> {
+  try {
+    let at = dir;
+    for (const part of path) at = await at.getDirectoryHandle(part);
+    const names = new Set<string>();
+    for await (const [name, handle] of at.entries()) if (handle.kind === 'file') names.add(name);
+    return names;
+  } catch {
+    return null;
+  }
 }
 
 // How many of a script's files are missing, for the script list. 0 when the script can't be read.

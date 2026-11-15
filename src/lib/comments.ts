@@ -45,20 +45,34 @@ export type Thread = {
 export type Flag = { row: string; text: string; who: string; when: string };
 
 // Every note, oldest first. Files that can't be read (half-synced) are skipped.
+// Each folder's notes read so far, by file name: a note is written once and never changed, so only new names are
+// opened (the 5 s check read every one, every time). Null for a whole file that isn't a note; one that can't be read
+// (half-synced) is left out, so it is tried again.
+const read = new WeakMap<FileSystemDirectoryHandle, Map<string, Note | null>>();
+
 export async function listNotes(dir: FileSystemDirectoryHandle): Promise<Note[]> {
   const folder = await commentsFolder(dir, false);
   if (!folder) return [];
   const names: string[] = [];
   for await (const name of folder.keys()) if (name.endsWith('.json')) names.push(name);
+  const had = read.get(dir) ?? new Map<string, Note | null>();
+  const known = new Map<string, Note | null>();
   const notes: Note[] = [];
   for (const name of names.sort()) {
-    try {
-      const note = JSON.parse(await (await (await folder.getFileHandle(name)).getFile()).text());
-      if (note.v === 1 && note.id && note.kind) notes.push(note);
-    } catch {
-      // Skipped: the shared folder may still be bringing it in.
+    if (had.has(name)) {
+      known.set(name, had.get(name)!);
+    } else {
+      try {
+        const note = JSON.parse(await (await (await folder.getFileHandle(name)).getFile()).text());
+        known.set(name, note.v === 1 && note.id && note.kind ? note : null);
+      } catch {
+        // Skipped: the shared folder may still be bringing it in.
+      }
     }
+    const note = known.get(name);
+    if (note) notes.push(note);
   }
+  read.set(dir, known);
   return notes;
 }
 

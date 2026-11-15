@@ -23,6 +23,9 @@ version (`Print.svelte`) and the teleprompter (`Teleprompter.svelte`, saves what
   `script` with a function binding that sets `file.script`.
 - The 5 s check (`checkOutside`): access first (`file.checkAccess`), then missing files, takes, who else is editing
   (`file.readEditors`), comments, and last others' change files (`file.sync`). Ctrl+S saves at once (FX-2).
+- The check reads only what is new (PF-1): comment files by new names, take notes by a changed date or size, the
+  Files column by one listing per folder. A round never starts while the last is still going (a slow drive made them
+  pile up), and `notes` is only replaced when a note came or went, so Review isn't redrawn every 5 s.
 - "… is editing": `file` writes yours on opening and every 30 s (`heartbeat` here); leaving, the Editor writes a last
   one marked `left` (`file.here(true, who, dir)`, AP-37), with the name and folder read as the editor closes (leaving
   the example takes its props away first, which threw). Closing the tab tries the same from `beforeUnload`, best
