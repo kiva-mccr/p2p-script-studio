@@ -321,3 +321,40 @@ test('a short History has no Show older', async ({ page }) => {
   await expect(versions(page)).toHaveCount(1);
   await expect(page.getByRole('button', { name: /older$/ })).toHaveCount(0);
 });
+
+test('opening a script reads only its recent History; saving and History still work (PF-11)', async ({ page }) => {
+  const files: Record<string, string> = { [SCRIPT]: example };
+  const sha256 = createHash('sha256').update(example).digest('hex');
+  const id = (i: number) => `v${String(i).padStart(7, '0')}`;
+  const review: Record<number, string> = { 100: 'Sent for review', 105: 'Sent back to writer' };
+  for (let i = 0; i < 120; i++) {
+    const when = new Date(Date.UTC(2026, 10, 1) + i * 60_000).toISOString().replace(/\.\d+Z$/, 'Z');
+    const kind = review[i] ? 'review' : i ? 'edit' : 'restart';
+    files[`${VERSIONS}/${when.replace(/[-:]/g, '')}_${id(i)}.json`] = JSON.stringify({ v: 1, id: id(i), parents: i ? [id(i - 1)] : [], who: 'Jo', when, kind, note: review[i] ?? '', sha256, text: example });
+  }
+  await page.addInitScript(() => {
+    const getFile = FileSystemFileHandle.prototype.getFile;
+    (window as unknown as { opened: string[] }).opened = [];
+    FileSystemFileHandle.prototype.getFile = function () {
+      if (/_v\d{7}\.json$/.test(this.name)) (window as unknown as { opened: string[] }).opened.push(this.name);
+      return getFile.call(this);
+    };
+  });
+  await setUp(page, '#/Episode%2003', files);
+  await expect(page.getByLabel('Dialogue, row 1')).toBeVisible();
+  await page.getByLabel('On screen, row 1').fill('Wide shot of a forest.');
+  await expect(page.getByRole('status')).toHaveText('Saved');
+  const opened = await page.evaluate(() => (window as unknown as { opened: string[] }).opened);
+  expect(opened.length).toBeLessThan(50);
+  expect(opened.some((name) => /_v00000[0-6]\d\.json$/.test(name))).toBe(false);
+
+  await page.getByRole('button', { name: 'History' }).click();
+  await expect(versions(page).first()).toContainText('Edited row 1');
+  await expect(page.getByText('Showing the newest 50 of 121 versions.')).toBeVisible();
+  const mine = (await readJsonFiles<{ id: string; parents: string[]; who: string }>(page, VERSIONS)).filter((v) => v.who === 'Sam');
+  expect(mine.map((v) => v.parents)).toEqual([[id(119)]]);
+  await page.getByRole('button', { name: 'Show 50 older' }).click();
+  await versions(page).nth(99).scrollIntoViewIfNeeded();
+  await expect(versions(page)).toHaveCount(121);
+  await expect(versions(page).last()).toContainText('History starts here');
+});

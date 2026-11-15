@@ -3,7 +3,7 @@
 A script's history: one JSON file per version in `.studio/versions/` (docs/studio-folder.md), written once and
 never changed. Also what changed between two versions: a title ("Edited rows 3 and 4") and each changed field.
 
-- **Used by:** `lib/scriptlist.svelte.ts` (`sinceSend`), `lib/folder.ts`, `lib/saving.svelte.ts`, `screens/Editor.svelte`, `screens/History.svelte`, `screens/Print.svelte` (through Editor). **Tests:**
+- **Used by:** `lib/scriptlist.svelte.ts` (`sinceSend`), `lib/folder.ts`, `lib/saving.svelte.ts`, `screens/Editor.svelte`, `screens/History.svelte`, `screens/Print.svelte` (through Editor); `recentVersions` by saving and the Editor. **Tests:**
   `tests/unit/history.test.ts`, `tests/e2e/history.spec.ts`.
 
 ## Rules and pitfalls
@@ -15,6 +15,13 @@ never changed. Also what changed between two versions: a title ("Edited rows 3 a
   calling `listVersions` often is cheap. Files the browser kept are found by name (PF-2), so no old file is
   opened at all. Calls for one script wait for each other: when a script opens several
   screens ask at once, and without that each did the slow first read (2,000 versions: about 3 s each).
+- `recentVersions` (PF-11) is what an open script reads (saving, Review's note and round end, the tab counts, holds,
+  RV-15's marks): back to the newest send, and, when no review ended after it, back to the review end or send before
+  (whichever is newer); with `since` (the last visit here), back to that too. Its tests check every user gives the
+  same answers as with the whole History. One known difference: a review that ended before two sends in a row is
+  no longer found, so Review then shows no "What's changed" round (the last round's end is that old). Official
+  numbers count every official version, so Send for review, Print, the exports and History use `listVersions`.
+  Anything new on an open script that looks further back needs `listVersions` too.
 - `sinceSend` (PF-3) reads names newest first, 25 at a time, and stops at the newest "Sent for review": the script
   list's For me needs nothing older (the newest send, review change and hold end are all at or after it). Versions in
   the same second as the send come too (names keep only the second). With no send, it reads everything. Its tests

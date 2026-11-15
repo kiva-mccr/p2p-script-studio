@@ -32,6 +32,9 @@ back, `onEntry` says a status change's entry was written. `script`, `dir`, `stat
   on) a second after each change, and folded back in on the next opening here.
 - A change file over a minute older than script.md that the keeper's note doesn't list: the keeper closed between
   writing script.md and its note. Its clashes go to script.md's side without asking (see docs/studio-folder.md).
+- History is read with `recentVersions` (PF-11): starting History and each entry need only the newest version (and
+  the heads). Send for review, `version()` and `nextVersion()` read it all (`listVersions`): official numbers count
+  every official version.
 - History: entries are made by the keeper every 5 minutes, and by anyone on leaving, opening History, sending for
   review, restoring and publishing, each after the newest entry. `#record` waits for History to start (`#started`).
   It keeps the History it listed (`#listed`, with its new entry); `listed()` hands that over once, so the 5 s check

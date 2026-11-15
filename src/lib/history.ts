@@ -26,12 +26,38 @@ export type Change = { where: string; old: string; new: string; row?: string; fi
 export const OUTSIDE = 'Outside the app';
 
 // Every version, oldest first. Files that can't be read (half-synced) are skipped.
-export async function listVersions(dir: FileSystemDirectoryHandle): Promise<Version[]> {
-  // One read of a script at a time: several screens ask at once when it opens, and the first read is the slow one.
+export function listVersions(dir: FileSystemDirectoryHandle): Promise<Version[]> {
+  return inTurn(dir, () => readVersions(dir));
+}
+
+// The versions an open script needs (PF-11), oldest first: from the newest send for review on, and back to the review
+// that ended before it (or the send before that, whichever is newer), so Review's "What's changed" and the tab counts
+// find the last round's end. With `since` (when this person last opened it here, RV-15), back to that too. Saving
+// needs only the newest. History, Print and Send for review (official numbers count every version) read it all. With
+// no send in History, every version.
+export function recentVersions(dir: FileSystemDirectoryHandle, since = ''): Promise<Version[]> {
+  return inTurn(dir, () =>
+    readBack(dir, (newest) => {
+      const send = newest.findIndex(isSend);
+      if (send < 0) return -1;
+      let cut = send;
+      if (!newest.slice(0, send + 1).some(isEnd)) {
+        cut = newest.findIndex((v, i) => i > send && (isSend(v) || isEnd(v)));
+        if (cut < 0) return -1;
+      }
+      if (!since) return cut;
+      const seen = newest.findIndex((v) => v.when <= since);
+      return seen < 0 ? -1 : Math.max(cut, seen);
+    }),
+  );
+}
+
+// One read of a script at a time: several screens ask at once when it opens, and the first read is the slow one.
+function inTurn(dir: FileSystemDirectoryHandle, read: () => Promise<Version[]>): Promise<Version[]> {
   const before = reading.get(dir);
   const mine = (async () => {
     await before?.catch(() => {});
-    return readVersions(dir);
+    return read();
   })();
   reading.set(dir, mine);
   return mine;
@@ -46,30 +72,36 @@ async function readVersions(dir: FileSystemDirectoryHandle): Promise<Version[]> 
   return inOrder(names.flatMap((name) => read.get(name) ?? []));
 }
 
-// The versions from the newest send for review on, oldest first: all the script list's For me needs (RV-14). Read
-// newest first, a few at a time, stopping at that send (PF-3), so a big History isn't read whole for the list. With no
+// The versions from the newest send for review on, oldest first: all the script list's For me needs (RV-14). With no
 // send in History, every version.
-export async function sinceSend(dir: FileSystemDirectoryHandle): Promise<Version[]> {
+export function sinceSend(dir: FileSystemDirectoryHandle): Promise<Version[]> {
+  return readBack(dir, (newest) => newest.findIndex(isSend));
+}
+
+// Reads History newest first, a few at a time (PF-3), until `enough` (given what was read, newest first) names the
+// oldest version needed; -1 reads on. Names keep only the second, so versions made in the same second as that one
+// (older names) come too. Oldest first; everything when `enough` never says so.
+async function readBack(dir: FileSystemDirectoryHandle, enough: (newest: Version[]) => number): Promise<Version[]> {
   const folder = await versionsFolder(dir, false);
   if (!folder) return [];
   const names = (await jsonNames(folder)).sort().reverse();
   const read = new Map<string, Version>();
-  for (let i = 0; i < names.length; i += SEND_BATCH) {
-    const part = names.slice(i, i + SEND_BATCH);
-    for (const [name, version] of await readNamed(dir, folder, part)) read.set(name, version);
-    const send = part.find((name) => read.get(name) && isSend(read.get(name)!));
-    if (!send) continue;
-    // Names keep only the second, so versions made in the same second as the send (older names) come too.
-    const second = send.split('_')[0];
-    const same = names.slice(i + SEND_BATCH).filter((name) => name.split('_')[0] === second);
+  for (let i = 0; i < names.length; i += BACK_BATCH) {
+    for (const [name, version] of await readNamed(dir, folder, names.slice(i, i + BACK_BATCH))) read.set(name, version);
+    const got = names.slice(0, i + BACK_BATCH).filter((name) => read.has(name));
+    const at = enough(got.map((name) => read.get(name)!));
+    if (at < 0) continue;
+    const oldest = got[at];
+    const second = oldest.split('_')[0];
+    const same = names.slice(i + BACK_BATCH).filter((name) => name.split('_')[0] === second);
     for (const [name, version] of await readNamed(dir, folder, same)) read.set(name, version);
-    const cut = names.indexOf(send);
+    const cut = names.indexOf(oldest);
     const keep = names.filter((name, j) => j <= cut || name.split('_')[0] === second);
     return inOrder(keep.flatMap((name) => read.get(name) ?? []));
   }
   return inOrder([...read.values()]);
 }
-const SEND_BATCH = 25;
+const BACK_BATCH = 25;
 
 async function jsonNames(folder: FileSystemDirectoryHandle): Promise<string[]> {
   const names: string[] = [];
@@ -136,8 +168,9 @@ export function backNote(versions: Version[]): Version | undefined {
 // The version from when the last review ended (RV-4): the newest "Sent back to writer" or "Approved" (also
 // "Approved, 2 still open"). Review marks what changed since it.
 export function reviewEnd(versions: Version[]): Version | undefined {
-  return versions.findLast((v) => v.kind === 'review' && (v.note.startsWith('Sent back') || v.note.startsWith('Approved')));
+  return versions.findLast(isEnd);
 }
+const isEnd = (v: Version) => v.kind === 'review' && (v.note.startsWith('Sent back') || v.note.startsWith('Approved'));
 
 // Rows changed since `before` (RV-4), matched by id: each changed row with its old self (null for a new row), and
 // each removed row with the id of the row it came after ('' for the top). A moved row is not changed.
@@ -197,7 +230,7 @@ export async function lastEditor(dir: FileSystemDirectoryHandle): Promise<string
   const newest = names.at(-1);
   if (!newest) return '';
   // Two made in the same second: only the full list knows which came last.
-  if (names.at(-2)?.slice(0, 16) === newest.slice(0, 16)) return (await listVersions(dir)).at(-1)?.who ?? '';
+  if (names.at(-2)?.slice(0, 16) === newest.slice(0, 16)) return (await sinceSend(dir)).at(-1)?.who ?? '';
   try {
     return JSON.parse(await (await (await folder.getFileHandle(newest)).getFile()).text()).who ?? '';
   } catch {
