@@ -14,6 +14,13 @@ the label History shows (Open, Resolved by Sam, Accepted by Sam …).
   but before its version was written lands on that version. Accepted, as the edit came close to it anyway.
 - Comment times keep milliseconds and version times seconds: both are compared as times, never as strings.
 - A comment made before the first version (the folder had comments before History) goes on the first version.
-- Nothing is stored: it is all worked out from the versions and the comments each time History opens.
+- Nothing is stored: it is all worked out from the versions and the comments each time History opens. Which cells a
+  version changed is kept in memory for the visit (versions never change), checked against both texts.
+- Only the versions History shows get comments (`from`, PF-4); older ones are looked at only for comments made before
+  them, to see whether their cell changed first. Check every version in between, never just the two ends: a change
+  undone later (a restore) still takes the comment, and the made-up speed-check script undoes every edit.
+- Rows are compared as text (the lines after each row's heading) and parsed only when they differ: parsing all 2,000
+  versions whole froze History for over a second and took 300 MB. A row's heading line itself (its number) is not a
+  cell, so renumbering rows changes nothing.
 - A comment on hold (RV-19) shows "On hold by …"; History passes `holdEnds` of its loaded versions, so one held before
   a send it hasn't loaded yet (HI-3) can still show as on hold.
