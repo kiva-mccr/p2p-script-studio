@@ -12,8 +12,13 @@ describe('editing', () => {
     expect(fileName('Sam')).toBe('sam.json');
     expect(fileName('Ana María López')).toBe('ana-maría-lópez.json');
   });
-  it('shows only other people seen in the last 2 minutes', () => {
+  it('shows only other people seen in the last 3 minutes', () => {
     expect(othersEditing([entry('Sam', 1, now), entry('Ana', 3, now), entry('Kiva', 0, now)], 'kiva', now)).toEqual(['Sam']);
+  });
+  it('keeps someone editing between two 60 s heartbeats, even a slow one (PF-18)', () => {
+    expect(othersEditing([entry('Sam', 2.5, now)], 'kiva', now)).toEqual(['Sam']);
+    expect(whoWasHere([entry('Sam', 2.5, now)], 'kiva', now).map((s) => s.state)).toEqual(['editing']);
+    expect(whoWasHere([entry('Sam', 3.5, now)], 'kiva', now).map((s) => s.state)).toEqual(['quiet']);
   });
   it('reads like a sentence', () => {
     expect(editingText(['Sam'])).toBe('Sam is editing');

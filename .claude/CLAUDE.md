@@ -76,7 +76,7 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
   one thread each, measured before and after with perf/ (perf/pf-ideas/probe.js counts calls by folder), by impact
   (the user's order): PF-15 (one news folder, done), PF-14 (no checks while away, done), PF-8 (quieter check, done), PF-16 (fast only
   with others, done), PF-9 (comments remembered, done), PF-10 (reads at once, done early, asked by the coordinator), PF-13 (History chapters, done), PF-11 (recent History on open, done), PF-12 (summary
-  per script, done), PF-18 (slower heartbeat), PF-17 (keep folder handles).
+  per script, done), PF-18 (slower heartbeat, done), PF-17 (keep folder handles).
   When all are done: a report of their effects (the user's ask), before (perf/pf-ideas/probe-out.txt) against after,
   same probe, same made-up folder.
   The rest (AP-8 …) waits

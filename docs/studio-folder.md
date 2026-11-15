@@ -12,7 +12,7 @@ Episode 03 - How Photosynthesis Works/
     chapters/   older history entries packed 100 to a file (PF-13)
     comments/   one file per comment, reply, or change to one
     changes/    each person's saves: one file per save, only what changed (FX-2)
-    editing/    a file for each person who has the script open, a new one every 30 s
+    editing/    a file for each person who has the script open, a new one every 60 s
     files/      files attached to comments, one folder per comment or reply
     summary/    what the script list shows, for computers new to the folder (PF-12)
 ```
@@ -211,7 +211,7 @@ the change files are what counts, and History is a record of them.
 
 ## editing/: "Sam is editing"
 
-`editing/sam_20261113T204500123Z.json` (the person, then the time), a new file every **30 seconds** while the script
+`editing/sam_20261113T204500123Z.json` (the person, then the time), a new file every **60 seconds** while the script
 is open, the person's older ones removed:
 
 ```json
@@ -220,7 +220,7 @@ is open, the person's older ones removed:
 
 - The newest file per person counts. `since` picks the keeper; `last_written` is the fingerprint of the `script.md`
   they last wrote.
-- Anyone else opening the script sees "Sam is editing" while `seen` is under **2 minutes** old. Older than that, it
+- Anyone else opening the script sees "Sam is editing" while `seen` is under **3 minutes** old. Older than that, it
   is ignored (Sam closed the laptop), but kept until its `last_written` has been checked (see above).
 - After 2 minutes with no mouse, key or scroll in the script (and nothing playing), Sam's app stops writing these
   (and stops looking for others' changes) until Sam moves again (PF-14): the others see "Sam last seen 3 min ago",
@@ -228,7 +228,7 @@ is open, the person's older ones removed:
   rejoins after them.
 - When Sam leaves the script, Sam's app writes one last file with `"left": "<time>"` and removes Sam's older ones
   (AP-37): never more than one file per person, and still written once. A `left` file never counts as editing.
-  It shows the others "Sam was here 12 min ago". A file not `left` and over 2 minutes old means Sam went quiet
+  It shows the others "Sam was here 12 min ago". A file not `left` and over 3 minutes old means Sam went quiet
   without leaving (the laptop slept, or lost the drive): "Sam last seen 3 min ago", for 2 hours.
 - Anyone's file over 30 days old is removed by whoever has the script open. `sam.json` files from before FX-2 are
   read too, and removed by their owner.
