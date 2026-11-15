@@ -77,6 +77,8 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
   (the user's order): PF-15 (one news folder), PF-14 (no checks while away), PF-8 (quieter check), PF-16 (fast only
   with others), PF-9 (comments remembered), PF-13 (History chapters), PF-11 (recent History on open), PF-12 (summary
   per script), PF-10 (reads at once), PF-18 (slower heartbeat), PF-17 (keep folder handles).
+  When all are done: a report of their effects (the user's ask), before (perf/pf-ideas/probe-out.txt) against after,
+  same probe, same made-up folder.
   The rest (AP-8 …) waits
   for the user's next ranking; "Last" in ROADMAP.md (EX-5, CC-1) waits until everything else is done.
 - Mock-ups (one board per design, numbered): https://claude.ai/artifact/2XDZmS7J5NEPZsz91RQMiL (private to the user).
