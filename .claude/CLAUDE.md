@@ -79,6 +79,7 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
   per script, done), PF-18 (slower heartbeat, done), PF-17 (keep folder handles, done).
   When all are done: a report of their effects (the user's ask), before (perf/pf-ideas/probe-out.txt) against after,
   same probe, same made-up folder.
+  A UI audit (2026-11-15) added UX-1 to UX-13 to ROADMAP.md; the user picks which to fix.
   The rest (AP-8 …) waits
   for the user's next ranking; "Last" in ROADMAP.md (EX-5, CC-1) waits until everything else is done.
 - Mock-ups (one board per design, numbered): https://claude.ai/artifact/2XDZmS7J5NEPZsz91RQMiL (private to the user).

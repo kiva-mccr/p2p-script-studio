@@ -924,6 +924,43 @@ and suggestions, keeps every version, and exports them for production.
   shows as editing up to a minute longer, and the keeper hands over a minute later. Built 2026-11-15 as specified
   (`HERE_EVERY`, `FRESH_FOR`); measured in perf/pf-18 of the project files.
 
+### UI audit (asked by the user, 2026-11-15)
+
+Things that move the page, hide or lose work, or surprise, found by reading the code and trying the example on the
+live site. Ranked by how much they could hurt; the user picks which to fix (mock-ups first where the look changes).
+"Seen" means it was reproduced on the live site; the rest are from the code.
+
+- [ ] **UX-1** A voice-over take is gone in one click: the × beside it deletes the recording file at once, with no
+  Undo (seen). The same × sits in "Outdated" on that line, where it only hides the label. Fix: Undo for a few
+  seconds, as rows have (keep the file until it ends), and words instead of × for "the take still matches".
+- [ ] **UX-2** Recording a row again replaces its take as soon as the new one stops; the old one can't come back.
+  Fix: keep the old take until the new one is kept, with "Undo, keep the old take" in the same toast.
+- [ ] **UX-3** Switching tabs loses your place: Write scrolled to row 20, Review, back to Write lands at the top
+  (seen). Fix: each tab keeps where it was, or opens at the row you were on.
+- [ ] **UX-4** The top bar (tabs, Saved, Send for review) scrolls away on a long script; to switch tabs you scroll to
+  the top first (seen). It already stays up while playing. Fix: keep it up always (it is one thin line).
+- [ ] **UX-5** Clicking a section name on the unpinned timeline still jumps the page to its first row, as clips did
+  before PR #166. Fix: the same rule as the clips (jump only while pinned; "↑ Go to the row" otherwise).
+- [ ] **UX-6** Clicking a card in the Comments panel always scrolls Write to its row, even when the row is already on
+  screen. Fix: scroll only when the row is out of view, as Write's other jumps do.
+- [ ] **UX-7** The formatting toolbar (bold, italic, link) goes off the top of the screen when the field's top is at
+  the top of the window (seen), and in a long paragraph it sits at the field's top, far from the selected words.
+  Fix: put it above the selection, or below it when there is no room.
+- [ ] **UX-8** The timeline's hover text runs off the right edge for the last clips (seen, row 5 cut off). Fix: line
+  it up with the clip's right edge near the end, as PR #165 did for the Feedback panel.
+- [ ] **UX-9** A new comment loses its words: switching Comment ↔ Suggest a change clears what was typed, and
+  selecting other words and pressing Comment starts empty. Fix: keep the typed text across the switch, and keep the
+  unsent draft (or ask in the page) before starting another.
+- [ ] **UX-10** Removing a file or link from a row (×) has no Undo (seen), while deleting a row does. Fix: the same
+  Undo toast.
+- [ ] **UX-11** Restore this version (History) replaces the script in one click and goes to Write, with no Undo. The
+  old text is still in History, but that isn't obvious. Fix: "Restored v3. Undo" toast.
+- [ ] **UX-12** Play the script pulls the page back to the playing row every time it moves on, even when you have
+  scrolled away to read something. Fix: stop following once you scroll; a "Back to the playing row" button.
+- [ ] **UX-13** Small ones: the top bar's buttons change with the tab (Send for review only in Write, Approve only in
+  Review, Find and replace only in Write's ⋯), and Remove from the folder (People) has no Undo. Fix: say where the
+  missing button is ("Approve is in Review"), and Undo for Remove.
+
 ## Last (the user's order: these wait until everything above is done)
 
 - [x] **AS-1** A shared asset browser between scripts (asked by the user): browse and reuse the files of every
