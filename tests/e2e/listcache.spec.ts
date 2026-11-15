@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
-import { setUp, writeFile } from './folder';
+import { listFiles, setUp, writeFile } from './folder';
 
 // The script list reads only what it needs (AP-40): counts are remembered in the browser, and a script is read again
 // only when its files changed.
@@ -69,4 +69,50 @@ test('scripts added, renamed or removed elsewhere show when you come back to the
   await page.reload();
   await expect(page.locator('a.row')).toHaveCount(2);
   await expect(page.getByRole('link', { name: /Trailer · Season 2/ })).toBeVisible();
+});
+
+// A computer new to the folder (PF-12): this browser forgets the list and its caches, keeping only the folder.
+async function newComputer(page: Page, name: string) {
+  await page.evaluate(async (name) => {
+    for (const key of Object.keys(localStorage)) if (key.startsWith('script-list:')) localStorage.removeItem(key);
+    localStorage.setItem('studio.name', name);
+    for (const db of await indexedDB.databases()) {
+      if (db.name && db.name !== 'script-studio') indexedDB.deleteDatabase(db.name);
+    }
+  }, name);
+  await page.reload();
+}
+
+test('a computer new to the folder shows counts from the summary another list left, until the files change', async ({ page }) => {
+  const [name, text] = flag(ids[0], 0);
+  const thread = (id: string, who: string, kind: string, s: number, about?: string) => [
+    `${COMMENTS}/20261109T11000${s}Z_${id}.json`,
+    JSON.stringify({ v: 1, id, kind, who, when: `2026-11-09T11:00:0${s}Z`, row: ids[2], text: 'Hm?', ...(about ? { about } : {}) }),
+  ];
+  const [c, cText] = thread('samask1', 'Sam', 'comment', 0);
+  const [r, rText] = thread('anaans1', 'Ana', 'reply', 1, 'samask1');
+  await setUp(page, '', { 'Episode 03/script.md': example, [name]: text, [c]: cText, [r]: rText });
+  await expect(page.getByText('1 flagged')).toBeVisible();
+  await expect(page.getByText('1 reply')).toBeVisible();
+  await checked(page);
+  await expect.poll(() => listFiles(page, 'Episode 03/.studio/summary')).toHaveLength(1);
+
+  // Ana's computer, new to the folder: the counts come from the summary, For me is Ana's own, and no comment or
+  // History file is opened.
+  await recordReads(page);
+  await newComputer(page, 'Ana');
+  await expect(page.getByText('1 flagged')).toBeVisible();
+  await checked(page);
+  await expect(page.getByText('1 reply')).toHaveCount(0);
+  const reads = (await opened(page)).filter((n) => n.endsWith('.json'));
+  expect(reads).toHaveLength(1);
+  expect(reads[0]).toMatch(/^\d{8}T\d{9}Z_\w+\.json$/);
+
+  // Someone flags another row: the summary no longer matches the files, so the next new computer reads the script
+  // and leaves a new summary.
+  await writeFile(page, ...(flag(ids[1], 1) as [string, string]));
+  await newComputer(page, 'Sam');
+  await expect(page.getByText('2 flagged')).toBeVisible();
+  await expect(page.getByText('1 reply')).toBeVisible();
+  await expect.poll(() => listFiles(page, 'Episode 03/.studio/summary')).toHaveLength(2);
 });

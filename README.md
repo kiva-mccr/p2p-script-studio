@@ -23,7 +23,8 @@ Status: a first working version. What it does today:
 - **The list:** every script in the folder, its status, and who last edited it and when. New script starts one; the arrow beside it starts one from a template, or makes a new template (templates sit at the bottom of the list).
   It opens fast on a network drive: your computer remembers each script's line, looks only at file names and dates,
   and reads again only the scripts that changed, the ones on screen first. A first visit reads each script's History
-  only back to its latest send for review, not all of it.
+  only back to its latest send for review, not all of it. Each script also keeps a small summary of what the list
+  shows, so a computer new to the folder shows its counts in seconds, while the script's files still match it.
 - **Writing:** each row is dialogue, what's on screen, and its images and files. Click to type; hover a row to move,
   add or delete it. Keys: Tab goes to the next box (Shift+Tab back), Ctrl+Down and Ctrl+Up go straight to the row
   below or above (same column, past section titles), Ctrl+Enter adds a row below and Ctrl+Shift+Enter one above,

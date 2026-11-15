@@ -25,6 +25,10 @@ screen first, four at a time.
 - The news folder (PF-15, `lib/news.ts`): coming back to the list or the window within 2 minutes of the last full look
   checks only scripts with a new note (yours too) and scripts never counted; otherwise every script's fingerprint, as
   above. The news folder as last seen is kept for the tab (`watching`), not in localStorage: a reload looks fully.
-- A first visit on a computer still reads every script once; the shared summary file per script was set aside by the
-  user (expand later if first visits are slow on the network drive).
+- The shared summary (PF-12, `lib/summary.ts`): a script read the slow way leaves one; a script this browser hasn't
+  seen is shown from the newest summary while its fingerprint (without your name) still matches, before any title or
+  status is read. `Kept.shared` says a summary with these counts is there; a script remembered without it (counted
+  before PF-12) is read once more if no summary matches, so computers that already know the folder leave summaries
+  too. A script with no usable summary has its fingerprint taken once a round (`tried`), not twice.
+- The counts in localStorage never hold `forAll` (everyone's For me), only yours.
 - Changes waiting in `.studio/changes/` (FX-2) aren't counted until the keeper writes script.md, as before.

@@ -836,11 +836,14 @@ and suggestions, keeps every version, and exports them for production.
   difference: a round that ended before two sends in a row isn't found. Measured (perf/pf-11, simulated drive): first
   visit opening the big script, 6,270 calls, 100.5 MB, 10.4 s → 795 calls, 5.4 MB, 3.3 s; the first History visit there
   went from 60 calls to 5,545 (7.4 s), as planned.
-- [ ] **PF-12** A shared summary per script for the list (set aside in AP-40 until first visits prove slow): whoever
+- [x] **PF-12** A shared summary per script for the list (set aside in AP-40 until first visits prove slow): whoever
   saves a script also writes a small written-once file with its title, status and counts, so a computer new to the
   folder reads one file per script. First visit's counts: about 10,400 calls (33 s simulated) → a few hundred (about
   3 s). Trade-off: For me depends on who you are, so the summary must hold each person's part; a summary older than
-  the script's files is read the slow way.
+  the script's files is read the slow way. Built 2026-11-15 (lib/summary.ts, `.studio/summary/`): the list
+  leaves one after reading a script the slow way; For me per name plus "anyone". Measured (perf/pf-12, made-up folder,
+  10 ms a call): a new computer's list 10,393 calls / 10.6 s → 1,319 calls / 1.9 s; the folder's very first visit
+  pays +421 calls once.
 - [ ] **PF-13** History in chapters (left for later in HI-3): every 100 older versions are packed into one written-once,
   compressed file (whole copies kept, as decided), and the single files are removed after a while, like change files.
   Every listing of History shrinks from 2,000 names to about 20 (the 5 s check, the list's fingerprint, History), and a

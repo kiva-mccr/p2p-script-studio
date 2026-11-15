@@ -6,12 +6,13 @@ import { assetList, countMissing } from './assets';
 import { eachAtOnce } from './atonce';
 import { flags, listNotes } from './comments';
 import { fileIn, readScript, scriptHead, type ScriptInfo } from './folder';
-import { forMe, type ForMe } from './forme';
+import { forAll, pick, type ForAll, type ForMe } from './forme';
 import { sinceSend } from './history';
 import { News } from './news';
 import { countWords } from './readtime.svelte';
 import { keep, recall } from './remember';
 import { parseScript, rows } from './script';
+import { readSummary, sharedPrint, writeSummary } from './summary';
 import { readTakes, takeLength } from './voice.svelte';
 
 export type Counts = {
@@ -23,7 +24,8 @@ export type Counts = {
   dirs: string[]; // the folders the Files column points into, part of the fingerprint
 };
 export type Entry = ScriptInfo & { counts?: Counts };
-type Kept = { print: string; entry: Entry };
+// `shared`: a summary with these counts is in the script's folder (PF-12), so none needs writing.
+type Kept = { print: string; entry: Entry; shared?: boolean };
 
 // The news folder as this tab's list last saw it (PF-15), kept while the tab is open, so coming back to the list or
 // to the window looks only at scripts with a new note (yours too), with a full look every 2 minutes.
@@ -38,8 +40,9 @@ export function length(counts: Counts, wpm: number): { seconds: number; recorded
   return seconds > 0 ? { seconds, recorded: counts.words === 0 } : null;
 }
 
-// Everything the list shows that comes from inside a script, read from its files.
-export async function readCounts(dir: FileSystemDirectoryHandle, me: string, status: string): Promise<Counts> {
+// Everything the list shows that comes from inside a script, read from its files; For me for everyone too, for the
+// shared summary (PF-12).
+export async function readCounts(dir: FileSystemDirectoryHandle, me: string, status: string): Promise<Counts & { forAll: ForAll }> {
   const script = parseScript(await readScript(dir));
   const takes = await readTakes(dir);
   let takeSeconds = 0;
@@ -54,10 +57,12 @@ export async function readCounts(dir: FileSystemDirectoryHandle, me: string, sta
   // to the newest send for review (PF-3).
   const versions = status === 'approved' ? [] : await sinceSend(dir);
   const paths = assetList(script).flatMap((a) => (a.kind === 'path' ? [a.target] : []));
+  const all = forAll(status, versions, notes);
   return {
     missing: await countMissing(dir, script),
     flagged: flags(notes, rows(script).map((row) => row.id)).size,
-    mine: forMe(me, status, versions, notes),
+    mine: pick(all, me),
+    forAll: all,
     takeSeconds,
     words,
     dirs: [...new Set(paths.map((p) => parts(p).slice(0, -1).join('/')))].sort(),
@@ -182,17 +187,40 @@ export class ScriptList {
     }
     const here = new Set(folders.map((f) => f.name));
     this.entries = Object.fromEntries(Object.entries(this.entries).filter(([name]) => here.has(name)));
-    // Scripts this browser hasn't seen: their title and status first, all of them, so the list shows whole.
+    // Scripts this browser hasn't seen: whole from their shared summary when it still matches their files (PF-12),
+    // otherwise their title and status first, all of them, so the list shows whole.
     const unknown = folders.filter((f) => !this.entries[f.name]);
+    const done = new Set<string>();
+    const tried = new Map<string, string | null>(); // fingerprints already taken, for scripts with no summary to use
     await this.#each(unknown, async (dir) => {
+      const base = await basePrint(dir).catch(() => undefined);
+      if (base !== undefined && (await this.#fromSummary(dir, base).catch(() => false))) return void done.add(dir.name);
+      if (base !== undefined) tried.set(dir.name, base);
       const head = await scriptHead(dir).catch(() => null);
       if (head) this.#put(dir.name, head);
     });
     this.ready = true;
     // Then each script's counts (only those with news, or never counted), those on screen first.
-    const due = fresh ? folders.filter((f) => fresh.has(f.name) || !this.#kept[f.name]?.entry.counts) : folders;
-    await this.#each(due, (dir) => this.#check(dir), true);
+    const due = (fresh ? folders.filter((f) => fresh.has(f.name) || !this.#kept[f.name]?.entry.counts) : folders)
+      .filter((f) => !done.has(f.name));
+    await this.#each(due, (dir) => this.#check(dir, tried), true);
     this.#keep();
+  }
+
+  // Shows a script from its shared summary if the summary's fingerprint is its files' now. False when there's none,
+  // or it is older than the files (then the script is read the slow way).
+  async #fromSummary(dir: FileSystemDirectoryHandle, base: string | null): Promise<boolean> {
+    if (base === null) return false;
+    const summary = await readSummary(dir);
+    if (!summary) return false;
+    const dirs = await dirsPrint(dir, summary.counts.dirs);
+    if (summary.print !== (await sharedPrint(base, dirs))) return false;
+    const counts = { ...summary.counts, mine: pick(summary.forAll, this.#me) };
+    const entry: Entry = { ...summary.head, path: [dir.name], counts };
+    this.#kept[dir.name] = { print: hash([this.#me, base, dirs].join('\n')), entry, shared: true };
+    this.#put(dir.name, entry);
+    this.#saving ??= setTimeout(() => this.#keep(), 3000);
+    return true;
   }
 
   // Runs `work` on each folder, a few at once; with `screenFirst`, those on screen go ahead of the rest.
@@ -208,21 +236,31 @@ export class ScriptList {
     }));
   }
 
-  async #check(dir: FileSystemDirectoryHandle) {
+  // `tried`: scripts whose fingerprint was just taken and summary found unusable, this round.
+  async #check(dir: FileSystemDirectoryHandle, tried: Map<string, string | null>) {
     try {
       const kept = this.#kept[dir.name];
-      const base = await basePrint(dir);
+      const base = tried.has(dir.name) ? tried.get(dir.name)! : await basePrint(dir);
       if (base === null) return this.#drop(dir.name);
       const known = kept?.entry.counts;
       if (kept && known && kept.print === hash([this.#me, base, await dirsPrint(dir, known.dirs)].join('\n'))) {
         if (this.entries[dir.name] !== kept.entry) this.#put(dir.name, kept.entry);
-        return;
+        // Counted before summaries were shared (PF-12): read once more below if nobody has left one yet.
+        if (kept.shared) return;
       }
+      // Someone else's list may have read it already (PF-12).
+      if (!tried.has(dir.name) && (await this.#fromSummary(dir, base))) return;
       const head = await scriptHead(dir);
       if (!head) return this.#drop(dir.name);
-      const counts = await readCounts(dir, this.#me, head.status);
+      const { forAll, ...counts } = await readCounts(dir, this.#me, head.status);
       const entry = { ...head, counts };
-      this.#kept[dir.name] = { print: hash([this.#me, base, await dirsPrint(dir, counts.dirs)].join('\n')), entry };
+      const dirs = await dirsPrint(dir, counts.dirs);
+      const { path: _path, ...rest } = head;
+      const shared = await writeSummary(dir, {
+        print: await sharedPrint(base, dirs), head: rest, forAll, who: this.#me,
+        counts: { missing: counts.missing, flagged: counts.flagged, takeSeconds: counts.takeSeconds, words: counts.words, dirs: counts.dirs },
+      });
+      this.#kept[dir.name] = { print: hash([this.#me, base, dirs].join('\n')), entry, shared };
       this.#put(dir.name, entry);
       // Kept every few seconds too, so a first visit's reading isn't lost if the tab closes halfway.
       this.#saving ??= setTimeout(() => this.#keep(), 3000);
