@@ -422,6 +422,8 @@ and suggestions, keeps every version, and exports them for production.
   like Hide. The user's condition: the preview must never cover the timeline or its buttons. Built so: unpinned, the
   preview waits in the screen's bottom right corner only while the timeline is off screen; once any of it shows,
   the preview goes back above the timeline's right end.
+  Fix (the user, 2026-11-15): a click on a block no longer scrolls up to its row unless the timeline is pinned;
+  the row panel has "↑ Go to the row" for that.
 - [x] **SB-3** Export the timeline as a video (asked by the user, 2026-11-15): the storyboard timeline (SB-1) saved
   as a video file: each row's pictures (collage or sequence, cut on a word), holds and placeholders, with the
   voice-over takes, at the timeline's timings, made in the browser. Mock-up: board 70, agreed (2026-11-15, "looks
