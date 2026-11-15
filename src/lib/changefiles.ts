@@ -5,6 +5,7 @@ import type { Delta } from './changes';
 import { jsonNames, readJson, stamp, writeText } from './files';
 import { fileName } from './editing';
 import { announce } from './news';
+import { subpath } from './dirs';
 
 export type Change = { v: 1; id: string; who: string; when: string; delta: Delta };
 // Written by the keeper with each script.md it writes: the changes in it, and its fingerprint (sha256).
@@ -62,7 +63,7 @@ export async function writeFolded(dir: FileSystemDirectoryHandle, folded: Omit<F
 
 async function changesFolder(dir: FileSystemDirectoryHandle, create: boolean): Promise<FileSystemDirectoryHandle | null> {
   try {
-    return await (await dir.getDirectoryHandle('.studio', { create })).getDirectoryHandle('changes', { create });
+    return await subpath(dir, ['.studio', 'changes'], create);
   } catch {
     return null;
   }

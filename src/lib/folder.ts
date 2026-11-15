@@ -5,6 +5,7 @@ import { addVersion, lastEditor } from './history';
 import { patiently, writeText } from './files';
 import { frontValue, parseScript, readFileRef, rows, writeScript, type Block } from './script';
 import { announce } from './news';
+import { known, subdir, subpath } from './dirs';
 
 // `template`: a script to start others from (AP-15), `template: true` in its front matter.
 export type ScriptInfo = { path: string[]; title: string; status: string; edited: number; who: string; template?: boolean };
@@ -18,7 +19,7 @@ export async function listScripts(root: FileSystemDirectoryHandle): Promise<Scri
   const found: ScriptInfo[] = [];
   for await (const entry of root.values()) {
     if (entry.kind !== 'directory' || entry.name.startsWith('.')) continue;
-    const info = await scriptHead(entry as FileSystemDirectoryHandle);
+    const info = await scriptHead(await known(root, entry as FileSystemDirectoryHandle));
     if (info) found.push(info);
   }
   return found.sort((a, b) => b.edited - a.edited);
@@ -41,9 +42,9 @@ export async function scriptHead(dir: FileSystemDirectoryHandle): Promise<Script
 
 // The script folder a link names, or null if there is none.
 export async function findScript(root: FileSystemDirectoryHandle, path: string[]): Promise<FileSystemDirectoryHandle | null> {
-  let dir = root;
+  let dir: FileSystemDirectoryHandle;
   try {
-    for (const part of path) dir = await dir.getDirectoryHandle(part);
+    dir = await subpath(root, path);
   } catch {
     return null;
   }
@@ -77,7 +78,7 @@ export async function createScript(
   const blocks = source?.blocks.length ? source.blocks.map((b) => (b.type === 'row' ? { ...b, id: '' } : b)) : [empty];
   const front = [`title: ${name.trim()}`, 'status: draft', `authors: [${author}]`, ...(template ? ['template: true'] : [])];
   const text = writeScript({ front: front.join('\n'), intro: source?.intro ?? '', blocks });
-  const dir = await root.getDirectoryHandle(folderName, { create: true });
+  const dir = await subdir(root, folderName, true);
   if (from && source) await copyAssets(from, dir, source.blocks);
   await writeScriptFile(dir, text);
   await addVersion(dir, { parents: [], who: author, kind: 'edit', text });
@@ -96,8 +97,7 @@ async function copyAssets(from: FileSystemDirectoryHandle, to: FileSystemDirecto
     const file = await assetFile(from, path);
     if (!file) continue;
     const parts = path.split('/').filter((p) => p && p !== '.' && p !== '..');
-    let at = to;
-    for (const part of parts.slice(0, -1)) at = await at.getDirectoryHandle(part, { create: true });
+    const at = await subpath(to, parts.slice(0, -1), true);
     const writable = await (await at.getFileHandle(parts.at(-1)!, { create: true })).createWritable();
     await writable.write(file);
     await writable.close();
@@ -106,7 +106,7 @@ async function copyAssets(from: FileSystemDirectoryHandle, to: FileSystemDirecto
 
 // Copies a file the person picked into the script's assets/ folder. Returns its path for the Files column.
 export async function addAsset(dir: FileSystemDirectoryHandle, file: File): Promise<string> {
-  const assets = await dir.getDirectoryHandle('assets', { create: true });
+  const assets = await subdir(dir, 'assets', true);
   const dot = file.name.lastIndexOf('.');
   const stem = safeName(dot > 0 ? file.name.slice(0, dot) : file.name) || 'file';
   const ext = dot > 0 ? file.name.slice(dot) : '';
@@ -134,8 +134,7 @@ export function isCopyOf(line: string, name: string): boolean {
 export async function assetFile(dir: FileSystemDirectoryHandle, path: string): Promise<File | null> {
   const parts = path.split('/').filter((p) => p && p !== '.' && p !== '..');
   try {
-    let at = dir;
-    for (const part of parts.slice(0, -1)) at = await at.getDirectoryHandle(part);
+    const at = await subpath(dir, parts.slice(0, -1));
     return await (await at.getFileHandle(parts.at(-1)!)).getFile();
   } catch {
     return null;

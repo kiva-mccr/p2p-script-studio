@@ -76,7 +76,7 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
   one thread each, measured before and after with perf/ (perf/pf-ideas/probe.js counts calls by folder), by impact
   (the user's order): PF-15 (one news folder, done), PF-14 (no checks while away, done), PF-8 (quieter check, done), PF-16 (fast only
   with others, done), PF-9 (comments remembered, done), PF-10 (reads at once, done early, asked by the coordinator), PF-13 (History chapters, done), PF-11 (recent History on open, done), PF-12 (summary
-  per script, done), PF-18 (slower heartbeat, done), PF-17 (keep folder handles).
+  per script, done), PF-18 (slower heartbeat, done), PF-17 (keep folder handles, done).
   When all are done: a report of their effects (the user's ask), before (perf/pf-ideas/probe-out.txt) against after,
   same probe, same made-up folder.
   The rest (AP-8 …) waits
@@ -174,4 +174,6 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
 - History in chapters (PF-13) on the real network drive and with older app tabs open: packing and the 3-day removal
   were only seen in test Chromium (knobs `chapter-size`, `chapter-keep`); a chapter written while another computer
   reads History is unseen.
+- Kept folders (PF-17) on the real network drive: a kept handle is trusted until a try in `patiently` fails; that a
+  folder renamed or removed and made again on SMB behaves as in test Chromium (handles name a path) is unseen.
 - Allow editing (AP-25) after Chrome really takes back access: tests fake the lost OK; how long Chrome waits is unseen.

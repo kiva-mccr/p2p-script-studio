@@ -2,6 +2,7 @@
 // file (the user's choice over a file per row). WAV because video editors don't take the browser's webm recordings.
 import { span } from './cleanup.svelte';
 import type { Script } from './script';
+import { subdir } from './dirs';
 
 export type Clip = { row: number; samples: Float32Array; silent?: boolean };
 
@@ -10,7 +11,7 @@ export async function readClips(dir: FileSystemDirectoryHandle, script: Script, 
   const clips: Clip[] = [];
   let voice: FileSystemDirectoryHandle;
   try {
-    voice = await dir.getDirectoryHandle('voice');
+    voice = await subdir(dir, 'voice');
   } catch {
     return clips;
   }

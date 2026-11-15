@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { subdir } from '../lib/dirs';
   import { problem } from '../lib/problems';
   import CopyDetails from './CopyDetails.svelte';
   // Files from other scripts (AS-1, mock-up 29): a window in the page, opened from a row's + Add. Lists the files and
@@ -33,7 +34,7 @@
       for (const g of found) {
         for (const f of g.files) {
           if (f.kind !== 'path' || !IMAGE.test(f.name)) continue;
-          const file = await assetFile(await root.getDirectoryHandle(g.folder), f.target).catch(() => null);
+          const file = await assetFile(await subdir(root, g.folder), f.target).catch(() => null);
           if (!file || gone) continue;
           const url = URL.createObjectURL(file);
           made.push(url);
@@ -68,7 +69,7 @@
   // Browsing: opens a file (as Write does) or a link in a new tab.
   async function open(g: SharedScript, f: SharedFile) {
     if (f.kind === 'link') return void window.open(f.target, '_blank', 'noopener');
-    const file = await assetFile(await root.getDirectoryHandle(g.folder), f.target).catch(() => null);
+    const file = await assetFile(await subdir(root, g.folder), f.target).catch(() => null);
     if (!file) return void (failed = problem("That file couldn't be opened. If the shared folder is still syncing, wait a moment and try again.", 'opening a file from another script'));
     const url = URL.createObjectURL(file);
     window.open(url, '_blank', 'noopener');

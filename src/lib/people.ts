@@ -5,6 +5,7 @@
 
 import { findScript, listScripts, readScript, type ScriptInfo } from './folder';
 import { frontValue, parseScript, setFrontValue } from './script';
+import { subdir } from './dirs';
 
 export type Person = { id: string; name: string; role: string; email: string; linkedin: string };
 // One credit on a script. `name` is kept too, so the script reads on its own (exports, a text editor).
@@ -128,8 +129,8 @@ export async function creditedOn(root: FileSystemDirectoryHandle): Promise<Map<s
 
 async function peopleFolder(root: FileSystemDirectoryHandle, create: boolean): Promise<FileSystemDirectoryHandle | null> {
   try {
-    const studio = await root.getDirectoryHandle('.studio', { create });
-    return await studio.getDirectoryHandle('people', { create });
+    const studio = await subdir(root, '.studio', create);
+    return await subdir(studio, 'people', create);
   } catch {
     return null;
   }

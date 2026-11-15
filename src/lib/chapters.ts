@@ -4,6 +4,7 @@
 import type { Version } from './history';
 import { patiently } from './files';
 import { browserStore, nameKey } from './versioncache';
+import { subpath } from './dirs';
 
 // The versions in it by their single file's name (so they line up with `.studio/versions/`), and when it was packed.
 export type Chapter = { v: 1; packed: string; versions: Record<string, Version> };
@@ -96,7 +97,7 @@ export async function writeChapter(dir: FileSystemDirectoryHandle, versions: [st
 
 async function chaptersFolder(dir: FileSystemDirectoryHandle, create: boolean): Promise<FileSystemDirectoryHandle | null> {
   try {
-    return await (await dir.getDirectoryHandle('.studio', { create })).getDirectoryHandle('chapters', { create });
+    return await subpath(dir, ['.studio', 'chapters'], create);
   } catch {
     return null;
   }

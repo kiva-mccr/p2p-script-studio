@@ -82,8 +82,9 @@ describe('missingFiles lists each folder once', () => {
     const { dir, looks } = folder({ assets: { 'a.png': '1', 'b.png': '2', 'c.png': '3' }, 'top.pdf': '4' });
     const lost = await missingFiles(dir, assets('assets/a.png', 'assets/b.png', 'assets/c.png', 'top.pdf', 'assets/gone.png', 'nowhere/x.png'));
     expect([...lost]).toEqual(['assets/gone.png', 'nowhere/x.png']);
-    // One look-up per folder for its list (assets, nowhere), then the missing ones looked up as before (2 + 1).
-    expect(looks()).toBe(2 + 2 + 1);
+    // One look-up per folder for its list (assets, nowhere), then gone.png looked up in the kept assets/ folder;
+    // nowhere/ isn't there, so x.png is missing without another look-up (PF-17).
+    expect(looks()).toBe(2 + 1);
   });
 
   it('still counts a file whose name differs only in case as there (as Windows does)', async () => {

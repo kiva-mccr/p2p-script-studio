@@ -4,6 +4,7 @@
 // and look inside a script only when it has a new note, with a slow full look every 2 minutes for edits made
 // outside the app, which leave no note.
 import { stamp, writeText } from './files';
+import { subpath } from './dirs';
 
 const KEEP = 60 * 60 * 1000; // notes older than this (by their name's time) are removed by whoever looks fully
 /** A full look this often: what changed outside the app (Notepad, Explorer) left no note. Tests shorten it. */
@@ -25,7 +26,7 @@ export function follow(root: FileSystemDirectoryHandle, dir: FileSystemDirectory
 }
 
 async function newsFolder(root: FileSystemDirectoryHandle, create: boolean): Promise<FileSystemDirectoryHandle> {
-  return (await root.getDirectoryHandle('.studio', { create })).getDirectoryHandle('news', { create });
+  return subpath(root, ['.studio', 'news'], create);
 }
 
 /** A note that `dir` changed: `<time>_<random>_<script folder>.json`. Never throws: a missed note is caught by the

@@ -14,6 +14,7 @@ import { keep, recall } from './remember';
 import { parseScript, rows } from './script';
 import { readSummary, sharedPrint, writeSummary } from './summary';
 import { readTakes, takeLength } from './voice.svelte';
+import { known, subdir, subpath } from './dirs';
 
 export type Counts = {
   missing: number; // files in the Files column not in the folder (EX-6)
@@ -74,8 +75,7 @@ const parts = (path: string) => path.split('/').filter((p) => p && p !== '.' && 
 // The names in a folder inside the script's, sorted; '-' when there is no such folder.
 async function names(dir: FileSystemDirectoryHandle, path: string[]): Promise<string> {
   try {
-    let at = dir;
-    for (const part of path) at = await at.getDirectoryHandle(part);
+    const at = await subpath(dir, path);
     const found: string[] = [];
     for await (const name of at.keys()) found.push(name);
     return found.sort().join('/');
@@ -88,7 +88,7 @@ async function names(dir: FileSystemDirectoryHandle, path: string[]): Promise<st
 async function takeDates(dir: FileSystemDirectoryHandle): Promise<string> {
   try {
     const handles: FileSystemFileHandle[] = [];
-    for await (const [name, handle] of (await dir.getDirectoryHandle('voice')).entries()) {
+    for await (const [name, handle] of (await subdir(dir, 'voice')).entries()) {
       if (handle.kind === 'file' && name.endsWith('.json')) handles.push(handle as FileSystemFileHandle);
     }
     const found = await eachAtOnce(handles, async (handle) => {
@@ -183,7 +183,7 @@ export class ScriptList {
     const fresh = await watching.get(this.#root)!.look(); // null: look at every script
     const folders: FileSystemDirectoryHandle[] = [];
     for await (const entry of this.#root.values()) {
-      if (entry.kind === 'directory' && !entry.name.startsWith('.')) folders.push(entry as FileSystemDirectoryHandle);
+      if (entry.kind === 'directory' && !entry.name.startsWith('.')) folders.push(await known(this.#root, entry as FileSystemDirectoryHandle));
     }
     const here = new Set(folders.map((f) => f.name));
     this.entries = Object.fromEntries(Object.entries(this.entries).filter(([name]) => here.has(name)));

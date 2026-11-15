@@ -6,6 +6,7 @@ import { jsonNames, readJson, stamp, writeText } from './files';
 import type { ForAll } from './forme';
 import { sha256 } from './history';
 import type { ScriptInfo } from './folder';
+import { subpath } from './dirs';
 
 export type Summary = {
   v: 1;
@@ -22,7 +23,7 @@ const OLD_AFTER = 2 * 60_000; // older summaries are removed by the next writer 
 
 async function folder(dir: FileSystemDirectoryHandle, create: boolean): Promise<FileSystemDirectoryHandle | null> {
   try {
-    return await (await dir.getDirectoryHandle('.studio', { create })).getDirectoryHandle(FOLDER, { create });
+    return await subpath(dir, ['.studio', FOLDER], create);
   } catch {
     return null;
   }
