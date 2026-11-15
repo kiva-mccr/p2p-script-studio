@@ -736,7 +736,15 @@ and suggestions, keeps every version, and exports them for production.
   the next to open; a keeper closed between script.md and its note causes no false clash. Two newest History entries
   are no longer combined on opening. Messages say "the shared folder", not OneDrive (the user's ask). Not seen for
   real: two computers on the network drive.
-
+- [x] **PF-1** The 5 s check stops rereading everything (fix 1 of 7 from the speed check, asked by the user,
+  2026-11-14): it opened every comment file, every take's note and every picture's file each time, so on a slow
+  network drive one round took longer than 5 s and the folder never went quiet. Now comment files are opened only
+  when a new name appears (they never change), a take's note only when its date or size changes, each folder in the
+  Files column is listed once instead of a look-up per file, and a round never starts while the last is running.
+  Nothing visible changes. Measured on the made-up big script (before PF-2 and PF-3): idle folder calls a minute
+  21,986 → 2,817 on the simulated network drive (21,361 → 2,773 fast); there, adding a comment 10.6 s → 0.8 s,
+  opening History 11.9 s → 2.8 s, and the folder now goes quiet between rounds. Save .zip stays about 22 s (its own
+  reading of the media). Not seen for real: the network drive.
 - [x] **PF-2** Opening a script stops looking at every History file (fix 2 of the speed check, 2026-11-14; nothing
   visible changes, so no mock-up): the browser kept versions keyed by name, size and time, so every open looked at all
   2,000 files' sizes before using them. Now kept by script folder and file name (History files never change), so an

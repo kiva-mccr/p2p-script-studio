@@ -6,7 +6,7 @@ rows (AP-9) are kept here too (`flag`, `unflag`; `flags()` says which rows are f
 
 - `fieldText` is what a cell shows (files by their names); `quoteGone` says a quote is no longer in its field
   ("on text that has since changed"), through `plain` (needs the page, so no unit test).
-- **Used by:** `screens/Editor.svelte`, `screens/Review.svelte`, `screens/ReviewComments.svelte`, `screens/Comments.svelte`, `screens/CommentCard.svelte`, `lib/forme.ts`. **Tests:** `tests/unit/comments.test.ts`,
+- **Used by:** `screens/Editor.svelte`, `screens/Review.svelte`, `screens/ReviewComments.svelte`, `screens/Comments.svelte`, `screens/CommentCard.svelte`, `lib/forme.ts`. **Tests:** `tests/unit/comments.test.ts`, `tests/unit/checkreads.test.ts`,
   `tests/e2e/review.spec.ts`.
 
 ## Rules and pitfalls
@@ -33,3 +33,5 @@ rows (AP-9) are kept here too (`flag`, `unflag`; `flags()` says which rows are f
   comes back. Callers without `ends` see every hold as still on.
 - Flags: the newest `flag` or `unflag` about a row wins, by `when` (file names keep only seconds, so a flag and its
   note written in the same second sort at random by name; a test caught this). Flags are not threads.
+- `listNotes` keeps what it read per script folder (in memory, by file name) and opens only new names (PF-1): notes
+  are never changed. A file that can't be read yet isn't kept, so it is read again next time.

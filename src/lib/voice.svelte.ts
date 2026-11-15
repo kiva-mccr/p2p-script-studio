@@ -138,19 +138,26 @@ export async function takeFile(dir: FileSystemDirectoryHandle, id: string): Prom
   return (await (await dir.getDirectoryHandle(FOLDER)).getFileHandle(`row-${id}.webm`)).getFile();
 }
 
+// Each folder's take notes read so far, by file name, with the file's date and size when read: a note is opened again
+// only when they change (a new take of the row), not on every 5 s check. Null for one that isn't a take.
+const read = new WeakMap<FileSystemDirectoryHandle, Map<string, { stamp: string; take: Take | null }>>();
+
 // The takes in a script's folder, by row id (the script list reads them too, for each script's length).
 export async function readTakes(dir: FileSystemDirectoryHandle): Promise<Record<string, Take>> {
   const takes: Record<string, Take> = {};
+  const had = read.get(dir);
+  const known = new Map<string, { stamp: string; take: Take | null }>();
   try {
     const voice = await dir.getDirectoryHandle(FOLDER);
     for await (const [name, handle] of voice.entries()) {
       const id = name.match(/^row-(.+)\.json$/)?.[1];
       if (!id || handle.kind !== 'file') continue;
       try {
-        const take = JSON.parse(await (await (handle as FileSystemFileHandle).getFile()).text());
-        if (typeof take.seconds !== 'number') continue;
-        takes[id] = { by: String(take.by ?? ''), at: Number(take.at) || 0, seconds: take.seconds, text: String(take.text ?? '') };
-        if ([take.from, take.to, take.gain].every((n) => typeof n === 'number')) Object.assign(takes[id], { from: take.from, to: take.to, gain: take.gain });
+        const file = await (handle as FileSystemFileHandle).getFile();
+        const stamp = `${file.lastModified} ${file.size}`;
+        const take = had?.get(name)?.stamp === stamp ? had.get(name)!.take : readTake(await file.text());
+        known.set(name, { stamp, take });
+        if (take) takes[id] = take;
       } catch {
         // Half-synced: read next time.
       }
@@ -158,7 +165,16 @@ export async function readTakes(dir: FileSystemDirectoryHandle): Promise<Record<
   } catch {
     // No voice folder yet.
   }
+  read.set(dir, known);
   return takes;
+}
+
+function readTake(text: string): Take | null {
+  const take = JSON.parse(text);
+  if (typeof take.seconds !== 'number') return null;
+  const found: Take = { by: String(take.by ?? ''), at: Number(take.at) || 0, seconds: take.seconds, text: String(take.text ?? '') };
+  if ([take.from, take.to, take.gain].every((n) => typeof n === 'number')) Object.assign(found, { from: take.from, to: take.to, gain: take.gain });
+  return found;
 }
 
 // The takes' speed together, in words a minute (Settings offers it as the speaking speed, AP-12). 0 with none.

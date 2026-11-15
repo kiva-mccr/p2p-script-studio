@@ -397,14 +397,23 @@
   }
 
   // The 5 s check: missing files, takes, who else is here, comments, and someone else's save.
+  // One at a time: on a slow drive a round can take longer than 5 s, and rounds piling up kept the folder busy.
+  let checking = false;
   async function checkOutside() {
-    if (!file.dir || document.hidden || !(await file.checkAccess())) return;
-    checkFiles();
-    if (!voice.recording) voice.load(file.dir);
-    await file.readEditors();
-    notes = await listNotes(file.dir).catch(() => notes);
-    await file.sync();
-    await readCounts();
+    if (checking || !file.dir || document.hidden || !(await file.checkAccess())) return;
+    checking = true;
+    try {
+      const files = checkFiles();
+      if (!voice.recording) await voice.load(file.dir);
+      await file.readEditors();
+      const next = await listNotes(file.dir).catch(() => notes);
+      if (next.length !== notes.length || next.some((n, i) => n.id !== notes[i].id)) notes = next;
+      await file.sync();
+      await readCounts();
+      await files;
+    } finally {
+      checking = false;
+    }
   }
 
   // A row or section was deleted in Write: kept a few seconds so it can be undone.

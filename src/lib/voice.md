@@ -3,7 +3,7 @@
 Voice-over per line (AU-1, board 13): `record` (the microphone through MediaRecorder), `VoiceOver` (the takes by row
 id as state, with start, stop, play, current, remove and load), `readTakes` (a folder's takes, also for the script list's lengths), `takesSpeed` (all takes' words a minute, offered in Settings), `wpm`, `outdated` and `takeFile` (a take's sound, also for Play the script, `lib/play.svelte.ts`).
 
-- **Used by:** `screens/Editor.svelte` (makes one), `screens/Write.svelte`, `screens/WriteRow.svelte`, `lib/play.svelte.ts`. **Tests:** `tests/unit/voice.test.ts`,
+- **Used by:** `screens/Editor.svelte` (makes one), `screens/Write.svelte`, `screens/WriteRow.svelte`, `lib/play.svelte.ts`. **Tests:** `tests/unit/voice.test.ts`, `tests/unit/checkreads.test.ts`,
   `tests/e2e/voice.spec.ts`.
 
 ## Rules and pitfalls
@@ -26,6 +26,8 @@ id as state, with start, stop, play, current, remove and load), `readTakes` (a f
   recording, as timed). Nothing heard, or a take from before: none, and it plays whole.
 - Everything that times or plays a take goes through `span`/`takeLength`/`Sound`, never `take.seconds` alone: Write's
   ▶, wpm, the top bar, the script list, Play the script and the joined WAV (`voiceexport.cleaned`).
+- `readTakes` keeps each take note it read per script folder, with the file's date and size, and opens it again only
+  when they change (PF-1). The 5 s check and the script list both call it.
 - `Sound` plays through Web Audio (its own AudioContext), not an <audio>: the crop is exact and the gain can go over 1.
   Pause suspends that context.
 - Never tried with a real microphone here: the test browser has none.
