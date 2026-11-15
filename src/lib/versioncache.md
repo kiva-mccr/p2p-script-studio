@@ -4,7 +4,9 @@ History files are written once and never changed, so `listVersions` (lib/history
 (HI-3): kept in memory for this visit (per script folder, by file name) and in this browser's IndexedDB
 (`script-studio-history`) for later visits. Nothing is written to the shared folder.
 
-- **Used by:** `lib/history.ts`. **Tests:** `tests/unit/versioncache.test.ts`, `tests/e2e/history.spec.ts`.
+`browserStore(name, version)` is the store itself; comments keep their notes in one too (PF-9, `lib/comments.ts`).
+
+- **Used by:** `lib/history.ts`, `lib/comments.ts`. **Tests:** `tests/unit/versioncache.test.ts`, `tests/e2e/history.spec.ts`.
 
 ## Rules and pitfalls
 
@@ -16,6 +18,7 @@ History files are written once and never changed, so `listVersions` (lib/history
   the file's name. The store's version 2 dropped version 1's entries.
 - Kept versions are fetched a hundred at a time with a pause between: all 2,000 at once (about 100 MB of text)
   held up drawing the script by a quarter of a second.
+- Every store's one object store is called `versions` (comments' too). Raising a store's version empties it.
 - Only whole, readable versions are kept: a half-synced file is read again next time.
 - Storage refused (a private window) or missing (unit tests run in Node): nothing is kept and the files are read.
 - A first visit on a computer still reads every file; only "chapters" (index files, left for later in HI-3) would

@@ -6,7 +6,7 @@ rows (AP-9) are kept here too (`flag`, `unflag`; `flags()` says which rows are f
 
 - `fieldText` is what a cell shows (files by their names); `quoteGone` says a quote is no longer in its field
   ("on text that has since changed"), through `plain` (needs the page, so no unit test).
-- **Used by:** `screens/Editor.svelte`, `screens/Review.svelte`, `screens/ReviewComments.svelte`, `screens/Comments.svelte`, `screens/CommentCard.svelte`, `lib/forme.ts`. **Tests:** `tests/unit/comments.test.ts`, `tests/unit/checkreads.test.ts`,
+- **Used by:** `screens/Editor.svelte`, `screens/Review.svelte`, `screens/ReviewComments.svelte`, `screens/Comments.svelte`, `screens/CommentCard.svelte`, `lib/forme.ts`. **Tests:** `tests/unit/comments.test.ts`, `tests/unit/checkreads.test.ts`, `tests/e2e/comments.spec.ts` (PF-9),
   `tests/e2e/review.spec.ts`.
 
 ## Rules and pitfalls
@@ -35,3 +35,6 @@ rows (AP-9) are kept here too (`flag`, `unflag`; `flags()` says which rows are f
   note written in the same second sort at random by name; a test caught this). Flags are not threads.
 - `listNotes` keeps what it read per script folder (in memory, by file name) and opens only new names (PF-1): notes
   are never changed. A file that can't be read yet isn't kept, so it is read again next time.
+- Notes are kept in this browser too (PF-9, IndexedDB `script-studio-comments`, through `browserStore` in
+  `lib/versioncache.ts`), keyed by script folder and file name (`nameKey`), so a later visit (and the list's flags)
+  opens only new files. A file that isn't a note is kept as null, so it isn't opened again either.
