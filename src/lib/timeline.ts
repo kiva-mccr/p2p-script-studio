@@ -3,7 +3,17 @@
 // sharing the row's time equally, with nothing after it.
 
 import { clearMarks } from './format';
-import { rows, readFileRef, timelineOnly, type Row, type Script } from './script';
+import { frontValue, rows, readFileRef, setFrontValue, timelineOnly, type Row, type Script } from './script';
+
+// The video's shape (SB-3), kept with the script in its front matter: `shape: upright` (9:16), else wide (16:9).
+export type Shape = 'wide' | 'upright';
+export const shapeOf = (front: string | null): Shape => (frontValue(front, 'shape') === 'upright' ? 'upright' : 'wide');
+// Wide is the default, so it is written as no line at all.
+// A front matter left empty is none at all (null).
+export function withShape(front: string | null, shape: Shape): string | null {
+  if (shape === 'upright') return setFrontValue(front, 'shape', 'upright');
+  return (front ?? '').split('\n').filter((l) => !l.startsWith('shape:')).join('\n') || null;
+}
 
 export type After = { kind: 'hold'; seconds: number } | { kind: 'placeholder'; seconds: number; label: string };
 export type Choices = {

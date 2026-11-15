@@ -19,7 +19,7 @@
   import FoldHeads from './FoldHeads.svelte';
   import Timeline from './Timeline.svelte';
   import TimelineBar from './TimelineBar.svelte';
-  import { changeChoices, readChoices, type After } from '../lib/timeline';
+  import { changeChoices, readChoices, shapeOf, withShape, type After, type Shape } from '../lib/timeline';
 
   // onChange: something was edited (the Editor saves). onDeleted: a row or section was deleted, or a paste made rows,
   // with the blocks as they were before, so the Editor can offer Undo. onNotice: a message for the person.
@@ -333,6 +333,11 @@
     row.timeline = line;
     onChange();
   }
+  function setShape(shape: Shape) {
+    if (shapeOf(script.front) === shape) return;
+    script.front = withShape(script.front, shape);
+    onChange();
+  }
   function setFiles(id: string, files: string[]) {
     const row = rowOf(id);
     if (!row) return;
@@ -424,7 +429,7 @@
     <button class="link" onmousedown={(e) => e.preventDefault()} onclick={addSection}>+ Add section</button>
   </div>
 </div>
-<Timeline {script} {dir} {voice} {player} {canPlay} bind:selected={chosen} onTimeline={setTimeline} onFiles={setFiles} onRemoveAfter={removeAfter}
+<Timeline {script} {dir} {voice} {player} {canPlay} bind:selected={chosen} onTimeline={setTimeline} onFiles={setFiles} onRemoveAfter={removeAfter} onShape={setShape}
   onShow={showRow} {onPlayFrom} {onNotice} />
 
 {#snippet removedRows(after: string)}

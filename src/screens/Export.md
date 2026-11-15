@@ -1,7 +1,7 @@
 # `src/screens/Export.svelte`
 
 The export screen (EX-9, board 27): opened from an item under Export in Export / Share, in place of the script.
-Formats on the left (Print / PDF, Fountain, Final Draft, Voice-over, Resolve / Premiere), the real result in the middle, settings and
+Formats on the left (Print / PDF, Fountain, Final Draft, Voice-over, Resolve / Premiere, Video), the real result in the middle, settings and
 Print… or Save on the right. Back to the script, the title in the breadcrumb, or Esc returns.
 
 - **Used by:** `screens/Editor.svelte` (`openExport`, which saves what is waiting and works out the version first).
@@ -31,3 +31,7 @@ Print… or Save on the right. Back to the script, the title in the breadcrumb, 
 - Resolve / Premiere (EX-19): the takes are read once (`readTakes`) for their lengths, the plan is redrawn as the
   settings change, and the media are only made on Save .zip (`editZip`). Its preview is `EditPreview.svelte`.
   Settings are kept as `export-edit`. Files that couldn't be read are named under the preview after saving.
+- Video (SB-3): the same plan as Resolve / Premiere (collages as one picture, no markers), laid out again with rows
+  with no take at 0 s when they're left out. Its shape is the script's (`shapeOf`), its other settings are kept as
+  `export-video`. Save video makes it (`makeVideo`), downloads it, and hands it to the preview to play; Stop asks
+  `makeVideo` to cancel between frames. Its preview is `VideoPreview.svelte`.

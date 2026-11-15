@@ -63,8 +63,7 @@ async function make(dir: FileSystemDirectoryHandle, source: Source, width: numbe
         const file = await assetFile(dir, path);
         return file ? await picture(file, path, false).catch(() => null) : null;
       }));
-      const each = width / pictures.length;
-      const data = await draw(width, height, '#000000', (g) => pictures.forEach((pic, i) => pic && fit(g, pic, i * each, 0, each, height)));
+      const data = await draw(width, height, '#000000', (g) => collage(g, pictures, width, height));
       pictures.forEach((pic) => pic && free(pic));
       return { data, info: frame };
     }
@@ -90,11 +89,11 @@ async function make(dir: FileSystemDirectoryHandle, source: Source, width: numbe
   }
 }
 
-type Drawable = HTMLImageElement | HTMLVideoElement | ImageBitmap;
+export type Drawable = HTMLImageElement | HTMLVideoElement | ImageBitmap;
 const sizeOf = (d: Drawable) => (d instanceof HTMLVideoElement ? { w: d.videoWidth, h: d.videoHeight } : { w: d.width, h: d.height });
 
 // A picture to draw: an image, or a video's first (or last) frame.
-async function picture(file: File, path: string, lastFrame: boolean): Promise<Drawable> {
+export async function picture(file: File, path: string, lastFrame: boolean): Promise<Drawable> {
   if (!/\.(mp4|webm|mov|m4v)$/i.test(path)) return loadImage(file);
   const v = await openVideo(file);
   await new Promise<void>((done, fail) => {
@@ -105,7 +104,7 @@ async function picture(file: File, path: string, lastFrame: boolean): Promise<Dr
   return v;
 }
 
-function loadImage(file: Blob): Promise<HTMLImageElement> {
+export function loadImage(file: Blob): Promise<HTMLImageElement> {
   const url = URL.createObjectURL(file);
   const img = new Image();
   return new Promise<HTMLImageElement>((done, fail) => {
@@ -116,11 +115,11 @@ function loadImage(file: Blob): Promise<HTMLImageElement> {
 }
 
 // A video's object URL is freed once its frame is drawn (an image's is freed as soon as it has loaded).
-function free(d: Drawable) {
+export function free(d: Drawable) {
   if (d instanceof HTMLVideoElement) URL.revokeObjectURL(d.src);
 }
 
-function openVideo(file: Blob): Promise<HTMLVideoElement> {
+export function openVideo(file: Blob): Promise<HTMLVideoElement> {
   const v = document.createElement('video');
   v.muted = true;
   v.preload = 'auto';
@@ -146,15 +145,22 @@ async function draw(width: number, height: number, ground: string, paint: (g: Ca
 }
 
 // The picture as large as fits in the box, centred.
-function fit(g: CanvasRenderingContext2D, d: Drawable, x: number, y: number, w: number, h: number) {
+export function fit(g: CanvasRenderingContext2D, d: Drawable, x: number, y: number, w: number, h: number) {
   const { w: dw, h: dh } = sizeOf(d);
   if (!dw || !dh) return;
   const s = Math.min(w / dw, h / dh);
   g.drawImage(d, x + (w - dw * s) / 2, y + (h - dh * s) / 2, dw * s, dh * s);
 }
 
+// A collage's pictures in one frame: side by side in a wide frame, one above the other in an upright one (SB-3).
+export function collage(g: CanvasRenderingContext2D, pictures: (Drawable | null)[], width: number, height: number) {
+  const upright = height > width;
+  const each = (upright ? height : width) / pictures.length;
+  pictures.forEach((pic, i) => pic && (upright ? fit(g, pic, 0, i * each, width, each) : fit(g, pic, i * each, 0, each, height)));
+}
+
 // Words on a grey card, wrapped and centred, like the timeline's cards.
-function card(g: CanvasRenderingContext2D, text: string, width: number, height: number) {
+export function card(g: CanvasRenderingContext2D, text: string, width: number, height: number) {
   const size = Math.round(Math.min(width, height) / 16);
   g.fillStyle = '#3d3d3d';
   g.font = `${size}px Inter, system-ui, sans-serif`;

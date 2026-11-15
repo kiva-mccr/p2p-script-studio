@@ -13,4 +13,5 @@ side changed is taken without asking; a field both sides changed differently is 
 - Rows the other side added go after the row (or section) that came before them on that side.
 - Clash keys are `rowid:field` and `front:title` / `front:status`. Authors are the union of both sides.
 - `text(picks)` writes into the merged rows: call it once, for the final save.
+- The timeline's shape (SB-3, front matter `shape`): whoever changed it wins, never a clash.
 - Credits (AP-31) in the front matter are combined person by person (`mergeCredits` in `lib/people.ts`), never a clash.

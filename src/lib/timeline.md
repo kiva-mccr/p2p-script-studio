@@ -5,7 +5,9 @@ The storyboard timeline (SB-1, mock-up 63): reads and writes a row's `Timeline:`
 (`layout`): rows, then the hold or placeholder after each, and the sections' spans. `shots` splits a sequence's
 time between its pictures, on the cut words when the take's word timings are known (`cutTimes`), else equally.
 
-- **Used by:** `screens/Timeline.svelte`, `screens/Write.svelte`. **Tests:** `tests/unit/timeline.test.ts`.
+The video's shape (SB-3) is the front matter's `shape: upright`, else wide (`shapeOf`, `withShape`).
+
+- **Used by:** `screens/Timeline.svelte`, `screens/Write.svelte`, `screens/Export.svelte`, `lib/merge.ts` (shape). **Tests:** `tests/unit/timeline.test.ts`.
 
 ## Rules and pitfalls
 
@@ -15,4 +17,6 @@ time between its pictures, on the cut words when the take's word timings are kno
   Resolve / Premiere export (EX-19), so the playhead and the exported timeline never drift.
 - Word timings are estimated (`estimateWords`: by letters, over the row's length), not heard: no speech model
   reads the takes yet. Good enough to cut on; refine later if real takes drift.
+- Wide is the default and is never written: `withShape(…, 'wide')` removes the line (a front matter left empty is
+  `null`, so no empty `---` block is written).
 - A cut word is matched by `plain` (lower case, letters and digits only), the first match after the previous cut.

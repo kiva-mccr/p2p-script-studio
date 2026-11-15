@@ -3,7 +3,7 @@
   // Print's choices: a Notes column on each row, Notes lines on every page (how many), the text size in %, the columns that
   // print (EX-16), the page turned sideways (EX-18), and the credits after the rows (AP-31).
   export type PrintChoices = { column: boolean; lines: number; scale: number; hidden: Column[]; landscape: boolean; credits: boolean };
-  export type Format = 'print' | 'fountain' | 'fdx' | 'voice' | 'edit';
+  export type Format = 'print' | 'fountain' | 'fdx' | 'voice' | 'edit' | 'video';
 </script>
 
 <script lang="ts">
@@ -26,7 +26,9 @@
   import EditPreview from './EditPreview.svelte';
   import { EDIT, RATES, SIZES, plan as editPlan } from '../lib/editxml';
   import { editZip } from '../lib/editmedia';
-  import { layout } from '../lib/timeline';
+  import { layout, shapeOf } from '../lib/timeline';
+  import VideoPreview from './VideoPreview.svelte';
+  import { VIDEO, makeVideo } from '../lib/video';
   import { readTakes, rowLength, type Take } from '../lib/voice.svelte';
 
   // version: "v3", or "" for a draft (Editor's `version()`, which saved what was waiting).
@@ -41,6 +43,7 @@
     { id: 'fdx', name: 'Final Draft (.fdx)', action: 'Save .fdx' },
     { id: 'voice', name: 'Voice-over (.wav)', action: 'Save .wav' },
     { id: 'edit', name: 'Resolve / Premiere (.zip)', action: 'Save .zip' },
+    { id: 'video', name: 'Video (.mp4)', action: 'Save video' },
   ];
   // svelte-ignore state_referenced_locally (the screen opens on `start`; the list on the left changes it)
   let format = $state<Format>(start);
@@ -56,6 +59,7 @@
   let fdx = $state<Screenplay>(load('export-fdx', SCREENPLAY));
   let voiceHow = $state(load('export-voice', { gap: false, silence: false }));
   let edit = $state(load('export-edit', EDIT));
+  let video = $state(load('export-video', VIDEO));
   $effect(() => {
     keep('print-notes', printing.column ? '1' : '');
     keep('print-lines', printing.lines ? '1' : '');
@@ -68,6 +72,7 @@
     keep('export-fdx', JSON.stringify(fdx));
     keep('export-voice', JSON.stringify(voiceHow));
     keep('export-edit', JSON.stringify(edit));
+    keep('export-video', JSON.stringify(video));
   });
   // Ticks a column on or off; the hidden ones stay in the order they were unticked (their room goes in turns).
   function setLines(on: boolean, count = lineCount) {
@@ -160,7 +165,7 @@
   // as the timeline under the script times it.
   let takes = $state<Record<string, Take> | null>(null);
   $effect(() => {
-    if (format === 'edit' && !takes) readTakes(dir).then((t) => (takes = t));
+    if ((format === 'edit' || format === 'video') && !takes) readTakes(dir).then((t) => (takes = t));
   });
   const laid = $derived(takes ? layout(script, rowLength(takes, speaking.wpm)) : null);
   const edited = $derived(laid ? editPlan(script, laid, edit) : null);
@@ -182,7 +187,44 @@
     }
   }
 
+  // The video (SB-3): the same plan, collages as one picture, no markers; rows with no take silent or left out.
+  const shape = $derived(shapeOf(script.front));
+  const videoLaid = $derived.by(() => {
+    if (!takes) return null;
+    const length = rowLength(takes, speaking.wpm);
+    return layout(script, video.skip ? (row) => (takes![row.id] ? length(row) : { seconds: 0, take: false }) : length);
+  });
+  const videoPlan = $derived(videoLaid ? editPlan(script, videoLaid, { ...EDIT, stacked: false, markers: false, captions: video.captions }) : null);
+  let progress = $state<number | null>(null);
+  let stop = false;
+  let made = $state<{ url: string; mp4: boolean } | null>(null);
+  let videoMissing = $state<string[]>([]);
+  const VIDEO_FAILED = "The video couldn't be made. If the shared folder is still syncing, wait a moment and try again.";
+  async function saveVideo() {
+    if (!videoPlan || progress !== null) return;
+    progress = 0;
+    stop = false;
+    videoMissing = [];
+    try {
+      const out = await makeVideo(dir, videoPlan, $state.snapshot(video), shape, (done) => (progress = done), () => stop);
+      if (out) {
+        if (made) URL.revokeObjectURL(made.url);
+        made = { url: URL.createObjectURL(out.video), mp4: out.mp4 };
+        videoMissing = out.missing;
+        download(`${name}.${out.mp4 ? 'mp4' : 'webm'}`, out.video);
+      }
+    } catch (e) {
+      problem(VIDEO_FAILED, 'making the video', e);
+    } finally {
+      progress = null;
+    }
+  }
+  $effect(() => () => {
+    if (made) URL.revokeObjectURL(made.url);
+  });
+
   function save() {
+    if (format === 'video') return saveVideo();
     if (format === 'edit') return saveEdit();
     if (format === 'print') return onPrint($state.snapshot(printing));
     if (format === 'fountain') return download(`${name}.fountain`, fountainText);
@@ -266,6 +308,14 @@
       {#if edited}
         <EditPreview plan={edited} how={edit} {name} />
         {#if leftOut.length}<p class="message left-out" role="alert">Saved, but {leftOut.length === 1 ? 'one file' : `${leftOut.length} files`} couldn't be read and {leftOut.length === 1 ? 'is' : 'are'} left out (the editor sees {leftOut.length === 1 ? 'it' : 'them'} offline): {leftOut.join(', ')}.</p>{/if}
+      {:else}
+        <p class="message">Reading the takes…</p>
+      {/if}
+    {:else if format === 'video'}
+      {#if videoPlan}
+        <VideoPreview plan={videoPlan} {dir} {shape} how={video} {name} {made} {progress} onStop={() => (stop = true)} />
+        {#if made && !made.mp4}<p class="message left-out">Saved as WebM: this browser can't make MP4 here. It plays in Chrome, Edge and VLC; YouTube takes it too.</p>{/if}
+        {#if videoMissing.length}<p class="message left-out" role="alert">Saved, but {videoMissing.length === 1 ? 'one file' : `${videoMissing.length} files`} couldn't be read and {videoMissing.length === 1 ? 'shows' : 'show'} as a grey card with {videoMissing.length === 1 ? 'its' : 'their'} name: {videoMissing.join(', ')}.</p>{/if}
       {:else}
         <p class="message">Reading the takes…</p>
       {/if}
@@ -362,15 +412,31 @@
         </fieldset>
         <label><input type="checkbox" bind:checked={edit.markers} /> A marker on each row, with its dialogue</label>
         <label><input type="checkbox" bind:checked={edit.captions} /> Dialogue as captions (.srt)</label>
+      {:else if format === 'video'}
+        <fieldset class="plain">
+          <legend>Frame size</legend>
+          <div class="rates">
+            <label><input type="radio" name="vsize" checked={video.size === '720'} onchange={() => (video.size = '720')} /> 720p</label>
+            <label><input type="radio" name="vsize" checked={video.size === '1080'} onchange={() => (video.size = '1080')} /> 1080p</label>
+          </div>
+          <p class="kept help">{shape === 'upright' ? 'Upright' : 'Wide'}, as set on the timeline under the script.</p>
+        </fieldset>
+        <label><input type="checkbox" bind:checked={video.captions} /> Dialogue as captions on the picture</label>
+        <fieldset class="plain">
+          <legend>Rows with no take</legend>
+          <label><input type="radio" name="notake" checked={!video.skip} onchange={() => (video.skip = false)} /> Silent, for their read time</label>
+          <label><input type="radio" name="notake" checked={video.skip} onchange={() => (video.skip = true)} /> Left out</label>
+        </fieldset>
+        <label><input type="checkbox" bind:checked={video.sound} /> Keep videos' own sound, under the voice</label>
       {:else}
         <label><input type="checkbox" bind:checked={voiceHow.gap} /> Half a second between takes</label>
         <label><input type="checkbox" bind:checked={voiceHow.silence} /> Silence for rows with no take</label>
       {/if}
-      {#if credits.length && format !== 'voice' && format !== 'edit'}
+      {#if credits.length && format !== 'voice' && format !== 'edit' && format !== 'video'}
         <label><input type="checkbox" bind:checked={printing.credits} /> {format === 'print' ? 'Credits after the rows' : 'Credits on the title page'}</label>
       {/if}
       <p class="kept">Remembered on this computer for next time.</p>
-      <button class="primary" disabled={(format === 'voice' && !file) || (format === 'edit' && (!edited?.total || making))} onclick={save}>{format === 'edit' && making ? 'Making the .zip…' : FORMATS.find((f) => f.id === format)?.action}</button>
+      <button class="primary" disabled={(format === 'voice' && !file) || (format === 'edit' && (!edited?.total || making)) || (format === 'video' && (!videoPlan?.total || progress !== null))} onclick={save}>{format === 'edit' && making ? 'Making the .zip…' : format === 'video' && progress !== null ? 'Making the video…' : FORMATS.find((f) => f.id === format)?.action}</button>
     </div>
   </aside>
 </div>

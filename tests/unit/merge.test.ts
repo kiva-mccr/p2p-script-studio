@@ -62,4 +62,13 @@ describe('merge', () => {
     expect(text).toContain('status: approved');
     expect(text).toContain('authors: [Kiva, Sam, Ana]');
   });
+
+  it("keeps the timeline's shape (SB-3) whichever side changed it, never a clash", () => {
+    const upright = swap(example, '---\n', '---\nshape: upright\n');
+    const theirs = swap(example, sugar, 'Theirs.');
+    expect(merge(example, upright, theirs).clashes).toEqual([]);
+    expect(merge(example, upright, theirs).text({})).toContain('\nshape: upright\n');
+    expect(merge(example, theirs, upright).text({})).toContain('\nshape: upright\n');
+    expect(merge(upright, example, upright).text({})).not.toContain('shape:');
+  });
 });
