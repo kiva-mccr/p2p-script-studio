@@ -147,11 +147,18 @@
   // Comments in History (RV-6, board 48): each on the version whose change it led to, or on the one current when it
   // was made. A version shows those of every version since the one it is compared with (an official one gathers
   // the small saves folded under it).
-  const placed = $derived(placeComments([...(versions ?? [])].reverse(), threads(notes, false, holdEnds(versions ?? []))));
-  function covered(i: number): number[] {
+  // PF-4: only the versions shown, and those they are compared with, are looked at (2,000 took over a second).
+  const placed = $derived.by(() => {
+    const list = versions ?? [];
+    const oldest = Math.max(-1, ...list.slice(0, shown).map((_, i) => coveredEnd(i) - 1));
+    return placeComments([...list].reverse(), threads(notes, false, holdEnds(list)), list.length - 1 - oldest);
+  });
+  function coveredEnd(i: number): number {
     const b = before(i);
-    const end = b ? versions!.indexOf(b) : versions!.length;
-    return Array.from({ length: Math.max(end - i, 1) }, (_, k) => i + k);
+    return Math.max(b ? versions!.indexOf(b) : versions!.length, i + 1);
+  }
+  function covered(i: number): number[] {
+    return Array.from({ length: coveredEnd(i) - i }, (_, k) => i + k);
   }
   function commentCount(i: number): number {
     return covered(i).reduce((n, k) => {

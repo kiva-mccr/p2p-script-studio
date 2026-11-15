@@ -759,6 +759,14 @@ and suggestions, keeps every version, and exports them for production.
   3.6–3.8 s, simulated network drive 84 s → 33 s; read 115 MB → 14 MB; folder calls 16,300 → 10,500. The list itself
   still shows in about 0.4 s (1.9 s on the network). The rest is comments, takes and small Histories never sent for
   review. Not seen for real: the network drive.
+- [x] **PF-4** Opening History stops working out comments for all 2,000 versions (fix 4 of the speed check,
+  2026-11-15; nothing visible changes, so no mock-up): only the versions shown (and those they cover) get comments;
+  older ones are looked at only to see whether an older comment's cell changed first, comparing each row as text and
+  parsing only rows that differ, kept in memory for the visit. Measured on the made-up big script, switching to
+  History: longest freeze 1.2–1.4 s → 0.23–0.33 s, memory +170–290 MB → +4 MB, fast drive 2.1–2.9 s → 1.2–1.8 s.
+  On the simulated network drive the freeze and memory drop the same way, but the wait barely moves (11.6 s → 10.7 s
+  on a later visit, 55 s → 53 s on a first): that is History's 2,600 folder calls, not comments. Not seen for real:
+  the network drive.
 - [x] **PF-5** Typing stops redoing every comment mark (fix 5 of the speed check, 2026-11-15; nothing visible
   changes, so no mock-up): Write found every open comment's quote again on every key. Now the marks are kept per field
   (`lib/quotemarks.ts`) and, once typing pauses (0.4 s), only the fields whose drawn text changed are looked at again;
