@@ -1008,6 +1008,8 @@ Fixes with no new look (UX-3, 5, 6, 8, 9) need no board.
   The pointer is done (2026-11-15, board 75): "In review · Approve in Review" in Write, "Draft · Send for review in
   Write" in Review, each a link to that tab; Ctrl+F in Review opens Find in Write. Undo for Remove is in the People
   window (board 72, done 2026-11-15).
+  The pointer links were taken out again at the user's ask (2026-11-15): "In review" beside them says enough. Ctrl+F
+  stays.
 
 ## Last (the user's order: these wait until everything above is done)
 

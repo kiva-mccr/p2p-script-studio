@@ -43,10 +43,9 @@ Copy for Teams, EX-10) above Export (Print…, Fountain, Final Draft, Voice-over
   It covers the top of `main`, so a test must not click there to leave a text field (`play.spec.ts` blurs instead).
   Its z-index (7) is over the timeline drawer (4) and its preview: in a short window the preview reached the bar and
   took the click meant for Pause.
-- Where the review buttons aren't (UX-13): in Write while in review, "In review" and an "Approve in Review" link; in
-  Review while not in review, "Draft" (or "Approved") and "Send for review in Write". Tests asking for the "Send for
-  review" or "Review" button use `exact: true` or `/^Review/`, as these links contain the words. Ctrl+F in Review
-  goes to Write and opens Find (`findKey` in `Editor.svelte`).
+- "In review" (outside Review) and "Approved" say where the script stands. UX-13 added links beside them ("Approve in
+  Review", "Send for review in Write"); the user had them taken out (2026-11-15): the state beside them says enough.
+  Ctrl+F in Review goes to Write and opens Find (`findKey` in `Editor.svelte`).
 - While the browser's OK to edit the folder is lost (`status` 'locked', mock-up 18 option A), the status reads "Not
   saved: the browser needs your OK to edit the folder" with an Allow editing button (`onAllow`). That is too long
   for one line beside the tabs, so the breadcrumb stops shrinking (`.crumbs.locked`) and the bar wraps (a click on
