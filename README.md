@@ -209,7 +209,8 @@ Status: a first working version. What it does today:
   appear on their own, row by row, and only a place you both changed is shown side by side for you to pick. Works
   on a network drive, OneDrive or any shared folder. To keep the drive quiet, every save, comment or take also
   leaves a tiny note in one shared "what's new" folder (`.studio/news/`): an open script and the list look there
-  every few seconds and open a script's files only when it has news, with a full look every 2 minutes for edits
+  every few seconds (an open script every 5 seconds while someone else is in it, every 30 when you're alone, so
+  someone who just opened it shows up to 30 seconds later) and open a script's files only when it has news, with a full look every 2 minutes for edits
   made outside the app. Someone else's new take can take up to 30 seconds to show. A script left open with nobody at the computer for 2 minutes (no mouse, key or scroll)
   stops looking altogether, and catches up the moment you move; the others see you as "last seen".
 - **When something goes wrong:** the message says so in plain words, with a small grey copy icon after it. The icon

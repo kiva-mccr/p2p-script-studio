@@ -33,6 +33,11 @@ version (`Print.svelte`) and the teleprompter (`Teleprompter.svelte`, saves what
 - The check reads only what is new (PF-1): comment files by new names, take notes by a changed date or size, the
   Files column by one listing per folder. A round never starts while the last is still going (a slow drive made them
   pile up), and `notes` is only replaced when a note came or went, so Review isn't redrawn every 5 s.
+- Pace (PF-16): the timer ticks every 5 s, but a round starts only while someone else's "… is editing" file is fresh
+  (`file.editors`, read at the start of each round) or `ALONE_EVERY` (30 s) has passed since the last one (`roundAt`).
+  So alone, someone who just opened the script is noticed up to 30 s later, and the next round is 5 s after that.
+  Coming back to the tab or rejoining checks at once. Tests run at 5 s (`alone-every` in playwright.config.ts); a
+  test that times the alone pace sets its own.
 - Away (PF-14, `lib/away.ts`): after 2 minutes with no mouse, key or scroll (and nothing playing), the check and the
   heartbeat do nothing; the first touch, or coming back to the tab, rejoins (`file.back()`) and checks at once.
 - "… is editing": `file` writes yours on opening and every 30 s (`heartbeat` here); leaving, the Editor writes a last
