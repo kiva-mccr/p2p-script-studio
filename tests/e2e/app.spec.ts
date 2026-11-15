@@ -14,9 +14,14 @@ test('a link opens the script it names, after set-up', async ({ page }) => {
   await expect(page.getByLabel('Dialogue, row 1')).toHaveValue('Every leaf you have ever seen is running a tiny factory.');
 });
 
-test('a small link to the code sits in the corner', async ({ page }) => {
+test('the ? in the top bar has GitHub and the version; nothing sits in the corners (SB-5)', async ({ page }) => {
   await setUp(page);
-  await expect(page.getByRole('link', { name: 'GitHub' })).toHaveAttribute('href', 'https://github.com/kiva-mccr/p2p-script-studio');
-  // Not the live site's build, so the version in the other corner says so (AP-28).
-  await expect(page.getByRole('link', { name: 'dev' })).toHaveAttribute('href', 'https://github.com/kiva-mccr/p2p-script-studio');
+  await expect(page.getByRole('link', { name: /GitHub/ })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Help and version' }).click();
+  const menu = page.getByRole('menu', { name: 'Help and version' });
+  await expect(menu.getByRole('menuitem', { name: 'GitHub ↗' })).toHaveAttribute('href', 'https://github.com/kiva-mccr/p2p-script-studio');
+  // Not the live site's build, so the version says so (AP-28).
+  await expect(menu.getByRole('menuitem', { name: 'Version: dev ↗' })).toHaveAttribute('href', 'https://github.com/kiva-mccr/p2p-script-studio');
+  await page.keyboard.press('Escape');
+  await expect(menu).toHaveCount(0);
 });

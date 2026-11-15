@@ -1,4 +1,5 @@
 <script lang="ts">
+  import HelpMenu from './HelpMenu.svelte';
   import { problem } from '../lib/problems';
   import CopyDetails from './CopyDetails.svelte';
   import { untrack } from 'svelte';
@@ -68,7 +69,7 @@
   }
 </script>
 
-<header>Scripts</header>
+<header>Scripts <HelpMenu /></header>
 <main>
   <div class="box">
     <svg aria-hidden="true" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -127,7 +128,7 @@
 </main>
 
 <style>
-  header { padding: 20px 24px; font-size: 15px; font-weight: 600; }
+  header { display: flex; align-items: center; justify-content: space-between; padding: 14px 24px; font-size: 15px; font-weight: 600; }
   main { display: flex; justify-content: center; padding: 12vh 16px 96px; }
   .box { width: 100%; max-width: 440px; display: flex; flex-direction: column; align-items: center; gap: 20px; text-align: center; }
   h1 { margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -0.01em; }

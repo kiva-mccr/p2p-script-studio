@@ -1,9 +1,9 @@
 # `src/lib/version.ts`
 
-The live version in the bottom-left corner (AP-28): the number of the pull request the site was built from, its
+The live version, "Version: PR #N" in the ? menu of the top bar (AP-28, SB-5): the number of the pull request the site was built from, its
 title and when it was merged, so a refresh shows whether a new version is live and what is in it.
 
-- **Used by:** `App.svelte`, and `vite.config.ts` (reads the commit at build time). **Tests:** `tests/unit/version.test.ts`, `tests/e2e/app.spec.ts`.
+- **Used by:** `screens/HelpMenu.svelte`, and `vite.config.ts` (reads the commit at build time). **Tests:** `tests/unit/version.test.ts`, `tests/e2e/app.spec.ts`.
 
 ## Rules and pitfalls
 

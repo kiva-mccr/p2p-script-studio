@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { slide } from 'svelte/transition';
   import { problem } from '../lib/problems';
   import { addAsset, assetFile } from '../lib/folder';
   import { plain } from '../lib/format';
@@ -30,7 +31,59 @@
   // starts folded. It replaced SB-2's Unpin and the old Hide.
   const KEY = 'timeline-open';
   let hidden = $state(recall(KEY) !== '1');
-  const fold = (on: boolean) => keep(KEY, (hidden = on) ? '' : '1');
+  const fold = (on: boolean) => ((auto = false), keep(KEY, (hidden = on) ? '' : '1'));
+  // SB-5 (board 77): folded, a push past the bottom of the page (scrolling down again once there) unfolds it, and
+  // scrolling up folds it again, but only if it opened so: opened with its bar, it stays. Neither is remembered.
+  // Not while playing (Play moves the page itself). Only reaching the bottom does nothing, so the page's height
+  // changing as it opens can't make it flicker: the push must start once the page has been at the bottom a moment
+  // (wheel events are passive, so the one that scrolls to the bottom can arrive after that scroll; and a flick's
+  // momentum keeps sending them, which counts as the same push).
+  let auto = $state(false);
+  let section = $state<HTMLElement>();
+  const atBottom = () => innerHeight + scrollY >= document.documentElement.scrollHeight - 2;
+  let bottomSince = 0; // when the page reached the bottom, 0 while it isn't there
+  let lastPush = 0; // the last wheel, key or touch: a gap of more than PAUSE starts a new push
+  let pushFromBottom = false; // this push started with the page already at the bottom for a moment
+  const PAUSE = 200;
+  function scrolled(down: boolean, target: EventTarget | null) {
+    const now = performance.now();
+    if (now - lastPush > PAUSE) pushFromBottom = bottomSince > 0 && now - bottomSince > PAUSE;
+    lastPush = now;
+    if (player.started || (target instanceof Node && section?.contains(target))) return;
+    if (down && hidden && pushFromBottom && atBottom()) (hidden = false), (auto = true);
+    else if (!down && auto) (hidden = true), (auto = false);
+  }
+  const onScroll = () => (bottomSince = atBottom() ? bottomSince || performance.now() : 0);
+  const DOWN = new Set(['PageDown', 'End', 'ArrowDown', ' ']);
+  const UP = new Set(['PageUp', 'Home', 'ArrowUp']);
+  let touchY = 0;
+  $effect(() => {
+    const wheel = (e: WheelEvent) => {
+      if (e.deltaY && !(e.target as Element).closest?.('aside')) scrolled(e.deltaY > 0, e.target); // the side panel scrolls itself
+    };
+    const key = (e: KeyboardEvent) => {
+      if ((e.target as Element).closest?.('input, textarea, select, button, [contenteditable]')) return;
+      if (DOWN.has(e.key) || UP.has(e.key)) scrolled(DOWN.has(e.key), e.target);
+    };
+    const touchStart = (e: TouchEvent) => (touchY = e.touches[0]?.clientY ?? 0);
+    const touchMove = (e: TouchEvent) => {
+      const y = e.touches[0]?.clientY ?? touchY;
+      if (Math.abs(y - touchY) > 24) scrolled(y < touchY, e.target), (touchY = y); // finger up: the page goes down
+    };
+    onScroll();
+    addEventListener('scroll', onScroll, { passive: true });
+    addEventListener('wheel', wheel, { passive: true });
+    addEventListener('keydown', key);
+    addEventListener('touchstart', touchStart, { passive: true });
+    addEventListener('touchmove', touchMove, { passive: true });
+    return () => {
+      removeEventListener('scroll', onScroll);
+      removeEventListener('wheel', wheel);
+      removeEventListener('keydown', key);
+      removeEventListener('touchstart', touchStart);
+      removeEventListener('touchmove', touchMove);
+    };
+  });
   let zoom = $state(1);
   // The page keeps the drawer's height as its bottom scroll padding, so a row brought into view (a click on a block,
   // Play following the rows, the cursor) isn't left behind the drawer; and as --drawer, which lifts the corner links,
@@ -196,7 +249,7 @@
   }
 </script>
 
-<section class="timeline" class:folded={hidden} aria-label="Timeline" data-tour={readOnly ? 'review-timeline' : 'timeline'} use:near={() => (shown = true)} use:room>
+<section class="timeline" class:folded={hidden} aria-label="Timeline" data-tour={readOnly ? 'review-timeline' : 'timeline'} bind:this={section} use:near={() => (shown = true)} use:room>
   {#if now}
     <div class="preview" class:big class:upright role="img" aria-label="Preview: {showing.tag}">
       <div class="screen" class:collage-on={showing.paths.length > 1}>
@@ -249,7 +302,7 @@
   </div>
 
   {#if !hidden}
-  <div class="body">
+  <div class="body" transition:slide={{ duration: 150 }}>
     {#if !total}
       <p class="empty help">The timeline fills in as rows get dialogue or a take.</p>
     {:else}
@@ -404,7 +457,7 @@
   .strip .head { top: -4px; bottom: -4px; border: 0; border-radius: 0; background: #d9480f; }
   .head { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: #d9480f; pointer-events: none; z-index: 2; }
   .blk.now { box-shadow: inset 0 0 0 2px #d9480f; }
-  .preview { position: absolute; right: 16px; bottom: calc(100% + 40px); /* above the corner links (AP-28), lifted over the drawer */ width: 320px; border-radius: 10px; overflow: hidden; background: #0b0b0b; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25); }
+  .preview { position: absolute; right: 16px; bottom: calc(100% + 12px); width: 320px; border-radius: 10px; overflow: hidden; background: #0b0b0b; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25); }
   .preview.big { width: min(720px, calc(100vw - 64px)); }
   .preview.upright { width: 180px; }
   .preview.upright.big { width: min(405px, calc(100vw - 64px)); }

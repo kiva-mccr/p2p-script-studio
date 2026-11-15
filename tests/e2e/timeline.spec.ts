@@ -150,6 +150,33 @@ test('the drawer starts folded, folds and unfolds, and is remembered', async ({ 
   await expect.poll(() => page.evaluate(() => localStorage.getItem('timeline-open') ?? '')).toBe('');
 });
 
+test('folded, a push past the bottom unfolds it and scrolling up folds it; opened by hand, it stays (SB-5)', async ({ page }) => {
+  await page.addInitScript(() => localStorage.removeItem('timeline-open')); // after beforeEach's: folded
+  await setUp(page, '#/Episode%2003', files);
+  const bar = timeline(page).getByRole('button', { name: /^Timeline/ });
+  await expect(bar).toHaveAttribute('aria-expanded', 'false');
+  await page.mouse.move(640, 300);
+  // Reaching the bottom does nothing; a push past it unfolds the drawer.
+  await page.mouse.wheel(0, 100000);
+  await expect.poll(() => page.evaluate(() => innerHeight + scrollY >= document.documentElement.scrollHeight - 2)).toBe(true);
+  await page.waitForTimeout(400); // a new push, not the same one going on
+  await expect(bar).toHaveAttribute('aria-expanded', 'false');
+  await page.mouse.wheel(0, 200);
+  await expect(bar).toHaveAttribute('aria-expanded', 'true');
+  expect(await page.evaluate(() => localStorage.getItem('timeline-open'))).toBeNull(); // not remembered
+  // Scrolling up folds it again.
+  await page.waitForTimeout(300);
+  await page.mouse.wheel(0, -200);
+  await expect(bar).toHaveAttribute('aria-expanded', 'false');
+  // Opened with its bar, it stays open when scrolling up.
+  await bar.click();
+  await expect(bar).toHaveAttribute('aria-expanded', 'true');
+  await page.mouse.move(640, 200);
+  await page.mouse.wheel(0, -300);
+  await page.waitForTimeout(300);
+  await expect(bar).toHaveAttribute('aria-expanded', 'true');
+});
+
 test('cut on a word: a click on a word starts the next picture there', async ({ page }) => {
   await setUp(page, '#/Episode%2003', files);
   const t = timeline(page);

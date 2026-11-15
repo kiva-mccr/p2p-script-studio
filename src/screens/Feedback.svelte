@@ -1,10 +1,11 @@
 <script lang="ts">
-  import { tick } from 'svelte';
+  import { tick, untrack } from 'svelte';
+  import { feedback } from '../lib/help.svelte';
   import { describe, partOf, placePanel, issueBody, issueTitle, issueUrl, plainText, type Env, type Part } from '../lib/feedback';
   import { makePicture } from '../lib/feedbackshot';
   import { parseRoute } from '../lib/route';
 
-  // Feedback mode (AP-48, board 71): "Feedback" in the bottom right corner, click the part that's the trouble, write a
+  // Feedback mode (AP-48, board 71): Feedback… in the ? menu of the top bar (SB-5), click the part that's the trouble, write a
   // note, and open GitHub's new issue page filled in (the picture is copied to paste in). Nothing is sent by the app.
 
   let mode = $state<'off' | 'picking' | 'open'>('off');
@@ -22,6 +23,14 @@
   let done = $state<'' | 'sent' | 'sent-alone' | 'copied' | 'failed'>('');
   let box = $state<HTMLTextAreaElement>();
   let made = 0; // which picture is the latest, so a slow one never replaces a newer one
+
+  // Started from the ? menu in the top bar (SB-5): it raises feedback.asked.
+  let seenAsk = feedback.asked;
+  $effect(() => {
+    if (feedback.asked === seenAsk) return;
+    seenAsk = feedback.asked;
+    untrack(() => (mode === 'off' ? start() : again()));
+  });
 
   const ours = (t: EventTarget | null) => t instanceof Element && !!t.closest('[data-feedback-ui]');
 
@@ -167,9 +176,6 @@
   });
 </script>
 
-<button type="button" class="corner-button" class:on={mode !== 'off'} data-feedback-ui onclick={start}
-  aria-pressed={mode !== 'off'} title="Tell us about a part of the app that's giving you trouble or could be better">Feedback</button>
-
 {#if mode === 'picking'}
   <div class="strip" role="status" data-feedback-ui>
     <p><b>Feedback:</b> click the part that's giving you trouble or could be better. Esc to stop.</p>
@@ -218,9 +224,6 @@
 {/if}
 
 <style>
-  .corner-button { padding: 4px 8px; border: 0; border-radius: 6px; background: var(--ground); color: var(--muted); font-size: 12px; }
-  .corner-button:hover { color: var(--accent); }
-  .corner-button.on { background: #eef2fb; color: var(--accent-dark); }
   :global(html.feedback-picking), :global(html.feedback-picking *) { cursor: crosshair !important; }
   .strip { position: fixed; z-index: 60; left: 50%; bottom: 40px; transform: translateX(-50%); width: min(720px, calc(100% - 32px));
     box-sizing: border-box; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 16px; padding: 6px 16px;

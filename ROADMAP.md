@@ -442,6 +442,15 @@ and suggestions, keeps every version, and exports them for production.
   slim bar with a thin strip of the blocks (and the playhead); it starts folded and this browser remembers it for
   every script. Open, at most about half the screen; no dragging to resize. The preview sits above the drawer's right
   end. A click on a block always brings its row into view ("↑ Go to the row" went). The script's last row clears it.
+- [x] **SB-5** The drawer opens when you scroll past the bottom (asked by the user, 2026-11-15): with the timeline's
+  drawer (SB-4) folded, a push past the bottom of the script unfolds it; scrolling up folds it again, only if it
+  opened by itself (agreed with the user in the project chat). Also asked: make sure the PR badge, Feedback and
+  GitHub in the corners do nothing odd with the drawer (seen live: they floated over the script above it, and GitHub
+  slipped half under the Comments tab once it was open). Mock-up: board 77, agreed (2026-11-15, "yeah I like it")
+  with the user's change: the corner items go into a small ? menu in the top bar (Feedback…, GitHub, "Version: PR
+  N"), on every screen with a top bar; nothing is left in the corners. Built so: a push counts only once the page has
+  been at the bottom 0.2 s (wheel events are passive and can arrive after the scroll that reached it); not while
+  playing; neither opening nor folding by itself is remembered; the drawer slides (0.15 s).
 - [x] **SB-3** Export the timeline as a video (asked by the user, 2026-11-15): the storyboard timeline (SB-1) saved
   as a video file: each row's pictures (collage or sequence, cut on a word), holds and placeholders, with the
   voice-over takes, at the timeline's timings, made in the browser. Mock-up: board 70, agreed (2026-11-15, "looks

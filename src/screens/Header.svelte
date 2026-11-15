@@ -5,6 +5,7 @@
 
 <script lang="ts">
   import CopyDetails from './CopyDetails.svelte';
+  import HelpMenu from './HelpMenu.svelte';
   import { SAVE_FAILED } from '../lib/saving.svelte';
   import type { Seen } from '../lib/editing';
   import type { Format } from './Export.svelte';
@@ -242,6 +243,7 @@
           </div>
         {/if}
       </span>
+      <HelpMenu />
     </div>
   {/if}
 </header>
