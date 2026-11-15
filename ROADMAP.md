@@ -804,9 +804,12 @@ and suggestions, keeps every version, and exports them for production.
   comment names, 150 take notes opened to look at their date), so the folder never goes quiet; a later visit opens all
   400 comments again (about 1,200 calls); a new computer opening the big script reads all 2,000 versions (about 6,000
   calls, 100 MB). Gains below are estimates from those counts, not measured on the real drive.
-- [ ] **PF-8** A quieter 5 s check (no change to `.studio/`): History is listed once a round instead of about twice, and
+- [x] **PF-8** A quieter 5 s check (no change to `.studio/`): History is listed once a round instead of about twice, and
   take notes are looked at every 30 s (and at once after your own recording) instead of every 5 s. About 230 → 30 calls
   a round for each computer with a script open. Trade-off: someone else's new take shows up to 30 s later.
+  Done 2026-11-15: after PF-15 only rounds that look inside (someone's note, the 2-minute full look) list History, so
+  that's where it counts; the keeper's sync hands its listing to the tab counts. Measured (perf/pf-8, simulated drive):
+  3 min in Write with someone saving every 30 s, 3,255 → 1,872 calls; nobody else saving, 478 → 455 in 2 min.
 - [ ] **PF-9** Comments remembered across visits, like History (HI-3): comment files never change, so the browser keeps
   them (IndexedDB) and a later visit opens only new ones. No change to `.studio/`. Later visits to the big script: about
   1,200 calls (12 s simulated) → a handful. Trade-off: none seen; a cleared browser reads them all again.

@@ -26,6 +26,10 @@ version (`Print.svelte`) and the teleprompter (`Teleprompter.svelte`, saves what
   at the full look every 2 minutes, missing files, takes, comments, others' change files (`file.sync`), the tab
   counts and the plan (`looks`, for `Planning.svelte`). So a keeper's History entry can come up to 2 minutes after
   its 5 minutes when no one saves meanwhile. Ctrl+S saves at once (FX-2).
+- PF-8: such a round lists History once (the keeper's sync lists it for its entry; `file.listed()` hands that to
+  `readCounts`), and takes only every 30 s (`TAKES_EVERY`; `takes-every` in this browser's storage shortens it for
+  tests) after a round that looked inside, even if no note comes after it. Your own take is in `voice.takes` at once.
+  So someone else's new take can show up to 30 s late. Tests that write another person's take set `takes-every`.
 - The check reads only what is new (PF-1): comment files by new names, take notes by a changed date or size, the
   Files column by one listing per folder. A round never starts while the last is still going (a slow drive made them
   pile up), and `notes` is only replaced when a note came or went, so Review isn't redrawn every 5 s.

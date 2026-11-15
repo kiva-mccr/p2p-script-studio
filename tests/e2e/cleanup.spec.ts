@@ -62,6 +62,7 @@ test('the mic records at once, a ring fills for a second, then ■ is the cue; t
 });
 
 test('Esc while the ring fills throws the new take away and keeps the old one', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('takes-every', '1000')); // others' takes every 30 s (PF-8)
   await open(page);
   await writeFile(page, 'Episode 03/voice/row-k3f9a.json', JSON.stringify({ by: 'Alex', at: Date.now(), seconds: 4, text: 'x' }));
   await expect(page.getByRole('button', { name: 'Record row 1 again' })).toBeVisible({ timeout: 10000 });

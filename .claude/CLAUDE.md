@@ -74,7 +74,7 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
   PF-7 (leaving a script frees its memory, done).
   Then less network drive traffic (all of PF-8 to PF-18 queued by the user, 2026-11-15; nothing visible, so no mock-ups),
   one thread each, measured before and after with perf/ (perf/pf-ideas/probe.js counts calls by folder), by impact
-  (the user's order): PF-15 (one news folder, done), PF-14 (no checks while away, done), PF-8 (quieter check), PF-16 (fast only
+  (the user's order): PF-15 (one news folder, done), PF-14 (no checks while away, done), PF-8 (quieter check, done), PF-16 (fast only
   with others), PF-9 (comments remembered), PF-13 (History chapters), PF-11 (recent History on open), PF-12 (summary
   per script), PF-10 (reads at once), PF-18 (slower heartbeat), PF-17 (keep folder handles).
   When all are done: a report of their effects (the user's ask), before (perf/pf-ideas/probe-out.txt) against after,
@@ -91,7 +91,8 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
   outside edit). Typing saves after 1.5 s in tests (`save-every`), 30 s for real; script.md comes after, so poll it.
 - Checks look inside a script only when `.studio/news/` has a note about it (PF-15). `writeFile` in tests drops one as
   another computer's app would; `{ outside: true }` (Notepad, Explorer) doesn't, and is found only by the full look
-  (2 min; `full-every` shortens it). A new writer of script files must call `announce` (lib/news.md).
+  (2 min; `full-every` shortens it). A new writer of script files must call `announce` (lib/news.md). Others' takes
+  are looked at every 30 s (PF-8): a test that writes someone else's take sets `takes-every`.
 - A script with no touch for 2 minutes is away (PF-14, lib/away.md): no checks, no editing file. Tests that wait over
   2 minutes without moving the mouse must expect that; `away-after` shortens it.
 - e2e tests start with the example's tour skipped (playwright.config.ts); a feature named in the tour keeps its
