@@ -42,7 +42,8 @@ Status: a first working version. What it does today:
   (PowerPoint, zip…) show their kind and size. Click a preview or a name to open the file. Previews are small copies
   (a video shows a still until you press ▶), made as their rows come near the screen; until then a grey box holds
   the place, so long scripts with big photos scroll smoothly. Select text for bold, italic, underline,
-  strikethrough, a link, an equation (LaTeX) or Clear; Ctrl+B, I, U and K work too.
+  strikethrough, a link, an equation (LaTeX) or Clear (the toolbar shows just above the words, or below them at the
+  top of the window); Ctrl+B, I, U and K work too.
   Once you change a Dialogue or On screen box, a small "▸ Before you started" under it shows the words as they were
   when you opened the script, to compare as you go; "Put it back" restores them (Undo at the bottom brings yours back).
   Other people's changes don't count as yours.
