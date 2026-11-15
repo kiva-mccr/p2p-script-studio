@@ -424,6 +424,10 @@ and suggestions, keeps every version, and exports them for production.
   the preview goes back above the timeline's right end.
   Fix (the user, 2026-11-15): a click on a block no longer scrolls up to its row unless the timeline is pinned;
   the row panel has "↑ Go to the row" for that.
+- [ ] **SB-4** The timeline as a drawer at the bottom (asked by the user, 2026-11-15): first "make pin and unpin
+  available even when not playing", then "or better yet, make it a fold out on the bottom part of the screen". The
+  timeline lives in a drawer at the bottom of the screen in Write and Review, folded or open at any time; it would
+  replace SB-2's Unpin / Pin and Hide. Mock-up: board 76, waiting for the user's OK.
 - [x] **SB-3** Export the timeline as a video (asked by the user, 2026-11-15): the storyboard timeline (SB-1) saved
   as a video file: each row's pictures (collage or sequence, cut on a word), holds and placeholders, with the
   voice-over takes, at the timeline's timings, made in the browser. Mock-up: board 70, agreed (2026-11-15, "looks
