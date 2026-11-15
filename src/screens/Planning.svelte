@@ -1,7 +1,7 @@
 <script lang="ts">
   import { problem } from '../lib/problems';
   import CopyDetails from './CopyDetails.svelte';
-  import { onDestroy, onMount, type Snippet } from 'svelte';
+  import { onDestroy, onMount, untrack, type Snippet } from 'svelte';
   import { combinePlans, readPlan, writePlan } from '../lib/planning';
   import { keep } from '../lib/remember';
   import TextField from './TextField.svelte';
@@ -14,12 +14,12 @@
     dir,
     comments,
     count = 0,
+    looks = 0,
     open = $bindable(),
     tab = $bindable(),
-  }: { dir: FileSystemDirectoryHandle; comments?: Snippet; count?: number; open: boolean; tab: 'planning' | 'comments' } = $props();
+  }: { dir: FileSystemDirectoryHandle; comments?: Snippet; count?: number; looks?: number; open: boolean; tab: 'planning' | 'comments' } = $props();
 
   const SAVE_AFTER = 1500; // ms after the last change, as the script
-  const CHECK_EVERY = 5000; // ms between looks for someone else's save
   const RETRY_AFTER = 6000;
   const PLAN_FAILED = "The plan couldn't be saved, trying again"; // the copy icon's key; the foot says it shorter
 
@@ -28,7 +28,6 @@
   let status = $state<'saved' | 'waiting' | 'saving' | 'failed'>('saved');
   let onDisk = ''; // plan.md as last read or written here
   let timer: ReturnType<typeof setTimeout> | undefined;
-  let checker: ReturnType<typeof setInterval> | undefined;
   // The panel fills the window below the top bar, and the whole window once the bar has scrolled away.
   let panel = $state<HTMLElement>();
   let height = $state(0);
@@ -44,11 +43,13 @@
     } catch {
       status = 'failed';
     }
-    checker = setInterval(check, CHECK_EVERY);
+  });
+  // Someone else's save is looked for with the Editor's 5 s check, when it looks inside the script (PF-15).
+  $effect(() => {
+    if (looks) untrack(check);
   });
 
   onDestroy(() => {
-    clearInterval(checker);
     clearTimeout(timer);
     if (status === 'waiting' || status === 'failed') save();
   });

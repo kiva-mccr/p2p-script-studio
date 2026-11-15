@@ -20,6 +20,9 @@ screen first, four at a time.
 - Anything that can't be read keeps what was shown and is read next time (mid-sync).
 - History is read only back to the newest send for review (`sinceSend`, PF-3): a big History made the first visit read
   115 MB for 60 scripts. An approved script's History isn't read at all.
+- The news folder (PF-15, `lib/news.ts`): coming back to the list or the window within 2 minutes of the last full look
+  checks only scripts with a new note (yours too) and scripts never counted; otherwise every script's fingerprint, as
+  above. The news folder as last seen is kept for the tab (`watching`), not in localStorage: a reload looks fully.
 - A first visit on a computer still reads every script once; the shared summary file per script was set aside by the
   user (expand later if first visits are slow on the network drive).
 - Changes waiting in `.studio/changes/` (FX-2) aren't counted until the keeper writes script.md, as before.

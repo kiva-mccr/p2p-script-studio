@@ -74,7 +74,7 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
   PF-7 (leaving a script frees its memory, done).
   Then less network drive traffic (all of PF-8 to PF-18 queued by the user, 2026-11-15; nothing visible, so no mock-ups),
   one thread each, measured before and after with perf/ (perf/pf-ideas/probe.js counts calls by folder), by impact
-  (the user's order): PF-15 (one news folder), PF-14 (no checks while away), PF-8 (quieter check), PF-16 (fast only
+  (the user's order): PF-15 (one news folder, done), PF-14 (no checks while away), PF-8 (quieter check), PF-16 (fast only
   with others), PF-9 (comments remembered), PF-13 (History chapters), PF-11 (recent History on open), PF-12 (summary
   per script), PF-10 (reads at once), PF-18 (slower heartbeat), PF-17 (keep folder handles).
   When all are done: a report of their effects (the user's ask), before (perf/pf-ideas/probe-out.txt) against after,
@@ -89,6 +89,9 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
 - e2e tests run as "Sam": use other names for other people's versions and editing files. Someone else's save is a
   change file (`changeFile` / `writeChange` in `tests/e2e/folder.ts`), not a write to script.md (that's now an
   outside edit). Typing saves after 1.5 s in tests (`save-every`), 30 s for real; script.md comes after, so poll it.
+- Checks look inside a script only when `.studio/news/` has a note about it (PF-15). `writeFile` in tests drops one as
+  another computer's app would; `{ outside: true }` (Notepad, Explorer) doesn't, and is found only by the full look
+  (2 min; `full-every` shortens it). A new writer of script files must call `announce` (lib/news.md).
 - e2e tests start with the example's tour skipped (playwright.config.ts); a feature named in the tour keeps its
   `data-tour` mark, and its step in `lib/tour.ts` changes with it. The example opens on `samsVersion` of
   docs/example's script.md (lib/example.md).
@@ -153,4 +156,6 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
 - Resolve / Premiere export (EX-19): the FCP7 XML was never opened in real Resolve or Premiere (neither runs here);
   only its tags, frames and the zip's files were checked. Relative media paths may need one relink; the mp4 in the
   test isn't measured (test Chromium has no H.264), so a real camera video's scale and length in the XML are unseen.
+- The news folder (PF-15) on the real network drive: notes, their clean-up and the 2-minute full look were only seen
+  in test Chromium with a made-up 10 ms delay; SMB listing a folder of a few hundred notes every 5 s is unmeasured.
 - Allow editing (AP-25) after Chrome really takes back access: tests fake the lost OK; how long Chrome waits is unseen.

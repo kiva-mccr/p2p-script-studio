@@ -204,7 +204,10 @@ Status: a first working version. What it does today:
   Click it to see everyone who opened the script in the last 30 days.
   Each person saves only their own small change files, so two computers never write the same file; their changes
   appear on their own, row by row, and only a place you both changed is shown side by side for you to pick. Works
-  on a network drive, OneDrive or any shared folder.
+  on a network drive, OneDrive or any shared folder. To keep the drive quiet, every save, comment or take also
+  leaves a tiny note in one shared "what's new" folder (`.studio/news/`): an open script and the list look there
+  every few seconds and open a script's files only when it has news, with a full look every 2 minutes for edits
+  made outside the app.
 - **When something goes wrong:** the message says so in plain words, with a small grey copy icon after it. The icon
   copies the details for whoever is fixing it: what the app was doing, the browser's own error, the folder's name,
   the page, the live version, the browser and the time (plain text, ready to paste into Teams or an email). Hints

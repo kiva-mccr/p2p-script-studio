@@ -111,17 +111,27 @@ export async function readJsonFiles<T = any>(page: Page, path: string): Promise<
   }, path) as Promise<T[]>;
 }
 
-export async function writeFile(page: Page, path: string, text: string) {
+// Writes a file into the stand-in folder. In a script's folder it also drops a note in the news folder (PF-15), as
+// someone else's app would; `outside` (Notepad, Explorer) leaves none, so only the full look finds it.
+export async function writeFile(page: Page, path: string, text: string, { outside = false } = {}) {
   await page.evaluate(
-    async ([path, text]) => {
-      let dir = await (await navigator.storage.getDirectory()).getDirectoryHandle('Video Scripts');
-      const parts = path.split('/');
-      for (const part of parts.slice(0, -1)) dir = await dir.getDirectoryHandle(part, { create: true });
-      const writable = await (await dir.getFileHandle(parts.at(-1)!, { create: true })).createWritable();
-      await writable.write(text);
-      await writable.close();
+    async ([path, text, outside]) => {
+      const root = await (await navigator.storage.getDirectory()).getDirectoryHandle('Video Scripts');
+      const write = async (path: string, text: string) => {
+        let dir = root;
+        const parts = path.split('/');
+        for (const part of parts.slice(0, -1)) dir = await dir.getDirectoryHandle(part, { create: true });
+        const writable = await (await dir.getFileHandle(parts.at(-1)!, { create: true })).createWritable();
+        await writable.write(text);
+        await writable.close();
+      };
+      await write(path, text);
+      const script = path.split('/')[0];
+      if (outside || !path.includes('/') || script.startsWith('.')) return;
+      const id = Math.random().toString(36).slice(2, 8).padEnd(6, '0');
+      await write(`.studio/news/${new Date().toISOString().replace(/[-:.]/g, '')}_${id}_${script}.json`, '{"v":1}\n');
     },
-    [path, text],
+    [path, text, outside] as const,
   );
 }
 

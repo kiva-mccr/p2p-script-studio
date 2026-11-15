@@ -21,6 +21,7 @@ The picked folder itself has a `.studio/` too, for what every script shares (AP-
 Video Scripts/
   .studio/
     people/     one file per person added, or change to one: name, usual role, email, LinkedIn
+    news/       a tiny note for each write in any script, so others know where to look (PF-15)
 ```
 
 `people/20261113T101500Z_ab12cd34_x9y8z7w6.json` (time, the person's id, then a random id so two changes never share a name):
@@ -32,6 +33,20 @@ Video Scripts/
 
 The newest file about a person counts. `"removed": true` takes them out of the list (only offered once no script
 credits them). A script's credits (who, and a blurb on what they did) are in its own `script.md`.
+
+## news/: what's new (PF-15)
+
+Whoever writes in a script (a change file, script.md, a version, a comment, a take, a file in assets/, plan.md) then
+writes `news/20261115T021500123Z_k2m9qa_Episode 03.json` (time, a random id, the script's folder):
+
+```json
+{ "v": 1, "script": "Episode 03", "what": "change", "when": "2026-11-15T02:15:00.123Z" }
+```
+
+Only the name is read. An open script's 5 s check lists `news/` (and `editing/`) and looks inside the script only
+when a note about it has come from someone else; the list, coming back to it or to the window, reads again only
+scripts with a new note. Every 2 minutes both look at everything as before, since a change made outside the app
+(Notepad, Explorer) leaves no note, and remove notes over an hour old. "… is editing" files leave no note.
 
 ## The one rule: new files, never edits
 

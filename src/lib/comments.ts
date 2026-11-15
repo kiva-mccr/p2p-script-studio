@@ -11,6 +11,7 @@
 import { safeName } from './folder';
 import { plain } from './format';
 import { readFileRef, type Row } from './script';
+import { announce } from './news';
 
 export type Field = 'dialogue' | 'on_screen' | 'files';
 // An attached file (RV-11): `path` is inside the script's folder, `.studio/files/<note id>/<name>`.
@@ -93,6 +94,7 @@ export async function addNote(
   const writable = await (await folder.getFileHandle(name, { create: true })).createWritable();
   await writable.write(JSON.stringify(note, null, 2) + '\n');
   await writable.close();
+  await announce(dir, 'comment');
   return note;
 }
 
