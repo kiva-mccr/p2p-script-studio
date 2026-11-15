@@ -39,8 +39,8 @@ deleting, keys, the flag bar, find, quotes marked, removed rows). Any column but
 - Review comments (RV-13, board 37; the bubble and the quote click are `WriteRow.svelte`'s): a row with open ones (`talk`, from the Editor) shows a blue bubble with the count
   under its number (`.bubble`, `display: flex` or it sat over the number); the row tools, flag and § move down to
   clear it (`--down`), so such a row is a little taller. Quotes are marked with CSS highlights on the field's
-  formatted text (`.shown`), so not while that box is focused; the effect reruns when those rows' text changes
-  (`quoted`). A click in Dialogue or On screen with the cursor in a quote's words (found in the raw text, so not
+  formatted text (`.shown`), so not while that box is focused; they are kept per field by `lib/quotemarks.ts`, and
+  typing redoes only the fields whose text changed, once it pauses (PF-5). A click in Dialogue or On screen with the cursor in a quote's words (found in the raw text, so not
   across marks) opens its card (`onTalk`). The row of the card being read is tinted (`.talking`).
 - Find and replace (AP-32): `Find.svelte` sits above the table in a sticky wrapper; the column headings stick below
   it (`--find-h`, its height). Ctrl+F is caught on the window (`findKey`): it opens the bar, or comes back to it, but

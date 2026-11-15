@@ -759,6 +759,15 @@ and suggestions, keeps every version, and exports them for production.
   3.6–3.8 s, simulated network drive 84 s → 33 s; read 115 MB → 14 MB; folder calls 16,300 → 10,500. The list itself
   still shows in about 0.4 s (1.9 s on the network). The rest is comments, takes and small Histories never sent for
   review. Not seen for real: the network drive.
+- [x] **PF-5** Typing stops redoing every comment mark (fix 5 of the speed check, 2026-11-15; nothing visible
+  changes, so no mock-up): Write found every open comment's quote again on every key. Now the marks are kept per field
+  (`lib/quotemarks.ts`) and, once typing pauses (0.4 s), only the fields whose drawn text changed are looked at again;
+  the comments, the columns drawn or the rows' order changing still redo them at once. The marks are StaticRanges,
+  which the page doesn't keep up to date on every change. Measured on the made-up big script (400 comments), 60 keys
+  in row 1, three runs: script time 1.17–1.24 s → 0.75–0.82 s, key p95 48 ms → 32–40 ms. The 2–5 s freeze on
+  switching to Review after typing no longer showed before this fix either (nor in PF-1's runs): 0.27–0.31 s longest task
+  before, 0.21–0.27 s after (0.26 s → 0.20 s with no typing first). What's left per key is mostly the storyboard
+  timeline's layout. Not seen for real: the network drive.
 
 ## Last (the user's order: these wait until everything above is done)
 
