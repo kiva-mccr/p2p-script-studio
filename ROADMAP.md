@@ -791,6 +791,36 @@ and suggestions, keeps every version, and exports them for production.
   is 3.7 MB), opening it again 227 MB → 120 MB (the first open is 120 MB), four rounds alike. Not seen for real:
   real Chrome/Edge on the user's computer.
 
+- Ideas for less network drive traffic (asked by the user, 2026-11-15; proposals only, waiting for the user's ranking).
+  Measured after PF-1 to PF-7 on the made-up folder, simulated drive (10 ms a folder call, 30 MB/s): with the big script
+  open and nothing happening, each 5 s round makes about 230 folder calls (2,000 History names listed about twice, 400
+  comment names, 150 take notes opened to look at their date), so the folder never goes quiet; a later visit opens all
+  400 comments again (about 1,200 calls); a new computer opening the big script reads all 2,000 versions (about 6,000
+  calls, 100 MB). Gains below are estimates from those counts, not measured on the real drive.
+- [ ] **PF-8** A quieter 5 s check (no change to `.studio/`): History is listed once a round instead of about twice, and
+  take notes are looked at every 30 s (and at once after your own recording) instead of every 5 s. About 230 → 30 calls
+  a round for each computer with a script open. Trade-off: someone else's new take shows up to 30 s later.
+- [ ] **PF-9** Comments remembered across visits, like History (HI-3): comment files never change, so the browser keeps
+  them (IndexedDB) and a later visit opens only new ones. No change to `.studio/`. Later visits to the big script: about
+  1,200 calls (12 s simulated) → a handful. Trade-off: none seen; a cleared browser reads them all again.
+- [ ] **PF-10** Several reads at once: History, comments and Save .zip open files one after another; eight at a time
+  hides most of the drive's delay. Same traffic, roughly 4–6× less waiting on a first visit (open the big script, about
+  60 s simulated) and on Save .zip's media. Trade-off: short bursts of eight requests at the drive.
+- [ ] **PF-11** Open a script with only recent History: opening reads History back to the newest send for review (as the
+  list does, PF-3); older versions only when History or Print needs them. A new computer opening the big script: about
+  6,000 calls and 100 MB → a few hundred calls. No change to `.studio/`. Trade-off: saving and the tab counts must work
+  from the recent part alone (to check carefully); the first History visit on a new computer is still slow.
+- [ ] **PF-12** A shared summary per script for the list (set aside in AP-40 until first visits prove slow): whoever
+  saves a script also writes a small written-once file with its title, status and counts, so a computer new to the
+  folder reads one file per script. First visit's counts: about 10,400 calls (33 s simulated) → a few hundred (about
+  3 s). Trade-off: For me depends on who you are, so the summary must hold each person's part; a summary older than
+  the script's files is read the slow way.
+- [ ] **PF-13** History in chapters (left for later in HI-3): every 100 older versions are packed into one written-once,
+  compressed file (whole copies kept, as decided), and the single files are removed after a while, like change files.
+  Every listing of History shrinks from 2,000 names to about 20 (the 5 s check, the list's fingerprint, History), and a
+  new computer reads about 20 files and roughly 25 MB instead of 2,000 files and 100 MB. Trade-off: the biggest change
+  to `.studio/` (docs/studio-folder.md); a single version can no longer be opened in Notepad from Explorer.
+
 ## Last (the user's order: these wait until everything above is done)
 
 - [x] **AS-1** A shared asset browser between scripts (asked by the user): browse and reuse the files of every
