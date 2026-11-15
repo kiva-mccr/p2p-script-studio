@@ -253,4 +253,4 @@ and clicking opens it on GitHub.
 
 `npm ci`, then `npm run dev`. Checks: `npm run check`, `npm test`, `npm run e2e`.
 
-License: GPL-3.0.
+License: MIT.
