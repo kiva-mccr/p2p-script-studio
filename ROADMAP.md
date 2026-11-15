@@ -422,6 +422,10 @@ and suggestions, keeps every version, and exports them for production.
   like Hide. The user's condition: the preview must never cover the timeline or its buttons. Built so: unpinned, the
   preview waits in the screen's bottom right corner only while the timeline is off screen; once any of it shows,
   the preview goes back above the timeline's right end.
+- [ ] **SB-3** Export the timeline as a video (asked by the user, 2026-11-15): the storyboard timeline (SB-1) saved
+  as a video file: each row's pictures (collage or sequence, cut on a word), holds and placeholders, with the
+  voice-over takes, at the timeline's timings, made in the browser. Mock-up first (board 70); open choices: format and
+  frame size, dialogue as captions, what plays for rows with no take, videos' own sound.
 - [ ] **YT-1** The published video: link the final YouTube video and keep its title, description and thumbnail with
   the script.
 - [x] **AU-1** Recording audio for each line: record the dialogue of a row in the browser, kept beside the script
