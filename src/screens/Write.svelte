@@ -1,10 +1,11 @@
 <script lang="ts">
   import { problem } from '../lib/problems';
-  import { tick } from 'svelte';
+  import { tick, untrack } from 'svelte';
   import { shortcuts, type Action } from '../lib/shortcuts.svelte';
   import { clock, sectionWords, speaking } from '../lib/readtime.svelte';
   import { emptyRow, type Block, type Script } from '../lib/script';
-  import { plain, rangeOf } from '../lib/format';
+  import { plain } from '../lib/format';
+  import { QuoteMarks } from '../lib/quotemarks';
   import type { Marks } from '../lib/visit';
   import type { Words } from '../lib/started';
   import type { Flag, Thread } from '../lib/comments';
@@ -127,29 +128,25 @@
     return map;
   });
   const talkRow = $derived(talk.find((t) => t.comment.id === talking)?.comment.row ?? '');
-  const quoted = $derived(JSON.stringify(talk.map((t) => {
-    const row = script.blocks.find((b) => b.type === 'row' && b.id === t.comment.row);
-    return row?.type === 'row' ? [row.dialogue, row.onScreen] : null;
-  })));
+  // Typing redoes only the fields that changed, once it pauses (PF-5, `lib/quotemarks.ts`).
+  const quotes = new QuoteMarks(() => table, () => talk, () => talking);
+  const rowsById = $derived(new Map(script.blocks.flatMap((b) => (b.type === 'row' ? [[b.id, b] as const] : []))));
   $effect(() => {
-    const [list, on] = [talk, talking];
-    void [quoted, folds.folded]; // the fields' text, and which are drawn
-    tick().then(() => {
-      if (!table) return;
-      const marks: Range[] = [];
-      const onMark: Range[] = [];
-      for (const t of list) {
-        const { row, field, quote } = t.comment;
-        if (!quote || field === 'files') continue;
-        const shown = table.querySelector<HTMLElement>(`[data-row="${row}"] ${field === 'on_screen' ? '.screen' : '.dialogue'} .shown`);
-        const range = shown ? rangeOf(shown, quote) : null;
-        if (range) (t.comment.id === on ? onMark : marks).push(range);
-      }
-      CSS.highlights.set('comment', new Highlight(...marks));
-      CSS.highlights.set('comment-on', new Highlight(...onMark));
-    });
-    return () => ['comment', 'comment-on'].forEach((name) => CSS.highlights.delete(name));
+    void [talk, rowsById, folds.folded]; // the comments, the rows' order and which columns are drawn
+    tick().then(() => quotes.now());
   });
+  $effect(() => {
+    for (const t of talk) { // the quoted fields' text
+      const row = t.comment.row ? rowsById.get(t.comment.row) : undefined;
+      void (t.comment.field === 'on_screen' ? row?.onScreen : row?.dialogue);
+    }
+    untrack(() => quotes.soon());
+  });
+  $effect(() => {
+    void talking;
+    untrack(() => quotes.paint());
+  });
+  $effect(() => () => quotes.stop());
 
   function move(i: number, by: number) {
     const j = i + by;

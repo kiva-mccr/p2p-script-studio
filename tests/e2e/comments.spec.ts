@@ -23,7 +23,13 @@ async function open(page: Page, files: [string, string][], script = draft) {
   await expect(page.getByLabel('Dialogue, row 1')).toBeVisible();
 }
 
-const marked = (page: Page, name = 'comment') => page.evaluate((name) => [...(CSS.highlights.get(name) ?? [])].map((r) => (r as Range).toString()), name);
+// A mark's words: Write's marks are StaticRanges (PF-5), which have no toString, so each is read through a Range.
+const marked = (page: Page, name = 'comment') => page.evaluate((name) => [...(CSS.highlights.get(name) ?? [])].map((r) => {
+  const range = document.createRange();
+  range.setStart(r.startContainer, r.startOffset);
+  range.setEnd(r.endContainer, r.endOffset);
+  return r.startContainer.isConnected ? range.toString() : '';
+}), name);
 
 test('rows with open comments get a bubble; it opens the Comments tab at that card, and quotes are marked', async ({ page }) => {
   await open(page, [ANA, SUGGEST, BEN]);
@@ -220,6 +226,33 @@ test('Send back to writer takes a note, kept in History and shown at the top of 
   const newest = page.getByRole('navigation', { name: 'Versions' }).getByRole('button').nth(0);
   await expect(newest).toContainText('Sent back to writer');
   await expect(newest).toContainText('Tighten row 3.');
+});
+
+test('typing redoes only the marks of the field typed in, once it pauses (PF-5)', async ({ page }) => {
+  await open(page, [ANA, SUGGEST]);
+  await expect.poll(() => marked(page).then((m) => m.sort())).toEqual(['catch', 'sunlit leaf']);
+  // Keep the marks as they are, to see what typing replaces.
+  await page.evaluate(() => {
+    const w = window as unknown as { was: AbstractRange[]; highlight: Highlight };
+    w.highlight = CSS.highlights.get('comment')!;
+    w.was = [...w.highlight];
+  });
+  const box = page.getByLabel('Dialogue, row 3');
+  await box.click();
+  await box.press('Home');
+  await box.pressSequentially('So, ', { delay: 50 });
+  // While the keys come, nothing is redone.
+  expect(await page.evaluate(() => CSS.highlights.get('comment') === (window as unknown as { highlight: Highlight }).highlight)).toBe(true);
+  // After the pause, row 3's quote is found again in its new place; row 1's mark is the very same one as before.
+  await expect.poll(() => page.evaluate(() => CSS.highlights.get('comment') !== (window as unknown as { highlight: Highlight }).highlight)).toBe(true);
+  const kept = await page.evaluate(() => {
+    const was = (window as unknown as { was: AbstractRange[] }).was;
+    const now = [...CSS.highlights.get('comment')!];
+    return { marks: now.every((r) => r instanceof StaticRange), kept: now.filter((r) => was.includes(r)).length };
+  });
+  expect(kept).toEqual({ marks: true, kept: 1 });
+  await box.blur();
+  await expect.poll(() => marked(page).then((m) => m.sort())).toEqual(['catch', 'sunlit leaf']);
 });
 
 test('Use in script copies a file on a comment into its row, only in Write (RV-12)', async ({ page }) => {
