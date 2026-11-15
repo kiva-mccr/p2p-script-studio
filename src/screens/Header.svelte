@@ -200,12 +200,7 @@
           {/if}
         </span>
       {/if}
-      {#if reviewStatus === 'approved' || (reviewStatus === 'in review' && mode !== 'review') || (reviewStatus !== 'in review' && mode === 'review')}<span class="where">
-        <span class="state" class:draft={reviewStatus !== 'in review' && reviewStatus !== 'approved'}>{reviewStatus === 'approved' ? 'Approved' : reviewStatus === 'in review' ? 'In review' : 'Draft'}</span>
-        <!-- The review buttons live on one tab each: say where (UX-13, board 75). -->
-        {#if reviewStatus === 'in review' && mode === 'write'}<button class="link" onclick={() => onMode('review')}>Approve in Review</button>
-        {:else if reviewStatus !== 'in review' && mode === 'review'}<button class="link" onclick={() => onMode('write')}>Send for review in Write</button>{/if}
-      </span>{/if}
+      {#if reviewStatus === 'approved' || (reviewStatus === 'in review' && mode !== 'review')}<span class="state">{reviewStatus === 'approved' ? 'Approved' : 'In review'}</span>{/if}
       {#if play}
         <button class="outline play" class:started={play.time} onclick={onPlay}
           aria-label={!play.time ? 'Play the script' : play.on ? 'Pause the script' : 'Carry on playing the script'}>
@@ -275,10 +270,6 @@
   .dark { min-height: 44px; padding: 0 16px; border: 0; border-radius: 8px; background: var(--ink); color: #fff; font-size: 14px; font-weight: 500; }
   .dark:hover { background: #333; }
   .state { padding: 4px 10px; border-radius: 999px; background: #e7f4ec; color: #1b6b3e; font-size: 13px; font-weight: 500; }
-  .state.draft { background: #f2f2f2; color: #3d3d3d; }
-  .where { display: inline-flex; align-items: center; gap: 8px; }
-  .where .link { padding: 0; border: 0; background: none; color: var(--accent); font-size: 13px; }
-  .where .link:hover { text-decoration: underline; }
   .status, .voice { flex: none; font-size: 13px; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
   .status { margin-left: 6px; }
   .voice::before { content: '· '; } /* drawn, so the length's text stays just the time */

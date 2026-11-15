@@ -81,8 +81,7 @@ Status: a first working version. What it does today:
   seconds, or at once with Ctrl+S), then Saved. It's red when a save failed (after a few quiet tries), with the
   browser's reason: hover for all of it. What you typed is also kept in the browser until it's saved, so closing the
   page first doesn't lose it.
-- **The top bar** of a script stays at the top of the window as you scroll. Where a review button is on the other
-  tab it says so: "In review · Approve in Review" in Write, "Send for review in Write" in Review (each a link there).
+- **The top bar** of a script stays at the top of the window as you scroll.
   Each tab keeps where you were: going to Review and back to Write lands where you left Write.
 - **Export / Share** at the top right of a script holds Copy link and Copy for Teams, then Print, Fountain, Final Draft,
   Voice-over and Resolve / Premiere; **the ⋯ menu** holds Find and replace (in Write), Teleprompter, Credits and Settings. Settings > Hide
