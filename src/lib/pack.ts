@@ -4,6 +4,7 @@
 import { chapterContents, singleNames, versionsNamed } from './history';
 import { listChapters, range, writeChapter } from './chapters';
 import { eachAtOnce } from './atonce';
+import { subpath } from './dirs';
 
 const SIZE = 100; // versions in a chapter
 const LEFT = 25; // single files always left unpacked: an open script and the list mostly need only the newest
@@ -50,7 +51,7 @@ export async function tidyHistory(dir: FileSystemDirectoryHandle, now = Date.now
 
 async function removeSingle(dir: FileSystemDirectoryHandle, name: string): Promise<void> {
   try {
-    await (await (await dir.getDirectoryHandle('.studio')).getDirectoryHandle('versions')).removeEntry(name);
+    await (await subpath(dir, ['.studio', 'versions'])).removeEntry(name);
   } catch {
     // Gone already (another keeper), or busy: tried again at the next tidy.
   }

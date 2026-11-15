@@ -6,6 +6,7 @@ import { toSrt, toXml, type EditHow, type Info, type Plan, type Source } from '.
 import { cleaned, decoder, readTake, wav } from './voiceexport';
 import { zip, type ZipEntry } from './zip';
 import { eachAtOnce } from './atonce';
+import { subdir } from './dirs';
 
 const RATE = 48000;
 
@@ -78,7 +79,7 @@ async function make(dir: FileSystemDirectoryHandle, source: Source, width: numbe
     case 'take': {
       let voice: FileSystemDirectoryHandle;
       try {
-        voice = await dir.getDirectoryHandle('voice');
+        voice = await subdir(dir, 'voice');
       } catch {
         return null;
       }

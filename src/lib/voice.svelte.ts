@@ -7,6 +7,7 @@ import { countWords } from './readtime.svelte';
 import { decoder } from './voiceexport';
 import { announce } from './news';
 import { eachAtOnce } from './atonce';
+import { subdir } from './dirs';
 
 // text: the dialogue as it was read, so a take whose line has changed since shows as outdated (asked by the user).
 // seconds: the whole recording, as timed. from, to and gain: where the speech is and how loud (AU-4), measured when
@@ -137,7 +138,7 @@ async function measureTake(blob: Blob): Promise<Measure | null> {
 
 // The sound of a row's take. Throws when there is none (or it hasn't synced yet).
 export async function takeFile(dir: FileSystemDirectoryHandle, id: string): Promise<File> {
-  return (await (await dir.getDirectoryHandle(FOLDER)).getFileHandle(`row-${id}.webm`)).getFile();
+  return (await (await subdir(dir, FOLDER)).getFileHandle(`row-${id}.webm`)).getFile();
 }
 
 // Each folder's take notes read so far, by file name, with the file's date and size when read: a note is opened again
@@ -150,7 +151,7 @@ export async function readTakes(dir: FileSystemDirectoryHandle): Promise<Record<
   const had = read.get(dir);
   const known = new Map<string, { stamp: string; take: Take | null }>();
   try {
-    const voice = await dir.getDirectoryHandle(FOLDER);
+    const voice = await subdir(dir, FOLDER);
     const found: [string, string, FileSystemFileHandle][] = [];
     for await (const [name, handle] of voice.entries()) {
       const id = name.match(/^row-(.+)\.json$/)?.[1];
@@ -251,7 +252,7 @@ export class VoiceOver {
     const take: Take = { by, at: Date.now(), seconds: Math.round(seconds * 10) / 10, text };
     const found = await measureTake(blob);
     if (found) Object.assign(take, found);
-    const voice = await dir.getDirectoryHandle(FOLDER, { create: true });
+    const voice = await subdir(dir, FOLDER, true);
     await write(voice, `row-${id}.webm`, blob);
     await write(voice, `row-${id}.json`, JSON.stringify(take));
     await announce(dir, 'take');
@@ -289,14 +290,14 @@ export class VoiceOver {
     const take = this.takes[id];
     if (!take) return;
     const next = { ...take, text };
-    await write(await dir.getDirectoryHandle(FOLDER), `row-${id}.json`, JSON.stringify(next));
+    await write(await subdir(dir, FOLDER), `row-${id}.json`, JSON.stringify(next));
     await announce(dir, 'take');
     this.takes = { ...this.takes, [id]: next };
   }
 
   async remove(dir: FileSystemDirectoryHandle, id: string) {
     if (this.playing === id) this.stopPlaying();
-    const voice = await dir.getDirectoryHandle(FOLDER);
+    const voice = await subdir(dir, FOLDER);
     for (const name of [`row-${id}.webm`, `row-${id}.json`]) await voice.removeEntry(name).catch(() => {});
     await announce(dir, 'take');
     const { [id]: _, ...rest } = this.takes;

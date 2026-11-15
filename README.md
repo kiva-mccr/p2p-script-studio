@@ -216,7 +216,8 @@ Status: a first working version. What it does today:
   leaves a tiny note in one shared "what's new" folder (`.studio/news/`): an open script and the list look there
   every few seconds (an open script every 5 seconds while someone else is in it, every 30 when you're alone, so
   someone who just opened it shows up to 30 seconds later) and open a script's files only when it has news, with a full look every 2 minutes for edits
-  made outside the app. Someone else's new take can take up to 30 seconds to show. A script left open with nobody at the computer for 2 minutes (no mouse, key or scroll)
+  made outside the app, and the app remembers where each folder is for the visit rather than asking the drive again.
+  Someone else's new take can take up to 30 seconds to show. A script left open with nobody at the computer for 2 minutes (no mouse, key or scroll)
   stops looking altogether, and catches up the moment you move; the others see you as "last seen". Each open script
   tells the others it is still open once a minute, so a laptop closed without leaving shows as editing for up to 3
   minutes.

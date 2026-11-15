@@ -6,6 +6,7 @@ import { keepVersions, nameKey, recallVersions, remembered } from './versioncach
 import { announce } from './news';
 import { eachAtOnce } from './atonce';
 import { contents, listChapters, range, readChapter, type Contents } from './chapters';
+import { subdir } from './dirs';
 
 type Kind = 'edit' | 'review' | 'restore' | 'merge' | 'outside' | 'restart' | 'official';
 export type Version = {
@@ -462,8 +463,8 @@ function sectionTitles(script: Script): string {
 
 async function versionsFolder(dir: FileSystemDirectoryHandle, create: boolean): Promise<FileSystemDirectoryHandle | null> {
   try {
-    const studio = await dir.getDirectoryHandle('.studio', { create });
-    return await studio.getDirectoryHandle('versions', { create });
+    const studio = await subdir(dir, '.studio', create);
+    return await subdir(studio, 'versions', create);
   } catch {
     return null;
   }

@@ -13,4 +13,5 @@ The asset list (EX-6, board 12): `assetRows` (each row with its section and its 
 - Only paths are checked: links aren't fetched (no server, and many sites refuse it).
 - It imports `folder.ts`, so `folder.ts` must never import it (a cycle); the script list counts in `List.svelte`.
 - `missingFiles` lists each folder named in the Files column once (PF-1), then looks up only the names not in the
-  list, as before, so a path differing from the file only in case still counts as there on Windows.
+  list, as before, so a path differing from the file only in case still counts as there on Windows. A folder that
+  isn't there makes all its files missing at once (PF-17): the folder look-up already ignores case.

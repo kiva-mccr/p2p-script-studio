@@ -2,6 +2,7 @@
 // with the rows that use it; and which files are missing from the script's folder.
 import { assetFile } from './folder';
 import { readFileRef, type FileRef, type Script } from './script';
+import { subpath } from './dirs';
 
 export type Asset = FileRef & { line: string; rows: number[] };
 export type Row = { n: number; section: string; assets: Asset[] };
@@ -47,8 +48,10 @@ export async function missingFiles(dir: FileSystemDirectoryHandle, assets: Asset
     const parts = asset.target.split('/').filter((p) => p && p !== '.' && p !== '..');
     const where = parts.slice(0, -1).join('/');
     if (!listed.has(where)) listed.set(where, fileNames(dir, parts.slice(0, -1)));
-    if ((await listed.get(where))?.has(parts.at(-1)!)) continue;
-    if (!(await assetFile(dir, asset.target))) missing.add(asset.target);
+    const names = await listed.get(where);
+    if (names?.has(parts.at(-1)!)) continue;
+    // No such folder: its files are missing without a look-up each (PF-17); the look-up already ignored case.
+    if (!names || !(await assetFile(dir, asset.target))) missing.add(asset.target);
   }
   return missing;
 }
@@ -56,8 +59,7 @@ export async function missingFiles(dir: FileSystemDirectoryHandle, assets: Asset
 // The names of the files in a folder inside the script's folder; null if it isn't there.
 async function fileNames(dir: FileSystemDirectoryHandle, path: string[]): Promise<Set<string> | null> {
   try {
-    let at = dir;
-    for (const part of path) at = await at.getDirectoryHandle(part);
+    const at = await subpath(dir, path);
     const names = new Set<string>();
     for await (const [name, handle] of at.entries()) if (handle.kind === 'file') names.add(name);
     return names;

@@ -14,6 +14,7 @@ import { readFileRef, type Row } from './script';
 import { announce } from './news';
 import { browserStore, nameKey } from './versioncache';
 import { eachAtOnce } from './atonce';
+import { subdir, subpath } from './dirs';
 
 export type Field = 'dialogue' | 'on_screen' | 'files';
 // An attached file (RV-11): `path` is inside the script's folder, `.studio/files/<note id>/<name>`.
@@ -204,8 +205,8 @@ export function tooBig(file: File): string {
 }
 
 async function saveFiles(dir: FileSystemDirectoryHandle, id: string, files: File[]): Promise<Attachment[]> {
-  const studio = await dir.getDirectoryHandle('.studio', { create: true });
-  const folder = await (await studio.getDirectoryHandle('files', { create: true })).getDirectoryHandle(id, { create: true });
+  const studio = await subdir(dir, '.studio', true);
+  const folder = await subpath(studio, ['files', id], true);
   const taken = new Set<string>();
   const saved: Attachment[] = [];
   for (const file of files) {
@@ -227,7 +228,7 @@ const byTime = (notes: Note[]) => [...notes].sort((a, b) => (a.when < b.when ? -
 
 async function commentsFolder(dir: FileSystemDirectoryHandle, create: boolean): Promise<FileSystemDirectoryHandle | null> {
   try {
-    return await (await dir.getDirectoryHandle('.studio', { create })).getDirectoryHandle('comments', { create });
+    return await subpath(dir, ['.studio', 'comments'], create);
   } catch {
     return null;
   }

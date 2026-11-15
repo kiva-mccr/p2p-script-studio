@@ -1,6 +1,7 @@
 // Writing in the shared folder so that two computers never clash (FX-2): a file is written once, under a new name,
 // and never replaced. A Windows network share refuses to replace a file another computer has open, and OneDrive can
 // hold one while it syncs; a new name has no one reading it yet.
+import { forgetFolders } from './dirs';
 
 // Tried again quietly (0.3, 0.7, 1.5, 3 s) before it counts as failed. A lost OK to edit the folder isn't: only a
 // click helps there.
@@ -11,6 +12,7 @@ export async function patiently<T>(work: () => Promise<T>, waits = WAITS): Promi
       return await work();
     } catch (e) {
       if (e instanceof DOMException && (e.name === 'NotAllowedError' || e.name === 'SecurityError')) throw e;
+      forgetFolders(); // a kept folder may have been renamed or moved (PF-17)
       await new Promise((done) => setTimeout(done, wait));
     }
   }

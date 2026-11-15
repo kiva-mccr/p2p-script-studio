@@ -3,6 +3,7 @@
 import { assetList } from './assets';
 import { addAsset, assetFile, listScripts, readScript } from './folder';
 import { parseScript } from './script';
+import { subdir } from './dirs';
 
 // line: a link's line as its script has it, so it is added the same.
 export type SharedFile = { kind: 'path' | 'link'; name: string; target: string; line: string; uses: number };
@@ -16,7 +17,7 @@ export async function sharedFiles(root: FileSystemDirectoryHandle, except: strin
     const folder = info.path[0];
     if (folder.toLowerCase() === except.toLowerCase()) continue;
     try {
-      const dir = await root.getDirectoryHandle(folder);
+      const dir = await subdir(root, folder);
       const used = assetList(parseScript(await readScript(dir)));
       const uses = (kind: string, target: string) => used.find((a) => a.kind === kind && a.target === target)?.rows.length ?? 0;
       const files: SharedFile[] = [];
@@ -37,7 +38,7 @@ export async function sharedFiles(root: FileSystemDirectoryHandle, except: strin
 export async function copyShared(root: FileSystemDirectoryHandle, folder: string, file: SharedFile,
   dir: FileSystemDirectoryHandle): Promise<string> {
   if (file.kind === 'link') return file.line;
-  const from = await assetFile(await root.getDirectoryHandle(folder), file.target);
+  const from = await assetFile(await subdir(root, folder), file.target);
   if (!from) throw new Error('gone');
   return addAsset(dir, from);
 }
@@ -45,7 +46,7 @@ export async function copyShared(root: FileSystemDirectoryHandle, folder: string
 async function assetNames(dir: FileSystemDirectoryHandle): Promise<string[]> {
   let assets: FileSystemDirectoryHandle;
   try {
-    assets = await dir.getDirectoryHandle('assets');
+    assets = await subdir(dir, 'assets');
   } catch {
     return [];
   }

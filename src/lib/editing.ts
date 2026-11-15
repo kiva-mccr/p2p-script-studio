@@ -2,6 +2,7 @@
 // one every 60 s and removes their own older ones; on leaving, a last one marked `left` stays ("Sam was here", AP-37).
 import { jsonNames, readJson, stamp, writeText } from './files';
 import { ago, at } from './when';
+import { subpath } from './dirs';
 
 // left: when the person left the script (their last file, AP-37); never editing then.
 export type Editing = { v: 1; who: string; since: string; seen: string; last_written: string; left?: string };
@@ -96,7 +97,7 @@ export function editingText(names: string[]): string {
 
 async function editingFolder(dir: FileSystemDirectoryHandle, create: boolean): Promise<FileSystemDirectoryHandle | null> {
   try {
-    return await (await dir.getDirectoryHandle('.studio', { create })).getDirectoryHandle('editing', { create });
+    return await subpath(dir, ['.studio', 'editing'], create);
   } catch {
     return null;
   }
