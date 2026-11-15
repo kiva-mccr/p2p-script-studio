@@ -65,7 +65,7 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
   running the real-world checks with the field test checklist:
   https://claude.ai/artifact/FT4p8XLBVTSrEQMow71NDb.
 - Queue (the user's order, 2026-11-14), mock-ups first, built one at a time: AP-44 (shortcuts, done), AP-43 (hide help
-  text, done), then SB-1 (storyboard timeline, done 2026-11-14), then AP-47 (the tour and the example catch up, done). SB-2 (unpin the timeline, the user, 2026-11-15, done). SB-3 (the timeline as a video, the user, 2026-11-15, done). AP-48 (feedback mode, the user, 2026-11-15, done).
+  text, done), then SB-1 (storyboard timeline, done 2026-11-14), then AP-47 (the tour and the example catch up, done). SB-2 (unpin the timeline, the user, 2026-11-15, done). SB-3 (the timeline as a video, the user, 2026-11-15, done). AP-48 (feedback mode, the user, 2026-11-15, done). SB-4 (the timeline as a drawer at the bottom, replacing SB-2's Unpin and Hide, the user, 2026-11-15, done).
   Then (asked by the user, 2026-11-14): AP-15 (templates, done), then EX-19 (export to Resolve and Premiere, done).
   Then the speed check's fixes, one thread each (the user, 2026-11-14), before and after measured with perf/ in the
   project files: PF-1 (the 5 s check reads only what's new, done), PF-2 (History by name, done), PF-3 (the list reads
@@ -98,6 +98,8 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
   check runs every 30 s (PF-16); tests run it every 5 s (`alone-every` in playwright.config.ts).
 - A script with no touch for 2 minutes is away (PF-14, lib/away.md): no checks, no editing file. Tests that wait over
   2 minutes without moving the mouse must expect that; `away-after` shortens it.
+- The timeline's drawer starts folded (SB-4): a test that uses the timeline sets `timeline-open` to '1' first
+  (timeline.spec's beforeEach), or clicks its bar (/^Timeline/).
 - e2e tests start with the example's tour skipped (playwright.config.ts); a feature named in the tour keeps its
   `data-tour` mark, and its step in `lib/tour.ts` changes with it. The example opens on `samsVersion` of
   docs/example's script.md (lib/example.md).
@@ -158,8 +160,7 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
   tests; whether a closing tab (not leaving to the list) gets its "left" file written in time is unseen.
 - The storyboard timeline (SB-1) with real takes and camera files: waveforms and the preview were only seen with
   the fake WAV take and made-up SVGs; cut-on-a-word timing is an estimate from the line, never checked against a
-  real voice; the pinned timeline and preview on a small real screen are unseen, and so is the unpinned corner
-  preview (SB-2) beside real toasts and other corners.
+  real voice; the drawer (SB-4) and its preview on a small real screen are unseen.
 - Resolve / Premiere export (EX-19): the FCP7 XML was never opened in real Resolve or Premiere (neither runs here);
   only its tags, frames and the zip's files were checked. Relative media paths may need one relink; the mp4 in the
   test isn't measured (test Chromium has no H.264), so a real camera video's scale and length in the XML are unseen.

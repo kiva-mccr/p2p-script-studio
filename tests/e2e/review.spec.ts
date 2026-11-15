@@ -227,7 +227,8 @@ test('approve, send for review again, and send back to the writer; each is in Hi
   await page.getByRole('button', { name: /^Review/ }).click();
   await page.getByRole('button', { name: 'Send back to writer' }).click();
   await page.getByRole('region', { name: 'Send back to writer' }).getByRole('button', { name: 'Send back to writer' }).click(); // no note
-  await expect(page.getByRole('button', { name: 'Send for review' })).toHaveCount(0);
+  // exact: once it's a draft again, Review shows "Send for review in Write" (UX-13), which a loose name also matches.
+  await expect(page.getByRole('button', { name: 'Send for review', exact: true })).toHaveCount(0);
   await page.getByRole('button', { name: 'Write', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Send for review' })).toBeVisible();
   await expect.poll(() => readFile(page, SCRIPT)).toContain('status: draft\n');
