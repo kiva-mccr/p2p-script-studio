@@ -827,11 +827,14 @@ and suggestions, keeps every version, and exports them for production.
   Every listing of History shrinks from 2,000 names to about 20 (the 5 s check, the list's fingerprint, History), and a
   new computer reads about 20 files and roughly 25 MB instead of 2,000 files and 100 MB. Trade-off: the biggest change
   to `.studio/` (docs/studio-folder.md); a single version can no longer be opened in Notepad from Explorer.
-- [ ] **PF-14** No checks while you're away (the user's idea, 2026-11-15): a tab in the background already skips the 5 s
+- [x] **PF-14** No checks while you're away (the user's idea, 2026-11-15): a tab in the background already skips the 5 s
   check (and checks at once when you come back); now a script left open with no mouse, key or scroll for 2 minutes
   stops checking too, and catches up the moment you move. The "… is editing" file also stops, so others see "last
   seen 3 min ago", which is true. An away keeper hands over to the next person editing, as when a laptop sleeps.
   An away computer then makes no folder calls. Trade-off: others' saves show on your screen only once you move.
+  Done 2026-11-15 (`lib/away.ts`): playing, recording or the teleprompter count as being there; back, you rejoin as the
+  newest, so a keeper who took over keeps script.md. Measured (perf/pf-14): 5 idle minutes in Write 1,304 → 478 calls,
+  0 a minute after the first 2; moving again costs one catch-up (240 calls, the full look that was due).
 - [x] **PF-15** One "what's new" folder for the whole drive (the user's ask for the smallest footprint, 2026-11-15):
   whoever writes anything (a save, version, comment, take, flag) also writes a tiny written-once note in the picked
   folder's `.studio/news/` naming the script and what changed; notes over a day old are removed by whoever sees them.
