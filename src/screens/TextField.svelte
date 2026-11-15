@@ -1,6 +1,7 @@
 <script lang="ts">
   import { changed, clearMarks, continueList, renderMath, renumber, showLists, toggleList, toHtml, toggle, unlist, type List, type Mark } from '../lib/format';
   import { paragraphs } from '../lib/script';
+  import { caretAt } from '../lib/caret';
 
   // A Write cell (mock-up 8): while typing you see the marks (**bold**); elsewhere they show as formatting. Selecting
   // text shows a toolbar; Ctrl+B, I, U and K work too.
@@ -48,6 +49,31 @@
 
   function look() {
     selecting = !!box && box.selectionStart !== box.selectionEnd;
+    if (selecting) place();
+  }
+
+  // The toolbar sits just above the selected words, from where they start (UX-7, board 73); with no room above (under
+  // the column names or the top bar) it goes just below them. It slides in to stay inside the window.
+  let toolbar = $state<HTMLElement>();
+  let at = $state({ x: 0, y: 0 });
+  const GAP = 8;
+  function place() {
+    if (!box) return;
+    const start = caretAt(box, box.selectionStart);
+    const end = caretAt(box, box.selectionEnd);
+    const rect = box.getBoundingClientRect();
+    const high = (toolbar?.offsetHeight || 42) + GAP;
+    const wide = toolbar?.offsetWidth || 300;
+    const below = rect.top + start.top - high < ceiling(box);
+    const y = below ? end.top + end.height + GAP : start.top - high;
+    const x = Math.min(Math.max(start.left, 8 - rect.left), innerWidth - rect.left - wide - 8);
+    at = { x, y };
+  }
+  // The lowest thing stuck to the top of the window over the box: Write's column names, else the top bar.
+  function ceiling(el: HTMLElement): number {
+    const head = el.closest('.table')?.querySelector<HTMLElement>(':scope > .head');
+    if (head) return head.getBoundingClientRect().bottom;
+    return parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--bar-h')) || 0;
   }
 
   function apply(mark: Mark | 'clear' | List) {
@@ -127,7 +153,8 @@
 {/if}
 <div class="field" class:focused class:empty={!value}>
   {#if focused && selecting}
-    <div class="toolbar" role="toolbar" aria-label="Formatting">
+    <div class="toolbar" role="toolbar" aria-label="Formatting" bind:this={toolbar} style:left="{at.x}px" style:top="{at.y}px"
+      {@attach () => place()}>
       {#each TOOLS as tool (tool.mark)}
         <button class="tool {tool.mark}" aria-label={tool.name} title={tool.keys ? `${tool.name} (${tool.keys})` : tool.name}
           onmousedown={(e) => e.preventDefault()} onclick={() => apply(tool.mark)}>{tool.text}</button>
@@ -152,7 +179,7 @@
   .focused .shown, .empty .shown { visibility: hidden; }
   .shown :global(a) { color: var(--accent); }
   .shown :global(s) { color: #8a8a8a; }
-  .toolbar { position: absolute; z-index: 3; bottom: calc(100% + 10px); left: 0; display: flex; align-items: center; gap: 2px; padding: 4px;
+  .toolbar { position: absolute; z-index: 3; display: flex; align-items: center; gap: 2px; padding: 4px;
     border: 1px solid var(--line); border-radius: 8px; background: #fff; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1); }
   .tool { min-width: 32px; height: 32px; padding: 0 8px; border: 0; border-radius: 6px; background: none; color: var(--ink); font-size: 14px; }
   .tool:hover { background: #f0f3fc; color: var(--accent); }

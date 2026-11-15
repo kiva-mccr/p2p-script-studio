@@ -8,7 +8,7 @@ With `lists` (the planning panel, AP-24) it also shows Bulleted list, Numbered l
 box at all times and shows the marks as • ☐ ☑. In every field (AP-29) Enter carries a list on or splits a list line,
 Backspace just after a mark takes it off, and numbered lists renumber after every change.
 
-- **Used by:** `WriteRow.svelte`, `Planning.svelte`. **Tests:** `tests/e2e/format.spec.ts`, `tests/e2e/editor.spec.ts`,
+- **Used by:** `WriteRow.svelte`, `Planning.svelte`. Uses `lib/caret.ts`. **Tests:** `tests/e2e/format.spec.ts`, `tests/e2e/editor.spec.ts`,
   `tests/e2e/lists.spec.ts`.
 
 ## Rules and pitfalls
@@ -17,6 +17,11 @@ Backspace just after a mark takes it off, and numbered lists renumber after ever
   formatted text over it (`pointer-events: none`, `aria-hidden`), so a click still lands in the box. Links in it
   are not clickable in Write; they are in Review.
 - Changes go through `document.execCommand('insertText')`, so the browser's Ctrl+Z undoes them.
+- The toolbar sits just above the selected words, from where they start (UX-7, board 73; it used to sit above the
+  field's top, off the window when that was under the column names). `lib/caret.ts` finds where a place in the text is
+  drawn (a hidden copy of the box). With no room above, under Write's column names or the top bar (`--bar-h`), it goes
+  just below the words; it slides in to stay inside the window. Placed on every selection change (`look`) and when
+  it first shows (its size is only known then).
 - Toolbar buttons keep the focus (`mousedown` prevented), or the selection would be lost before the click.
 - Pasting two or more paragraphs calls `onparagraphs` instead of pasting (only Dialogue passes it, AP-13).
 - A link wraps the selection and selects `https://`, ready to type the address over (no browser dialog).

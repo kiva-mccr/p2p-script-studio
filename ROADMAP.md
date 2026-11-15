@@ -950,9 +950,11 @@ Fixes with no new look (UX-3, 5, 6, 8, 9) need no board.
   before PR #166. Fix: the same rule as the clips (jump only while pinned; "↑ Go to the row" otherwise).
 - [ ] **UX-6** Clicking a card in the Comments panel always scrolls Write to its row, even when the row is already on
   screen. Fix: scroll only when the row is out of view, as Write's other jumps do.
-- [ ] **UX-7** The formatting toolbar (bold, italic, link) goes off the top of the screen when the field's top is at
+- [x] **UX-7** The formatting toolbar (bold, italic, link) goes off the top of the screen when the field's top is at
   the top of the window (seen), and in a long paragraph it sits at the field's top, far from the selected words.
   Fix: put it above the selection, or below it when there is no room.
+  Done 2026-11-15 (board 73): above the words from where they start (`lib/caret.ts`), below them under the column
+  names or the top bar, slid in to stay inside the window.
 - [ ] **UX-8** The timeline's hover text runs off the right edge for the last clips (seen, row 5 cut off). Fix: line
   it up with the clip's right edge near the end, as PR #165 did for the Feedback panel.
 - [ ] **UX-9** A new comment loses its words: switching Comment ↔ Suggest a change clears what was typed, and

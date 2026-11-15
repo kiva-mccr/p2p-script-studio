@@ -39,6 +39,8 @@ Copy for Teams, EX-10) above Export (Print…, Fountain, Final Draft, Voice-over
   headings, Find, the Planning panel and the Review comments stick under it, and `html`'s `scroll-padding-top` keeps
   scrolled-to things out from under it. Something new that sticks to the top must use it too.
   It covers the top of `main`, so a test must not click there to leave a text field (`play.spec.ts` blurs instead).
+  Its z-index (7) is over the pinned timeline and its preview (5): in a short window the preview reached the bar and
+  took the click meant for Pause.
 - Where the review buttons aren't (UX-13): in Write while in review, "In review" and an "Approve in Review" link; in
   Review while not in review, "Draft" (or "Approved") and "Send for review in Write". Tests asking for the "Send for
   review" or "Review" button use `exact: true` or `/^Review/`, as these links contain the words. Ctrl+F in Review
