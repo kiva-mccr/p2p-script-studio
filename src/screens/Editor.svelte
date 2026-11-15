@@ -515,6 +515,14 @@
     if (status === 'waiting' || status === 'failed') save();
   }
 
+  // Ctrl+F in Review: Find and replace is Write's, so go there and open it (UX-13, board 75). Write catches it itself.
+  function findKey(e: KeyboardEvent) {
+    if (mode !== 'review' || !(e.ctrlKey || e.metaKey) || e.shiftKey || e.altKey || e.key.toLowerCase() !== 'f') return;
+    e.preventDefault();
+    switchMode('write');
+    finding = true;
+  }
+
   // Leaving saves what is waiting. Only a failed save or a lost OK, which would lose work, asks the browser to hold the page.
   function beforeUnload(event: BeforeUnloadEvent) {
     if (status === 'failed' || status === 'locked') return void (file.leave(), event.preventDefault());
@@ -522,7 +530,7 @@
   }
 </script>
 
-<svelte:window onbeforeunload={beforeUnload} onafterprint={() => (printing = null)} onkeydown={(e) => (saveKey(e), playKeys(e))} />
+<svelte:window onbeforeunload={beforeUnload} onafterprint={() => (printing = null)} onkeydown={(e) => (saveKey(e), findKey(e), playKeys(e))} />
 <svelte:document onfocusin={(e) => { const at = (e.target as HTMLElement).closest?.<HTMLElement>('[data-block]'); if (at) cursorBlock = Number(at.dataset.block); }} onvisibilitychange={() => (document.hidden ? status === 'waiting' && save() : away.away ? away.touch() : checkOutside())} />
 
 {#if prompting && script}

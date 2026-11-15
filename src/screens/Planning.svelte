@@ -28,7 +28,7 @@
   let status = $state<'saved' | 'waiting' | 'saving' | 'failed'>('saved');
   let onDisk = ''; // plan.md as last read or written here
   let timer: ReturnType<typeof setTimeout> | undefined;
-  // The panel fills the window below the top bar, and the whole window once the bar has scrolled away.
+  // The panel fills the window below the top bar, which stays up (UX-4), and below the example's banner while that shows.
   let panel = $state<HTMLElement>();
   let height = $state(0);
   const fit = () => panel && (height = innerHeight - Math.max(0, panel.getBoundingClientRect().top));
@@ -145,7 +145,7 @@
 {/if}
 
 <style>
-  aside { position: sticky; top: 0; flex: 0 0 auto; align-self: flex-start; }
+  aside { position: sticky; top: var(--bar-h, 0px); flex: 0 0 auto; align-self: flex-start; }
   .edge { display: flex; flex-direction: column; gap: 8px; padding-top: 72px; }
   .tab { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 34px; min-height: 120px; padding: 12px 0;
     border: 1px solid #dadada; border-right: 0; border-radius: 8px 0 0 8px; background: #fafafa; color: #3d3d3d; font-size: 13px; font-weight: 500; }

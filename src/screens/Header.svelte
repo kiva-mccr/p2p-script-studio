@@ -100,6 +100,13 @@
     setTimeout(() => ((copied = ''), (menu = '')), copied === 'failed' ? 2500 : 1200);
   }
 
+  // The bar's height, for the column headings, Find, the side panel and scrolling to sit under it (UX-4).
+  let barHeight = $state(0);
+  $effect(() => {
+    document.documentElement.style.setProperty('--bar-h', `${barHeight}px`);
+    return () => document.documentElement.style.removeProperty('--bar-h');
+  });
+
   // A click outside the menu or Esc closes it.
   function away(event: Event) {
     const inside = (el?: HTMLElement) => el?.contains(event.target as Node);
@@ -109,7 +116,7 @@
 
 <svelte:window onpointerdown={away} onkeydown={(e) => e.key === 'Escape' && (menu = '')} />
 
-<header class:pinned={play?.time}>
+<header bind:offsetHeight={barHeight}>
   <nav class="crumbs" class:locked={ready && status === 'locked'} aria-label="Breadcrumb">
     <!-- A folder icon back to the list (mock-up 30, the user's pick): it leaves room for the length beside Saved. -->
     <a href="#/" class="back" aria-label="Back to {folder}" title="Back to {folder}">
@@ -192,7 +199,12 @@
           {/if}
         </span>
       {/if}
-      {#if reviewStatus === 'approved' || (reviewStatus === 'in review' && mode !== 'review')}<span class="state">{reviewStatus === 'approved' ? 'Approved' : 'In review'}</span>{/if}
+      {#if reviewStatus === 'approved' || (reviewStatus === 'in review' && mode !== 'review') || (reviewStatus !== 'in review' && mode === 'review')}<span class="where">
+        <span class="state" class:draft={reviewStatus !== 'in review' && reviewStatus !== 'approved'}>{reviewStatus === 'approved' ? 'Approved' : reviewStatus === 'in review' ? 'In review' : 'Draft'}</span>
+        <!-- The review buttons live on one tab each: say where (UX-13, board 75). -->
+        {#if reviewStatus === 'in review' && mode === 'write'}<button class="link" onclick={() => onMode('review')}>Approve in Review</button>
+        {:else if reviewStatus !== 'in review' && mode === 'review'}<button class="link" onclick={() => onMode('write')}>Send for review in Write</button>{/if}
+      </span>{/if}
       {#if play}
         <button class="outline play" class:started={play.time} onclick={onPlay}
           aria-label={!play.time ? 'Play the script' : play.on ? 'Pause the script' : 'Carry on playing the script'}>
@@ -238,8 +250,8 @@
 
 <style>
   header { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; padding: 10px 24px; border-bottom: 1px solid var(--line); }
-  /* While the script plays (AU-2) the bar stays in view, so Pause and ■ are there as the page follows the rows. */
-  .pinned { position: sticky; top: 0; z-index: 5; background: var(--ground); }
+  /* The bar stays at the top of the window (UX-4, board 75); its height is --bar-h, for what sticks under it. */
+  header { position: sticky; top: 0; z-index: 5; background: var(--ground); }
   .crumbs { display: flex; align-items: center; gap: 6px; flex: 1 1 280px; min-width: 0; } /* below that the bar wraps */
   /* The long "Not saved" and Allow editing don't fit beside the tabs: the bar wraps instead of hiding them. */
   .crumbs.locked { flex: 1 0 auto; max-width: 100%; }
@@ -258,6 +270,10 @@
   .dark { min-height: 44px; padding: 0 16px; border: 0; border-radius: 8px; background: var(--ink); color: #fff; font-size: 14px; font-weight: 500; }
   .dark:hover { background: #333; }
   .state { padding: 4px 10px; border-radius: 999px; background: #e7f4ec; color: #1b6b3e; font-size: 13px; font-weight: 500; }
+  .state.draft { background: #f2f2f2; color: #3d3d3d; }
+  .where { display: inline-flex; align-items: center; gap: 8px; }
+  .where .link { padding: 0; border: 0; background: none; color: var(--accent); font-size: 13px; }
+  .where .link:hover { text-decoration: underline; }
   .status, .voice { flex: none; font-size: 13px; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
   .status { margin-left: 6px; }
   .voice::before { content: '· '; } /* drawn, so the length's text stays just the time */

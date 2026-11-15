@@ -115,13 +115,15 @@ test('the save status sits beside the title, and the bar stays on one line at 12
   expect((await page.locator('header .title').boundingBox())!.width).toBeGreaterThan(100);
 });
 
-test('the column headings stay in view while scrolling', async ({ page }) => {
+test('the column headings stay in view while scrolling, under the top bar (UX-4)', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 500 });
   await openExample(page);
   await page.mouse.wheel(0, 800);
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(300);
+  const bar = (await page.locator('header').filter({ has: page.getByRole('navigation', { name: 'Mode' }) }).boundingBox())!;
+  expect(bar.y).toBe(0);
   const box = await page.locator('.head').boundingBox();
-  expect(box?.y).toBeLessThan(5);
+  expect(Math.abs(box!.y - bar.height)).toBeLessThan(2);
 });
 
 test('a delete can be undone, without any browser dialog', async ({ page }) => {

@@ -34,10 +34,15 @@ Copy for Teams, EX-10) above Export (Print…, Fountain, Final Draft, Voice-over
 - It only shows and asks: switching tabs, the status and exports are done by `Editor.svelte` (`onMode`,
   `onStatus`, `onPrompt`, `onExport`, `onPlay`, `onStop`), which saves what is waiting first.
 - The button names contain "Write" (Send back to writer), so tests pick the Write tab with `exact: true`.
-- While the script plays, the bar is `position: sticky` (`.pinned`) so Pause and ■ stay in view as the page follows
-  the rows; it then covers Write's sticky column headings, which is fine for that while.
-  It also covers the top of `main`, so a test must not click there to leave a text field while playing (`play.spec.ts`
-  blurs instead).
+- The bar is always `position: sticky` (UX-4, board 75; it used to stick only while playing). Its height, border
+  included (`offsetHeight`), is `--bar-h` on the page's root while a script is open: Write's and Review's column
+  headings, Find, the Planning panel and the Review comments stick under it, and `html`'s `scroll-padding-top` keeps
+  scrolled-to things out from under it. Something new that sticks to the top must use it too.
+  It covers the top of `main`, so a test must not click there to leave a text field (`play.spec.ts` blurs instead).
+- Where the review buttons aren't (UX-13): in Write while in review, "In review" and an "Approve in Review" link; in
+  Review while not in review, "Draft" (or "Approved") and "Send for review in Write". Tests asking for the "Send for
+  review" or "Review" button use `exact: true` or `/^Review/`, as these links contain the words. Ctrl+F in Review
+  goes to Write and opens Find (`findKey` in `Editor.svelte`).
 - While the browser's OK to edit the folder is lost (`status` 'locked', mock-up 18 option A), the status reads "Not
   saved: the browser needs your OK to edit the folder" with an Allow editing button (`onAllow`). That is too long
   for one line beside the tabs, so the breadcrumb stops shrinking (`.crumbs.locked`) and the bar wraps (a click on

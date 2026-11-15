@@ -121,7 +121,7 @@ test('a row number turns into ▶ under the mouse, and shows ❚❚ while its ro
 
 test('Review plays the takes without the recording tools (AU-9)', async ({ page }) => {
   await openWithTakes(page, [1]);
-  await page.getByRole('button', { name: 'Review' }).click();
+  await page.getByRole('button', { name: /^Review/ }).click();
   const row1 = page.locator('.row').filter({ has: page.getByLabel('Dialogue, row 1') });
   await expect(row1.locator('.take .about')).toContainText(/\d+ wpm · Sam, \w{3} \d+/);
   // Only listening: no mic, no deleting the take, no rows of other takes.
@@ -156,7 +156,7 @@ test('an outdated take shows Outdated in Review, with no × to hide it (AU-9)', 
   await page.keyboard.press('End');
   await page.keyboard.type(' Changed.');
   await expect(page.locator('.old')).toContainText('Outdated');
-  await page.getByRole('button', { name: 'Review' }).click();
+  await page.getByRole('button', { name: /^Review/ }).click();
   await expect(page.locator('.old')).toHaveText('Outdated');
   await expect(page.getByRole('button', { name: /hide Outdated/ })).toHaveCount(0);
 });

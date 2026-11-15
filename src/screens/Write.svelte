@@ -445,8 +445,8 @@
   /* Its columns are set on the element (`columns`), as a folded column is a thin strip. */
   .grid { display: grid; gap: 0 24px; padding-left: 12px; padding-right: 12px; }
   /* Stays at the top while scrolling. No scrolling box around the table, or it would stick to that instead. */
-  .find-wrap { position: sticky; top: 0; z-index: 4; }
-  .head { position: sticky; top: var(--find-h, 0px); z-index: 2; background: var(--ground); padding-top: 10px; padding-bottom: 10px; font-size: 13px; font-weight: 500; color: var(--muted); border-bottom: 1px solid var(--line); }
+  .find-wrap { position: sticky; top: var(--bar-h, 0px); z-index: 4; }
+  .head { position: sticky; top: calc(var(--bar-h, 0px) + var(--find-h, 0px)); z-index: 2; background: var(--ground); padding-top: 10px; padding-bottom: 10px; font-size: 13px; font-weight: 500; color: var(--muted); border-bottom: 1px solid var(--line); }
   .tools { display: flex; flex-wrap: wrap; gap: 2px; opacity: 0; }
   .section:hover .tools, .section:focus-within .tools { opacity: 1; }
   .tools button { width: 28px; height: 28px; padding: 0; border: 0; border-radius: 6px; background: none; color: var(--muted); font-size: 14px; }

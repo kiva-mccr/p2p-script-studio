@@ -929,6 +929,8 @@ and suggestions, keeps every version, and exports them for production.
 Things that move the page, hide or lose work, or surprise, found by reading the code and trying the example on the
 live site. Ranked by how much they could hurt; the user picks which to fix (mock-ups first where the look changes).
 "Seen" means it was reproduced on the live site; the rest are from the code.
+Mock-ups agreed by the user (2026-11-15): board 72 (Undo toasts, but the × in Outdated stays as it is), 73, 74, 75.
+Fixes with no new look (UX-3, 5, 6, 8, 9) need no board.
 
 - [ ] **UX-1** A voice-over take is gone in one click: the × beside it deletes the recording file at once, with no
   Undo (seen). The same × sits in "Outdated" on that line, where it only hides the label. Fix: Undo for a few
@@ -937,8 +939,10 @@ live site. Ranked by how much they could hurt; the user picks which to fix (mock
   Fix: keep the old take until the new one is kept, with "Undo, keep the old take" in the same toast.
 - [ ] **UX-3** Switching tabs loses your place: Write scrolled to row 20, Review, back to Write lands at the top
   (seen). Fix: each tab keeps where it was, or opens at the row you were on.
-- [ ] **UX-4** The top bar (tabs, Saved, Send for review) scrolls away on a long script; to switch tabs you scroll to
+- [x] **UX-4** The top bar (tabs, Saved, Send for review) scrolls away on a long script; to switch tabs you scroll to
   the top first (seen). It already stays up while playing. Fix: keep it up always (it is one thin line).
+  Done 2026-11-15 (board 75, agreed by the user): the bar sticks always; what stuck to the top (column headings, Find,
+  the side panel, Review's comments) sticks under it (`--bar-h`).
 - [ ] **UX-5** Clicking a section name on the unpinned timeline still jumps the page to its first row, as clips did
   before PR #166. Fix: the same rule as the clips (jump only while pinned; "↑ Go to the row" otherwise).
 - [ ] **UX-6** Clicking a card in the Comments panel always scrolls Write to its row, even when the row is already on
@@ -960,6 +964,9 @@ live site. Ranked by how much they could hurt; the user picks which to fix (mock
 - [ ] **UX-13** Small ones: the top bar's buttons change with the tab (Send for review only in Write, Approve only in
   Review, Find and replace only in Write's ⋯), and Remove from the folder (People) has no Undo. Fix: say where the
   missing button is ("Approve is in Review"), and Undo for Remove.
+  The pointer is done (2026-11-15, board 75): "In review · Approve in Review" in Write, "Draft · Send for review in
+  Write" in Review, each a link to that tab; Ctrl+F in Review opens Find in Write. Undo for Remove comes with UX-1's
+  shared Undo (board 72).
 
 ## Last (the user's order: these wait until everything above is done)
 
