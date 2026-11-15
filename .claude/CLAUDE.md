@@ -73,10 +73,10 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
   PF-5 (typing redoes only the comment marks it changed, done), PF-6 (the voice-over preview made in slices, done),
   PF-7 (leaving a script frees its memory, done).
   Then less network drive traffic (all of PF-8 to PF-18 queued by the user, 2026-11-15; nothing visible, so no mock-ups),
-  one thread each, measured before and after with perf/ (perf/pf-ideas/probe.js counts calls by folder), in this order:
-  PF-17 (keep folder handles), PF-9 (comments remembered), PF-8 (quieter check), PF-14 (no checks while away), PF-16
-  (fast only with others), PF-18 (slower heartbeat), PF-10 (reads at once), PF-11 (recent History on open), then the
-  ones that change `.studio/`: PF-15 (one news folder), PF-12 (summary per script), PF-13 (History chapters).
+  one thread each, measured before and after with perf/ (perf/pf-ideas/probe.js counts calls by folder), by impact
+  (the user's order): PF-15 (one news folder), PF-14 (no checks while away), PF-8 (quieter check), PF-16 (fast only
+  with others), PF-9 (comments remembered), PF-13 (History chapters), PF-11 (recent History on open), PF-12 (summary
+  per script), PF-10 (reads at once), PF-18 (slower heartbeat), PF-17 (keep folder handles).
   The rest (AP-8 …) waits
   for the user's next ranking; "Last" in ROADMAP.md (EX-5, CC-1) waits until everything else is done.
 - Mock-ups (one board per design, numbered): https://claude.ai/artifact/2XDZmS7J5NEPZsz91RQMiL (private to the user).
