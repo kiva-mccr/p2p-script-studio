@@ -4,6 +4,7 @@
 import { frontValue, parseScript, type Row, type Script } from './script';
 import { keepVersions, nameKey, recallVersions, remembered } from './versioncache';
 import { announce } from './news';
+import { eachAtOnce } from './atonce';
 
 type Kind = 'edit' | 'review' | 'restore' | 'merge' | 'outside' | 'restart' | 'official';
 export type Version = {
@@ -83,20 +84,23 @@ async function readNamed(dir: FileSystemDirectoryHandle, folder: FileSystemDirec
   const unknown = names.filter((name) => !known.has(name));
   const kept = await recallVersions(unknown.map((name) => nameKey(dir, name)));
   const fresh: [string, Version][] = [];
-  for (const name of unknown) {
-    const key = nameKey(dir, name);
-    let version = kept.get(key);
-    if (!version || !name.endsWith(`_${version.id}.json`)) {
-      try {
-        version = JSON.parse(await (await (await folder.getFileHandle(name)).getFile()).text());
-      } catch {
-        continue; // Gone, or half-synced (the shared folder may still be bringing it in): read again next time.
-      }
-      if (version?.v !== 1 || typeof version.text !== 'string') continue;
-      fresh.push([key, version]);
+  // Files not kept are read eight at a time (PF-10); the drive's wait overlaps, the calls are the same.
+  const found = await eachAtOnce(unknown, async (name) => {
+    const version = kept.get(nameKey(dir, name));
+    if (version && name.endsWith(`_${version.id}.json`)) return { version, fresh: false };
+    try {
+      const read: Version = JSON.parse(await (await (await folder.getFileHandle(name)).getFile()).text());
+      return read?.v === 1 && typeof read.text === 'string' ? { version: read, fresh: true } : null;
+    } catch {
+      return null; // Gone, or half-synced (the shared folder may still be bringing it in): read again next time.
     }
-    known.set(name, version);
-  }
+  });
+  unknown.forEach((name, i) => {
+    const got = found[i];
+    if (!got) return;
+    if (got.fresh) fresh.push([nameKey(dir, name), got.version]);
+    known.set(name, got.version);
+  });
   void keepVersions(fresh);
   return new Map(names.flatMap((name) => (known.has(name) ? [[name, known.get(name)!] as const] : [])));
 }

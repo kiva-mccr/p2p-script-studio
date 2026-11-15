@@ -75,8 +75,8 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
   Then less network drive traffic (all of PF-8 to PF-18 queued by the user, 2026-11-15; nothing visible, so no mock-ups),
   one thread each, measured before and after with perf/ (perf/pf-ideas/probe.js counts calls by folder), by impact
   (the user's order): PF-15 (one news folder, done), PF-14 (no checks while away, done), PF-8 (quieter check, done), PF-16 (fast only
-  with others, done), PF-9 (comments remembered, done), PF-13 (History chapters), PF-11 (recent History on open), PF-12 (summary
-  per script), PF-10 (reads at once), PF-18 (slower heartbeat), PF-17 (keep folder handles).
+  with others, done), PF-9 (comments remembered, done), PF-10 (reads at once, done early, asked by the coordinator), PF-13 (History chapters), PF-11 (recent History on open), PF-12 (summary
+  per script), PF-18 (slower heartbeat), PF-17 (keep folder handles).
   When all are done: a report of their effects (the user's ask), before (perf/pf-ideas/probe-out.txt) against after,
   same probe, same made-up folder.
   The rest (AP-8 …) waits
@@ -166,4 +166,6 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
 - Check fast only with others (PF-16) with two real computers: others are only simulated by writing editing files.
 - Away (PF-14) with two real computers on the network drive: the keeper handing over and rejoining as the newest was
   only seen with written files in tests; whether every real input device's movement reaches the page is unseen.
+- Eight reads at once (PF-10) on the real network drive: only a made-up 10 ms delay per call was timed; how SMB
+  takes bursts of up to ~32 reads (first visit to the list) is unseen.
 - Allow editing (AP-25) after Chrome really takes back access: tests fake the lost OK; how long Chrome waits is unseen.

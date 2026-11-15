@@ -19,6 +19,8 @@ never changed. Also what changed between two versions: a title ("Edited rows 3 a
   list's For me needs nothing older (the newest send, review change and hold end are all at or after it). Versions in
   the same second as the send come too (names keep only the second). With no send, it reads everything. Its tests
   check For me gives the same answers as with the whole History; keep it so if `forMe` starts using older versions.
+- Files not kept are read eight at a time (PF-10, `lib/atonce.ts`); `known` is filled in name order afterwards, so
+  the answer never depends on which read finished first.
 - Rows are matched by id, so a moved row is not "edited".
 - A row's `Change` carries its `row` id and `field` (as comments name it, `on_screen`), so History can put a comment
   under it (RV-6); a removed row has only `row`.

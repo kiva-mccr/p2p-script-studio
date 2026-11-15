@@ -8,6 +8,7 @@ id as state, with start, stop, play, current, remove and load), `readTakes` (a f
 
 ## Rules and pitfalls
 
+- `readTakes` reads the take files eight at a time (PF-10, `lib/atonce.ts`).
 - `rowLength` is the one rule for how long a row lasts (its take, else its read time): the timeline, Play and the
   Resolve / Premiere export all use it. Change it there, not in a copy.
 - A take is voice/row-<id>.webm plus voice/row-<id>.json (by, at, seconds, text). The length is timed while

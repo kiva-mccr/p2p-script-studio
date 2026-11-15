@@ -5,6 +5,7 @@ import { assetFile } from './folder';
 import { toSrt, toXml, type EditHow, type Info, type Plan, type Source } from './editxml';
 import { cleaned, decoder, readTake, wav } from './voiceexport';
 import { zip, type ZipEntry } from './zip';
+import { eachAtOnce } from './atonce';
 
 const RATE = 48000;
 
@@ -15,16 +16,14 @@ export async function editZip(dir: FileSystemDirectoryHandle, p: Plan, title: st
   const info: Record<string, Info> = {};
   const missing: string[] = [];
   const decode = decoder(RATE);
-  for (const [file, source] of p.media) {
-    try {
-      const made = await make(dir, source, width, height, decode);
-      if (!made) throw new Error('not found');
-      entries.push({ name: `media/${file}`, data: made.data });
-      info[file] = made.info;
-    } catch {
-      missing.push('path' in source ? source.path : file);
-    }
-  }
+  // Eight files made at a time (PF-10), each reading its own file from the drive; the zip keeps the plan's order.
+  const made = await eachAtOnce([...p.media], ([, source]) => make(dir, source, width, height, decode).catch(() => null));
+  [...p.media].forEach(([file, source], i) => {
+    const m = made[i];
+    if (!m) return void missing.push('path' in source ? source.path : file);
+    entries.push({ name: `media/${file}`, data: m.data });
+    info[file] = m.info;
+  });
   const text = new TextEncoder();
   const top: ZipEntry[] = [{ name: `${name}.xml`, data: text.encode(toXml(p, title, how, info)) }];
   if (p.captions.length) top.push({ name: `${name}.srt`, data: text.encode(toSrt(p.captions)) });

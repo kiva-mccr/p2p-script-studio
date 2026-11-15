@@ -11,6 +11,8 @@ screen first, four at a time.
 
 ## Rules and pitfalls
 
+- The take dates in `basePrint` are read eight at a time (PF-10), inside the four scripts at a time (`WORKERS`):
+  up to ~32 reads at the drive on a first visit.
 - The fingerprint opens no file: script.md's size and date, the names in `.studio/versions/` and `.studio/comments/`
   (written once, never changed), the takes' sizes and dates (`voice/` files are rewritten), the names in the folders
   the Files column points into (for the missing count), and your name (For me depends on it).

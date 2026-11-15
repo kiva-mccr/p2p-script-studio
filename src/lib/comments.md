@@ -11,6 +11,8 @@ rows (AP-9) are kept here too (`flag`, `unflag`; `flags()` says which rows are f
 
 ## Rules and pitfalls
 
+- Notes not read before are opened eight at a time (PF-10, `lib/atonce.ts`), then placed in name order, so the
+  answer never depends on which read finished first.
 - Resolve and reopen are new files about a comment; the newest counts. `when` keeps milliseconds, because a
   resolve and a reopen in the same second came out in a random order (bug found while building). File names keep
   seconds, like versions.

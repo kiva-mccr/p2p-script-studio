@@ -13,6 +13,7 @@ import { plain } from './format';
 import { readFileRef, type Row } from './script';
 import { announce } from './news';
 import { browserStore, nameKey } from './versioncache';
+import { eachAtOnce } from './atonce';
 
 export type Field = 'dialogue' | 'on_screen' | 'files';
 // An attached file (RV-11): `path` is inside the script's folder, `.studio/files/<note id>/<name>`.
@@ -65,20 +66,25 @@ export async function listNotes(dir: FileSystemDirectoryHandle): Promise<Note[]>
   const known = new Map<string, Note | null>();
   const fresh: [string, Note | null][] = [];
   const notes: Note[] = [];
+  // Notes not known yet are read eight at a time (PF-10).
+  const unread = names.filter((name) => !had.has(name) && !recalled.has(nameKey(dir, name)));
+  const opened = new Map(await eachAtOnce(unread, async (name) => {
+    try {
+      const note = JSON.parse(await (await (await folder.getFileHandle(name)).getFile()).text());
+      return [name, { note: note.v === 1 && note.id && note.kind ? (note as Note) : null }] as const;
+    } catch {
+      return [name, undefined] as const; // Skipped: the shared folder may still be bringing it in.
+    }
+  }));
   for (const name of names) {
     const key = nameKey(dir, name);
     if (had.has(name)) {
       known.set(name, had.get(name)!);
     } else if (recalled.has(key)) {
       known.set(name, recalled.get(key)!);
-    } else {
-      try {
-        const note = JSON.parse(await (await (await folder.getFileHandle(name)).getFile()).text());
-        known.set(name, note.v === 1 && note.id && note.kind ? note : null);
-        fresh.push([key, known.get(name)!]);
-      } catch {
-        // Skipped: the shared folder may still be bringing it in.
-      }
+    } else if (opened.get(name)) {
+      known.set(name, opened.get(name)!.note);
+      fresh.push([key, known.get(name)!]);
     }
     const note = known.get(name);
     if (note) notes.push(note);
