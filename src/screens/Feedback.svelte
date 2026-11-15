@@ -1,6 +1,6 @@
 <script lang="ts">
   import { tick } from 'svelte';
-  import { describe, partOf, issueBody, issueTitle, issueUrl, plainText, type Env, type Part } from '../lib/feedback';
+  import { describe, partOf, placePanel, issueBody, issueTitle, issueUrl, plainText, type Env, type Part } from '../lib/feedback';
   import { makePicture } from '../lib/feedbackshot';
   import { parseRoute } from '../lib/route';
 
@@ -158,13 +158,12 @@
     }
   }
 
-  // Beside the part: below it if it's in the top half of the window, else above. Kept inside the window.
+  // Beside the part, always whole on screen (placePanel): it is measured once drawn, and placed again as it grows.
+  let panelW = $state(440);
+  let panelH = $state(360);
   const panelStyle = $derived.by(() => {
-    if (!rect) return 'right: 16px; bottom: 40px;';
-    const left = Math.max(16, Math.min(rect.left, innerWidth - 456));
-    return rect.top + rect.height / 2 < innerHeight / 2
-      ? `left: ${left}px; top: ${Math.min(rect.bottom + 10, innerHeight - 200)}px;`
-      : `left: ${left}px; bottom: ${Math.min(innerHeight - rect.top + 10, innerHeight - 200)}px;`;
+    const at = placePanel(rect, { width: panelW, height: panelH }, { width: innerWidth, height: innerHeight });
+    return `left: ${at.left}px; top: ${at.top}px;`;
   });
 </script>
 
@@ -182,7 +181,7 @@
 {#if mode === 'open' && part}
   {#if rect}<div class="ring" aria-hidden="true" style:left="{rect.left - 3}px" style:top="{rect.top - 3}px" style:width="{rect.width + 6}px" style:height="{rect.height + 6}px"></div>{/if}
   <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-  <section class="panel" aria-label="Feedback" data-feedback-ui style={panelStyle}
+  <section class="panel" aria-label="Feedback" data-feedback-ui style={panelStyle} bind:offsetWidth={panelW} bind:offsetHeight={panelH}
     onkeydown={(e) => { if (e.key === 'Escape') { e.stopPropagation(); stop(); } }}>
     <div class="top">
       <h2>Feedback on: {part.label}{part.row ? `, row ${part.row}` : ''}</h2>
