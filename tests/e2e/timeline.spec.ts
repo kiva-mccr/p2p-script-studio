@@ -47,6 +47,23 @@ test('the timeline lays out the rows; a click lights up the row and opens its pi
   await expect(t.getByRole('button', { name: /sun\.svg · timeline only/ })).toHaveAttribute('aria-pressed', 'true');
 });
 
+test('a click on a block stays on the timeline; Go to the row goes to the row', async ({ page }) => {
+  await setUp(page, '#/Episode%2003', files);
+  const t = timeline(page);
+  const row2 = t.getByRole('button', { name: /^Row 2 · / });
+  await row2.scrollIntoViewIfNeeded();
+  const y = await page.evaluate(() => scrollY);
+  expect(y).toBeGreaterThan(0);
+  const dialogue = page.getByLabel('Dialogue, row 2');
+  await row2.click();
+  await expect(t.locator('.panel strong')).toHaveText(/^Row 2 · /);
+  await page.waitForTimeout(600); // a smooth scroll would have started by now
+  expect(await page.evaluate(() => scrollY)).toBe(y);
+  await expect(dialogue).not.toBeInViewport();
+  await t.getByRole('button', { name: '↑ Go to the row' }).click();
+  await expect(dialogue).toBeInViewport();
+});
+
 test('pictures: collage, leave one out', async ({ page }) => {
   await setUp(page, '#/Episode%2003', files);
   const t = timeline(page);

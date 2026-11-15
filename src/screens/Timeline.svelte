@@ -139,7 +139,9 @@
   function pick(b: TimeBlock) {
     if (readOnly) return onComment(b.kind === 'row' ? b.id : b.after);
     selected = selected === b.id ? '' : b.id;
-    if (selected) onShow(b.kind === 'row' ? b.id : b.after);
+    // Only pinned does a click bring its row into view: unpinned, the timeline is under the last row, and jumping up
+    // left the sequence or collage you meant to change (the user). The panel's "Go to the row" still goes.
+    if (selected && pinned) onShow(b.kind === 'row' ? b.id : b.after);
   }
 
   const tip = (b: TimeBlock) => {
@@ -293,6 +295,8 @@
           <div class="line">
             <strong>Row {numbers.get(selRow.id)} · {secs(block.seconds)}</strong>
             <span class="muted">{block.take ? 'from its take' : 'read time (no take yet)'}</span>
+            <span class="grow"></span>
+            <button class="link" onclick={() => onShow(selRow.id)}>↑ Go to the row</button>
           </div>
           <div class="line">
             {#each files as f (f.path)}

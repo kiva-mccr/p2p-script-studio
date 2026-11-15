@@ -36,5 +36,7 @@ offers its pictures, Sequence or Collage, + Add a picture (only for the timeline
 - Unpinned while playing, the preview is `.corner` (fixed, bottom right, above the GitHub link) only while no part
   of the timeline is on screen (`use:watch`); once any shows it goes back above the right end, so it never covers
   the timeline or its buttons (the user's condition). `.timeline` is `position: relative` so that works unpinned.
+- A click on a block scrolls to its row only while `pinned`: under the last row, the jump left the sequence or
+  collage being changed (the user, 2026-11-15). The row panel's "↑ Go to the row" does it on purpose.
 - `selected` is shared with Write's bars (`TimelineBar.svelte`): picking a hold on the timeline opens its bar's
   editor in the script too.

@@ -199,7 +199,7 @@ Status: a first working version. What it does today:
 - **Storyboard timeline:** under the last row in Write, the script laid out in time: sections, then each row with its
   pictures (every image or video in its Files, one after another, or side by side as a collage), then the voice-over
   as a waveform (a row with no take gets its read time). Hover a block for its dialogue; click it to light up its row
-  and pick its pictures, switch Sequence or Collage, or add a picture just for the timeline (Files shows those
+  (the page stays put; "↑ Go to the row" takes you there) and pick its pictures, switch Sequence or Collage, or add a picture just for the timeline (Files shows those
   minimised, "+1 for the timeline"). A Hold (the last picture stays, in silence) or a Placeholder (a shot still to
   come, with its length) can follow any row; it shows as a bar between the rows too: click it to change it, ✕ to
   remove it (with Undo). In a sequence, click a word of the dialogue to start the next picture on it (cut on a word).
