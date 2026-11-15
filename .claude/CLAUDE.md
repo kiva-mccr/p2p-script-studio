@@ -75,7 +75,7 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
   Then less network drive traffic (all of PF-8 to PF-18 queued by the user, 2026-11-15; nothing visible, so no mock-ups),
   one thread each, measured before and after with perf/ (perf/pf-ideas/probe.js counts calls by folder), by impact
   (the user's order): PF-15 (one news folder, done), PF-14 (no checks while away, done), PF-8 (quieter check, done), PF-16 (fast only
-  with others), PF-9 (comments remembered), PF-13 (History chapters), PF-11 (recent History on open), PF-12 (summary
+  with others, done), PF-9 (comments remembered), PF-13 (History chapters), PF-11 (recent History on open), PF-12 (summary
   per script), PF-10 (reads at once), PF-18 (slower heartbeat), PF-17 (keep folder handles).
   When all are done: a report of their effects (the user's ask), before (perf/pf-ideas/probe-out.txt) against after,
   same probe, same made-up folder.
@@ -92,7 +92,8 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
 - Checks look inside a script only when `.studio/news/` has a note about it (PF-15). `writeFile` in tests drops one as
   another computer's app would; `{ outside: true }` (Notepad, Explorer) doesn't, and is found only by the full look
   (2 min; `full-every` shortens it). A new writer of script files must call `announce` (lib/news.md). Others' takes
-  are looked at every 30 s (PF-8): a test that writes someone else's take sets `takes-every`.
+  are looked at every 30 s (PF-8): a test that writes someone else's take sets `takes-every`. Alone in a script, the
+  check runs every 30 s (PF-16); tests run it every 5 s (`alone-every` in playwright.config.ts).
 - A script with no touch for 2 minutes is away (PF-14, lib/away.md): no checks, no editing file. Tests that wait over
   2 minutes without moving the mouse must expect that; `away-after` shortens it.
 - e2e tests start with the example's tour skipped (playwright.config.ts); a feature named in the tour keeps its
@@ -162,6 +163,7 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
   test isn't measured (test Chromium has no H.264), so a real camera video's scale and length in the XML are unseen.
 - The news folder (PF-15) on the real network drive: notes, their clean-up and the 2-minute full look were only seen
   in test Chromium with a made-up 10 ms delay; SMB listing a folder of a few hundred notes every 5 s is unmeasured.
+- Check fast only with others (PF-16) with two real computers: others are only simulated by writing editing files.
 - Away (PF-14) with two real computers on the network drive: the keeper handing over and rejoining as the newest was
   only seen with written files in tests; whether every real input device's movement reaches the page is unseen.
 - Allow editing (AP-25) after Chrome really takes back access: tests fake the lost OK; how long Chrome waits is unseen.

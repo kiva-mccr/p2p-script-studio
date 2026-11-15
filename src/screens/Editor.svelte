@@ -40,6 +40,15 @@
     $props();
 
   const CHECK_EVERY = 5000; // ms between looks for someone else's save (in the news folder, PF-15)
+  // ms between looks while nobody else has the script open (PF-16): 5 s only matters when someone else is in it.
+  // Tests use 5 s (playwright.config.ts) and shorten or lengthen it through `alone-every` in this browser's storage.
+  const ALONE_EVERY = (() => {
+    try {
+      return Number(localStorage.getItem('alone-every')) || 30_000;
+    } catch {
+      return 30_000;
+    }
+  })();
   // ms between looks at others' takes (PF-8): a round that looks inside the script lists voice/ at most this often.
   // Tests shorten it through `takes-every` in this browser's storage.
   const TAKES_EVERY = (() => {
@@ -206,7 +215,8 @@
       await readCounts();
       if (file.dir) await voice.load(file.dir);
       takesAt = Date.now();
-      checker = setInterval(checkOutside, CHECK_EVERY);
+      // Half a tick of slack: roundAt is set a moment after its tick, so `>= ALONE_EVERY` alone would skip one more tick.
+      checker = setInterval(() => (file.editors.length || Date.now() - roundAt >= ALONE_EVERY - CHECK_EVERY / 2) && checkOutside(), CHECK_EVERY);
       heartbeat = setInterval(() => away.away || file.here(), HERE_EVERY);
       unlisten = away.listen();
     } catch (e) {
@@ -412,7 +422,7 @@
     field?.focus({ preventScroll: true });
   }
 
-  // The 5 s check: who else is here, then, only when the news folder has a note about this script from someone else
+  // The 5 s check (every 30 s while nobody else has the script open, PF-16): who else is here, then, only when the news folder has a note about this script from someone else
   // (PF-15) or a full look is due (every 2 minutes), missing files, takes, comments, someone else's save and the plan.
   // One at a time: on a slow drive a round can take longer than 5 s, and rounds piling up kept the folder busy.
   const news = new News(untrack(() => folder));
@@ -425,9 +435,11 @@
   let looks = $state(0); // rounds that looked inside the script, for the planning panel
   let takesAt = 0; // when voice/ was last listed
   let takesDue = false; // a round looked inside since then: voice/ is listed once TAKES_EVERY has passed
+  let roundAt = 0; // when the last round started: alone, the next comes ALONE_EVERY after it (PF-16)
   async function checkOutside() {
     if (checking || !file.dir || document.hidden || away.away || !(await file.checkAccess())) return;
     checking = true;
+    roundAt = Date.now();
     try {
       await file.readEditors();
       const fresh = await news.look(true);

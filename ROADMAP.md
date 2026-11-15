@@ -849,9 +849,12 @@ and suggestions, keeps every version, and exports them for production.
   Built: `lib/news.ts`; notes are kept an hour, not a day (only the 2-minute full look needs to trust them, and a
   shorter list is cheaper to read every 5 s). The open script's check still lists `editing/` each round. Measured
   (perf/pf-15 in the project files, simulated drive): 30 s idle in Write 1,371 → 65 calls; back to the list 957 → 2.
-- [ ] **PF-16** Check fast only when someone else is there: every 5 s while another person's "… is editing" file is
+- [x] **PF-16** Check fast only when someone else is there: every 5 s while another person's "… is editing" file is
   fresh, every 30 s when you're alone in the script (most of the time). About 6× fewer rounds when working alone.
   Trade-off: someone who just opened the script is noticed up to 30 s later; their first save then switches to 5 s.
+  Done 2026-11-15: the timer still ticks every 5 s, but alone a round starts only 30 s after the last. Measured
+  (perf/pf-16, simulated drive): 4 min alone in Write, 910 → 518 calls (a quiet minute 130 → 32; the rest is the
+  2-minute full look); with someone else in it and saving, unchanged (2,240 → 2,229).
 - [ ] **PF-17** Keep folder handles for the visit: each round looks up the script folder, `.studio/` and its folders
   again by name (about 15 look-ups a round, 400+ while opening the big script). Kept once found, and looked up again
   only if a call fails (folder renamed or moved). No change to the drive's files; small but free.
