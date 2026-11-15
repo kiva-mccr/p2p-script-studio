@@ -190,7 +190,8 @@ test('approve, send for review again, and send back to the writer; each is in Hi
   await expect(page.getByRole('region', { name: 'Still open' })).toHaveCount(0);
   await expect(page.getByText('Approved', { exact: true })).toBeVisible();
   await expect.poll(() => readFile(page, SCRIPT)).toContain('status: approved\n');
-  await expect(page.getByRole('button', { name: 'Send for review' })).toHaveCount(0); // only Write sends it
+  await expect(page.getByRole('button', { name: 'Send for review', exact: true })).toHaveCount(0); // only Write sends it
+  await expect(page.getByRole('button', { name: 'Send for review in Write' })).toBeVisible(); // and Review says so (UX-13)
   await page.getByRole('button', { name: 'Write', exact: true }).click();
   await page.getByRole('button', { name: 'Send for review' }).click();
   await page.getByRole('region', { name: 'Send for review' }).getByRole('button', { name: 'Send for review' }).click(); // no note
@@ -437,4 +438,24 @@ test('columns fold in Review, apart from Write, and picking a comment opens its 
   await page.getByRole('button', { name: 'Write', exact: true }).click();
   await expect(page.getByLabel('On screen, row 1')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Fold Images & files away' })).toBeVisible();
+});
+
+test('the top bar stays up on a long script and points to the other tab\'s button (UX-4, UX-13)', async ({ page }) => {
+  await openReview(page, ALL_FILES); // the example is "in review"
+  await page.getByRole('button', { name: 'Write', exact: true }).click();
+  await expect(page.getByText('In review', { exact: true })).toBeVisible();
+  await page.evaluate(() => scrollTo(0, document.body.scrollHeight));
+  const bar = page.locator('header').filter({ has: page.getByRole('navigation', { name: 'Mode' }) });
+  await expect.poll(async () => (await bar.boundingBox())?.y).toBe(0); // still at the top of the window
+  const height = (await bar.boundingBox())!.height;
+  const heads = page.locator('.table .head');
+  await expect.poll(async () => Math.round((await heads.boundingBox())?.y ?? -1)).toBe(Math.round(height)); // the column names sit under it
+  await page.getByRole('button', { name: 'Approve in Review' }).click();
+  await expect(page.getByRole('button', { name: /^Review/ })).toHaveAttribute('aria-current', 'page');
+  await expect(page.getByRole('button', { name: 'Approve', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Approve in Review' })).toHaveCount(0);
+  // Ctrl+F in Review opens Find and replace in Write.
+  await page.keyboard.press('Control+f');
+  await expect(page.getByRole('button', { name: 'Write', exact: true })).toHaveAttribute('aria-current', 'page');
+  await expect(page.getByRole('textbox', { name: 'Find' })).toBeFocused();
 });

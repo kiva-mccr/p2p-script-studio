@@ -181,7 +181,7 @@
 {/snippet}
 
 <style>
-  aside { flex: 1 1 300px; display: flex; flex-direction: column; gap: 12px; position: sticky; top: 16px; }
+  aside { flex: 1 1 300px; display: flex; flex-direction: column; gap: 12px; position: sticky; top: calc(var(--bar-h, 0px) + 16px); }
   h2 { margin: 0; font-size: 14px; font-weight: 600; }
   .open { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 8px; }
   .kind { margin: 4px 0 0; font-size: 12px; font-weight: 600; color: var(--muted); }

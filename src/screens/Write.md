@@ -16,7 +16,8 @@ deleting, keys, the flag bar, find, quotes marked, removed rows). Any column but
 - No browser dialogs (the user's rule): a delete is handed to the Editor with the blocks as they were
   (`onDeleted`), which shows the Undo bar.
 - The column headings are `position: sticky`: no scrolling box (`overflow`) may wrap the table, or they stick to
-  it instead of the window. A narrow window scrolls the page sideways instead.
+  it instead of the window. A narrow window scrolls the page sideways instead. They (and Find's wrapper) stick under
+  the top bar, at `--bar-h` (set by `Header.svelte`, UX-4).
 - Add section (AP-22) goes after the box in use: the button keeps the cursor on a click (`mousedown`
   preventDefault) so `document.activeElement` still says where, through `data-block` (the block's index). From a
   section's title it goes after that section's rows. A new section starts empty (grey "New section" placeholder)

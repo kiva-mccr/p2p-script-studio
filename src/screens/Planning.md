@@ -18,7 +18,7 @@ script already).
   lines are kept after yours. With nothing waiting, it looks whenever the Editor's 5 s check looks inside the script (`looks`, PF-15: a note
   about the script, or the full look) and shows their change quietly.
 - The panel pushes the columns (a flex item, `position: sticky`), never covers them. Its height is set from where it
-  starts (`fit`), so the bottom line shows below the top bar too. In Review at 1280 px the comments go under the
+  starts (`fit`), so the bottom line shows below the top bar too. It sticks under the top bar (`--bar-h`, UX-4). In Review at 1280 px the comments go under the
   script while it is open.
 - Open or closed and the tab are this browser's (`planning-open`, `side-tab`), like folded columns. Both are bound to
   the Editor (`sideOpen`, `sideTab`), which opens it on Comments from a bubble or after a send back. The panel stays

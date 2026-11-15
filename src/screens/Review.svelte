@@ -306,7 +306,7 @@
   /* Its columns are set on the element (`grid`), as a folded column is a thin strip. */
   .grid { display: grid; gap: 20px; padding: 0 12px; }
   .dot { text-align: center; color: #b8b8b8; }
-  .head { position: sticky; top: 0; z-index: 1; background: var(--ground); padding-top: 10px; padding-bottom: 10px; font-size: 13px;
+  .head { position: sticky; top: var(--bar-h, 0px); z-index: 1; background: var(--ground); padding-top: 10px; padding-bottom: 10px; font-size: 13px;
     font-weight: 500; color: var(--muted); border-bottom: 1px solid var(--line); }
   .section { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 0; padding: 28px 12px 8px; font-size: 18px; font-weight: 600; border-bottom: 1px solid var(--line); }
   .time { font-size: 13px; font-weight: 400; color: var(--muted); font-variant-numeric: tabular-nums; }
