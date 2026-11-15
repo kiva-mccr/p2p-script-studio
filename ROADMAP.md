@@ -432,6 +432,19 @@ and suggestions, keeps every version, and exports them for production.
   Wide / Upright on the timeline, kept as `shape: upright` in the front matter (merged, never a clash); upright, the
   timeline's preview is 9:16 and collages stack their pictures (in the preview, the video and EX-19's zip). The
   preview draws any moment with the same code as the file, and plays the video once made.
+- [ ] **AP-48** Feedback mode (asked by the user, 2026-11-15): a quiet "Feedback" in the corner turns the pointer
+  into a picker; the person clicks the part of the screen that is giving them trouble or could be better (it is
+  outlined as they hover), writes a short note, and sends it to GitHub as an issue. Built so it is useful to Claude
+  when it picks the issue up to fix (the user's ask): each issue has the label `feedback` and the same template, with
+  the note, the screen (Write, Review, History, the list, Settings) and its route, the clicked element's stable name
+  (a `data-feedback` mark or the component's file, plus a CSS selector as a fallback), its visible label, the row
+  number and column if it is in a row, the live version (the PR number from AP-28), browser and window size, and a
+  screenshot with the element outlined. To fit the guardrails (no sign-in, no server, nothing uploaded): "Send"
+  opens GitHub's new issue page with the title and text filled in, the person signs in to GitHub there and presses
+  Submit, and the screenshot is copied to the clipboard to paste in (a link can't carry a picture). The repo is
+  public, so no script text, names or file names go in by default; the person sees everything before it is sent.
+  Mock-up first; open choices: where the button lives, the screenshot (whole screen or just around the element),
+  and whether the script's name may be included.
 - [ ] **YT-1** The published video: link the final YouTube video and keep its title, description and thumbnail with
   the script.
 - [x] **AU-1** Recording audio for each line: record the dialogue of a row in the browser, kept beside the script
