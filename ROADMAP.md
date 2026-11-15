@@ -810,9 +810,13 @@ and suggestions, keeps every version, and exports them for production.
   Done 2026-11-15: after PF-15 only rounds that look inside (someone's note, the 2-minute full look) list History, so
   that's where it counts; the keeper's sync hands its listing to the tab counts. Measured (perf/pf-8, simulated drive):
   3 min in Write with someone saving every 30 s, 3,255 → 1,872 calls; nobody else saving, 478 → 455 in 2 min.
-- [ ] **PF-9** Comments remembered across visits, like History (HI-3): comment files never change, so the browser keeps
+- [x] **PF-9** Comments remembered across visits, like History (HI-3): comment files never change, so the browser keeps
   them (IndexedDB) and a later visit opens only new ones. No change to `.studio/`. Later visits to the big script: about
   1,200 calls (12 s simulated) → a handful. Trade-off: none seen; a cleared browser reads them all again.
+  Done 2026-11-15: `listNotes` keeps notes in `script-studio-comments`, by script folder and file name, through the
+  same store code as History (`browserStore` in lib/versioncache.ts). Measured (perf/pf-9, simulated drive): a later
+  visit opening the big script, 1,699 → 496 calls and 13.2 → 4.3 s; the first visit's opening, 7,470 → 6,273 calls
+  (the list had already read the comments for its flags, and now keeps them).
 - [ ] **PF-10** Several reads at once: History, comments and Save .zip open files one after another; eight at a time
   hides most of the drive's delay. Same traffic, roughly 4–6× less waiting on a first visit (open the big script, about
   60 s simulated) and on Save .zip's media. Trade-off: short bursts of eight requests at the drive.

@@ -1,6 +1,6 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
-import { listFiles, readFile, readJsonFiles, setUp } from './folder';
+import { listFiles, readFile, readJsonFiles, setUp, writeFile } from './folder';
 
 // Review comments in Write (RV-13, board 37 idea A): a Comments tab beside Planning, bubbles on rows, quotes marked.
 const example = readFileSync('docs/example/Episode 03 - How Photosynthesis Works/script.md', 'utf8');
@@ -72,6 +72,31 @@ test('rows with open comments get a bubble; it opens the Comments tab at that ca
   await expect(page.getByRole('button', { name: /^Review/ })).toHaveText('Review'); // no open count there since RV-21
   await expect(page.getByRole('button', { name: 'Open planning' })).toBeVisible();
   await expect(page.getByRole('button', { name: /Open comments/ })).toHaveCount(0);
+});
+
+test('comments are kept in this browser, so a later visit opens only new comment files (PF-9)', async ({ page }) => {
+  await open(page, [ANA, SUGGEST]);
+  await expect(page.getByRole('button', { name: 'Open comments, 2 open' })).toBeVisible();
+  await expect.poll(() => page.evaluate(() => new Promise<number>((resolve) => {
+    const open = indexedDB.open('script-studio-comments');
+    open.onsuccess = () => {
+      const count = open.result.transaction('versions').objectStore('versions').count();
+      count.onsuccess = () => resolve(count.result);
+    };
+  }))).toBe(2);
+  // Ben comments while Sam is away; the next visit opens his file and no other.
+  await writeFile(page, BEN[0], BEN[1]);
+  await page.addInitScript(() => {
+    const getFile = FileSystemFileHandle.prototype.getFile;
+    (window as unknown as { opened: string[] }).opened = [];
+    FileSystemFileHandle.prototype.getFile = function () {
+      if (/_(ana|ben)\d{5}\.json$/.test(this.name)) (window as unknown as { opened: string[] }).opened.push(this.name);
+      return getFile.call(this);
+    };
+  });
+  await page.reload();
+  await expect(page.getByRole('button', { name: 'Open comments, 3 open' })).toBeVisible();
+  expect(await page.evaluate(() => (window as unknown as { opened: string[] }).opened)).toEqual([BEN[0].split('/').at(-1)]);
 });
 
 test('in Write the writer accepts a suggestion, resolves with Undo and replies while editing', async ({ page }) => {

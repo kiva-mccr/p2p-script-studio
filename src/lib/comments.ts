@@ -12,6 +12,7 @@ import { safeName } from './folder';
 import { plain } from './format';
 import { readFileRef, type Row } from './script';
 import { announce } from './news';
+import { browserStore, nameKey } from './versioncache';
 
 export type Field = 'dialogue' | 'on_screen' | 'files';
 // An attached file (RV-11): `path` is inside the script's folder, `.studio/files/<note id>/<name>`.
@@ -48,24 +49,33 @@ export type Flag = { row: string; text: string; who: string; when: string };
 // Every note, oldest first. Files that can't be read (half-synced) are skipped.
 // Each folder's notes read so far, by file name: a note is written once and never changed, so only new names are
 // opened (the 5 s check read every one, every time). Null for a whole file that isn't a note; one that can't be read
-// (half-synced) is left out, so it is tried again.
+// (half-synced) is left out, so it is tried again. Kept in this browser too (PF-9), by script folder and file name
+// (as History is, HI-3), so a later visit opens only notes written since.
 const read = new WeakMap<FileSystemDirectoryHandle, Map<string, Note | null>>();
+const kept = browserStore<Note | null>('script-studio-comments', 1);
 
 export async function listNotes(dir: FileSystemDirectoryHandle): Promise<Note[]> {
   const folder = await commentsFolder(dir, false);
   if (!folder) return [];
   const names: string[] = [];
   for await (const name of folder.keys()) if (name.endsWith('.json')) names.push(name);
+  names.sort();
   const had = read.get(dir) ?? new Map<string, Note | null>();
+  const recalled = await kept.recall(names.filter((name) => !had.has(name)).map((name) => nameKey(dir, name)));
   const known = new Map<string, Note | null>();
+  const fresh: [string, Note | null][] = [];
   const notes: Note[] = [];
-  for (const name of names.sort()) {
+  for (const name of names) {
+    const key = nameKey(dir, name);
     if (had.has(name)) {
       known.set(name, had.get(name)!);
+    } else if (recalled.has(key)) {
+      known.set(name, recalled.get(key)!);
     } else {
       try {
         const note = JSON.parse(await (await (await folder.getFileHandle(name)).getFile()).text());
         known.set(name, note.v === 1 && note.id && note.kind ? note : null);
+        fresh.push([key, known.get(name)!]);
       } catch {
         // Skipped: the shared folder may still be bringing it in.
       }
@@ -74,6 +84,7 @@ export async function listNotes(dir: FileSystemDirectoryHandle): Promise<Note[]>
     if (note) notes.push(note);
   }
   read.set(dir, known);
+  void kept.keep(fresh);
   return notes;
 }
 
