@@ -825,10 +825,17 @@ and suggestions, keeps every version, and exports them for production.
   visit, the list 32.3 → 10.6 s and opening the big script 53.5 → 9.0 s; a later open 4.6 → 3.0 s; Save .zip
   23.0 → 5.1 s (7.0 s when reads at once share the 30 MB/s). Bursts reach about 32 on a first visit to the list (four
   scripts at a time, eight reads each); unseen on the real drive.
-- [ ] **PF-11** Open a script with only recent History: opening reads History back to the newest send for review (as the
+- [x] **PF-11** Open a script with only recent History: opening reads History back to the newest send for review (as the
   list does, PF-3); older versions only when History or Print needs them. A new computer opening the big script: about
   6,000 calls and 100 MB → a few hundred calls. No change to `.studio/`. Trade-off: saving and the tab counts must work
   from the recent part alone (to check carefully); the first History visit on a new computer is still slow.
+  Done 2026-11-15: `recentVersions` (lib/history.ts) reads back to the newest send and, when no review ended after it,
+  to the review end or send before (Review's round and the tab counts need it), and to the last visit for RV-15's marks.
+  Saving, Review, holds and the tab counts use it; History, Print, the exports and Send for review (official numbers
+  count them all) read everything. Unit tests check each gives the same answers as the whole History; one known
+  difference: a round that ended before two sends in a row isn't found. Measured (perf/pf-11, simulated drive): first
+  visit opening the big script, 6,270 calls, 100.5 MB, 10.4 s → 795 calls, 5.4 MB, 3.3 s; the first History visit there
+  went from 60 calls to 5,545 (7.4 s), as planned.
 - [ ] **PF-12** A shared summary per script for the list (set aside in AP-40 until first visits prove slow): whoever
   saves a script also writes a small written-once file with its title, status and counts, so a computer new to the
   folder reads one file per script. First visit's counts: about 10,400 calls (33 s simulated) → a few hundred (about

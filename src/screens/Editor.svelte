@@ -11,7 +11,7 @@
   import { share } from '../lib/share';
   import { shareLink } from '../lib/route';
   import { frontValue, rows, type Block } from '../lib/script';
-  import { backNote, holdEnds, listVersions, OUTSIDE, reviewEnd, reviewNote, type Version } from '../lib/history';
+  import { backNote, holdEnds, OUTSIDE, recentVersions, reviewEnd, reviewNote, type Version } from '../lib/history';
   import { Saving } from '../lib/saving.svelte';
   import Assets from './Assets.svelte';
   import Comments from './Comments.svelte';
@@ -210,7 +210,7 @@
       const key = visitKey(folder.name, path);
       const before = recall(key);
       keep(key, opened);
-      if (file.dir && file.script) visit = sinceVisit(await listVersions(file.dir).catch(() => []), file.script, before, name);
+      if (file.dir && file.script) visit = sinceVisit(await recentVersions(file.dir, before).catch(() => []), file.script, before, name);
       if (file.dir) notes = await listNotes(file.dir).catch(() => []);
       await readCounts();
       if (file.dir) await voice.load(file.dir);
@@ -337,7 +337,7 @@
     const n = ++reading;
     const [m, status] = [mode, reviewStatus];
     if ((m !== 'review' && m !== 'write') || !dir) return void ((sent = undefined), (reviewedAt = undefined), (back = undefined));
-    listVersions(dir)
+    recentVersions(dir)
       .then((versions) => {
         if (n !== reading) return;
         ends = holdEnds(versions);
@@ -370,7 +370,7 @@
   async function readCounts(listed?: Version[] | null) {
     const [d, s] = [file.dir, file.script];
     if (!d || !s) return;
-    versions = listed ?? (await listVersions(d).catch(() => versions));
+    versions = listed ?? (await recentVersions(d).catch(() => versions));
     reviewNew = reviewCount(versions, s, reviewStatus, name, seen.review);
   }
   let shown = ''; // the tab last marked seen
@@ -501,7 +501,7 @@
   async function shareNow() {
     if (!script) throw new Error('No script');
     const v = await file.version();
-    const newest = dir ? (await listVersions(dir).catch(() => [])).at(-1) : undefined;
+    const newest = dir ? (await recentVersions(dir).catch(() => [])).at(-1) : undefined;
     const who = newest && newest.who !== OUTSIDE ? newest.who : '';
     const voiced = script.blocks.filter((b) => b.type === 'row' && voice.takes[b.id]).length;
     return share({ title: title ?? '', link: shareLink(location.href), status: reviewStatus, version: v, who, when: newest ? Date.parse(newest.when) : 0,

@@ -15,6 +15,8 @@ version (`Print.svelte`) and the teleprompter (`Teleprompter.svelte`, saves what
   shown there get no icon.
 - "Use in script" (RV-12, `useFile`) copies a comment's file through `addAsset` (never overwrites), adds the line
   to the row and saves as any edit; a file still syncing gives a plain message.
+- History on an open script is `recentVersions` (PF-11, lib/history.md): Review's note, the round's end, holds, the tab
+  counts and RV-15's marks (read back to the last visit). Print, the exports and Send for review read all of it.
 - Review's note (RV-8) and the version when the last review ended (RV-4) are read from History when Review opens
   and again after a status change's entry is written (`readReview`): the status changes before its entry exists,
   so reading only on the status change missed the new entry. Only the newest read counts.

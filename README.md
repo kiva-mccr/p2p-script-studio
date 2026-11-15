@@ -71,6 +71,9 @@ Status: a first working version. What it does today:
   A long History lists the newest 50 first; "Show 50 older" loads more, and after that older ones load as you
   scroll. Each History file is read once and remembered by the browser, so big histories stay quick: opening a script
   again opens only History files it hasn't seen (comments too), and only the versions on screen are looked at for comments.
+  Opening a script reads only its recent History (back to the latest send for review, and the review round before
+  it), so a computer new to the folder opens a big script fast; the rest is read the first time History, Print or
+  Send for review needs it.
 - **Saved:** beside the script's name at the top, it says Editing… while what you typed waits to be saved (within 30
   seconds, or at once with Ctrl+S), then Saved. It's red when a save failed (after a few quiet tries), with the
   browser's reason: hover for all of it. What you typed is also kept in the browser until it's saved, so closing the

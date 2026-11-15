@@ -6,7 +6,7 @@ import { askAccess, hasAccess } from './remember';
 import { findScript, readScript, writeScriptFile } from './folder';
 import { newId, parseScript, rows, setFrontValue, withAuthor, writeScript, type Script } from './script';
 import { fileName, isEditing, readEditing, othersEditing, whoWasHere, writeEditing, writerOf, type Editing, type Seen } from './editing';
-import { addVersion, heads, listVersions, officialNumber, OUTSIDE, sendVersion, sha256, type Version } from './history';
+import { addVersion, heads, listVersions, officialNumber, OUTSIDE, recentVersions, sendVersion, sha256, type Version } from './history';
 import { merge, type Merged, type Side } from './merge';
 import { diff, fold } from './changes';
 import { listChanges, readChange, readFolded, removeChange, writeChange, writeFolded } from './changefiles';
@@ -119,7 +119,7 @@ export class Saving {
   // or it was changed outside the app (Notepad), which gets its own entry. No versions: History starts.
   async #startHistory(dir: FileSystemDirectoryHandle, text: string, foldedSha: string) {
     try {
-      const versions = await listVersions(dir);
+      const versions = await recentVersions(dir);
       const newest = versions.at(-1);
       const sha = await sha256(text);
       const matching = heads(versions).findLast((v) => v.sha256 === sha);
@@ -287,7 +287,7 @@ export class Saving {
     await this.#started; // an edit made just after opening waits for History to start, or it gets no entry
     const dir = this.dir;
     if (!dir) return;
-    const versions = await listVersions(dir);
+    const versions = await recentVersions(dir);
     this.#listed = versions;
     const newest = versions.at(-1) ?? this.last;
     if (!newest || (await sha256(text)) === newest.sha256) return;
@@ -329,7 +329,7 @@ export class Saving {
   // An entry of its own kind, now, for the script as everyone has it.
   async #entry(kind: 'restore' | 'official' | 'review', note: string, extra: { message?: string; official?: boolean } = {}) {
     const dir = this.dir!;
-    const newest = (await listVersions(dir)).at(-1) ?? this.last;
+    const newest = (await recentVersions(dir)).at(-1) ?? this.last;
     this.last = await addVersion(dir, { parents: newest ? [newest.id] : [], who: this.name(), kind, text: this.shared, note, ...extra });
     this.#authors.clear();
     return this.last;
