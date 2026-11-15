@@ -77,7 +77,7 @@ test('the toolbar sits by the selected words, and below them when there is no ro
   expect(tools.y + tools.height).toBeLessThan(field.y + field.height - line + 4);
 
   // The field's top just under the column names: the toolbar opens below the words, all of it in the window.
-  await select(page, 'Dialogue, row 3', 'Inside each cell');
+  await box.evaluate((el: HTMLTextAreaElement) => el.blur()); // the toolbar goes, so the next click lands in the box
   const head = (await page.locator('.table .head').boundingBox())!;
   await box.evaluate((el, under) => scrollBy(0, el.getBoundingClientRect().top - under - 4), head.y + head.height);
   await select(page, 'Dialogue, row 3', 'Inside each cell');
