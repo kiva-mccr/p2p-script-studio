@@ -69,7 +69,7 @@ version (`Print.svelte`) and the teleprompter (`Teleprompter.svelte`, saves what
   switch (`showRow`, `showLoose`, `jump`) calls `places.stop()` first, or the held place would pull the page back.
 - A card in the Comments panel brings its row into view only when it isn't already (UX-6, `showRow` uses `bring`).
 - While playing and not following (UX-12), "↓ Back to row N" (↑ when the row is above) sits under the top bar, clear of
-  the pinned timeline and the messages; it shows only while the playing row is out of view (`lookForRow` on scroll
+  the timeline drawer and the messages; it shows only while the playing row is out of view (`lookForRow` on scroll
   and on every new row). A hold or placeholder step counts as its row.
 - Deleting happens in Write, but the Undo bar and its 10 s timer are here (`lib/undo.svelte.ts`, UX-1), so it stays up
   across the tabs. Write's `onDeleted` (blocks as they were) and `onUndo` (any `Offer`: a take, a file) feed it, and so

@@ -41,7 +41,7 @@ Copy for Teams, EX-10) above Export (Print…, Fountain, Final Draft, Voice-over
   That padding counts the bar's own place as hidden, so focusing a button in it scrolled the page up (UX-3's test found
   it); everything in the bar has a scroll margin one bar lower, which keeps it "in view".
   It covers the top of `main`, so a test must not click there to leave a text field (`play.spec.ts` blurs instead).
-  Its z-index (7) is over the pinned timeline and its preview (5): in a short window the preview reached the bar and
+  Its z-index (7) is over the timeline drawer (4) and its preview: in a short window the preview reached the bar and
   took the click meant for Pause.
 - Where the review buttons aren't (UX-13): in Write while in review, "In review" and an "Approve in Review" link; in
   Review while not in review, "Draft" (or "Approved") and "Send for review in Write". Tests asking for the "Send for

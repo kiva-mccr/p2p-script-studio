@@ -96,6 +96,7 @@ test('Save video makes a video as long as the timeline, with sound, and plays it
 test('the timeline turns upright: its preview, the script and the video follow', async ({ page }) => {
   await setUp(page, '#/Episode%2003', files);
   await expect(page.getByLabel('Dialogue, row 1')).toBeVisible();
+  await page.getByRole('button', { name: /^Timeline/ }).click(); // unfold the drawer (SB-4)
   const shape = page.getByRole('group', { name: 'Video shape' });
   await expect(shape.getByRole('button', { name: 'Wide' })).toHaveAttribute('aria-pressed', 'true');
   await shape.getByRole('button', { name: 'Upright' }).click();
@@ -112,7 +113,7 @@ test('the timeline turns upright: its preview, the script and the video follow',
   await page.getByRole('button', { name: 'Export / Share' }).click();
   await page.getByRole('button', { name: 'Video (.mp4)' }).click();
   await expect(page.getByRole('region', { name: 'Preview' }).getByText('· 1080 × 1920 ·')).toBeVisible();
-  await expect(page.getByText('Upright, as set on the timeline under the script.')).toBeVisible();
+  await expect(page.getByText('Upright, as set on the timeline at the bottom of Write.')).toBeVisible();
   await page.getByRole('button', { name: 'Back to the script' }).click();
 
   // Back to wide: the line goes.

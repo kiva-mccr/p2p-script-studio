@@ -12,7 +12,7 @@
   import AfterEditor from './AfterEditor.svelte';
   import { near } from '../lib/near';
 
-  // The storyboard timeline (SB-1, board 63), under the last row in Write: sections, rows with their pictures, and
+  // The storyboard timeline (SB-1, board 63), in a drawer at the bottom of the screen (SB-4, board 76): sections, rows with their pictures, and
   // the voice-over, laid out in time. Mostly a view of the script; the only choices are the pictures and the holds
   // and placeholders, kept in each row's Timeline line. selected: the block picked (a row id, or "hold:<id>" /
   // "placeholder:<id>"), shared with the bars in the script. onTimeline sets a row's Timeline line; onFiles its
@@ -26,22 +26,19 @@
     onShow?: (id: string) => void; onComment?: (row: string) => void; onShape?: (shape: Shape) => void; onPlayFrom: (id: string) => void; onNotice: (message: string) => void;
   } = $props();
 
-  const KEY = 'timeline-hidden';
-  let hidden = $state(recall(KEY) === '1');
-  const hide = (on: boolean) => keep(KEY, (hidden = on) ? '1' : '');
+  // The drawer (SB-4): folded or open at any time, playing or not; this browser remembers it for every script. It
+  // starts folded. It replaced SB-2's Unpin and the old Hide.
+  const KEY = 'timeline-open';
+  let hidden = $state(recall(KEY) !== '1');
+  const fold = (on: boolean) => keep(KEY, (hidden = on) ? '' : '1');
   let zoom = $state(1);
-  // Unpin (SB-2, board 69): while playing, the timeline can go back under the last row; this browser remembers it.
-  const UNPIN = 'timeline-unpinned';
-  let unpinned = $state(recall(UNPIN) === '1');
-  const unpin = (on: boolean) => keep(UNPIN, (unpinned = on) ? '1' : '');
-  const pinned = $derived(player.started && !unpinned);
-  // Unpinned, the preview waits in the screen's bottom right corner, but only while the timeline is off screen: once
-  // any of it shows, the preview goes back above its right end, so it never covers the timeline or its buttons.
-  let onScreen = $state(false);
-  function watch(node: Element) {
-    const seen = new IntersectionObserver(([e]) => (onScreen = e.isIntersecting));
+  // The page keeps the drawer's height as its bottom scroll padding, so a row brought into view (a click on a block,
+  // Play following the rows, the cursor) isn't left behind the drawer.
+  function room(node: HTMLElement) {
+    const html = document.documentElement;
+    const seen = new ResizeObserver(() => (html.style.scrollPaddingBottom = `${node.offsetHeight}px`));
     seen.observe(node);
-    return { destroy: () => seen.disconnect() };
+    return { destroy: () => { seen.disconnect(); html.style.scrollPaddingBottom = ''; } };
   }
 
   // Each row lasts its take, or its read time without one, as Play the script times it.
@@ -69,7 +66,7 @@
   const paths = $derived([...new Set(rows(script).flatMap((r) => pictureFiles(r).map((p) => p.path)))].join('\n'));
   $effect(() => {
     const list = paths ? paths.split('\n') : [];
-    if (hidden || !shown) return;
+    if ((hidden && !player.started) || !shown) return; // folded, still made while playing, for the preview
     let gone = false;
     const made: string[] = [];
     (async () => {
@@ -103,8 +100,8 @@
   const selRow = $derived(block?.kind === 'row' ? byId.get(block.id) : undefined);
   const selAfter = $derived(block && block.kind !== 'row' ? readChoices(byId.get(block.after)?.timeline ?? '').after : null);
 
-  // Playing (PR 3): the timeline pins to the bottom of the screen, a playhead runs along it and a preview shows the
-  // picture of the moment above its right end; ⤢ makes the preview big.
+  // Playing (PR 3): a playhead runs along the timeline (along the thin strip when folded) and a preview shows the
+  // picture of the moment above the drawer's right end; ⤢ makes the preview big.
   const now = $derived(player.started ? laid.blocks.find((b) => b.id === player.row) : undefined);
   const into = $derived(Math.min(player.elapsed, now?.seconds ?? 0));
   let big = $state(false);
@@ -147,9 +144,8 @@
   function pick(b: TimeBlock) {
     if (readOnly) return onComment(b.kind === 'row' ? b.id : b.after);
     selected = selected === b.id ? '' : b.id;
-    // Only pinned does a click bring its row into view: unpinned, the timeline is under the last row, and jumping up
-    // left the sequence or collage you meant to change (the user). The panel's "Go to the row" still goes.
-    if (selected && pinned) onShow(b.kind === 'row' ? b.id : b.after);
+    // The drawer never leaves the screen, so a click brings its row into view while the panel stays at hand.
+    if (selected) onShow(b.kind === 'row' ? b.id : b.after);
   }
 
   const tip = (b: TimeBlock) => {
@@ -189,9 +185,9 @@
   }
 </script>
 
-<section class="timeline" class:pinned aria-label="Timeline" data-tour={readOnly ? 'review-timeline' : 'timeline'} use:near={() => (shown = true)} use:watch>
+<section class="timeline" class:folded={hidden} aria-label="Timeline" data-tour={readOnly ? 'review-timeline' : 'timeline'} use:near={() => (shown = true)} use:room>
   {#if now}
-    <div class="preview" class:big class:upright class:corner={!pinned && !onScreen} role="img" aria-label="Preview: {showing.tag}">
+    <div class="preview" class:big class:upright role="img" aria-label="Preview: {showing.tag}">
       <div class="screen" class:collage-on={showing.paths.length > 1}>
         {#each showing.paths as path (path)}
           {#if isVideo(path) && urls[path]}
@@ -212,9 +208,21 @@
     </div>
   {/if}
   <div class="top">
-    <h2>Timeline</h2>
-    {#if total}<span class="sum">{clock(total)} <span class="help">· {readOnly ? 'click a block to comment on its row' : 'from the takes, read time where there is none'}</span></span>{/if}
-    <span class="grow"></span>
+    <!-- The whole bar folds and unfolds the drawer; folded, a thin strip of the blocks (and the playhead) shows. -->
+    <button class="foldbar" aria-expanded={!hidden} onclick={() => fold(!hidden)}>
+      <svg class="chev" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24"><path d="M6 15l6-6 6 6" /></svg>
+      <span class="title">Timeline</span>
+      {#if total}<span class="sum">{clock(total)}{#if !hidden}{' '}<span class="help">· {readOnly ? 'click a block to comment on its row' : 'from the takes, read time where there is none'}</span>{/if}</span>{/if}
+      {#if hidden && total}
+        <span class="strip" aria-hidden="true">
+          {#each laid.blocks as b (b.id)}<span class:now={now?.id === b.id} style:left="{pct(b.start)}%" style:width="{pct(b.seconds)}%"></span>{/each}
+          {#if now}<span class="head" style:left="{pct(player.time)}%"></span>{/if}
+        </span>
+      {:else}
+        <span class="grow"></span>
+      {/if}
+      <span class="fold">{hidden ? 'Unfold' : 'Fold'}</span>
+    </button>
     {#if !hidden && total && !readOnly}
       <span class="segs shape" role="group" aria-label="Video shape" title="The shape of the preview, its collages and the exported video">
         <button aria-pressed={!upright} class:on={!upright} onclick={() => onShape('wide')}>Wide</button>
@@ -227,11 +235,10 @@
         <button aria-label="Zoom in" title="Zoom in" disabled={zoom >= 16} onclick={() => (zoom = Math.min(16, zoom * 2))}>+</button>
       </span>
     {/if}
-    {#if player.started}<button class="pin" aria-pressed={pinned} onclick={() => unpin(!unpinned)}>{pinned ? 'Unpin' : 'Pin to the bottom'}</button>{/if}
-    <button class="link fold" aria-expanded={!hidden} onclick={() => hide(!hidden)}>{hidden ? '⌃ Show' : '⌄ Hide'}</button>
   </div>
 
   {#if !hidden}
+  <div class="body">
     {#if !total}
       <p class="empty help">The timeline fills in as rows get dialogue or a take.</p>
     {:else}
@@ -303,8 +310,6 @@
           <div class="line">
             <strong>Row {numbers.get(selRow.id)} · {secs(block.seconds)}</strong>
             <span class="muted">{block.take ? 'from its take' : 'read time (no take yet)'}</span>
-            <span class="grow"></span>
-            <button class="link" onclick={() => onShow(selRow.id)}>↑ Go to the row</button>
           </div>
           <div class="line">
             {#each files as f (f.path)}
@@ -352,6 +357,7 @@
         </div>
       {/if}
     {/if}
+  </div>
   {/if}
 </section>
 
@@ -366,13 +372,22 @@
 {/snippet}
 
 <style>
-  .timeline.pinned { position: sticky; bottom: 0; z-index: 5; box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.08); }
-  .pin { min-height: 32px; padding: 0 12px; border: 1px solid var(--line-strong); border-radius: 8px; background: #fff; font-size: 13px; color: var(--accent); }
-  .pin[aria-pressed='true'] { background: #eef2fb; }
+  /* The drawer (SB-4): sticks to the bottom of the screen; at the end of the script it rests under the last row, so
+     that row is never hidden behind it. Open, at most about half the screen: the rest scrolls inside .body (not the
+     section, which would clip the preview above it). */
+  .timeline { position: sticky; bottom: 0; z-index: 5; margin-top: 32px; padding: 0 16px; border: 1px solid var(--line); border-bottom: 0; border-radius: 12px 12px 0 0; background: var(--ground); box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.08); }
+  .body { max-height: calc(50vh - 48px); overflow-y: auto; padding-bottom: 16px; }
+  .foldbar { flex: 1 1 320px; display: flex; align-items: center; gap: 12px; min-width: 0; min-height: 44px; padding: 0; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer; }
+  .chev { flex: none; fill: none; stroke: var(--accent); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transform: rotate(180deg); }
+  .folded .chev { transform: none; }
+  .title { font-size: 14px; font-weight: 600; }
+  .strip { position: relative; flex: 1; min-width: 60px; height: 8px; }
+  .strip span { position: absolute; top: 0; bottom: 0; box-sizing: border-box; border-right: 2px solid var(--ground); border-radius: 3px; background: #c9d7f2; }
+  .strip span.now { background: #f2c3ad; }
+  .strip .head { top: -4px; bottom: -4px; border: 0; border-radius: 0; background: #d9480f; }
   .head { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: #d9480f; pointer-events: none; z-index: 2; }
   .blk.now { box-shadow: inset 0 0 0 2px #d9480f; }
   .preview { position: absolute; right: 16px; bottom: calc(100% + 12px); width: 320px; border-radius: 10px; overflow: hidden; background: #0b0b0b; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25); }
-  .preview.corner { position: fixed; right: 16px; bottom: 44px; z-index: 5; } /* clear of the GitHub link (AP-28) */
   .preview.big { width: min(720px, calc(100vw - 64px)); }
   .preview.upright { width: 180px; }
   .preview.upright.big { width: min(405px, calc(100vw - 64px)); }
@@ -394,15 +409,14 @@
   .word.cut { border-color: var(--accent); background: #eef2fb; color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); }
   .word:disabled { opacity: 0.5; }
   .words .help { flex-basis: 100%; font-size: 12px; color: var(--muted); }
-  .timeline { position: relative; margin-top: 32px; padding: 14px 16px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--ground); }
-  .top { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin-bottom: 10px; }
-  h2 { margin: 0; font-size: 14px; font-weight: 600; }
+  .top { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 16px; padding: 2px 0; }
+  .timeline:not(.folded) .top { margin-bottom: 6px; }
   .sum { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
   .grow { flex: 1; }
   .zoom { display: inline-flex; gap: 2px; }
   .zoom button { width: 32px; height: 32px; border: 1px solid var(--line-strong); border-radius: 6px; background: #fff; font-size: 15px; }
   .zoom button:disabled { opacity: 0.4; }
-  .fold { font-size: 13px; color: var(--muted); }
+  .fold { flex: none; font-size: 13px; color: var(--accent); }
   .empty { margin: 0; font-size: 13px; color: var(--muted); }
   .scroll { overflow-x: auto; padding-top: 4px; }
   .tracks { position: relative; min-width: 100%; }

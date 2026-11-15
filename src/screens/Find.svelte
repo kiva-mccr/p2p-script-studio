@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { floor } from '../lib/floor';
   import { tick } from 'svelte';
   import { before, findAll, rangeAt, replaceAll, replaceOne, type Field, type Spot } from '../lib/find';
   import type { Block, Script } from '../lib/script';
@@ -69,7 +70,7 @@
     const el = shown(spot);
     if (!el) return;
     const { top, bottom } = el.getBoundingClientRect();
-    if (top < 160 || bottom > innerHeight) el.closest('[data-block]')?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    if (top < 160 || bottom > floor()) el.closest('[data-block]')?.scrollIntoView({ block: 'center', behavior: 'smooth' });
   }
 
   function step(by: number) {

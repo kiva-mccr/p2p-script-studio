@@ -17,7 +17,7 @@ export const TOURS: Record<Tab, Step[]> = {
     { target: 'files', title: 'Pictures and files', text: 'Drop a file here, paste a link, note something still to find, or pick a file from another script. Click one to preview it.' },
     { target: 'timeline-bar', title: 'Holds and placeholders', text: 'A bar between rows: hold the last picture 2 s, or keep 3 s for a shot still to come. Click it to change the seconds or the words.' },
     { target: 'side', title: 'Planning and comments', text: 'Planning holds the goals and an outline. Comments lists what reviewers asked for, sorted by line, time or type; put one On hold to shelve it for later.' },
-    { target: 'timeline', title: 'The storyboard timeline', text: 'The video in rough: every row\'s pictures in order, timed by its take. Click a block to pick its pictures or cut on a word. While the script plays it sticks to the bottom (Unpin lets it go), with a small preview.' },
+    { target: 'timeline', title: 'The storyboard timeline', text: 'The video in rough: every row\'s pictures in order, timed by its take. It waits folded at the bottom of the screen: click its bar to unfold it. Click a block to pick its pictures or cut on a word. While the script plays, a small preview shows above it.' },
     { target: 'presence', title: 'Saved, and who was here', text: 'Every change saves as you type, beside how long the script runs. "Ana was here": click it to see everyone who opened the script.' },
     { target: 'actions', title: 'Play, share and export', text: 'Play the script, copy a link, print, or export. ⋯ has Find and replace, Teleprompter, Credits and Settings, where you can change the keyboard shortcuts or hide help text like this.' },
   ],

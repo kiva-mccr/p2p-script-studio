@@ -59,7 +59,7 @@
         </div>
       {/if}
     </div>
-    <p class="small help">The same timings as the storyboard timeline under the script: each take's length, the read time where there's no take, holds and placeholders.</p>
+    <p class="small help">The same timings as the storyboard timeline at the bottom of Write: each take's length, the read time where there's no take, holds and placeholders.</p>
   </div>
 
   <div class="pair">
