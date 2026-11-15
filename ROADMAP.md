@@ -975,6 +975,8 @@ Fixes with no new look (UX-3, 5, 6, 8, 9) need no board.
   the top first (seen). It already stays up while playing. Fix: keep it up always (it is one thin line).
   Done 2026-11-15 (board 75, agreed by the user): the bar sticks always; what stuck to the top (column headings, Find,
   the side panel, Review's comments) sticks under it (`--bar-h`).
+  One line at 1280 (the user, 2026-11-15): with Presence and the ? menu the bar wrapped to two lines; tighter tabs,
+  buttons and gaps, "Send back" in Review, and "Ana · 3 h ago" keep Write and Review on one line (narrower, it wraps).
 - [ ] **UX-5** Clicking a section name on the unpinned timeline still jumps the page to its first row, as clips did
   before PR #166. Fix: the same rule as the clips (jump only while pinned; "↑ Go to the row" otherwise).
   Dropped 2026-11-15: the timeline drawer (SB-4, agreed by the user) replaces Pin / Unpin, so there is no unpinned timeline.

@@ -467,6 +467,21 @@ test('columns fold in Review, apart from Write, and picking a comment opens its 
   await expect(page.getByRole('button', { name: 'Fold Images & files away' })).toBeVisible();
 });
 
+test('the top bar is one line at 1280, in Write and in Review, with who was here shown', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  const ago = new Date(Date.now() - 12 * 60000).toISOString();
+  await openReview(page, { ...ALL_FILES, 'Episode 03/.studio/editing/priya_20261101T120000000Z.json':
+    JSON.stringify({ v: 1, who: 'Priya', since: ago, seen: ago, last_written: '', left: ago }) }); // in review: Send back and Approve
+  await expect(page.getByRole('button', { name: 'Priya · 12 min ago' })).toBeVisible();
+  const bar = page.locator('header').filter({ has: page.getByRole('navigation', { name: 'Mode' }) });
+  const line = async () => (await bar.boundingBox())!.height;
+  const one = await line();
+  expect(one).toBeLessThan(80);
+  await page.getByRole('button', { name: 'Write', exact: true }).click();
+  await expect(page.getByText('In review', { exact: true })).toBeVisible();
+  expect(await line()).toBe(one);
+});
+
 test('the top bar stays up on a long script, with no links beside the state (UX-4, UX-13)', async ({ page }) => {
   await openReview(page, ALL_FILES); // the example is "in review"
   await page.getByRole('button', { name: 'Write', exact: true }).click();

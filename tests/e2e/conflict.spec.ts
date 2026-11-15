@@ -66,8 +66,8 @@ test('who was here: "was here", "last seen" when someone went quiet, and the lis
     'Episode 03/.studio/editing/ana_20261101T120000000Z.json': file('Ana', 12, true),
     'Episode 03/.studio/editing/jo_20261001T120000000Z.json': file('Jo', 40 * 24 * 60, true),
   });
-  await expect(page.getByRole('button', { name: 'Ana was here 12 min ago' })).toBeVisible();
-  await page.getByRole('button', { name: 'Ana was here 12 min ago' }).click();
+  await expect(page.getByRole('button', { name: 'Ana · 12 min ago' })).toBeVisible();
+  await page.getByRole('button', { name: 'Ana · 12 min ago' }).click();
   const list = page.getByRole('region', { name: 'Who has been here' });
   await expect(list).toContainText('Ana12 min ago');
   await expect(list).toContainText('Lee3 h ago');
@@ -78,8 +78,8 @@ test('who was here: "was here", "last seen" when someone went quiet, and the lis
   await expect(list).toHaveCount(0);
   // Priya stopped checking in 3 minutes ago without leaving: her last changes may not be in.
   await writeFile(page, 'Episode 03/.studio/editing/priya_20261101T120000000Z.json', file('Priya', 3, false));
-  await expect(page.getByRole('button', { name: 'Priya last seen 3 min ago' })).toBeVisible({ timeout: 10000 });
-  await expect(page.getByRole('button', { name: 'Priya last seen 3 min ago' })).toHaveAttribute('title', /stopped checking in/);
+  await expect(page.getByRole('button', { name: 'Priya · 3 min ago' })).toBeVisible({ timeout: 10000 });
+  await expect(page.getByRole('button', { name: 'Priya · 3 min ago' })).toHaveAttribute('title', /stopped checking in/);
   // Someone editing takes the place, and the list opens from there too.
   await writeFile(page, 'Episode 03/.studio/editing/ana_20261102T120000000Z.json', file('Ana', 0, false));
   await page.getByRole('button', { name: 'Ana is editing' }).click({ timeout: 10000 });
