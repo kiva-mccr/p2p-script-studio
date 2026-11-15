@@ -123,7 +123,7 @@
     <a href="#/" class="back" aria-label="Back to {folder}" title="Back to {folder}">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /></svg>
     </a>
-    <span class="title">{title}</span>
+    <span class="title" title={title}>{title}</span>
     <!-- Beside the title, where Word and Google Docs put it (AP-16, the user's pick): it is about the script, not an action. -->
     {#if ready}<span class="status" class:bad role="status" data-tour="saved" title={status === 'failed' ? problem : undefined}>{shownStatus}</span>{#if status === 'failed'}<CopyDetails message={SAVE_FAILED} />{/if}{/if}
     <!-- The length follows Saved as one grey line (mock-up 30, A), and steps aside for a red message. -->
@@ -148,7 +148,7 @@
       <Presence {editors} {folding} {seen} />
       {#if reviewStatus === 'in review' && mode === 'review'}
         <span class="more" bind:this={backEl}>
-          <button class="outline" aria-expanded={menu === 'back'} onclick={() => (menu = menu === 'back' ? '' : 'back')}>Send back to writer</button>
+          <button class="outline" aria-label="Send back to writer" aria-expanded={menu === 'back'} onclick={() => (menu = menu === 'back' ? '' : 'back')}>Send back</button>
           {#if menu === 'back'}
             <div class="menu approve-menu" role="region" aria-label="Send back to writer">
               <label class="lead" for="back-note">A note for the writer</label>
@@ -246,23 +246,24 @@
 {#if settings}<Settings {voiceWpm} onClose={() => (settings = false)} />{/if}
 
 <style>
-  header { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; padding: 10px 24px; border-bottom: 1px solid var(--line); }
+  header { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 10px 20px; border-bottom: 1px solid var(--line); }
   /* The bar stays at the top of the window (UX-4, board 75); its height is --bar-h, for what sticks under it. */
   header { position: sticky; top: 0; z-index: 7; background: var(--ground); } /* over the timeline drawer (z 4) and its preview */
   /* html's scroll-padding-top counts the bar's own place as hidden, so focusing a button in it (Tab, a click)
      scrolled the page to "show" it. Each thing in the bar counts as drawn one bar lower: always in view. */
   header :global(*) { scroll-margin: calc(-1 * var(--bar-h, 0px)) 0 var(--bar-h, 0px); }
-  .crumbs { display: flex; align-items: center; gap: 6px; flex: 1 1 280px; min-width: 0; } /* below that the bar wraps */
+  .crumbs { display: flex; align-items: center; gap: 6px; flex: 1 1 260px; min-width: 0; } /* below that the bar wraps */
   /* The long "Not saved" and Allow editing don't fit beside the tabs: the bar wraps instead of hiding them. */
   .crumbs.locked { flex: 1 0 auto; max-width: 100%; }
   .back { display: inline-flex; flex: none; align-items: center; justify-content: center; width: 44px; height: 44px; margin-left: -10px;
     border-radius: 8px; color: var(--muted); }
   .back:hover { background: #f2f2f2; color: var(--accent); }
   .title { font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .right { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; flex: 1 1 auto; }
+  .right { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 4px; flex: 0 1 auto; margin-left: auto; }
   .right > * { white-space: nowrap; }
+  .right :global(.outline), .right .dark { padding: 0 12px; } /* narrower than elsewhere: the bar is one line at 1280 */
   .modes { display: flex; gap: 2px; padding: 3px; border-radius: 10px; background: #f2f2f2; }
-  .modes button { min-height: 40px; padding: 0 18px; border: 0; border-radius: 8px; background: none; color: var(--muted); font-size: 14px; font-weight: 500; }
+  .modes button { min-height: 40px; padding: 0 8px; border: 0; border-radius: 8px; background: none; color: var(--muted); font-size: 14px; font-weight: 500; }
   .modes button[aria-current] { background: var(--ground); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08); color: var(--ink); }
   .count { display: inline-block; min-width: 20px; margin-left: 6px; padding: 1px 6px; box-sizing: border-box; border-radius: 10px;
     background: var(--accent); color: #fff; font-size: 12px; text-align: center; }

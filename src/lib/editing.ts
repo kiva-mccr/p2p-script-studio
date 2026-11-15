@@ -74,11 +74,12 @@ export function whoWasHere(entries: Editing[], me: string, now = Date.now()): Se
     .sort((a, b) => b.time - a.time);
 }
 
-// The top bar when nobody else is editing: "Sam was here 12 min ago", "Sam last seen 3 min ago", '' past 7 days.
+// The top bar when nobody else is editing: "Sam · 12 min ago" ('' past 7 days). Went quiet is the amber ring and
+// the hover; "was here" / "last seen" were cut so the bar stays on one line at 1280 (the user, 2026-11-15).
 export function lastHereText(seen: Seen[], now = Date.now()): string {
   const last = seen[0];
   if (!last || last.state === 'editing' || now - last.time > BAR_FOR) return '';
-  return `${last.who} ${last.state === 'quiet' ? 'last seen' : 'was here'} ${ago(last.time, now)}`;
+  return `${last.who} · ${ago(last.time, now)}`; // short, to keep the bar on one line; the hover says the rest
 }
 
 // One line of the list: "editing now", "last seen 3 min ago", "3 h ago", then "Yesterday, 5:40 pm".

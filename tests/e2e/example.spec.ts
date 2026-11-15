@@ -110,7 +110,7 @@ test('the example shows off the recent features: timeline, a send back, a held c
   await expect(page.getByText('+1 for the timeline')).toBeVisible();
   await expect(page.getByRole('region', { name: 'Timeline' })).toHaveCount(1);
   // Ana left three hours ago.
-  await expect(page.getByRole('button', { name: 'Ana was here 3 h ago' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Ana · 3 h ago' })).toBeVisible();
   // Review counts the four rows Sam changed since Ana sent it back, and marks them.
   await expect(page.getByRole('button', { name: /^Review/ })).toContainText('4');
   await page.getByRole('button', { name: /^Review/ }).click();

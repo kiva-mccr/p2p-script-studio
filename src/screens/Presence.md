@@ -1,8 +1,9 @@
 # `src/screens/Presence.svelte`
 
 Who else is here, in the top bar (AP-37, board 62): "Sam is editing" (orange, as before, with the spinner while
-their changes are folded in, FX-2), or when nobody else is editing, the last person here: "Sam was here 12 min ago"
-(grey ring), or "Sam last seen 3 min ago" (amber ring) when they stopped checking in without leaving. Either one is a
+their changes are folded in, FX-2), or when nobody else is editing, the last person here: "Sam · 12 min ago"
+(grey ring), or with an amber ring when they stopped checking in without leaving (the hover says which). It was "Sam
+was here 12 min ago" until the bar had to fit on one line at 1280 (the user, 2026-11-15). Either one is a
 button that opens a list of everyone who opened the script in the last 30 days, newest first.
 
 - **Used by:** `screens/Header.svelte`. **Tests:** `tests/e2e/conflict.spec.ts`, `tests/unit/editing.test.ts`.

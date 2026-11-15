@@ -47,7 +47,7 @@
 
 <style>
   .presence { position: relative; }
-  button { display: inline-flex; align-items: center; gap: 8px; min-height: 36px; padding: 6px 12px; border: 0; border-radius: 999px;
+  button { display: inline-flex; align-items: center; gap: 8px; min-height: 36px; padding: 6px 8px; border: 0; border-radius: 999px;
     font-size: 13px; white-space: nowrap; cursor: pointer; }
   .editing { background: #fff4e5; color: #7a4a00; font-weight: 500; }
   .editing:hover, .editing[aria-expanded='true'] { background: #ffe9cc; }

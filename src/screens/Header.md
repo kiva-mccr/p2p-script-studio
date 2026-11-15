@@ -61,6 +61,9 @@ Copy for Teams, EX-10) above Export (Print…, Fountain, Final Draft, Voice-over
   by that name (a part match on "Video Scripts" still finds it).
 - A failed save shows the browser's error name in the bar and all of it on hover (`problem`, FX-1), so the user can
   report what a real shared folder said.
-- "… is editing", or "Sam was here 12 min ago" when nobody is, and the list of who has been here are
+- "… is editing", or "Sam · 12 min ago" when nobody is, and the list of who has been here are
   `Presence.svelte` (AP-37), given `editors`, `folding` and `seen`.
 - `heldCount` (RV-19): with comments on hold, the Send for review box says they come back into the open list.
+- One line at 1280 in Write and Review, Presence shown (the user, 2026-11-15): tabs 12 px each side, the right group's
+  gap 6 px, crumbs wrap below 260 px, Review's opener reads "Send back" (its name stays "Send back to writer"), and
+  Presence is short. Anything new in the bar must keep Review at 1280 on one line (`review.spec`'s one-line test).

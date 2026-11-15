@@ -39,9 +39,9 @@ describe('editing', () => {
   });
   it('names the last person here in the bar, up to 7 days back', () => {
     const text = (e: Editing) => lastHereText(whoWasHere([e], 'kiva', now), now);
-    expect(text(entry('Sam', 1, now, true))).toBe('Sam was here 1 min ago');
-    expect(text(entry('Sam', 3, now))).toBe('Sam last seen 3 min ago');
-    expect(text(entry('Sam', 24 * 60 + 5, now, true))).toBe('Sam was here yesterday');
+    expect(text(entry('Sam', 1, now, true))).toBe('Sam · 1 min ago');
+    expect(text(entry('Sam', 3, now))).toBe('Sam · 3 min ago');
+    expect(text(entry('Sam', 24 * 60 + 5, now, true))).toBe('Sam · yesterday');
     expect(text(entry('Sam', 8 * 24 * 60, now, true))).toBe('');
     expect(text(entry('Sam', 0, now))).toBe(''); // editing: "Sam is editing" instead
   });
