@@ -79,6 +79,7 @@ test('Outdated can be dismissed: the take keeps the line as it now reads, and th
 });
 
 test('deleting a take takes it out of the folder; someone else’s take appears', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('takes-every', '1000')); // others' takes every 30 s (PF-8)
   await openExample(page);
   await page.getByRole('button', { name: 'Record row 1', exact: true }).click();
   await page.getByRole('button', { name: 'Stop recording row 1' }).click();

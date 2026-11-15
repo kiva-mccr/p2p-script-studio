@@ -40,6 +40,15 @@
     $props();
 
   const CHECK_EVERY = 5000; // ms between looks for someone else's save (in the news folder, PF-15)
+  // ms between looks at others' takes (PF-8): a round that looks inside the script lists voice/ at most this often.
+  // Tests shorten it through `takes-every` in this browser's storage.
+  const TAKES_EVERY = (() => {
+    try {
+      return Number(localStorage.getItem('takes-every')) || 30_000;
+    } catch {
+      return 30_000;
+    }
+  })();
   const HERE_EVERY = 30 * 1000; // the "… is editing" file is refreshed this often
 
   // The script on disk: reading, saving, History and clashes (lib/saving.svelte.ts).
@@ -196,6 +205,7 @@
       if (file.dir) notes = await listNotes(file.dir).catch(() => []);
       await readCounts();
       if (file.dir) await voice.load(file.dir);
+      takesAt = Date.now();
       checker = setInterval(checkOutside, CHECK_EVERY);
       heartbeat = setInterval(() => away.away || file.here(), HERE_EVERY);
       unlisten = away.listen();
@@ -346,10 +356,11 @@
     seen[tab] = stamp();
     keep(seenKey(tab, folder.name, path), seen[tab]);
   }
-  async function readCounts() {
+  // `listed`: History as the check's own sync just listed it (PF-8), so a round lists it once.
+  async function readCounts(listed?: Version[] | null) {
     const [d, s] = [file.dir, file.script];
     if (!d || !s) return;
-    versions = await listVersions(d).catch(() => versions);
+    versions = listed ?? (await listVersions(d).catch(() => versions));
     reviewNew = reviewCount(versions, s, reviewStatus, name, seen.review);
   }
   let shown = ''; // the tab last marked seen
@@ -412,6 +423,8 @@
   let checking = false;
   let again = false; // a note came last round: looked once more, in case the file it names came in after it
   let looks = $state(0); // rounds that looked inside the script, for the planning panel
+  let takesAt = 0; // when voice/ was last listed
+  let takesDue = false; // a round looked inside since then: voice/ is listed once TAKES_EVERY has passed
   async function checkOutside() {
     if (checking || !file.dir || document.hidden || away.away || !(await file.checkAccess())) return;
     checking = true;
@@ -419,19 +432,29 @@
       await file.readEditors();
       const fresh = await news.look(true);
       const noted = !!fresh?.has(file.dir.name);
-      if (fresh && !noted && !again) return;
+      if (fresh && !noted && !again) return void (await takesIfDue(file.dir));
       again = noted;
       looks++;
+      takesDue = true;
       const files = checkFiles();
-      if (!voice.recording) await voice.load(file.dir);
+      await takesIfDue(file.dir);
       const next = await listNotes(file.dir).catch(() => notes);
       if (next.length !== notes.length || next.some((n, i) => n.id !== notes[i].id)) notes = next;
       await file.sync();
-      await readCounts();
+      await readCounts(file.listed());
       await files;
     } finally {
       checking = false;
     }
+  }
+
+  // Others' takes (PF-8): at most every TAKES_EVERY, and only after a round that looked inside (a note, or the full
+  // look). Your own take is in `voice.takes` the moment it is saved.
+  async function takesIfDue(dir: FileSystemDirectoryHandle) {
+    if (!takesDue || voice.recording || Date.now() - takesAt < TAKES_EVERY) return;
+    takesDue = false;
+    takesAt = Date.now();
+    await voice.load(dir);
   }
 
   // A row or section was deleted in Write: kept a few seconds so it can be undone.

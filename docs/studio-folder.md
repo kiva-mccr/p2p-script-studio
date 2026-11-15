@@ -46,7 +46,8 @@ writes `news/20261115T021500123Z_k2m9qa_Episode 03.json` (time, a random id, the
 Only the name is read. An open script's 5 s check lists `news/` (and `editing/`) and looks inside the script only
 when a note about it has come from someone else; the list, coming back to it or to the window, reads again only
 scripts with a new note. Every 2 minutes both look at everything as before, since a change made outside the app
-(Notepad, Explorer) leaves no note, and remove notes over an hour old. "… is editing" files leave no note.
+(Notepad, Explorer) leaves no note, and remove notes over an hour old. "… is editing" files leave no note. When it
+looks inside, the open script lists `voice/` at most every 30 s, so another person's new take can show that late.
 
 ## The one rule: new files, never edits
 

@@ -34,6 +34,8 @@ back, `onEntry` says a status change's entry was written. `script`, `dir`, `stat
   writing script.md and its note. Its clashes go to script.md's side without asking (see docs/studio-folder.md).
 - History: entries are made by the keeper every 5 minutes, and by anyone on leaving, opening History, sending for
   review, restoring and publishing, each after the newest entry. `#record` waits for History to start (`#started`).
+  It keeps the History it listed (`#listed`, with its new entry); `listed()` hands that over once, so the 5 s check
+  doesn't list History a second time for the tab counts (PF-8). `#sync` clears it first, so it is never an old round's.
   Leaving, opening History, Print, the exports and Send for review go through `saveWaiting`, which also waits for a
   save already being written, and one queued behind it.
 - A failed save tries again every 6 s, unless the browser took back its OK to edit the folder (`hasAccess` false):

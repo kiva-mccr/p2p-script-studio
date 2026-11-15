@@ -53,6 +53,7 @@ export class Saving {
   #seen = new Set<string>(); // change files already in `shared`
   #authors = new Set<string>(); // whose changes are in `shared` since the last History entry
   #entries: Editing[] = []; // everyone's "… is editing" files, from the last check
+  #listed: Version[] | null = null; // History as the last sync listed it (keepers only), for the check's tab counts
   #wrote = ''; // script.md as this page last read or wrote it, to tell an edit made outside the app
   #started: Promise<void> = Promise.resolve(); // History found or started on opening (sets `last`)
   #timer: ReturnType<typeof setTimeout> | undefined;
@@ -192,6 +193,7 @@ export class Saving {
 
   async #sync() {
     const dir = this.dir;
+    this.#listed = null;
     if (!dir || this.status === 'conflict' || this.status === 'locked') return;
     const names = await listChanges(dir).catch(() => []);
     let folded = '';
@@ -285,11 +287,14 @@ export class Saving {
     await this.#started; // an edit made just after opening waits for History to start, or it gets no entry
     const dir = this.dir;
     if (!dir) return;
-    const newest = (await listVersions(dir)).at(-1) ?? this.last;
+    const versions = await listVersions(dir);
+    this.#listed = versions;
+    const newest = versions.at(-1) ?? this.last;
     if (!newest || (await sha256(text)) === newest.sha256) return;
     if (!now && Date.now() - Date.parse(newest.when) < ENTRY_EVERY) return;
     const authors = who || [...this.#authors].join(' and ') || this.name();
     this.last = await addVersion(dir, { parents: [newest.id], who: authors, kind: who === OUTSIDE ? 'outside' : 'edit', text });
+    this.#listed = [...versions, this.last];
     if (!who) this.#authors.clear();
   }
 
@@ -489,6 +494,14 @@ export class Saving {
     if (!(await askAccess(this.folder).catch(() => false))) return;
     this.status = 'waiting';
     await this.save();
+  }
+
+  // History as the last sync listed it, once (PF-8): the 5 s check's tab counts use it instead of listing History
+  // again. Null when that sync didn't list it (not the keeper, or nothing to keep).
+  listed(): Version[] | null {
+    const versions = this.#listed;
+    this.#listed = null;
+    return versions;
   }
 
   // The 5 s check: who else has the script open (and so who the keeper is).
