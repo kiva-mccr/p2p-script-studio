@@ -825,7 +825,7 @@ and suggestions, keeps every version, and exports them for production.
   stops checking too, and catches up the moment you move. The "… is editing" file also stops, so others see "last
   seen 3 min ago", which is true. An away keeper hands over to the next person editing, as when a laptop sleeps.
   An away computer then makes no folder calls. Trade-off: others' saves show on your screen only once you move.
-- [ ] **PF-15** One "what's new" folder for the whole drive (the user's ask for the smallest footprint, 2026-11-15):
+- [x] **PF-15** One "what's new" folder for the whole drive (the user's ask for the smallest footprint, 2026-11-15):
   whoever writes anything (a save, version, comment, take, flag) also writes a tiny written-once note in the picked
   folder's `.studio/news/` naming the script and what changed; notes over a day old are removed by whoever sees them.
   The 5 s check and the script list then list that one folder instead of each script's versions/, comments/,
@@ -833,6 +833,9 @@ and suggestions, keeps every version, and exports them for production.
   of calls, estimated from the code) → 1–2. Still peer-to-peer: every note is a new file, so nobody can clash.
   Trade-off: a change made outside the app (Notepad, a file dropped into assets/ in Explorer) leaves no note, so a slow
   full check every couple of minutes stays as the safety net; one extra small write per save.
+  Built: `lib/news.ts`; notes are kept an hour, not a day (only the 2-minute full look needs to trust them, and a
+  shorter list is cheaper to read every 5 s). The open script's check still lists `editing/` each round. Measured
+  (perf/pf-15 in the project files, simulated drive): 30 s idle in Write 1,371 → 65 calls; back to the list 957 → 2.
 - [ ] **PF-16** Check fast only when someone else is there: every 5 s while another person's "… is editing" file is
   fresh, every 30 s when you're alone in the script (most of the time). About 6× fewer rounds when working alone.
   Trade-off: someone who just opened the script is noticed up to 30 s later; their first save then switches to 5 s.
