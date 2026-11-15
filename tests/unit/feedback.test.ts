@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { issueBody, issueTitle, issueUrl, plainText, type Part } from '../../src/lib/feedback';
+import { issueBody, issueTitle, issueUrl, placePanel, plainText, type Part } from '../../src/lib/feedback';
 
 const part: Part = { label: 'button "Record row 3"', file: 'WriteRow.svelte', tour: 'take', selector: '[data-row="r1"] > div.mic-cell > button.mic',
   row: 3, column: 'the mic', screen: 'Write' };
@@ -44,5 +44,23 @@ describe('feedback issues (AP-48)', () => {
     const text = plainText('T', issueBody('n', part, env, true));
     expect(text.startsWith('T\n\n**Note**')).toBe(true);
     expect(text).toContain('(no picture)');
+  });
+});
+
+describe('the feedback panel stays on screen (AP-48 fix)', () => {
+  const view = { width: 1280, height: 800 };
+  const panel = { width: 440, height: 400 };
+  it('goes below a part near the top, above one near the bottom', () => {
+    expect(placePanel({ left: 100, top: 50, bottom: 80 }, panel, view)).toEqual({ left: 100, top: 90 });
+    expect(placePanel({ left: 100, top: 700, bottom: 730 }, panel, view)).toEqual({ left: 100, top: 290 });
+  });
+  it('is shifted inside the window when neither fits, never past an edge', () => {
+    // The bug: a part in the middle of a short window put the panel above it, cut off at the top.
+    const at = placePanel({ left: 1200, top: 300, bottom: 340 }, panel, { width: 1280, height: 600 });
+    expect(at).toEqual({ left: 832, top: 192 });
+    expect(at.top).toBeGreaterThanOrEqual(8);
+    expect(at.top + panel.height).toBeLessThanOrEqual(592);
+    // A panel taller than the window starts at the top edge (it scrolls inside).
+    expect(placePanel({ left: 0, top: 10, bottom: 20 }, { width: 440, height: 900 }, view).top).toBe(8);
   });
 });
