@@ -21,5 +21,5 @@ History files are written once and never changed, so `listVersions` (lib/history
 - Every store's one object store is called `versions` (comments' too). Raising a store's version empties it.
 - Only whole, readable versions are kept: a half-synced file is read again next time.
 - Storage refused (a private window) or missing (unit tests run in Node): nothing is kept and the files are read.
-- A first visit on a computer still reads every file; only "chapters" (index files, left for later in HI-3) would
-  change that.
+- A first visit on a computer reads every chapter whole (PF-13, lib/chapters.ts) instead of every old file; a
+  chapter's versions are kept here under their own file's names, so they line up with single files.

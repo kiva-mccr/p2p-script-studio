@@ -5,6 +5,7 @@ import { frontValue, parseScript, type Row, type Script } from './script';
 import { keepVersions, nameKey, recallVersions, remembered } from './versioncache';
 import { announce } from './news';
 import { eachAtOnce } from './atonce';
+import { contents, listChapters, range, readChapter, type Contents } from './chapters';
 
 type Kind = 'edit' | 'review' | 'restore' | 'merge' | 'outside' | 'restart' | 'official';
 export type Version = {
@@ -67,8 +68,13 @@ const reading = new WeakMap<FileSystemDirectoryHandle, Promise<Version[]>>();
 async function readVersions(dir: FileSystemDirectoryHandle): Promise<Version[]> {
   const folder = await versionsFolder(dir, false);
   if (!folder) return [];
-  const names = (await jsonNames(folder)).sort();
-  const read = await readNamed(dir, folder, names);
+  const singles = await jsonNames(folder);
+  const chapterOf = new Map<string, string>();
+  for (const chapter of await listChapters(dir)) {
+    for (const name of (await chapterNames(dir, chapter)) ?? []) chapterOf.set(name, chapter);
+  }
+  const names = [...new Set([...singles, ...chapterOf.keys()])].sort();
+  const read = await readNamed(dir, folder, names, chapterOf);
   return inOrder(names.flatMap((name) => read.get(name) ?? []));
 }
 
@@ -78,51 +84,107 @@ export function sinceSend(dir: FileSystemDirectoryHandle): Promise<Version[]> {
   return readBack(dir, (newest) => newest.findIndex(isSend));
 }
 
-// Reads History newest first, a few at a time (PF-3), until `enough` (given what was read, newest first) names the
-// oldest version needed; -1 reads on. Names keep only the second, so versions made in the same second as that one
-// (older names) come too. Oldest first; everything when `enough` never says so.
+// Reads History newest first (PF-3), until `enough` (given what was read, newest first) names the oldest version
+// needed; -1 reads on. First the single files, a few at a time, then the chapters (PF-13), newest first: a chapter
+// holds only versions older than every single file not packed yet. Names keep only the second, so versions made in
+// the same second as the oldest needed come too. Oldest first; everything when `enough` never says so.
 async function readBack(dir: FileSystemDirectoryHandle, enough: (newest: Version[]) => number): Promise<Version[]> {
   const folder = await versionsFolder(dir, false);
   if (!folder) return [];
-  const names = (await jsonNames(folder)).sort().reverse();
+  const singles = (await jsonNames(folder)).reverse();
   const read = new Map<string, Version>();
-  for (let i = 0; i < names.length; i += BACK_BATCH) {
-    for (const [name, version] of await readNamed(dir, folder, names.slice(i, i + BACK_BATCH))) read.set(name, version);
-    const got = names.slice(0, i + BACK_BATCH).filter((name) => read.has(name));
-    const at = enough(got.map((name) => read.get(name)!));
-    if (at < 0) continue;
-    const oldest = got[at];
-    const second = oldest.split('_')[0];
-    const same = names.slice(i + BACK_BATCH).filter((name) => name.split('_')[0] === second);
-    for (const [name, version] of await readNamed(dir, folder, same)) read.set(name, version);
-    const cut = names.indexOf(oldest);
-    const keep = names.filter((name, j) => j <= cut || name.split('_')[0] === second);
-    return inOrder(keep.flatMap((name) => read.get(name) ?? []));
+  const add = (found: Map<string, Version>) => found.forEach((version, name) => read.set(name, version));
+  const second = (name: string) => name.slice(0, 16); // 20261109T144100Z
+  let chapters: string[] | null = null; // newest first, listed only once the single files aren't enough
+  const chapter = async (name: string) => {
+    const chapterOf = new Map(((await chapterNames(dir, name)) ?? []).map((single) => [single, name]));
+    add(await readNamed(dir, folder, [...chapterOf.keys()].filter((single) => !read.has(single)), chapterOf));
+  };
+  let found: Version | undefined;
+  for (let i = 0, c = 0; !found; ) {
+    if (i < singles.length) {
+      add(await readNamed(dir, folder, singles.slice(i, (i += BACK_BATCH))));
+    } else {
+      chapters ??= (await listChapters(dir)).reverse();
+      if (c >= chapters.length) break;
+      await chapter(chapters[c++]);
+    }
+    const newest = inOrder([...read.values()]).reverse();
+    const at = enough(newest);
+    if (at >= 0) found = newest[at];
   }
-  return inOrder([...read.values()]);
+  if (!found) return inOrder([...read.values()]);
+  const oldest = found;
+  // Versions in the same second as the oldest needed, not read yet: single files, and chapters that may hold some.
+  const at = oldest.when.replace(/[-:]/g, '');
+  add(await readNamed(dir, folder, singles.filter((name) => second(name) === at && !read.has(name))));
+  if (!singles.length || second(singles.at(-1)!) >= at) {
+    chapters ??= (await listChapters(dir)).reverse();
+    for (const name of chapters) if (second(range(name).last) >= at) await chapter(name);
+  }
+  return inOrder([...read.values()].filter((v) => v.when >= oldest.when));
 }
 const BACK_BATCH = 25;
+
+// The single file names in History, oldest first (for packing chapters, lib/pack.ts).
+export async function singleNames(dir: FileSystemDirectoryHandle): Promise<string[]> {
+  const folder = await versionsFolder(dir, false);
+  return folder ? jsonNames(folder) : [];
+}
+
+// The versions in these single files, by name (for packing chapters, lib/pack.ts).
+export async function versionsNamed(dir: FileSystemDirectoryHandle, names: string[]): Promise<Map<string, Version>> {
+  const folder = await versionsFolder(dir, false);
+  return folder ? readNamed(dir, folder, names) : new Map();
+}
+
+// What a chapter holds (null while it can't be read); its versions are remembered as it is opened.
+export function chapterContents(dir: FileSystemDirectoryHandle, chapter: string): Promise<Contents | null> {
+  return contents(dir, chapter, (versions) => remember(dir, versions));
+}
+const chapterNames = async (dir: FileSystemDirectoryHandle, chapter: string) => (await chapterContents(dir, chapter))?.names;
+
+function remember(dir: FileSystemDirectoryHandle, versions: [string, Version][]) {
+  const known = remembered(dir);
+  for (const [name, version] of versions) known.set(name, version);
+  void keepVersions(versions.map(([name, version]) => [nameKey(dir, name), version]));
+}
 
 async function jsonNames(folder: FileSystemDirectoryHandle): Promise<string[]> {
   const names: string[] = [];
   for await (const name of folder.keys()) if (name.endsWith('.json')) names.push(name);
-  return names;
+  return names.sort();
 }
 
 // The versions in the named files, by name. Files never change, so only files not read before are read (HI-3): first
 // this visit's, then this browser's, found by name alone (PF-2), so a script opened again opens only its new files.
-async function readNamed(dir: FileSystemDirectoryHandle, folder: FileSystemDirectoryHandle, names: string[]): Promise<Map<string, Version>> {
+// A name in `chapterOf` is read from its chapter (PF-13), opened once for all its versions.
+async function readNamed(
+  dir: FileSystemDirectoryHandle,
+  folder: FileSystemDirectoryHandle,
+  names: string[],
+  chapterOf = new Map<string, string>(),
+): Promise<Map<string, Version>> {
   const known = remembered(dir);
-  const unknown = names.filter((name) => !known.has(name));
+  let unknown = names.filter((name) => !known.has(name));
   const kept = await recallVersions(unknown.map((name) => nameKey(dir, name)));
+  for (const name of unknown) {
+    const version = kept.get(nameKey(dir, name));
+    if (version && name.endsWith(`_${version.id}.json`)) known.set(name, version);
+  }
+  unknown = unknown.filter((name) => !known.has(name));
+  // Chapters holding versions this browser doesn't have: each opened whole, once.
+  for (const chapter of new Set(unknown.flatMap((name) => chapterOf.get(name) ?? []))) {
+    const whole = await readChapter(dir, chapter);
+    if (whole) remember(dir, Object.entries(whole.versions));
+  }
+  unknown = unknown.filter((name) => !known.has(name));
   const fresh: [string, Version][] = [];
   // Files not kept are read eight at a time (PF-10); the drive's wait overlaps, the calls are the same.
   const found = await eachAtOnce(unknown, async (name) => {
-    const version = kept.get(nameKey(dir, name));
-    if (version && name.endsWith(`_${version.id}.json`)) return { version, fresh: false };
     try {
       const read: Version = JSON.parse(await (await (await folder.getFileHandle(name)).getFile()).text());
-      return read?.v === 1 && typeof read.text === 'string' ? { version: read, fresh: true } : null;
+      return read?.v === 1 && typeof read.text === 'string' ? read : null;
     } catch {
       return null; // Gone, or half-synced (the shared folder may still be bringing it in): read again next time.
     }
@@ -130,8 +192,8 @@ async function readNamed(dir: FileSystemDirectoryHandle, folder: FileSystemDirec
   unknown.forEach((name, i) => {
     const got = found[i];
     if (!got) return;
-    if (got.fresh) fresh.push([nameKey(dir, name), got.version]);
-    known.set(name, got.version);
+    fresh.push([nameKey(dir, name), got]);
+    known.set(name, got);
   });
   void keepVersions(fresh);
   return new Map(names.flatMap((name) => (known.has(name) ? [[name, known.get(name)!] as const] : [])));
