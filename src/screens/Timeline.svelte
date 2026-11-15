@@ -33,12 +33,16 @@
   const fold = (on: boolean) => keep(KEY, (hidden = on) ? '' : '1');
   let zoom = $state(1);
   // The page keeps the drawer's height as its bottom scroll padding, so a row brought into view (a click on a block,
-  // Play following the rows, the cursor) isn't left behind the drawer.
+  // Play following the rows, the cursor) isn't left behind the drawer; and as --drawer, which lifts the corner links,
+  // Undo and the messages above it.
   function room(node: HTMLElement) {
     const html = document.documentElement;
-    const seen = new ResizeObserver(() => (html.style.scrollPaddingBottom = `${node.offsetHeight}px`));
+    const seen = new ResizeObserver(() => {
+      html.style.scrollPaddingBottom = `${node.offsetHeight}px`;
+      html.style.setProperty('--drawer', `${node.offsetHeight}px`);
+    });
     seen.observe(node);
-    return { destroy: () => { seen.disconnect(); html.style.scrollPaddingBottom = ''; } };
+    return { destroy: () => { seen.disconnect(); html.style.scrollPaddingBottom = ''; html.style.removeProperty('--drawer'); } };
   }
 
   // Each row lasts its take, or its read time without one, as Play the script times it.
@@ -375,7 +379,7 @@
   /* The drawer (SB-4): sticks to the bottom of the screen; at the end of the script it rests under the last row, so
      that row is never hidden behind it. Open, at most about half the screen: the rest scrolls inside .body (not the
      section, which would clip the preview above it). */
-  .timeline { position: sticky; bottom: 0; z-index: 5; margin-top: 32px; padding: 0 16px; border: 1px solid var(--line); border-bottom: 0; border-radius: 12px 12px 0 0; background: var(--ground); box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.08); }
+  .timeline { position: sticky; bottom: 0; z-index: 4; margin-top: 32px; padding: 0 16px; border: 1px solid var(--line); border-bottom: 0; border-radius: 12px 12px 0 0; background: var(--ground); box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.08); }
   .body { max-height: calc(50vh - 48px); overflow-y: auto; padding-bottom: 16px; }
   .foldbar { flex: 1 1 320px; display: flex; align-items: center; gap: 12px; min-width: 0; min-height: 44px; padding: 0; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer; }
   .chev { flex: none; fill: none; stroke: var(--accent); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transform: rotate(180deg); }
@@ -387,7 +391,7 @@
   .strip .head { top: -4px; bottom: -4px; border: 0; border-radius: 0; background: #d9480f; }
   .head { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: #d9480f; pointer-events: none; z-index: 2; }
   .blk.now { box-shadow: inset 0 0 0 2px #d9480f; }
-  .preview { position: absolute; right: 16px; bottom: calc(100% + 12px); width: 320px; border-radius: 10px; overflow: hidden; background: #0b0b0b; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25); }
+  .preview { position: absolute; right: 16px; bottom: calc(100% + 40px); /* above the corner links (AP-28), lifted over the drawer */ width: 320px; border-radius: 10px; overflow: hidden; background: #0b0b0b; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25); }
   .preview.big { width: min(720px, calc(100vw - 64px)); }
   .preview.upright { width: 180px; }
   .preview.upright.big { width: min(405px, calc(100vw - 64px)); }

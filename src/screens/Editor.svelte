@@ -667,7 +667,7 @@
   .back-to-row { position: fixed; z-index: 6; left: 50%; top: calc(var(--bar-h, 0px) + 12px); transform: translateX(-50%); min-height: 40px;
     padding: 0 16px; border: 1px solid #d6e0f7; border-radius: 999px; background: var(--ground); color: var(--accent); font-size: 14px;
     font-weight: 500; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1); }
-  .toasts { position: fixed; z-index: 10; left: 50%; bottom: 24px; transform: translateX(-50%); width: min(720px, calc(100% - 32px));
+  .toasts { position: fixed; z-index: 10; left: 50%; bottom: calc(24px + var(--drawer, 0px)); transform: translateX(-50%); width: min(720px, calc(100% - 32px));
     display: flex; flex-direction: column; gap: 8px; }
   .banner { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 10px 16px; border-radius: 10px;
     background: #fff7ed; border: 1px solid #f5d9b5; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08); }

@@ -8,7 +8,7 @@ bottom. Code that brings a row into view only "when it isn't all in view" compar
 
 ## Rules and pitfalls
 
-- The drawer also sets the page's `scroll-padding-bottom` to its height (`room` in `Timeline.svelte`), so
+- The drawer also sets the page's `scroll-padding-bottom` and `--drawer` to its height (`room` in `Timeline.svelte`), so
   `scrollIntoView` centres a row in the part above it; `floor()` only decides whether to scroll at all.
 - When the script ends above the drawer (scrolled to the bottom), the drawer is under the last row, so its top is
   below every row and nothing changes.
