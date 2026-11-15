@@ -820,6 +820,11 @@ and suggestions, keeps every version, and exports them for production.
   Every listing of History shrinks from 2,000 names to about 20 (the 5 s check, the list's fingerprint, History), and a
   new computer reads about 20 files and roughly 25 MB instead of 2,000 files and 100 MB. Trade-off: the biggest change
   to `.studio/` (docs/studio-folder.md); a single version can no longer be opened in Notepad from Explorer.
+- [ ] **PF-14** No checks while you're away (the user's idea, 2026-11-15): a tab in the background already skips the 5 s
+  check (and checks at once when you come back); now a script left open with no mouse, key or scroll for 2 minutes
+  stops checking too, and catches up the moment you move. The "… is editing" file also stops, so others see "last
+  seen 3 min ago", which is true. An away keeper hands over to the next person editing, as when a laptop sleeps.
+  An away computer then makes no folder calls. Trade-off: others' saves show on your screen only once you move.
 
 ## Last (the user's order: these wait until everything above is done)
 
