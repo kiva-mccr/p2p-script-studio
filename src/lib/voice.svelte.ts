@@ -6,6 +6,7 @@ import { chosenMic, openMic } from './mic';
 import { countWords } from './readtime.svelte';
 import { decoder } from './voiceexport';
 import { announce } from './news';
+import { eachAtOnce } from './atonce';
 
 // text: the dialogue as it was read, so a take whose line has changed since shows as outdated (asked by the user).
 // seconds: the whole recording, as timed. from, to and gain: where the speech is and how loud (AU-4), measured when
@@ -150,11 +151,15 @@ export async function readTakes(dir: FileSystemDirectoryHandle): Promise<Record<
   const known = new Map<string, { stamp: string; take: Take | null }>();
   try {
     const voice = await dir.getDirectoryHandle(FOLDER);
+    const found: [string, string, FileSystemFileHandle][] = [];
     for await (const [name, handle] of voice.entries()) {
       const id = name.match(/^row-(.+)\.json$/)?.[1];
-      if (!id || handle.kind !== 'file') continue;
+      if (id && handle.kind === 'file') found.push([name, id, handle as FileSystemFileHandle]);
+    }
+    // Eight at a time (PF-10): a take's date and size are a call each on the drive.
+    await eachAtOnce(found, async ([name, id, handle]) => {
       try {
-        const file = await (handle as FileSystemFileHandle).getFile();
+        const file = await handle.getFile();
         const stamp = `${file.lastModified} ${file.size}`;
         const take = had?.get(name)?.stamp === stamp ? had.get(name)!.take : readTake(await file.text());
         known.set(name, { stamp, take });
@@ -162,7 +167,7 @@ export async function readTakes(dir: FileSystemDirectoryHandle): Promise<Record<
       } catch {
         // Half-synced: read next time.
       }
-    }
+    });
   } catch {
     // No voice folder yet.
   }

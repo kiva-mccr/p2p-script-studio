@@ -817,9 +817,14 @@ and suggestions, keeps every version, and exports them for production.
   same store code as History (`browserStore` in lib/versioncache.ts). Measured (perf/pf-9, simulated drive): a later
   visit opening the big script, 1,699 → 496 calls and 13.2 → 4.3 s; the first visit's opening, 7,470 → 6,273 calls
   (the list had already read the comments for its flags, and now keeps them).
-- [ ] **PF-10** Several reads at once: History, comments and Save .zip open files one after another; eight at a time
+- [x] **PF-10** Several reads at once: History, comments and Save .zip open files one after another; eight at a time
   hides most of the drive's delay. Same traffic, roughly 4–6× less waiting on a first visit (open the big script, about
   60 s simulated) and on Save .zip's media. Trade-off: short bursts of eight requests at the drive.
+  Done 2026-11-15: `eachAtOnce` (lib/atonce.ts) in History's reads, comments, takes, the list's take dates and Save
+  .zip's media; results kept in the same order. Measured (perf/pf-10, simulated drive, same calls and bytes): first
+  visit, the list 32.3 → 10.6 s and opening the big script 53.5 → 9.0 s; a later open 4.6 → 3.0 s; Save .zip
+  23.0 → 5.1 s (7.0 s when reads at once share the 30 MB/s). Bursts reach about 32 on a first visit to the list (four
+  scripts at a time, eight reads each); unseen on the real drive.
 - [ ] **PF-11** Open a script with only recent History: opening reads History back to the newest send for review (as the
   list does, PF-3); older versions only when History or Print needs them. A new computer opening the big script: about
   6,000 calls and 100 MB → a few hundred calls. No change to `.studio/`. Trade-off: saving and the tab counts must work

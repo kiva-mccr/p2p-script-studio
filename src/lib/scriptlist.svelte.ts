@@ -3,6 +3,7 @@
 // Scripts on screen are read first.
 
 import { assetList, countMissing } from './assets';
+import { eachAtOnce } from './atonce';
 import { flags, listNotes } from './comments';
 import { fileIn, readScript, scriptHead, type ScriptInfo } from './folder';
 import { forMe, type ForMe } from './forme';
@@ -81,12 +82,14 @@ async function names(dir: FileSystemDirectoryHandle, path: string[]): Promise<st
 // Takes are rewritten when recorded again (lib/voice.svelte.ts), so their sizes and dates count, not only names.
 async function takeDates(dir: FileSystemDirectoryHandle): Promise<string> {
   try {
-    const found: string[] = [];
+    const handles: FileSystemFileHandle[] = [];
     for await (const [name, handle] of (await dir.getDirectoryHandle('voice')).entries()) {
-      if (handle.kind !== 'file' || !name.endsWith('.json')) continue;
-      const file = await (handle as FileSystemFileHandle).getFile();
-      found.push(`${name}:${file.size}:${file.lastModified}`);
+      if (handle.kind === 'file' && name.endsWith('.json')) handles.push(handle as FileSystemFileHandle);
     }
+    const found = await eachAtOnce(handles, async (handle) => {
+      const file = await handle.getFile();
+      return `${handle.name}:${file.size}:${file.lastModified}`;
+    });
     return found.sort().join('/');
   } catch {
     return '-';

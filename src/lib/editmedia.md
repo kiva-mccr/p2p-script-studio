@@ -8,6 +8,8 @@ hold, turns takes into WAV, measures them for the XML, and zips the .xml (and .s
 
 ## Rules and pitfalls
 
+- Media are made eight at a time (PF-10, `lib/atonce.ts`): reads overlap, the zip keeps the plan's order, and a file
+  that fails is only `missing`. Eight decoded camera photos at once is the memory peak.
 - Takes are decoded and `cleaned` (crop and gain, AU-4) like the voice-over export, at 48 kHz mono.
 - A file that can't be read is left out and named in `missing`; its clip stays in the XML, so the editor sees it
   offline rather than losing its place.

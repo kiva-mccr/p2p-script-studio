@@ -213,6 +213,8 @@ Status: a first working version. What it does today:
   someone who just opened it shows up to 30 seconds later) and open a script's files only when it has news, with a full look every 2 minutes for edits
   made outside the app. Someone else's new take can take up to 30 seconds to show. A script left open with nobody at the computer for 2 minutes (no mouse, key or scroll)
   stops looking altogether, and catches up the moment you move; the others see you as "last seen".
+  Where it does read many files (History, comments, takes, Save .zip's media), it reads eight at a time, so a slow
+  drive keeps you waiting far less.
 - **When something goes wrong:** the message says so in plain words, with a small grey copy icon after it. The icon
   copies the details for whoever is fixing it: what the app was doing, the browser's own error, the folder's name,
   the page, the live version, the browser and the time (plain text, ready to paste into Teams or an email). Hints
