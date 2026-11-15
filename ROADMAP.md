@@ -825,6 +825,23 @@ and suggestions, keeps every version, and exports them for production.
   stops checking too, and catches up the moment you move. The "… is editing" file also stops, so others see "last
   seen 3 min ago", which is true. An away keeper hands over to the next person editing, as when a laptop sleeps.
   An away computer then makes no folder calls. Trade-off: others' saves show on your screen only once you move.
+- [ ] **PF-15** One "what's new" folder for the whole drive (the user's ask for the smallest footprint, 2026-11-15):
+  whoever writes anything (a save, version, comment, take, flag) also writes a tiny written-once note in the picked
+  folder's `.studio/news/` naming the script and what changed; notes over a day old are removed by whoever sees them.
+  The 5 s check and the script list then list that one folder instead of each script's versions/, comments/,
+  voice/ and changes/: about 30 calls a round (after PF-8) → 1–2, and the list's look on every window focus (hundreds
+  of calls, estimated from the code) → 1–2. Still peer-to-peer: every note is a new file, so nobody can clash.
+  Trade-off: a change made outside the app (Notepad, a file dropped into assets/ in Explorer) leaves no note, so a slow
+  full check every couple of minutes stays as the safety net; one extra small write per save.
+- [ ] **PF-16** Check fast only when someone else is there: every 5 s while another person's "… is editing" file is
+  fresh, every 30 s when you're alone in the script (most of the time). About 6× fewer rounds when working alone.
+  Trade-off: someone who just opened the script is noticed up to 30 s later; their first save then switches to 5 s.
+- [ ] **PF-17** Keep folder handles for the visit: each round looks up the script folder, `.studio/` and its folders
+  again by name (about 15 look-ups a round, 400+ while opening the big script). Kept once found, and looked up again
+  only if a call fails (folder renamed or moved). No change to the drive's files; small but free.
+- [ ] **PF-18** A slower "… is editing" heartbeat: a new file every 60 s instead of 30 s (each costs a write, a listing
+  and a removal), with "gone" after 3 minutes instead of 2. Half the heartbeat traffic. Trade-off: a closed laptop
+  shows as editing up to a minute longer, and the keeper hands over a minute later.
 
 ## Last (the user's order: these wait until everything above is done)
 
