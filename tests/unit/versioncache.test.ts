@@ -156,7 +156,7 @@ describe('recentVersions: an open script reads only recent History (PF-11)', () 
       note({ id: 'h2', kind: 'hold', about: 'c2', who: 'Sam', when: iso(126) }),
       note({ id: 'c3', kind: 'suggestion', who: 'Ana', when: iso(160) }),
     ];
-    const cases = [
+    const cases: Record<number, object>[] = [
       { 20: send, 60: back, 120: send },
       { 20: send, 60: back, 120: { ...send, official: true }, 130: { kind: 'official', note: 'v2' }, 150: back },
       { 20: send, 120: { ...send, message: 'Look at row 2' } },
