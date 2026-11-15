@@ -180,6 +180,10 @@ is open, the person's older ones removed:
   they last wrote.
 - Anyone else opening the script sees "Sam is editing" while `seen` is under **2 minutes** old. Older than that, it
   is ignored (Sam closed the laptop), but kept until its `last_written` has been checked (see above).
+- After 2 minutes with no mouse, key or scroll in the script (and nothing playing), Sam's app stops writing these
+  (and stops looking for others' changes) until Sam moves again (PF-14): the others see "Sam last seen 3 min ago",
+  and if Sam was the keeper, the next person editing takes over. Back, Sam's new file has a new `since`, so Sam
+  rejoins after them.
 - When Sam leaves the script, Sam's app writes one last file with `"left": "<time>"` and removes Sam's older ones
   (AP-37): never more than one file per person, and still written once. A `left` file never counts as editing.
   It shows the others "Sam was here 12 min ago". A file not `left` and over 2 minutes old means Sam went quiet
