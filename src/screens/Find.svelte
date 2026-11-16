@@ -1,15 +1,15 @@
 <script lang="ts">
   import { floor } from '../lib/floor';
   import { tick } from 'svelte';
-  import { before, findAll, rangeAt, replaceAll, replaceOne, type Field, type Spot } from '../lib/find';
+  import { before, findAll, rangeAt, replaceAll, replaceOne, type Field, type Spot, type TitleMark } from '../lib/find';
   import type { Block, Script } from '../lib/script';
 
   // The find and replace bar in Write (AP-32, board 44). Matches are marked in the formatted text with CSS highlights;
-  // section titles are boxes, which highlights can't reach, so their marks go back to Write (`titles`).
+  // section titles are boxes, which highlights can't reach, so their matches go back to Write (`titles`), by block.
   // onUnfold: a match is in a folded column. onDeleted: Replace all, with the blocks as they were, for the Undo bar.
   let { script, table, titles = $bindable(), onUnfold, onChange, onDeleted, onClose }: {
     script: Script; table: HTMLElement | undefined;
-    titles: { found: Set<number>; on: number };
+    titles: Map<number, TitleMark[]>;
     onUnfold: (field: Exclude<Field, 'title'>) => void; onChange: () => void; onDeleted: (before: Block[], what: string) => void; onClose: () => void;
   } = $props();
 
@@ -43,7 +43,11 @@
   $effect(() => {
     const [list, on] = [spots, at];
     void JSON.stringify(script.blocks); // the fields' text, and so what is drawn
-    titles = { found: new Set(list.filter((s) => s.field === 'title').map((s) => s.block)), on: list[on]?.field === 'title' ? list[on].block : -1 };
+    const found = new Map<number, TitleMark[]>();
+    list.forEach((s, i) => {
+      if (s.field === 'title') found.set(s.block, [...(found.get(s.block) ?? []), { start: s.start, end: s.end, on: i === on }]);
+    });
+    titles = found;
     tick().then(() => {
       const marks: Range[] = [];
       const onMark: Range[] = [];
@@ -58,7 +62,7 @@
   });
   $effect(() => () => {
     ['find', 'find-on'].forEach((name) => CSS.highlights.delete(name));
-    titles = { found: new Set(), on: -1 };
+    titles = new Map();
   });
 
   // Brings the match you're on into view (opening its column if folded), under the bar and the column headings.

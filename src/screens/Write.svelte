@@ -18,6 +18,7 @@
   import { chosenMic } from '../lib/mic';
   import type { VoiceOver } from '../lib/voice.svelte';
   import Find from './Find.svelte';
+  import { titlePieces, type TitleMark } from '../lib/find';
   import FlagIcon from './FlagIcon.svelte';
   import WriteRow from './WriteRow.svelte';
   import FoldHeads from './FoldHeads.svelte';
@@ -63,7 +64,7 @@
   // and from inside it gives the browser's own find.
   let finder = $state<{ focus: () => void }>();
   let findHeight = $state(0);
-  let titles = $state({ found: new Set<number>(), on: -1 });
+  let titles = $state(new Map<number, TitleMark[]>());
   function findKey(e: KeyboardEvent) {
     if (!(e.ctrlKey || e.metaKey) || e.shiftKey || e.altKey || e.key.toLowerCase() !== 'f') return;
     if (finding && (e.target as HTMLElement).closest?.('.find')) return;
@@ -436,8 +437,11 @@
   {#each script.blocks as block, i (block)}
     {#if block.type === 'section'}
       <div class="section" data-block={i}>
-        <input class="section-title" class:found={titles.found.has(i)} class:found-on={titles.on === i} bind:value={block.title} oninput={() => onChange()} onblur={() => left(block)}
-          use:focusIf={fresh === block} placeholder="New section" aria-label="Section title" />
+        <span class="title-box" class:found={titles.has(i)}>
+          {#if titles.has(i)}<span class="title-marks" aria-hidden="true">{#each titlePieces(block.title, titles.get(i)!) as p, k (k)}{#if p.mark}<mark class:on={p.on}>{p.text}</mark>{:else}{p.text}{/if}{/each}</span>{/if}
+          <input class="section-title" bind:value={block.title} oninput={() => onChange()} onblur={() => left(block)}
+            use:focusIf={fresh === block} placeholder="New section" aria-label="Section title" />
+        </span>
         {#if words.get(block)}<span class="time" title="{words.get(block)} words at {speaking.wpm} words a minute">{clock((words.get(block)! / speaking.wpm) * 60)}</span>{/if}
         <span class="tools">
           <button aria-label="Move section up" title={shortcuts.title('Move up', 'moveUp')} onclick={() => move(i, -1)}>↑</button>
@@ -490,11 +494,16 @@
   .tools button { width: 28px; height: 28px; padding: 0; border: 0; border-radius: 6px; background: none; color: var(--muted); font-size: 14px; }
   .tools button:hover { background: #f0f0f0; color: var(--ink); }
   .section { display: flex; align-items: center; gap: 12px; padding: 28px 12px 8px; border-bottom: 1px solid var(--line); }
-  .section-title { flex: 1; border: 0; padding: 4px 0; font: inherit; font-size: 18px; font-weight: 600; background: none; }
-  .section-title:focus { outline: none; background: #f7f9ff; }
-  /* A match in a title (AP-32): highlights can't reach inside a box, so the box is tinted. */
-  .section-title.found { border-radius: 4px; background: #fff1a8; }
-  .section-title.found-on { background: #ffb547; box-shadow: 0 0 0 2px #c26a00; }
+  .title-box { flex: 1; display: flex; position: relative; min-width: 0; }
+  .title-box:focus-within { background: #f7f9ff; }
+  .section-title, .title-marks { padding: 4px 0; font: inherit; font-size: 18px; font-weight: 600; }
+  .section-title { flex: 1; position: relative; min-width: 0; border: 0; background: none; }
+  .section-title:focus { outline: none; }
+  /* A match in a title (AP-32, #190): highlights can't reach inside a box, so the same letters lie see-through
+     behind it, with the matched words tinted as the other columns' are (app.css `find`, `find-on`). */
+  .title-marks { position: absolute; inset: 0; overflow: hidden; white-space: pre; color: transparent; pointer-events: none; }
+  .title-marks mark { color: transparent; background: #fff1a8; border-radius: 2px; }
+  .title-marks mark.on { background: #ffb547; }
   .section .tools { flex-wrap: nowrap; }
   .time { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
   .note { margin: 0 0 8px; font-size: 13px; color: var(--muted); white-space: pre-wrap; }

@@ -9,7 +9,9 @@ Replace with, Replace, Replace all, ×. The logic is `lib/find.ts`.
 
 - Matches are CSS highlights (`find`, `find-on` in `app.css`) on the fields' formatted text (`.shown`) and the Files
   chips' words, so not inside a box while it is being typed in (as with RV-13's quotes). Section titles are boxes,
-  which highlights can't reach: their marks go back to Write (`titles`), which tints the box.
+  which highlights can't reach: their matches go back to Write (`titles`, block → start, end, on), which lays the
+  same letters see-through behind the box and tints only the matched words (#190: tinting the whole box looked as if
+  the whole title matched).
 - The marks are set again after every change to the script (`JSON.stringify(script.blocks)`), and removed with the bar.
 - Replace goes on to the first match not before the words just put in, so replacing "leaf" with "leaves" never stops on
   its own replacement.

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { before, findAll, fitCase, replaceAll, replaceOne, replaceRaw, visible } from '../../src/lib/find';
+import { before, findAll, fitCase, replaceAll, replaceOne, replaceRaw, titlePieces, visible } from '../../src/lib/find';
 import type { Block } from '../../src/lib/script';
 
 const row = (id: string, dialogue: string, onScreen = '', files: string[] = []): Block =>
@@ -84,5 +84,18 @@ describe('replacing', () => {
     expect(replaceAll(blocks, 'glucose', 'sugar', plain)).toEqual({ count: 5, blocks: 2 });
     expect(blocks[0]).toMatchObject({ title: 'Sugar' });
     expect(blocks[1]).toMatchObject({ dialogue: 'Make sugar. SUGAR!', onScreen: 'sugar-flow.mp4 shows sugar', files: ['glucose-flow.mp4'] });
+  });
+});
+
+describe('titlePieces', () => {
+  it('cuts a title into plain words and matches, the one you are on marked', () => {
+    expect(titlePieces('Glucose and more glucose', [{ start: 17, end: 24, on: true }, { start: 0, end: 7, on: false }])).toEqual([
+      { text: 'Glucose', mark: true, on: false },
+      { text: ' and more ', mark: false, on: false },
+      { text: 'glucose', mark: true, on: true },
+    ]);
+  });
+  it('gives the whole title back when nothing matches', () => {
+    expect(titlePieces('Light', [])).toEqual([{ text: 'Light', mark: false, on: false }]);
   });
 });

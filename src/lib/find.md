@@ -2,7 +2,7 @@
 
 Find and replace in a script (AP-32, board 44): every match in reading order (`findAll`), one or all replaced
 (`replaceOne`, `replaceAll`), the replacement's capitals (`fitCase`), and a DOM range for a match in the formatted
-text (`rangeAt`), for the marks.
+text (`rangeAt`), for the marks, and a section title cut into plain pieces and matches (`titlePieces`, #190).
 
 - **Used by:** `screens/Find.svelte`. **Tests:** `tests/unit/find.test.ts`, `tests/e2e/find.spec.ts`.
 
