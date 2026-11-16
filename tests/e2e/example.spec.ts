@@ -128,3 +128,27 @@ test('the example shows off the recent features: timeline, a send back, a held c
   await sort.getByRole('button', { name: 'Type' }).click();
   await expect.poll(order).toBe('everyday leaf slow');
 });
+
+test('the example has contacts, credits, a plan, a flag, an equation, a file on a comment, a resolved one and a template', async ({ page }) => {
+  await page.goto('./');
+  await page.getByRole('button', { name: 'Open the example' }).click();
+  // A template sits at the bottom of the list.
+  await expect(page.locator('a.row').last()).toContainText('Science explainer');
+  await expect(page.locator('a.row').last()).toContainText('Template');
+  await page.getByText('How Photosynthesis Works').click();
+  await expect(page.getByRole('group', { name: 'Flags' })).toContainText('1 flagged');
+  await expect(page.locator('.katex').first()).toBeVisible();
+  await page.getByRole('button', { name: 'Open planning' }).click();
+  await expect(page.getByLabel('Planning notes')).toHaveValue(/Learning goals/);
+  // The credits, with each person's made-up contact details.
+  await page.getByRole('button', { name: 'More' }).click();
+  await page.getByRole('button', { name: 'Credits' }).click();
+  const credits = page.getByRole('dialog', { name: 'Credits' });
+  await expect(credits.getByLabel('What Maya did on this script')).toHaveValue('Animator');
+  await expect(credits.getByText('jordan@example.org')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: /^Review/ }).click();
+  const aside = page.getByRole('complementary', { name: 'Comments' });
+  await expect(aside.getByText('leaf-from-my-garden.jpg')).toBeVisible();
+  await expect(aside.getByRole('button', { name: 'Resolved · 1' })).toBeVisible();
+});

@@ -3,7 +3,9 @@
 The example to try (AP-33): the made-up script in `docs/example/` copied into the browser's private storage as a
 folder called "Example", with its made-up files in `assets/` (one of each kind the app previews, AP-34), a
 voice-over take on every row in `voice/`, a History with a send back and a second send, comments of each kind (one
-on hold) and Ana's last visit (AP-47), all by made-up people. Also
+on hold, one resolved, one with a file) and Ana's last visit (AP-47), all by made-up people. Also the folder's people
+with made-up contacts (example.org, no LinkedIn: a made-up profile could be someone real) and the script's credits,
+its plan (`plan.md` beside it in docs/example), a flag on row 5, and a template (`Template - Science explainer`). Also
 Start over and its Undo, and whether the offer on the first-time screen is folded.
 
 - **Used by:** `App.svelte`, `screens/Setup.svelte`. **Tests:** `tests/e2e/example.spec.ts`.
@@ -24,9 +26,13 @@ Start over and its Undo, and whether the offer on the first-time screen is folde
 - The takes are a made-up voice (espeak-ng with the MBROLA us2 voice, then Opus in webm); each JSON's `text` is the
   row's dialogue exactly, or the take shows Outdated. Accepting Ana's suggestion on row 2 makes its take Outdated.
 - An example made before files were added keeps its old copy until Start over.
+- The credits go into every version's front matter (`credited`), so History shows no change for them; the people's
+  ids are random, made when the example is.
+- docs/example's other folder is the template: the assets loop writes everything into the episode, so a template
+  with files of its own would need that loop changed.
 - It opens on Sam's version (`samsVersion`, AP-47): docs/example's `script.md` is the text as first sent for review,
   kept so for the many tests that read it, and Sam's edits (the `Timeline:` lines, the timeline-only sketch, a slower
-  zoom) are made to it here. Never change the dialogue there: the takes were recorded from it. If an edit no longer
+  zoom, the equation in row 4) are made to it here. Never change the dialogue there: the takes were recorded from it. If an edit no longer
   finds its text, `samsVersion` throws (`tests/unit/example.test.ts`).
 - Ana's "left" file is written relative to the moment the example is made (3 h before): the top bar names someone
   only up to 7 days back, so an old example loses it; Start over brings it back.

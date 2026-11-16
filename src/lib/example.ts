@@ -4,16 +4,34 @@
 import { addNote } from './comments';
 import { writeEditing } from './editing';
 import { addVersion } from './history';
+import { savePerson, type Credit } from './people';
+import { writePlan } from './planning';
 import { keep, recall } from './remember';
 
 const SCRIPT = 'Episode 03 - How Photosynthesis Works';
+const TEMPLATE = 'Template - Science explainer';
 const NAME = 'Example'; // the folder's name, shown in the top bar ("Example / How Photosynthesis Works")
 const BEFORE = 'Example before start over'; // the copy kept for Undo
 const FOLDED = 'studio.example-folded';
 
-const files = import.meta.glob('../../docs/example/*/script.md', { query: '?raw', import: 'default', eager: true });
+const files = import.meta.glob(['../../docs/example/*/script.md', '../../docs/example/*/plan.md'], { query: '?raw', import: 'default', eager: true });
 // The drawings and other made-up files (one of each kind the app previews), and the voice-over takes (AU-1).
 const assets = import.meta.glob(['../../docs/example/*/assets/*', '../../docs/example/*/voice/*'], { query: '?url', import: 'default', eager: true });
+const raw = (script: string, name: string) => Object.entries(files).find(([path]) => path.endsWith(`/${script}/${name}`))![1] as string;
+
+// The folder's people (AP-31): made-up contacts at example.org, and what each did on the episode.
+const PEOPLE = [
+  { name: 'Kiva', role: 'Writer and narrator', email: 'kiva@example.org' },
+  { name: 'Sam', role: 'Writer', email: 'sam@example.org' },
+  { name: 'Ana', role: 'Science reviewer', email: 'ana@example.org' },
+  { name: 'Leo', role: 'Teacher reviewer', email: 'leo@example.org' },
+  { name: 'Maya', role: 'Animator', email: 'maya@example.org' },
+  { name: 'Jordan', role: 'Camera', email: 'jordan@example.org' },
+];
+
+// A script's text with these credits in its front matter, on one line of JSON as the app writes them.
+const credited = (text: string, credits: Credit[]) =>
+  text.replace(/^(authors: .*\n)/m, `$1credits: ${JSON.stringify(credits.map(({ id, name, role }) => ({ id, name, role })))}\n`);
 
 // Whether the offer on the first-time screen is folded to one line (remembered by this browser).
 export function exampleFolded(): boolean {
@@ -52,15 +70,16 @@ export async function startOver(): Promise<{ folder: FileSystemDirectoryHandle; 
   };
 }
 
-// Sam's changes after Ana sent the script back (AP-47): a slower zoom in row 3, and the storyboard timeline's lines
-// (a cut on a word, a hold, a picture only for the timeline, a placeholder). docs/example keeps the text as first
+// Sam's changes after Ana sent the script back (AP-47): a slower zoom in row 3, the photosynthesis equation in row 4,
+// and the storyboard timeline's lines (a cut on a word, a hold, a picture only for the timeline, a placeholder). docs/example keeps the text as first
 // sent for review, which many tests read; the example opens on this one. Dialogue is unchanged, so no take is Outdated.
 export function samsVersion(text: string): string {
   const edits: [string, string][] = [
     ['- assets/leaf-push-in.mp4\n', '- assets/leaf-push-in.mp4\n\nTimeline: cuts at "running"\n'],
     ['- assets/music-bed.mp3\n', '- assets/music-bed.mp3\n\nTimeline: then hold 2 s\n'],
-    ['Animated zoom: leaf to cell to chloroplast.', 'Slow animated zoom: leaf to cell to chloroplast, a few seconds on each.'],
+    ['Animated zoom: leaf to cell to chloroplast.', 'Slow animated zoom: leaf to cell to chloroplast, a few seconds on *each*.'],
     ['- assets/cell-micrograph.tif\n', '- assets/cell-micrograph.tif\n- assets/zoom-sketch.svg (timeline)\n'],
+    ['labelled **C₆H₁₂O₆**.', 'labelled **C₆H₁₂O₆**, then the whole recipe: $6\\,\\mathrm{CO_2} + 6\\,\\mathrm{H_2O} \\rightarrow \\mathrm{C_6H_{12}O_6} + 6\\,\\mathrm{O_2}$'],
     ['- assets/glucose-notes.docx\n', '- assets/glucose-notes.docx\n\nTimeline: then placeholder 3 s "Time-lapse of a seedling growing"\n'],
   ];
   for (const [from, to] of edits) {
@@ -70,32 +89,47 @@ export function samsVersion(text: string): string {
   return text;
 }
 
-// The script, its files and takes, a History with a send back and a second send (so Review has a count and What's
-// changed), comments of each kind (one on hold), and Ana's last visit, so every tab and the top bar have something
-// to show. Made relative to `now` where it ages: the top bar names someone who was here only up to 7 days back.
+// The script, its files, takes and plan, the folder's people with their contacts and the script's credits, a History
+// with a send back and a second send (so Review has a count and What's changed), comments of each kind (one with a
+// file, one resolved, one on hold), a flag, Ana's last visit and a template, so every tab and the top bar have
+// something to show. Made relative to `now` where it ages: the top bar names someone who was here only up to 7 days back.
 async function fill(folder: FileSystemDirectoryHandle, now = new Date()): Promise<FileSystemDirectoryHandle> {
   const dir = await folder.getDirectoryHandle(SCRIPT, { create: true });
-  const sent = Object.entries(files).find(([path]) => path.includes(`/${SCRIPT}/`))![1] as string;
+  const blobs = new Map<string, Blob>();
   for (const [path, url] of Object.entries(assets)) {
     const [sub, name] = path.split('/').slice(-2);
     const blob = await (await fetch(url as string)).blob();
+    blobs.set(name, blob);
     await write(await dir.getDirectoryHandle(sub, { create: true }), name, blob);
   }
+  const people: Credit[] = [];
+  for (const [i, person] of PEOPLE.entries()) {
+    people.push(await savePerson(folder, { ...person, linkedin: '' }, 'Kiva', new Date(Date.parse('2026-11-09T14:00:00Z') + i * 1000)));
+  }
+  const sent = credited(raw(SCRIPT, 'script.md'), people);
+  await writePlan(dir, raw(SCRIPT, 'plan.md'));
   const draft = (text: string) => text.replace('status: in review', 'status: draft');
   const text = samsVersion(sent);
   const at = (when: string) => new Date(when);
   const first = await addVersion(dir, { parents: [], who: 'Kiva', kind: 'edit', text: draft(sent) }, at('2026-11-09T14:20:00Z'));
   const send = await addVersion(dir, { parents: [first.id], who: 'Kiva', kind: 'review', text: sent, note: 'Sent for review',
     message: 'Is the zoom in row 3 too fast?' }, at('2026-11-09T14:41:00Z'));
+  const leaf = new File([blobs.get('leaf-closeup.jpg')!], 'leaf-from-my-garden.jpg', { type: 'image/jpeg' });
   await addNote(dir, { kind: 'comment', who: 'Ana', row: 'k3f9a', field: 'on_screen', quote: 'Slow push-in on a sunlit leaf.',
-    text: 'Could we shoot a real leaf for this instead of stock footage?' }, at('2026-11-09T15:02:00Z'));
+    text: 'Could we shoot a real leaf for this instead of stock footage?' }, at('2026-11-09T15:02:00Z'), [leaf]);
   await addNote(dir, { kind: 'suggestion', who: 'Ana', row: 'p8x2m', field: 'dialogue', quote: 'simple', replace: 'everyday',
     text: '' }, at('2026-11-09T15:04:00Z'));
   await addNote(dir, { kind: 'comment', who: 'Ana', row: 't1q7c', field: 'dialogue', quote: 'chloroplasts',
     text: 'Could the narrator slow down here? It\'s a new word for most students.' }, at('2026-11-09T15:07:00Z'));
+  const zoom = await addNote(dir, { kind: 'comment', who: 'Ana', row: 't1q7c', field: 'on_screen', quote: 'leaf to cell to chloroplast',
+    text: 'This goes by too fast to follow.' }, at('2026-11-09T15:09:00Z'));
   const back = await addVersion(dir, { parents: [send.id], who: 'Ana', kind: 'review', text: draft(sent), note: 'Sent back to writer',
     message: 'Yes, the zoom is too fast. The filmmakers also asked for a rough storyboard.' }, at('2026-11-10T09:30:00Z'));
   const edit = await addVersion(dir, { parents: [back.id], who: 'Sam', kind: 'edit', text: draft(text) }, at('2026-11-10T15:12:00Z'));
+  await addNote(dir, { kind: 'reply', who: 'Sam', about: zoom.id, text: 'Slowed down, a few seconds on each step.' }, at('2026-11-10T15:13:00Z'));
+  await addNote(dir, { kind: 'resolve', who: 'Sam', about: zoom.id }, at('2026-11-10T15:13:30Z'));
+  await addNote(dir, { kind: 'flag', who: 'Sam', row: 'z4r5e', text: 'Park shot still to film: Jordan is waiting for a dry morning.' },
+    at('2026-11-10T15:20:00Z'));
   await addVersion(dir, { parents: [edit.id], who: 'Sam', kind: 'review', text, note: 'Sent for review',
     message: 'Zoom slowed down, and there\'s a timeline under the script for the filmmakers.' }, at('2026-11-11T09:10:00Z'));
   const quiz = await addNote(dir, { kind: 'comment', who: 'Leo', row: 'z4r5e', field: 'dialogue', quote: '',
@@ -106,6 +140,9 @@ async function fill(folder: FileSystemDirectoryHandle, now = new Date()): Promis
   const came = new Date(now.getTime() - 3.5 * 60 * 60 * 1000).toISOString();
   await writeEditing(dir, { v: 1, who: 'Ana', since: came, seen: left, last_written: '', left });
   await write(dir, 'script.md', text);
+  // A template to start new scripts from (AP-15), crediting who usually works on one.
+  const template = await folder.getDirectoryHandle(TEMPLATE, { create: true });
+  await write(template, 'script.md', credited(raw(TEMPLATE, 'script.md'), people.filter((p) => ['Kiva', 'Ana'].includes(p.name))));
   return folder;
 }
 
