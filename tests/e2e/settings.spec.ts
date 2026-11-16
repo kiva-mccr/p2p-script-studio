@@ -35,6 +35,15 @@ async function pickMic(page: Page, name: string) {
   await page.getByRole('option', { name }).click();
 }
 
+test('Settings opens at the top, with Done still focused', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 600 });
+  await open(page, mics);
+  await openSettings(page);
+  await expect(page.getByRole('button', { name: 'Done' })).toBeFocused();
+  await expect(page.getByRole('heading', { name: 'Screen' })).toBeInViewport();
+  expect(await page.locator('.backdrop').evaluate((el) => el.scrollTop)).toBe(0);
+});
+
 test('Settings picks the microphone, takes record with it, and the browser remembers it', async ({ page }) => {
   await open(page, mics);
   await openSettings(page);

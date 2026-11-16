@@ -11,6 +11,8 @@ A choice takes effect at once and is kept in this browser only.
 
 - A new setting goes under its own heading here. If the window grows long, the headings become a list down the
   left (the agreed way to grow it).
+- Opens at the top with Done focused: the focus uses `preventScroll`, or the backdrop scrolls down to Done (bug fixed
+  2026-11-16).
 - Closes with ×, Done, Esc or a click on the dimmed page around it.
 - The picked mic stays in the drop-down while it is unplugged, marked "(unplugged)", so it still shows as picked.
 - The Microphone list is a button (role combobox) and a listbox: its keys are on the button, like a browser's

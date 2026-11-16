@@ -21,7 +21,7 @@
 
   $effect(() => {
     listMics().then((found) => ((mics = found), (listed = true)));
-    done?.focus();
+    done?.focus({ preventScroll: true }); // Done is at the bottom: without preventScroll the window opened scrolled down to it
   });
 
   // The rows of the Microphone list (AU-5, board 33): the computer's default mic is marked "(default)" and picking it
