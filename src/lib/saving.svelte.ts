@@ -12,6 +12,7 @@ import { diff, fold } from './changes';
 import { tidyHistory } from './pack';
 import { listChanges, readChange, readFolded, removeChange, writeChange, writeFolded } from './changefiles';
 import { Started } from './started';
+import { settle, Steps, type Place } from './steps';
 import { follow } from './news';
 import { errorText, problem } from './problems';
 
@@ -52,6 +53,7 @@ export class Saving {
   shared = ''; // the script as everyone has it: script.md plus every change file folded in, this person's too
   last: Version | null = null; // the newest History entry this page knows of
   started = new Started(); // each row's words on opening, moved along by others' changes (AP-38)
+  steps = new Steps(); // Ctrl+Z and Ctrl+Y in Write (lib/steps.ts)
   #seen = new Set<string>(); // change files already in `shared`
   #authors = new Set<string>(); // whose changes are in `shared` since the last History entry
   #entries: Editing[] = []; // everyone's "… is editing" files, from the last check
@@ -89,6 +91,7 @@ export class Saving {
     for (const name of folded?.changes ?? []) this.#seen.add(name);
     this.shared = this.#wrote = text;
     this.load(text);
+    this.steps.reset(this.#pageText(false));
     if (this.script) this.started.take(this.script);
     this.#started = this.#startHistory(dir, text, folded?.sha256 ?? '');
     await this.#started;
@@ -226,9 +229,31 @@ export class Saving {
   }
 
   // Shows `text` in the page; what differs from `shared` is this person's, still to save.
-  #show(text: string) {
+  // `mine`: this person's own step (Restore), which Ctrl+Z can take back.
+  #show(text: string, mine = false) {
     this.load(text);
+    if (mine) this.steps.note(this.#pageText(false));
+    else this.steps.sync(this.#pageText(false));
     if (text !== this.shared) this.changed();
+  }
+
+  // A change this person made in the page (the Editor's `changed`): a step for Ctrl+Z, then saved as any edit.
+  // `key`: the box typed in, so typing on in it is the same step.
+  edited(key?: unknown) {
+    if (this.script) this.steps.note(this.#pageText(false), key);
+    this.changed();
+  }
+
+  // Ctrl+Z (back) or Ctrl+Y: the step put into the page in place and saved as any edit. Returns where it landed
+  // (for the cursor), null with nothing to do, or 'clash' when someone else changed that place since.
+  step(back: boolean): Place | null | 'clash' {
+    if (!this.script || this.status === 'conflict') return null;
+    const now = this.#pageText(false);
+    const text = back ? this.steps.undo(now) : this.steps.redo(now);
+    if (text === null || text === 'clash') return text;
+    const place = settle(this.script, now, text);
+    this.changed();
+    return place;
   }
 
   #label = (who: string) => (fileName(who) === fileName(this.name()) ? 'Yours, from before' : `${who}’s`);
@@ -334,7 +359,7 @@ export class Saving {
     try {
       await this.leave();
       const before = this.shared;
-      this.#show(version.text);
+      this.#show(version.text, true);
       await this.save();
       if (this.status !== 'saved') throw new Error('not saved');
       const when = new Date(version.when).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
@@ -348,7 +373,7 @@ export class Saving {
 
   // Undo of a restore (UX-11): the script as it was goes back into the page and is saved, as an ordinary save.
   async putBack(text: string) {
-    this.#show(text);
+    this.#show(text, true);
     await this.save();
   }
 
@@ -383,6 +408,7 @@ export class Saving {
 
   async #changeStatus(dir: FileSystemDirectoryHandle, script: Script, to: string, note: string, message: string) {
     script.front = setFrontValue(script.front, 'status', to);
+    this.steps.sync(this.#pageText(false)); // not a step: Ctrl+Z never changes the status
     this.changed();
     await this.save();
     if (this.status !== 'saved') return; // a clash or a failed save: shown already
@@ -488,6 +514,7 @@ export class Saving {
         this.shared = text;
         this.#authors.add(this.name());
         this.script.front = parseScript(text).front; // this person among the authors, in the page too
+        this.steps.sync(this.#pageText(false));
       }
       this.problem = '';
       this.#backup();

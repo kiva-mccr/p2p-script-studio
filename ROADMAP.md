@@ -1012,6 +1012,13 @@ Fixes with no new look (UX-3, 5, 6, 8, 9) need no board.
   window (board 72, done 2026-11-15).
   The pointer links were taken out again at the user's ask (2026-11-15): "In review" beside them says enough. Ctrl+F
   stays.
+- [x] **UX-14** Find and replace couldn't be undone with Ctrl+Z (the user, 2026-11-16: "everything that can be done,
+  should be able to be undone using Ctrl+Z"). Done 2026-11-16 (bug fix, no mock-up): one Ctrl+Z and Ctrl+Y for the
+  script in Write (`lib/steps.ts`): typing (a box's typing is one step), formatting, Replace, Replace all, moves, adds,
+  deletes, § and ¶, pastes, Put it back, files in a row, the timeline, credits, Restore. Also from the find bar.
+  Others' saves since stay; a place someone else changed since can't be undone (said in the page).
+- [ ] **UX-15** Ctrl+Z for what isn't the script's text: a take deleted or recorded again, a flag set or cleared
+  (the Undo toast covers takes; flags have none). Audit and build after UX-14.
 
 ## Last (the user's order: these wait until everything above is done)
 

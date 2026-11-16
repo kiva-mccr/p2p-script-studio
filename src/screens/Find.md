@@ -14,5 +14,7 @@ Replace with, Replace, Replace all, ×. The logic is `lib/find.ts`.
 - Replace goes on to the first match not before the words just put in, so replacing "leaf" with "leaves" never stops on
   its own replacement.
 - Replace all hands the Editor copies of the blocks it changes (files arrays too, they are changed in place) for Undo.
+- Replace and Replace all are steps for Ctrl+Z (`lib/steps.ts`), also with the cursor in Find or Replace with: there
+  Ctrl+Z undoes the script, not the box's words, and the cursor stays in the bar.
 - A match in a folded column opens that column when stepped to (`onUnfold`).
 - Enter in Find steps, in Replace with replaces; Esc in either closes. The focus stays in the bar while stepping.

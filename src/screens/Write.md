@@ -10,6 +10,10 @@ deleting, keys, the flag bar, find, quotes marked, removed rows). Any column but
 ## Rules and pitfalls
 
 - It changes the script it is given (`bind:script`) and calls `onChange`; saving is `Editor.svelte`'s.
+- Ctrl+Z, Ctrl+Y and Ctrl+Shift+Z (`stepKey`, on the window) undo and redo any change to the script through the
+  Editor's `onStep` (`lib/steps.ts`), then put the cursor where the change is. Not in boxes outside the table and the
+  find bar, nor in a flag's note: those keep the browser's own. A section title's `oninput` calls `onChange()` with
+  nothing, since an argument of `true` means a formatting step.
 - Split up (the user asked for the large screen files to be split): one row is `WriteRow.svelte`, with its own
   rules. Write keeps everything that changes the blocks round a row (move, add, delete, § and ¶, paste) and the mic
   (stopping a take on another row needs that row's dialogue), and hands them to the row as callbacks.
