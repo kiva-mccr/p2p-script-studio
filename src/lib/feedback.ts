@@ -36,12 +36,13 @@ export function partOf(target: Element): Element {
 /** A short name for what was clicked, from its own label (never the script's words in a text box). */
 export function partLabel(el: Element): string {
   const tag = el.tagName.toLowerCase();
-  const kind = tag === 'textarea' || el.getAttribute('contenteditable') === 'true' ? 'text box'
+  const role = el.getAttribute('role');
+  const kind = role === 'menuitem' ? 'menu item' : tag === 'textarea' || el.getAttribute('contenteditable') === 'true' ? 'text box'
     : tag === 'a' ? 'link' : tag === 'input' ? `${(el as HTMLInputElement).type || 'text'} box`
-      : el.getAttribute('role') || tag;
+      : role || tag;
   const named = el.getAttribute('aria-label') || el.getAttribute('title')
     || (el.id && el.ownerDocument.querySelector(`label[for="${CSS.escape(el.id)}"]`)?.textContent)
-    || (/^(button|label|summary|th|option|h[1-6])$/.test(tag) || el.getAttribute('role') === 'tab' ? el.textContent : '')
+    || (/^(button|label|summary|th|option|h[1-6])$/.test(tag) || /^(tab|menuitem|option)$/.test(role ?? '') ? el.textContent : '')
     || el.getAttribute('placeholder') || '';
   const name = named.replace(/\s+/g, ' ').trim().slice(0, 60);
   // A file's name or path (a file in a row: "leaf.jpg", "../Assets/x.png") is the script's, so it's left out.

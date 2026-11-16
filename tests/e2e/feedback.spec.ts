@@ -134,6 +134,30 @@ test('Esc stops picking, and the page works as before', async ({ page }) => {
   await expect(page.getByRole('region', { name: 'Feedback' })).toHaveCount(0);
 });
 
+// AP-49: holding Shift lets clicks through to the page, to open a menu and then pick a part inside it.
+test('holding Shift opens a menu while picking, and a part inside it can be picked', async ({ page }) => {
+  await openScript(page);
+  await startFeedback(page);
+  await expect(page.getByRole('status').filter({ hasText: 'Hold Shift to use the page' })).toBeVisible();
+
+  // Shift is let go before the mouse button: the press began with Shift, so the click still goes through.
+  const q = await page.getByRole('button', { name: 'Help and version' }).boundingBox();
+  await page.mouse.move(q!.x + q!.width / 2, q!.y + q!.height / 2);
+  await page.keyboard.down('Shift');
+  await page.mouse.down();
+  await page.keyboard.up('Shift');
+  await page.mouse.up();
+  const menu = page.getByRole('menu', { name: 'Help and version' });
+  await expect(menu).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Feedback' })).toHaveCount(0);
+
+  // Without Shift the click picks again; the menu stays open and its link isn't followed.
+  await menu.getByRole('menuitem', { name: 'GitHub ↗' }).click();
+  await expect(page.getByRole('region', { name: 'Feedback' }).getByRole('heading')).toHaveText('Feedback on: menu item "GitHub ↗"');
+  await expect(menu).toBeVisible();
+  expect(page.context().pages()).toHaveLength(1);
+});
+
 test('the picture covers names and the script in solid grey, but not "In review" or "Saved"', async ({ page }) => {
   const ago = new Date(Date.now() - 3 * 3600000).toISOString();
   const ana = JSON.stringify({ v: 1, who: 'Ana', since: ago, seen: ago, last_written: '', left: ago });
