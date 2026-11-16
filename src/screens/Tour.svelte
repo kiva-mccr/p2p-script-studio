@@ -17,6 +17,7 @@
   let cardEl = $state<HTMLElement>();
   let nextEl = $state<HTMLButtonElement>();
   let shown: Element[] = []; // the part shown, in pieces
+  let unfolded = false; // the timeline's drawer was asked to open for this step
   let seenAgain = untrack(() => again); // a new script opened after Take the tour doesn't replay it
 
   // A tab's tour plays by itself the first time it opens; Take the tour plays the open tab's tour again.
@@ -79,9 +80,20 @@
     return new DOMRect(x, y, Math.max(...all.map((r) => r.right)) - x, Math.max(...all.map((r) => r.bottom)) - y);
   }
 
+  // A step marked unfold opens the timeline's drawer; leaving it asks the drawer to fold again (it does only if the tour
+  // opened it). Timeline.svelte listens for the 'tour-drawer' event.
+  function drawer(open: boolean) {
+    if (open === unfolded) return;
+    unfolded = open;
+    dispatchEvent(new CustomEvent('tour-drawer', { detail: open }));
+  }
+
   async function show(i: number) {
     for (const el of shown) el.classList.remove('tour-on');
     at = i;
+    const opening = !!steps[i]?.unfold && !unfolded;
+    drawer(!!steps[i]?.unfold);
+    if (opening) await wait(200); // the drawer slides open (150 ms) before the step is measured
     shown = parts(steps[i]);
     for (const el of shown) el.classList.add('tour-on'); // shows the parts that only show on hover, such as a row's tools
     if (shown.length) {
@@ -89,7 +101,7 @@
       // height, so a part under either counts as off screen (a part in the bar itself never scrolls).
       const r = box();
       const pad = getComputedStyle(document.documentElement);
-      const inBar = !!shown[0].closest('header');
+      const inBar = !!shown[0].closest('header') || getComputedStyle(shown[0]).position === 'sticky'; // the drawer never scrolls away
       const top = inBar ? 0 : parseFloat(pad.scrollPaddingTop) || 0;
       const bottom = innerHeight - (inBar ? 0 : parseFloat(pad.scrollPaddingBottom) || 0);
       if (r.top < top || r.bottom > bottom) shown[0].scrollIntoView({ block: r.height > (bottom - top) * 0.6 ? 'start' : 'nearest' });
@@ -135,6 +147,7 @@
 
   function finish() {
     if (playing) tourSeen(playing);
+    drawer(false);
     for (const el of shown) el.classList.remove('tour-on');
     shown = [];
     playing = null;

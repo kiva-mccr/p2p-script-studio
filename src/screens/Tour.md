@@ -19,3 +19,7 @@ ending on "Your turn". → and ← step, Esc skips. The steps are `lib/tour.ts`.
 - The top bar stays up over the page and the timeline's drawer over its foot: a part under either counts as off screen
   (html's `scroll-padding-top` and `-bottom` are their heights). Before this, a step whose part sat just under the
   bar (Assets' Order, after step 1 scrolled the list up) was ringed behind the tabs.
+- A sticky part (the timeline's drawer) is treated like one in the top bar and never scrolled to: it sits inside
+  html's bottom scroll padding (its own height), so it always looked off screen and was scrolled for nothing.
+- `unfold` steps open the drawer (`drawer()` sends `tour-drawer`); `finish` folds it, so every way out of the tour
+  (Skip, Esc, Start playing) puts it back.

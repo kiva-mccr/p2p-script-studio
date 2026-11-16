@@ -31,7 +31,19 @@
   // starts folded. It replaced SB-2's Unpin and the old Hide.
   const KEY = 'timeline-open';
   let hidden = $state(recall(KEY) !== '1');
-  const fold = (on: boolean) => ((auto = false), keep(KEY, (hidden = on) ? '' : '1'));
+  const fold = (on: boolean) => ((auto = false), (byTour = false), keep(KEY, (hidden = on) ? '' : '1'));
+  // The tour (Tour.svelte) opens the drawer for its timeline step and folds it again after, only if it opened it.
+  // Neither is remembered.
+  let byTour = false;
+  $effect(() => {
+    const tour = (e: Event) => {
+      if ((e as CustomEvent<boolean>).detail) {
+        if (hidden) (hidden = false), (auto = false), (byTour = true);
+      } else if (byTour) (hidden = true), (byTour = false);
+    };
+    addEventListener('tour-drawer', tour);
+    return () => removeEventListener('tour-drawer', tour);
+  });
   // SB-5 (board 77): folded, a push past the bottom of the page (scrolling down again once there) unfolds it, and
   // scrolling up folds it again, but only if it opened so: opened with its bar, it stays. Neither is remembered.
   // Not while playing (Play moves the page itself). Only reaching the bottom does nothing, so the page's height

@@ -27,6 +27,8 @@ offers its pictures, Sequence or Collage, + Add a picture (only for the timeline
   that is TimelineBar's class, which tests look for) folds and unfolds it, playing or not; folded, a thin `.strip` of
   the blocks and the playhead. Remembered in this browser for every script (`timeline-open`, '1' open); it starts
   folded. It replaced SB-2's Unpin / Pin and the old Hide (`timeline-hidden`, `timeline-unpinned` are no longer read).
+- The tour (SB-7) opens the drawer for its timeline step through the window's `tour-drawer` event and folds it again
+  after, only if it opened it (`byTour`); not remembered. Folding or opening by hand clears `byTour`.
 - Open, the tracks and panel scroll inside `.body` (at most about half the screen), never the section: overflow on
   the section would clip the preview above it.
 - `use:room` keeps the drawer's height as the page's `scroll-padding-bottom` (so `scrollIntoView` lands rows above

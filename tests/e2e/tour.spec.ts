@@ -75,3 +75,34 @@ test('the tour only shows in the example', async ({ page }) => {
   await page.getByRole('button', { name: 'Open your scripts folder' }).click();
   await expect(page.getByRole('button', { name: 'Take the tour' })).toHaveCount(0);
 });
+
+// The timeline's step opens its drawer to talk about it, and leaving the step folds it again, if it was folded.
+test('the timeline step unfolds the drawer, and folds it again after', async ({ page }) => {
+  await openExample(page);
+  const steps = TOURS.write;
+  const at = steps.findIndex((s) => s.target === 'timeline');
+  const bar = page.locator('[data-tour="timeline"] .foldbar');
+  await expect(card(page)).toContainText('Write · 1 of');
+  await expect(bar).toHaveAttribute('aria-expanded', 'false');
+  for (let i = 0; i < at; i++) await page.keyboard.press('ArrowRight');
+  await expect(card(page).getByRole('heading', { name: steps[at].title })).toBeVisible();
+  await expect(bar).toHaveAttribute('aria-expanded', 'true');
+  await page.keyboard.press('ArrowRight');
+  await expect(bar).toHaveAttribute('aria-expanded', 'false');
+  await page.keyboard.press('ArrowLeft');
+  await expect(bar).toHaveAttribute('aria-expanded', 'true');
+  // Skipping on the step folds it too, and the tour never changes what this browser remembers.
+  await page.keyboard.press('Escape');
+  await expect(bar).toHaveAttribute('aria-expanded', 'false');
+  expect(await page.evaluate(() => localStorage.getItem('timeline-open'))).not.toBe('1');
+  // Already open, it stays open.
+  await bar.click();
+  await expect(bar).toHaveAttribute('aria-expanded', 'true');
+  await page.getByRole('button', { name: 'Take the tour' }).click();
+  await expect(card(page)).toContainText('Write · 1 of');
+  for (let i = 0; i < at; i++) await page.keyboard.press('ArrowRight');
+  await expect(card(page).getByRole('heading', { name: steps[at].title })).toBeVisible();
+  await page.keyboard.press('ArrowRight');
+  await expect(card(page).getByRole('heading', { name: steps[at + 1].title })).toBeVisible();
+  await expect(bar).toHaveAttribute('aria-expanded', 'true');
+});
