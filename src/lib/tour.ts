@@ -4,7 +4,8 @@
 import { keep, recall } from './remember';
 
 export type Tab = 'write' | 'review' | 'history' | 'assets';
-export type Step = { target: string; title: string; text: string };
+// unfold: the timeline's drawer opens for the step and folds again after it, if it was folded (Tour.svelte).
+export type Step = { target: string; title: string; text: string; unfold?: true };
 
 export const TABS: Record<Tab, string> = { write: 'Write', review: 'Review', history: 'History', assets: 'Assets' };
 
@@ -17,7 +18,7 @@ export const TOURS: Record<Tab, Step[]> = {
     { target: 'files', title: 'Pictures and files', text: 'Drop a file here, paste a link, note something still to find, or pick a file from another script. Click one to preview it.' },
     { target: 'timeline-bar', title: 'Holds and placeholders', text: 'A bar between rows: hold the last picture 2 s, or keep 3 s for a shot still to come. Click it to change the seconds or the words.' },
     { target: 'side', title: 'Planning and comments', text: 'Planning holds the goals and an outline. Comments lists what reviewers asked for, sorted by line, time or type; put one On hold to shelve it for later.' },
-    { target: 'timeline', title: 'The storyboard timeline', text: 'The video in rough: every row\'s pictures in order, timed by its take. It waits folded at the bottom of the screen: click its bar to unfold it. Click a block to pick its pictures or cut on a word. While the script plays, a small preview shows above it.' },
+    { target: 'timeline', title: 'The storyboard timeline', text: 'The video in rough: every row\'s pictures in order, timed by its take. It folds away at the bottom of the screen: click its bar, or scroll past the bottom, to open it. Click a block to pick its pictures or cut on a word. While the script plays, a small preview shows above it.', unfold: true },
     { target: 'presence', title: 'Saved, and who was here', text: 'Every change saves as you type, beside how long the script runs. "Ana · 3 h ago" is who was here last: click it to see everyone who opened the script.' },
     { target: 'actions', title: 'Play, share and export', text: 'Play the script, copy a link, print, or export. ⋯ has Find and replace, Teleprompter, Credits and Settings, where you can change the keyboard shortcuts or hide help text like this.' },
   ],
@@ -27,7 +28,7 @@ export const TOURS: Record<Tab, Step[]> = {
     { target: 'review-row', title: 'Select text to comment', text: 'Select any words, then press Comment to comment on them or suggest new ones. Comment on a row works too.' },
     { target: 'review-folds', title: 'Fold a column', text: '‹ folds a column you don\'t need right now; a grey dot shows a row has something in it.' },
     { target: 'review-cards', title: 'Comments and suggestions', text: 'Reply, resolve, accept a suggestion, or put a comment On hold. Sort them by line, time or type.' },
-    { target: 'review-timeline', title: 'The timeline, to look at', text: 'The same timeline as Write, read only. Comment on a block and it lands on its row, "on the timeline".' },
+    { target: 'review-timeline', title: 'The timeline, to look at', text: 'The same timeline as Write, read only. Comment on a block and it lands on its row, "on the timeline".', unfold: true },
     { target: 'actions', title: 'Approve or send back', text: 'When you are done, approve the script, or send it back to the writer with a note.' },
   ],
   history: [
