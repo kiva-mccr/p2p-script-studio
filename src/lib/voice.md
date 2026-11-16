@@ -37,5 +37,7 @@ id as state, with start, stop, play, current, remove and load), `readTakes` (a f
   whole recording (before the crop). `hearAll` hears the takes the timeline asks for (rows cut on a word, Write only),
   one at a time; it writes them only if the take wasn't recorded again meanwhile (same `at`). `[]` means heard with
   no words, and is not heard again. One failure stops it until the script is opened again (`failed`).
+  `readTake` keeps only the fields it knows: a new field in the JSON must be read there too (`words` once wasn't, so a
+  reload heard every take again).
   `rowLength` hands the heard words (aligned, `heardWords`) to the timeline, Play and the exports.
 - Never tried with a real microphone here: the test browser has none.
