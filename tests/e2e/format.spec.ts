@@ -29,7 +29,7 @@ test('select text, then Bold: saved as marks, shown as bold when not typing', as
   await expect(page.getByLabel('Dialogue, row 1')).toHaveValue('Every leaf you have ever seen is running a **tiny factory**.');
   await page.keyboard.press('Control+i'); // still selected: italic on top
   await expect(page.getByLabel('Dialogue, row 1')).toHaveValue('Every leaf you have ever seen is running a ***tiny factory***.');
-  await page.keyboard.press('Control+z'); // the browser's own undo
+  await page.keyboard.press('Control+z'); // Write's undo: the italic, a step of its own
   await expect(page.getByLabel('Dialogue, row 1')).toHaveValue('Every leaf you have ever seen is running a **tiny factory**.');
   await page.getByLabel('On screen, row 1').click(); // away from the cell
   await expect(bar).toHaveCount(0);

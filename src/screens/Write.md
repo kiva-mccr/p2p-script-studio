@@ -10,12 +10,17 @@ deleting, keys, the flag bar, find, quotes marked, removed rows). Any column but
 ## Rules and pitfalls
 
 - It changes the script it is given (`bind:script`) and calls `onChange`; saving is `Editor.svelte`'s.
+- Ctrl+Z, Ctrl+Y and Ctrl+Shift+Z (`stepKey`, on the window) undo and redo any change to the script through the
+  Editor's `onStep` (`lib/steps.ts`), then put the cursor where the change is. Not in boxes outside the table and the
+  find bar, nor in a flag's note: those keep the browser's own. A section title's `oninput` calls `onChange()` with
+  nothing, since an argument of `true` means a formatting step.
 - Split up (the user asked for the large screen files to be split): one row is `WriteRow.svelte`, with its own
   rules. Write keeps everything that changes the blocks round a row (move, add, delete, § and ¶, paste) and the mic
   (stopping a take on another row needs that row's dialogue), and hands them to the row as callbacks.
 - No browser dialogs (the user's rule): a delete is handed to the Editor with the blocks as they were
   (`onDeleted`), which shows the Undo bar. A take recorded again offers "Undo, keep the old take" (`stopTake`, UX-2,
-  through `onUndo`).
+  through `onUndo`). Both, and a first take (`onAct`, no toast), are Ctrl+Z steps (UX-15): the new take is read back
+  into memory after it is saved, so Ctrl+Y can write it again.
 - The column headings are `position: sticky`: no scrolling box (`overflow`) may wrap the table, or they stick to
   it instead of the window. A narrow window scrolls the page sideways instead. They (and Find's wrapper) stick under
   the top bar, at `--bar-h` (set by `Header.svelte`, UX-4).

@@ -22,4 +22,6 @@ window has its own.
   moved Done out from under the pointer and the click was lost.
 - e2e tests set `undo-for` to 30 s (playwright.config.ts) so a slow save can't hide the toast before a test clicks
   Undo; the 5 s test in editor.spec removes it.
+- Ctrl+Z in Write is `lib/steps.ts`, not this toast; undoing a step there clears the toast. An offer with `again` (a
+  take) is also a Ctrl+Z step: the Editor's `offer` pushes it and its button undoes it through the steps.
 - Comment cards keep their own Undo on the card (RV-7, RV-19, the user's earlier boards); they don't use this.

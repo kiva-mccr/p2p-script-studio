@@ -16,7 +16,9 @@ Backspace just after a mark takes it off, and numbered lists renumber after ever
 - The text box is always there (tests and screen readers use it); when not focused it is see-through, with the
   formatted text over it (`pointer-events: none`, `aria-hidden`), so a click still lands in the box. Links in it
   are not clickable in Write; they are in Review.
-- Changes go through `document.execCommand('insertText')`, so the browser's Ctrl+Z undoes them.
+- Changes go through `document.execCommand('insertText')`, so the browser's Ctrl+Z undoes them where it is used (the
+  planning panel). In Write, Ctrl+Z is Write's own (`lib/steps.ts`); a formatting button or key calls `oninput(true)`
+  (`apart`), so it is a step of its own there, not part of the typing.
 - The toolbar sits just above the selected words, from where they start (UX-7, board 73; it used to sit above the
   field's top, off the window when that was under the column names). `lib/caret.ts` finds where a place in the text is
   drawn (a hidden copy of the box). With no room above, under Write's column names or the top bar (`--bar-h`), it goes

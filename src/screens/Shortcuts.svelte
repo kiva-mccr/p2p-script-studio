@@ -16,6 +16,7 @@
       { what: 'Delete the row', action: 'deleteRow' },
       { what: 'Bold, italic, underline, link', key: 'Ctrl+B, I, U, K' },
       { what: 'Find and replace', key: 'Ctrl+F' },
+      { what: 'Undo / redo any change', key: 'Ctrl+Z / Ctrl+Y' },
     ] },
     { head: 'Comments, in Review and Write', lines: [
       { what: 'Next comment', action: 'nextComment' },

@@ -65,7 +65,7 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
   running the real-world checks with the field test checklist:
   https://claude.ai/artifact/FT4p8XLBVTSrEQMow71NDb.
 - Queue (the user's order, 2026-11-14), mock-ups first, built one at a time: AP-44 (shortcuts, done), AP-43 (hide help
-  text, done), then SB-1 (storyboard timeline, done 2026-11-14), then AP-47 (the tour and the example catch up, done). SB-2 (unpin the timeline, the user, 2026-11-15, done). SB-3 (the timeline as a video, the user, 2026-11-15, done). AP-48 (feedback mode, the user, 2026-11-15, done). SB-4 (the timeline as a drawer at the bottom, replacing SB-2's Unpin and Hide, the user, 2026-11-15, done). SB-6 (which side of the word a cut falls on, board 78, the user, 2026-11-15, done). SB-5 (the drawer opens on a push past the bottom; Feedback, GitHub and the version in a ? menu, the user, 2026-11-15, done). SB-7 (the tour opens the drawer for its timeline step, the user, 2026-11-16, done).
+  text, done), then SB-1 (storyboard timeline, done 2026-11-14), then AP-47 (the tour and the example catch up, done). SB-2 (unpin the timeline, the user, 2026-11-15, done). SB-3 (the timeline as a video, the user, 2026-11-15, done). AP-48 (feedback mode, the user, 2026-11-15, done). SB-4 (the timeline as a drawer at the bottom, replacing SB-2's Unpin and Hide, the user, 2026-11-15, done). SB-6 (which side of the word a cut falls on, board 78, the user, 2026-11-15, done). SB-5 (the drawer opens on a push past the bottom; Feedback, GitHub and the version in a ? menu, the user, 2026-11-15, done). SB-7 (the tour opens the drawer for its timeline step, the user, 2026-11-16, done). SB-8 (cuts timed from the take by a speech model, the user's pick B, 2026-11-16, agreed, next to build after the queue).
   Then (asked by the user, 2026-11-14): AP-15 (templates, done), then EX-19 (export to Resolve and Premiere, done).
   Then the speed check's fixes, one thread each (the user, 2026-11-14), before and after measured with perf/ in the
   project files: PF-1 (the 5 s check reads only what's new, done), PF-2 (History by name, done), PF-3 (the list reads
@@ -80,7 +80,8 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
   When all are done: a report of their effects (the user's ask), before (perf/pf-ideas/probe-out.txt) against after,
   same probe, same made-up folder.
   A UI audit (2026-11-15) added UX-1 to UX-13 to ROADMAP.md; the user wants all, boards 72 to 75 agreed. Built one
-  small PR at a time: UX-4 + UX-13 pointer (done), the shared Undo (UX-1, 2, 10, 11, 13, done), UX-7 (done), UX-12, 6, 8, 3 (done; UX-5 dropped for SB-4's drawer), UX-9 (done). UX-16 (Undo toast 5 s, gone when you carry on; the user, 2026-11-16, done).
+  small PR at a time: UX-4 + UX-13 pointer (done), the shared Undo (UX-1, 2, 10, 11, 13, done), UX-7 (done), UX-12, 6, 8, 3 (done; UX-5 dropped for SB-4's drawer), UX-9 (done).
+  Then (the user, 2026-11-16): Ctrl+Z for everything: UX-14 (the script's text, done), then UX-15 (takes, flags, done). UX-16 (Undo toast 5 s, gone when you carry on, done).
   The rest (AP-8 …) waits
   for the user's next ranking; "Last" in ROADMAP.md (EX-5, CC-1) waits until everything else is done.
 - Mock-ups (one board per design, numbered): https://claude.ai/artifact/2XDZmS7J5NEPZsz91RQMiL (private to the user).
