@@ -42,6 +42,7 @@ test('a row cut on a word has its take heard once, and the cut falls where the w
   expect(JSON.parse(await readFile(page, 'Episode 03/voice/row-p8x2m.json')).by).toBe('Alex');
   await page.waitForTimeout(1000);
   expect(await page.evaluate(() => (window as unknown as { heardTimes: number }).heardTimes)).toBe(1);
+
 });
 
 test('without a take, the cuts are estimated and say so', async ({ page }) => {
@@ -59,4 +60,13 @@ test('a take that can\'t be heard keeps the estimate and says so', async ({ page
   await timeline(page).getByRole('button', { name: /^Row 2 · / }).click();
   await expect(timeline(page).getByText('Cuts estimated: the take couldn’t be heard.')).toBeVisible();
   expect(await firstShare(page)).toBeLessThan(85);
+});
+
+test('a take heard before (its words in the folder) is used as it is and not heard again', async ({ page }) => {
+  await page.addInitScript(() => ((window as unknown as { studioHear: () => Promise<never> }).studioHear = async () => { throw new Error('heard again'); }));
+  const heard = [['It', 0], ['needs', 0.3], ['three', 0.6], ['simple', 0.9], ['ingredients:', 1.3], ['sunlight,', 2], ['water,', 2.6], ['and', 3], ['carbon', 9], ['dioxide.', 9.4]];
+  await setUp(page, '#/Episode%2003', { ...files(true), 'Episode 03/voice/row-p8x2m.json': JSON.stringify({ by: 'Alex', at: 1, seconds: 10, text: line, words: heard }) });
+  await expect.poll(() => firstShare(page)).toBeCloseTo(90, 0);
+  await timeline(page).getByRole('button', { name: /^Row 2 · / }).click();
+  await expect(timeline(page).getByText('Cuts timed from the take.')).toBeVisible();
 });

@@ -189,6 +189,9 @@ function readTake(text: string): Take | null {
   if (typeof take.seconds !== 'number') return null;
   const found: Take = { by: String(take.by ?? ''), at: Number(take.at) || 0, seconds: take.seconds, text: String(take.text ?? '') };
   if ([take.from, take.to, take.gain].every((n) => typeof n === 'number')) Object.assign(found, { from: take.from, to: take.to, gain: take.gain });
+  // SB-8: the heard words, kept only if every one is a word and a time.
+  if (Array.isArray(take.words) && take.words.every((w: unknown) => Array.isArray(w) && typeof w[0] === 'string' && typeof w[1] === 'number'))
+    found.words = take.words;
   return found;
 }
 
