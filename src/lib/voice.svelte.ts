@@ -8,11 +8,15 @@ import { decoder } from './voiceexport';
 import { announce } from './news';
 import { eachAtOnce } from './atonce';
 import { subdir } from './dirs';
+import { heardWords } from './timeline';
+import { hear } from './hear';
 
 // text: the dialogue as it was read, so a take whose line has changed since shows as outdated (asked by the user).
 // seconds: the whole recording, as timed. from, to and gain: where the speech is and how loud (AU-4), measured when
 // it was recorded; a take from before, or with nothing heard, has none and plays whole.
-export type Take = { by: string; at: number; seconds: number; text: string } & Partial<Measure>;
+// words: each word the speech model heard, with when it starts (seconds from the recording's start), for cuts on a
+// word (SB-8); a take not heard yet has none.
+export type Take = { by: string; at: number; seconds: number; text: string; words?: [string, number][] } & Partial<Measure>;
 export type Held = { take: Take; sound: Blob }; // a take kept in memory for Undo (UX-1, UX-2)
 // fellBack: the mic picked in Settings wasn't there, so the default is recording (AU-3).
 export type Recording = { stop: () => Promise<Blob>; fellBack?: boolean };
@@ -62,11 +66,14 @@ export function wpm(take: Take, dialogue: string): number {
 export const takeLength = (take: Take): number => span(take).seconds;
 
 // How long a row lasts on the timeline, in Play and in the Resolve / Premiere export: its take, or without one its
-// dialogue's read time at `wpm` words a minute.
+// dialogue's read time at `wpm` words a minute. With a heard take, also when each word is said (SB-8).
 export function rowLength(takes: Record<string, Take>, wpm: number) {
   return (row: { id: string; dialogue: string }) => {
     const take = takes[row.id];
-    return take ? { seconds: takeLength(take), take: true } : { seconds: (countWords(row.dialogue) / wpm) * 60, take: false };
+    if (!take) return { seconds: (countWords(row.dialogue) / wpm) * 60, take: false };
+    const { from, seconds } = span(take);
+    // Where each word falls, as heard in the take (SB-8); else the timeline estimates it.
+    return { seconds, take: true, words: take.words ? heardWords(row.dialogue, take.words, from, seconds) : null };
   };
 }
 
@@ -294,6 +301,41 @@ export class VoiceOver {
     await write(await subdir(dir, FOLDER), `row-${id}.json`, JSON.stringify(next));
     await announce(dir, 'take');
     this.takes = { ...this.takes, [id]: next };
+  }
+
+  // Cuts timed from the take (SB-8): the speech model hears these rows' takes, one at a time, and each take's words
+  // are kept in its JSON, so it is heard once for everyone. A take recorded again meanwhile is left for next time.
+  // After a failure (no download, no model) nothing more is tried until the script is opened again.
+  hearing = $state(''); // the row whose take is being heard
+  failed = $state(false);
+  #queue: string[] = [];
+  hearAll(dir: FileSystemDirectoryHandle, ids: string[]) {
+    this.#queue = ids.filter((id) => id !== this.hearing);
+    if (!this.hearing && !this.failed) void this.#next(dir);
+  }
+
+  async #next(dir: FileSystemDirectoryHandle): Promise<void> {
+    const id = this.#queue.shift();
+    if (!id) return;
+    const take = this.takes[id];
+    if (!take || take.words) return this.#next(dir);
+    this.hearing = id;
+    try {
+      const words = await hear(await takeFile(dir, id));
+      const now = this.takes[id];
+      if (now && now.at === take.at) {
+        const next = { ...now, words };
+        await write(await subdir(dir, FOLDER), `row-${id}.json`, JSON.stringify(next));
+        await announce(dir, 'take');
+        this.takes = { ...this.takes, [id]: next };
+      }
+    } catch {
+      this.failed = true;
+      this.#queue = [];
+    } finally {
+      this.hearing = '';
+    }
+    await this.#next(dir);
   }
 
   // Undo (UX-1, UX-2): a row's take as it is now, its sound read into memory so it can be written back after a delete

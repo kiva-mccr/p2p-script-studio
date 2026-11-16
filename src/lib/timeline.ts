@@ -90,7 +90,7 @@ export type Lane = { title: string; start: number; seconds: number; first: strin
 export type Words = { word: string; start: number }[];
 
 // Word timings estimated from the dialogue: each word starts as far into the row as it is into the line, by letters
-// (a long word takes longer to say). Good enough to cut on; a speech model reading the take could refine it later.
+// (a long word takes longer to say). For a row with no take, or one not heard yet (SB-8, `heardWords`).
 export function estimateWords(dialogue: string, seconds: number): Words {
   const words = [...plainText(dialogue).matchAll(/\S+/g)];
   const letters = (w: string) => Math.max(1, plain(w).length);
@@ -103,6 +103,46 @@ export function estimateWords(dialogue: string, seconds: number): Words {
   });
 }
 
+// Word timings heard in the take (SB-8): `heard` is what the speech model heard, each word with when it starts
+// (seconds from the recording's start); `from` is where the row's take starts playing (the crop) and `seconds` how
+// long it plays. Each dialogue word the model heard takes its time; the words between (misheard, or numbers said
+// as words) share the time between them by letters, as `estimateWords`. Null when none of the words were heard.
+export function heardWords(dialogue: string, heard: [string, number][], from: number, seconds: number): Words | null {
+  const said = [...plainText(dialogue).matchAll(/\S+/g)].map((w) => w[0]);
+  const a = said.map(plain);
+  const b = heard.map((h) => plain(h[0]));
+  const n = a.length, m = b.length;
+  if (!n || !m) return null;
+  // The longest run of the same words in the same order (both lists are short: a row's line).
+  const lcs = Array.from({ length: n + 1 }, () => new Uint16Array(m + 1));
+  for (let i = n - 1; i >= 0; i--)
+    for (let j = m - 1; j >= 0; j--) lcs[i][j] = a[i] && a[i] === b[j] ? lcs[i + 1][j + 1] + 1 : Math.max(lcs[i + 1][j], lcs[i][j + 1]);
+  const at: (number | null)[] = Array(n).fill(null);
+  let last = 0;
+  for (let i = 0, j = 0; i < n && j < m; ) {
+    if (a[i] && a[i] === b[j]) {
+      last = Math.min(seconds, Math.max(last, heard[j][1] - from)); // never before an earlier word, nor past the end
+      at[i++] = last;
+      j++;
+    } else if (lcs[i + 1][j] >= lcs[i][j + 1]) i++;
+    else j++;
+  }
+  if (at.every((t) => t === null)) return null;
+  const letters = said.map((w) => Math.max(1, plain(w).length));
+  const before = [0];
+  for (const l of letters) before.push(before[before.length - 1] + l);
+  // Between two heard words (or the start, 0, and the end, `seconds`), by letters.
+  let prev = -1;
+  for (let i = 0; i <= n; i++) {
+    if (i < n && at[i] === null) continue;
+    const t0 = prev < 0 ? 0 : at[prev]!, l0 = prev < 0 ? 0 : before[prev];
+    const t1 = i < n ? at[i]! : seconds, l1 = before[i];
+    for (let k = prev + 1; k < i; k++) at[k] = l1 > l0 ? t0 + ((t1 - t0) * (before[k] - l0)) / (l1 - l0) : t0;
+    prev = i;
+  }
+  return said.map((word, i) => ({ word, start: at[i]! }));
+}
+
 // The dialogue's words as said, marks taken out (bold, links, equations' dollars).
 export function dialogueWords(dialogue: string): string[] {
   return plainText(dialogue).split(/\s+/).filter(Boolean);
@@ -112,7 +152,7 @@ export function dialogueWords(dialogue: string): string[] {
 // holds and placeholders after them. Matches Play the script (lib/play.svelte.ts plan).
 export function layout(
   script: Script,
-  length: (row: Row) => { seconds: number; take: boolean },
+  length: (row: Row) => { seconds: number; take: boolean; words?: Words | null },
   words: (row: Row, seconds: number) => Words | null = (row, seconds) => estimateWords(row.dialogue, seconds),
 ): { blocks: TimeBlock[]; lanes: Lane[]; total: number } {
   const blocks: TimeBlock[] = [];
@@ -125,11 +165,11 @@ export function layout(
       lanes.push(lane);
       continue;
     }
-    const { seconds, take } = length(block);
+    const { seconds, take, words: heard } = length(block);
     const c = readChoices(block.timeline);
     if (seconds > 0) {
       const shown = picks(block);
-      blocks.push({ kind: 'row', id: block.id, start: t, seconds, take, collage: c.collage && shown.length > 1, shots: shots(shown, seconds, c, words(block, seconds)), picks: shown });
+      blocks.push({ kind: 'row', id: block.id, start: t, seconds, take, collage: c.collage && shown.length > 1, shots: shots(shown, seconds, c, heard ?? words(block, seconds)), picks: shown });
       if (lane && !lane.first) lane.first = block.id;
       t += seconds;
     }

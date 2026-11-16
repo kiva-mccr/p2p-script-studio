@@ -55,3 +55,6 @@ offers its pictures, Sequence or Collage, + Add a picture (only for the timeline
   "↑ Go to the row" went with it.
 - `selected` is shared with Write's bars (`TimelineBar.svelte`): picking a hold on the timeline opens its bar's
   editor in the script too.
+- SB-8: in Write (not `readOnly`), the takes of rows cut on a word that have no heard `words` yet are handed to
+  `voice.hearAll` (`toHear`). The cut panel's `.timed` line says where the cut times come from (`timedBy`): heard in
+  the take, or estimated (no take, not heard yet, being heard, couldn't be heard). Status, so not `help`.

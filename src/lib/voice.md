@@ -33,4 +33,9 @@ id as state, with start, stop, play, current, remove and load), `readTakes` (a f
   when they change (PF-1). The 5 s check and the script list both call it.
 - `Sound` plays through Web Audio (its own AudioContext), not an <audio>: the crop is exact and the gain can go over 1.
   Pause suspends that context.
+- SB-8: `words` in a take's JSON are what the speech model heard (`lib/hear.ts`), each word with its start in the
+  whole recording (before the crop). `hearAll` hears the takes the timeline asks for (rows cut on a word, Write only),
+  one at a time; it writes them only if the take wasn't recorded again meanwhile (same `at`). `[]` means heard with
+  no words, and is not heard again. One failure stops it until the script is opened again (`failed`).
+  `rowLength` hands the heard words (aligned, `heardWords`) to the timeline, Play and the exports.
 - Never tried with a real microphone here: the test browser has none.

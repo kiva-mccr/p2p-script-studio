@@ -15,8 +15,11 @@ The video's shape (SB-3) is the front matter's `shape: upright`, else wide (`sha
 - Parts it doesn't understand are kept in `rest` and written back, so a later feature's parts survive older apps.
 - Lengths come from one place, `rowLength` (`lib/voice.svelte.ts`), shared by the timeline, Play the script and the
   Resolve / Premiere export (EX-19), so the playhead and the exported timeline never drift.
-- Word timings are estimated (`estimateWords`: by letters, over the row's length), not heard: no speech model
-  reads the takes yet. Good enough to cut on; refine later if real takes drift.
+- Word timings (SB-8): heard in the take when it has been (`heardWords`, from the take's `words`, through
+  `rowLength`'s `words`), else estimated (`estimateWords`: by letters, over the row's length). `heardWords` matches
+  the dialogue's words to the heard ones in order (longest common run), takes off the crop's `from`, keeps times in
+  order and inside the take, and spreads unheard words (numbers said as words, mishearings) by letters between the
+  heard ones. Null when no word matches, and the estimate is used.
 - Wide is the default and is never written: `withShape(…, 'wide')` removes the line (a front matter left empty is
   `null`, so no empty `---` block is written).
 - A cut word is matched by `plain` (lower case, letters and digits only), the first match after the previous cut.

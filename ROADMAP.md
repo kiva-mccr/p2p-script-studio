@@ -457,7 +457,7 @@ and suggestions, keeps every version, and exports them for production.
   only if it was folded (the user's pick on a decision card). Agreed from a short description, no board. The tour
   never changes what this browser remembers (`timeline-open`). The Write card now says it "folds away at the bottom
   of the screen: click its bar, or scroll past the bottom, to open it".
-- [ ] **SB-8** Cut on a word timed from the take (asked by the user, 2026-11-16: "Is the sequence cut using the
+- [x] **SB-8** Cut on a word timed from the take (asked by the user, 2026-11-16: "Is the sequence cut using the
   audio? or is it just using the reading speed, it should use the audio"). Today a row's length is its take's, but
   where each word falls inside it is estimated by letters (`estimateWords`). The user's pick on a decision card (B,
   over listening for pauses): a speech model (Whisper with word timestamps, through transformers.js, as Follow my
@@ -465,7 +465,10 @@ and suggestions, keeps every version, and exports them for production.
   only once, and the timeline, preview, Play the script and both exports use them. Rows with no take, and takes not
   yet heard, keep the estimate. A small grey note in the row panel says "timed from the take" or "estimated (no
   take)". About 150 MB downloaded once per computer. Agreed from a short description; can't be checked here (no
-  Hugging Face in this container), so tested with a stand-in, as EX-8. Builds after the queued ones.
+  Hugging Face in this container), so tested with a stand-in, as EX-8. Built so: only takes of rows cut on a word
+  are heard (in Write), one at a time; the words go in the take's JSON (`words`, kept once heard, `[]` if none); the
+  dialogue is matched to the heard words in order, unheard ones (numbers said as words) spread by letters between
+  them; the note also says "until the take is heard" and "couldn't be heard".
 - [x] **SB-3** Export the timeline as a video (asked by the user, 2026-11-15): the storyboard timeline (SB-1) saved
   as a video file: each row's pictures (collage or sequence, cut on a word), holds and placeholders, with the
   voice-over takes, at the timeline's timings, made in the browser. Mock-up: board 70, agreed (2026-11-15, "looks

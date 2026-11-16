@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { parseScript, readFileRef, rows, timelineOnly, markTimelineOnly, writeScript, type Row } from '../../src/lib/script';
-import { changeChoices, cutPositions, cutTimes, cutWords, dialogueWords, estimateWords, layout, picks, pictureFiles, readChoices, shots, writeChoices } from '../../src/lib/timeline';
+import { changeChoices, cutPositions, cutTimes, cutWords, dialogueWords, estimateWords, heardWords, layout, picks, pictureFiles, readChoices, shots, writeChoices } from '../../src/lib/timeline';
 
 const source = `# Intro
 
@@ -186,5 +186,35 @@ describe('two saves at once', () => {
     const text = merged.text({});
     expect(text).toContain('then hold 4 s');
     expect(text).toContain('Inside every cell.');
+  });
+});
+
+describe('word timings heard in the take (SB-8)', () => {
+  const line = 'It needs **sunlight**, water, and 42 things.';
+  it('gives each heard word its time, less the crop, and shares the rest by letters', () => {
+    // A long pause before "water": heard at 5 s into the recording, the take starts playing at 0.5 s.
+    const heard: [string, number][] = [['It', 0.5], ['needs', 0.8], ['sunlight,', 1.2], ['water,', 5.5], ['and', 6], ['forty-two', 6.3], ['things.', 7]];
+    const words = heardWords(line, heard, 0.5, 7)!;
+    expect(words.map((w) => w.word)).toEqual(['It', 'needs', 'sunlight,', 'water,', 'and', '42', 'things.']);
+    expect(words[3].start).toBeCloseTo(5);
+    expect(words[0].start).toBeCloseTo(0);
+    // "42" was heard as "forty-two": it falls between "and" and "things." by letters.
+    expect(words[5].start).toBeGreaterThan(words[4].start);
+    expect(words[5].start).toBeLessThan(words[6].start);
+    // The cut lands on the heard time, not the even spread by letters.
+    const c = readChoices('cuts at "water"');
+    expect(shots(['a.svg', 'b.svg'], 7, c, words)[1].start).toBeCloseTo(5);
+    expect(shots(['a.svg', 'b.svg'], 7, c, estimateWords(line, 7))[1].start).toBeLessThan(4);
+  });
+  it('keeps times in order and inside the take; nothing heard is null', () => {
+    const words = heardWords('one two three', [['one', 2], ['two', 1], ['three', 99]], 0, 10)!;
+    expect(words.map((w) => w.start)).toEqual([2, 2, 10]);
+    expect(heardWords('one two', [['something', 1]], 0, 5)).toBeNull();
+    expect(heardWords('one two', [], 0, 5)).toBeNull();
+  });
+  it('layout uses the heard words from the row length when there are some', () => {
+    const script = parseScript('## 1 <!-- id: a -->\nDialogue:\nSun and water\n\nFiles:\n- a.svg\n- b.svg\n\nTimeline: cuts at "water"\n');
+    const row = layout(script, () => ({ seconds: 10, take: true, words: [{ word: 'Sun', start: 0 }, { word: 'and', start: 1 }, { word: 'water', start: 9 }] })).blocks[0];
+    expect(row.kind === 'row' && row.shots[1].start).toBe(9);
   });
 });
