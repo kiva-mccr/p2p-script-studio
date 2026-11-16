@@ -19,3 +19,5 @@ blur the script's words, say which script), Open on GitHub, Copy instead, Cancel
 - The strip sits at the bottom of the window, not under the top bar, so it never covers a part to pick.
 - A slow picture never replaces a newer one (`made` counts them); old picture URLs are revoked.
 - Nothing is sent by the app: GitHub's page shows everything before the person presses Submit.
+- The note starts empty for each piece of feedback: Cancel or Close clears it, and so does picking again after it was
+  sent or copied. It used to be one value for the whole visit, so the last note came back (a bug the user hit).
