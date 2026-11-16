@@ -30,7 +30,7 @@
     folderName: string; voice: VoiceOver; player: Player; canPlay: boolean; name: string; lit?: boolean; flag: Flag | undefined; stepped: boolean;
     said: Thread[]; talking: boolean; visit: Marks | null; came: { row: string; line: string; from: string } | null;
     start: Words | undefined; onPutBack: (field: 'dialogue' | 'onScreen') => void;
-    onChange: () => void; onUndo: (offer: Offer) => void; onNotice: (message: string) => void; onPlayFrom: (id: string) => void;
+    onChange: (apart?: boolean) => void; onUndo: (offer: Offer) => void; onNotice: (message: string) => void; onPlayFrom: (id: string) => void;
     onFlag: (row: string, note: string | null) => Promise<boolean>; onTalk: (id: string) => void;
     onMove: (by: number) => void; onInsert: () => void; onRemove: () => void; onToSection: () => void; onToggleFlag: () => void; onMic: () => void;
     onPaste: (lines: string[], head: string, tail: string) => void;

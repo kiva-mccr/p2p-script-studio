@@ -70,7 +70,12 @@
   const script = $derived(file.script);
   const status = $derived(file.status);
   const clash = $derived(file.clash);
-  const changed = () => file.changed();
+  // Every edit is a step for Ctrl+Z (lib/steps.ts); typing in one box (the input's box) runs on as one step, but a
+  // change of formatting (`apart`, from TextField) is a step of its own.
+  const changed = (apart?: unknown) => {
+    const e = window.event;
+    file.edited(e?.type === 'input' && apart !== true ? e.target : undefined);
+  };
   const save = () => file.save();
   let missing = $state(false);
   let notice = $state('');
@@ -530,6 +535,14 @@
     } });
   }
 
+  // Ctrl+Z or Ctrl+Y in Write: the toast's Undo would now put back the wrong thing, so it goes.
+  function step(back: boolean) {
+    const place = file.step(back);
+    if (place === 'clash') notice = "That can't be undone: someone else has changed the same place since.";
+    else if (place) undo.clear();
+    return place === 'clash' ? null : place;
+  }
+
   function undoNow() {
     undo.take().catch((e) => (notice = problem("That couldn't be undone. If the shared folder is busy, wait a moment and try again.", 'undoing', e)));
   }
@@ -644,7 +657,7 @@
     <History {dir} {notes} onRestore={restore} onPublish={(official) => file.publish(official)} onOpen={openComment} />
   {:else if script && dir}
     {#if showVisit && marks}{@render visitBar(marks)}{/if}
-    <Write bind:script={() => script!, (s) => (file.script = s)} bind:finding {dir} root={folder} folderName={path[0]} {voice} {player} canPlay={canPlay} onPlayFrom={play} {name} {flagged} onFlag={flag} onChange={changed} onDeleted={deleted} onUndo={(o) => undo.offer(o)} onNotice={(m) => (notice = m)}
+    <Write bind:script={() => script!, (s) => (file.script = s)} bind:finding {dir} root={folder} folderName={path[0]} {voice} {player} canPlay={canPlay} onPlayFrom={play} {name} {flagged} onFlag={flag} onChange={changed} onDeleted={deleted} onUndo={(o) => undo.offer(o)} onStep={step} onNotice={(m) => (notice = m)}
       talk={openThreads} {talking} onTalk={showComment} visit={marks} {came} started={file.started.rows} />
   {/if}
 </main>
