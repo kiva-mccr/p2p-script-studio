@@ -8,7 +8,7 @@ const example = readFileSync('docs/example/Episode 03 - How Photosynthesis Works
 // crop finds about a second to play. (All silence played for as long as the quick test "recorded", a tenth of a
 // second, over before a busy machine's test saw the row playing.) Rows with no take are read fast (the
 // teleprompter's speed), so the test doesn't wait long.
-async function openWithTakes(page: Page, taken: number[]) {
+async function openWithTakes(page: Page, taken: number[], extra: Record<string, string> = {}) {
   await page.addInitScript(() => {
     localStorage.setItem('prompter-speed', '400');
     const wav = () => {
@@ -24,7 +24,7 @@ async function openWithTakes(page: Page, taken: number[]) {
       stop: async () => wav(),
     });
   });
-  await setUp(page, '#/Episode%2003', { 'Episode 03/script.md': example });
+  await setUp(page, '#/Episode%2003', { 'Episode 03/script.md': example, ...extra });
   for (const row of taken) {
     await page.getByRole('button', { name: `Record row ${row}`, exact: true }).click();
     await page.getByRole('button', { name: `Stop recording row ${row}` }).click();
@@ -33,6 +33,18 @@ async function openWithTakes(page: Page, taken: number[]) {
 }
 
 const playing = (page: Page) => page.locator('.row.here');
+
+test('pressing Play lets go of the comment being read, so only the playing row is lit (#186)', async ({ page }) => {
+  const row4 = example.match(/## 4 <!-- id: (\w+) -->/)![1];
+  const ben = { v: 1, id: 'ben00001', kind: 'comment', who: 'Ben', when: '2026-11-10T09:02:00Z', row: row4, field: 'dialogue', quote: '', text: 'Say where the oxygen goes too.' };
+  await openWithTakes(page, [1], { 'Episode 03/.studio/comments/20261110T090200Z_ben00001.json': JSON.stringify(ben) });
+  await page.getByRole('button', { name: '1 open comment on row 4' }).click();
+  await expect(page.locator('.row.talking').getByLabel('Dialogue, row 4')).toBeVisible();
+  await page.getByRole('button', { name: 'Play the script' }).click();
+  await expect(playing(page).getByLabel('Dialogue, row 1')).toBeVisible();
+  await expect(page.locator('.row.talking')).toHaveCount(0);
+  await expect(page.locator('.row.here, .row.lit, .row.talking')).toHaveCount(1);
+});
 
 test('Play goes through the rows in order: a take is heard, a row with none waits its read time', async ({ page }) => {
   await openWithTakes(page, [1, 3]);

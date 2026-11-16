@@ -1,7 +1,7 @@
 <script lang="ts">
   import { bring } from '../lib/followrow';
   import { problem } from '../lib/problems';
-  import { tick } from 'svelte';
+  import { tick, untrack } from 'svelte';
   import { fieldText as text, threads, type Field, type Flag, type Note } from '../lib/comments';
   import FlagIcon from './FlagIcon.svelte';
   import FoldHeads from './FoldHeads.svelte';
@@ -64,6 +64,10 @@
   const FIELDS: [Field, string][] = [['dialogue', 'Dialogue'], ['on_screen', 'On screen'], ['files', 'Images & files']];
 
   let active = $state(''); // the card picked: its quote is marked brighter
+  // Playing lets go of the card picked (#186), so only the playing row is lit.
+  $effect(() => {
+    if (player.on) untrack(() => (active = ''));
+  });
   let hideSent = $state(false); // the review note folded to a button (RV-8), until Review is left
   let comments = $state<ReviewComments>(); // the comments beside the script: `start` opens a new one
   let picker = $state<SelectionComment>(); // the Comment button on selected words (RV-22)
