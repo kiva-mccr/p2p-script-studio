@@ -16,3 +16,6 @@ ending on "Your turn". → and ← step, Esc skips. The steps are `lib/tour.ts`.
   marked `data-tour-with` are ringed with it: a row's flag and § sit outside its tools. Never mark repeated
   siblings (every row) as pieces: the ring would cover them all.
 - `again` is read once when it mounts, so opening another script after Take the tour doesn't play it again.
+- The top bar stays up over the page and the timeline's drawer over its foot: a part under either counts as off screen
+  (html's `scroll-padding-top` and `-bottom` are their heights). Before this, a step whose part sat just under the
+  bar (Assets' Order, after step 1 scrolled the list up) was ringed behind the tabs.
