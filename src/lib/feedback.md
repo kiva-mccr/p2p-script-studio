@@ -17,6 +17,7 @@ picture's copy of the page with solid grey boxes. Built so the issue can be acte
 - The selector starts from the nearest id, row (`data-row`) or a `data-tour` used only once: `data-tour="row"` is on
   every row, so it found the wrong one.
 - The row number is read from a label inside the row ("Dialogue, row 3"), since `data-block` counts sections too.
+- Svelte drops a space just before `{/if}`: "Sam ·just now" in the list. A space next to a block goes in `{' · '}`.
 - `coverWords` runs on modern-screenshot's copy, whose elements may belong to another document: no `instanceof`.
   In rows, a button's own words are covered unless it has an aria-label (file chips have none, icons do).
 - Never a blur (the user, 2026-11-16: it can be undone): opaque grey boxes, and the text under them is swapped for

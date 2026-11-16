@@ -181,7 +181,7 @@
             <span class="length" title={long ? (long.recorded ? 'Recorded voice-over, every row' : `Read time at ${speaking.wpm} words a minute`) : undefined}>
               {long?.text ?? ''}{#if long?.recorded}<svg role="img" aria-label="recorded" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v3"></path></svg>{/if}
             </span>
-            <span class="when">{#if script.who}<span data-hide>{script.who}</span> · {/if}{ago(script.edited)}</span>
+            <span class="when">{#if script.who}<span data-hide>{script.who}</span>{' · '}{/if}{ago(script.edited)}</span>
           </a>
         {/each}
       </div>
