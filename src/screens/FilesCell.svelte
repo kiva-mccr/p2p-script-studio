@@ -168,7 +168,7 @@
         onkeydown={(e) => e.key === 'Escape' && (adding = false)} />
     </form>
   {:else}
-    <button class="add" onclick={() => (adding = true)}>+ Add</button>
+    <button class="add" data-keep onclick={() => (adding = true)}>+ Add</button>
   {/if}
   <input type="file" multiple hidden bind:this={picker} onchange={picked} />
   {#if browsing}<SharedFiles {root} {here} {dir} {row} onAdd={addShared} onClose={() => (browsing = false)} />{/if}

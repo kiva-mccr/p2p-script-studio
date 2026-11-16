@@ -182,9 +182,10 @@ function covered(el: Element): boolean {
  * names, but not the app's controls outside rows nor what is marked `data-keep`. */
 export function coverWords(root: Element) {
   const doc = root.ownerDocument;
-  const box = (text: string) => {
+  const box = (text: string, line = false) => {
     const span = doc.createElement('span');
-    span.setAttribute('style', BOX);
+    // On one line that cuts off (a file's chip), the box is cut to fit instead, so its rounded ends show.
+    span.setAttribute('style', BOX + (line ? ';display:inline-block;max-width:100%;overflow:hidden;vertical-align:bottom' : ''));
     span.textContent = masked(text);
     return span;
   };
@@ -207,7 +208,7 @@ export function coverWords(root: Element) {
   for (const t of texts) {
     const parent = t.parentElement;
     if (!t.data.trim() || !parent || parent.tagName === 'STYLE' || parent.tagName === 'SCRIPT' || !covered(parent)) continue;
-    t.replaceWith(box(t.data));
+    t.replaceWith(box(t.data, /^(nowrap|pre)$/.test(parent.style.whiteSpace)));
   }
 }
 

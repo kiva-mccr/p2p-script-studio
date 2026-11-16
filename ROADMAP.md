@@ -484,7 +484,7 @@ and suggestions, keeps every version, and exports them for production.
   Changed 2026-11-16 (the user's ask): a blur can be undone, so the picture covers the words with solid grey rounded
   boxes instead, and the real text is not in the picture's copy at all (each letter an x under the box). People's
   names are covered too, even on buttons ("Ana · 3 h ago", `data-hide`); the app's own statuses ("In review",
-  "Saved", the length) are not (`data-keep`). The tick box is "Cover the script's words and names".
+  "Saved", the length, row numbers, "+ Add") are not (`data-keep`). The tick box is "Cover the script's words and names".
 - [ ] **YT-1** The published video: link the final YouTube video and keep its title, description and thumbnail with
   the script.
 - [x] **AU-1** Recording audio for each line: record the dialogue of a row in the browser, kept beside the script

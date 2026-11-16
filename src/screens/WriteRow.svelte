@@ -92,7 +92,7 @@
 <div class="row grid" style:grid-template-columns={columns} class:here class:lit class:stepped={flag && stepped} class:talking
   class:visited={by} class:visit-on={by && visit?.on === block.id} style:--down="{(said.length ? 34 : 0) + (by ? 58 : 0)}px"
   data-row={block.id} data-block={i} data-visit={by ? block.id : undefined} data-tour="row">
-  <div class="num">
+  <div class="num" data-keep>
     {#if canPlay}
       {#if here && player.on}
         <button class="from" aria-label="Pause at row {n}" title="Pause" onclick={() => player.toggle()}>❚❚</button>
