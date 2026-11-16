@@ -12,7 +12,7 @@ import { diff, fold } from './changes';
 import { tidyHistory } from './pack';
 import { listChanges, readChange, readFolded, removeChange, writeChange, writeFolded } from './changefiles';
 import { Started } from './started';
-import { settle, Steps, type Place } from './steps';
+import { settle, Steps, type Act, type Place } from './steps';
 import { follow } from './news';
 import { errorText, problem } from './problems';
 
@@ -246,11 +246,12 @@ export class Saving {
 
   // Ctrl+Z (back) or Ctrl+Y: the step put into the page in place and saved as any edit. Returns where it landed
   // (for the cursor), null with nothing to do, or 'clash' when someone else changed that place since.
-  step(back: boolean): Place | null | 'clash' {
+  // A take or flag (an `Act`) is handed back to be run, with its row.
+  step(back: boolean): Place | Act | null | 'clash' {
     if (!this.script || this.status === 'conflict') return null;
     const now = this.#pageText(false);
     const text = back ? this.steps.undo(now) : this.steps.redo(now);
-    if (text === null || text === 'clash') return text;
+    if (text === null || text === 'clash' || typeof text !== 'string') return text;
     const place = settle(this.script, now, text);
     this.changed();
     return place;

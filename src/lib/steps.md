@@ -23,4 +23,10 @@ row, the timeline, credits, an accepted suggestion, Restore. `settle` puts a ste
 - Ctrl+Z is caught on the window in Write, also from the find bar and from buttons; other boxes (a flag's note, a
   comment, the planning panel) keep the browser's own undo. A step undone clears the Undo toast, whose `back` would
   now put back the wrong thing.
-- Only the text of the script is here. Takes, flags, comments and files in the folder are not (yet) steps.
+- Takes and flags are steps too (UX-15), as an `Act` (`back`, `again`, `row`) in the same list as the text's: a take
+  deleted, recorded again or recorded for the first time (deleted on Ctrl+Z, written back on Ctrl+Y), a flag set,
+  cleared or its note changed. The Editor runs them (`step`) and Write scrolls to their row. An Undo toast offer with
+  `again` is pushed as an act, and its button takes that act back through the list (`isLast`), so the toast and
+  Ctrl+Y agree.
+- Not steps, on purpose: comments and suggestions (their cards have Undo), status changes (Send for review, Approve,
+  Send back) and official versions, which others are told about at once, and the planning panel (its own box).

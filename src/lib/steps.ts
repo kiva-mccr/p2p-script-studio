@@ -7,12 +7,15 @@ import { diff, fold } from './changes';
 import { parseScript, type Block, type Row, type Script } from './script';
 
 type Step = { before: string; after: string };
+// A change outside the script's text (a take, a flag, UX-15): how to take it back and do it again. `row`: its row's id.
+export type Act = { back: () => Promise<unknown>; again: () => Promise<unknown>; row?: string };
+type Item = Step | { act: Act };
 // Where a step landed, for the cursor: the block's index and the box, and where in it the change ends.
 export type Place = { index: number; field: 'dialogue' | 'onScreen' | 'title' | null; at: number };
 
 export class Steps {
-  #undo: Step[] = [];
-  #redo: Step[] = [];
+  #undo: Item[] = [];
+  #redo: Item[] = [];
   #at: string | null = null; // the page's text after the last step (or as opened, or as others' saves left it)
   #key: unknown = null; // the box being typed in, while its typing is one step
   #time = 0;
@@ -41,7 +44,7 @@ export class Steps {
     if (text === this.#at) return;
     const now = Date.now();
     const top = this.#undo.at(-1);
-    if (key != null && key === this.#key && top && now - this.#time < this.pause) top.after = text;
+    if (key != null && key === this.#key && top && 'after' in top && now - this.#time < this.pause) top.after = text;
     else {
       this.#undo.push({ before: this.#at, after: text });
       if (this.#undo.length > this.limit) this.#undo.shift();
@@ -52,6 +55,20 @@ export class Steps {
     this.#time = now;
   }
 
+  // A take or flag changed: a step too, in the same order as the text's.
+  act(act: Act) {
+    this.#undo.push({ act });
+    if (this.#undo.length > this.limit) this.#undo.shift();
+    this.#redo = [];
+    this.#key = null;
+  }
+
+  // The newest step, if it is this act (the Undo toast's button takes it back through here, so the two agree).
+  isLast(act: Act) {
+    const top = this.#undo.at(-1);
+    return !!top && 'act' in top && top.act === act;
+  }
+
   get canUndo() {
     return this.#undo.length > 0;
   }
@@ -60,19 +77,24 @@ export class Steps {
     return this.#redo.length > 0;
   }
 
-  // The page's text with the last step taken back, null with nothing to undo, or 'clash' when someone else has
-  // since changed the same place (that step is dropped: undoing it would undo their words).
-  undo(now: string): string | null | 'clash' {
+  // The page's text with the last step taken back, an act to run, null with nothing to undo, or 'clash' when someone
+  // else has since changed the same place (that step is dropped: undoing it would undo their words).
+  undo(now: string): string | Act | null | 'clash' {
     return this.#move(this.#undo, this.#redo, now, 'before', 'after');
   }
 
-  redo(now: string): string | null | 'clash' {
+  redo(now: string): string | Act | null | 'clash' {
     return this.#move(this.#redo, this.#undo, now, 'after', 'before');
   }
 
-  #move(from: Step[], to: Step[], now: string, goal: 'before' | 'after', start: 'before' | 'after') {
+  #move(from: Item[], to: Item[], now: string, goal: 'before' | 'after', start: 'before' | 'after') {
     const step = from.pop();
     if (!step) return null;
+    if ('act' in step) {
+      to.push(step);
+      this.#key = null;
+      return step.act;
+    }
     const text = turn(step[start], step[goal], now);
     if (text === null) return 'clash';
     to.push(step);

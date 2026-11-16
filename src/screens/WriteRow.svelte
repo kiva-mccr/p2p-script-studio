@@ -43,7 +43,7 @@
     try {
       const held = await voice.hold(dir, block.id);
       await voice.remove(dir, block.id);
-      if (held) onUndo({ what: `Take of row ${n} deleted.`, back: () => voice.putBack(dir, block.id, held) });
+      if (held) onUndo({ what: `Take of row ${n} deleted.`, back: () => voice.putBack(dir, block.id, held), again: () => voice.remove(dir, block.id), row: block.id });
     } catch (e) {
       onNotice(problem("The take couldn't be deleted.", 'deleting a take', e));
     }
