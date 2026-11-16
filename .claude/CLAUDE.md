@@ -80,7 +80,7 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
   When all are done: a report of their effects (the user's ask), before (perf/pf-ideas/probe-out.txt) against after,
   same probe, same made-up folder.
   A UI audit (2026-11-15) added UX-1 to UX-13 to ROADMAP.md; the user wants all, boards 72 to 75 agreed. Built one
-  small PR at a time: UX-4 + UX-13 pointer (done), the shared Undo (UX-1, 2, 10, 11, 13, done), UX-7 (done), UX-12, 6, 8, 3 (done; UX-5 dropped for SB-4's drawer), UX-9 (done).
+  small PR at a time: UX-4 + UX-13 pointer (done), the shared Undo (UX-1, 2, 10, 11, 13, done), UX-7 (done), UX-12, 6, 8, 3 (done; UX-5 dropped for SB-4's drawer), UX-9 (done). UX-14 (Undo toast 5 s, gone when you carry on; the user, 2026-11-16, done).
   The rest (AP-8 …) waits
   for the user's next ranking; "Last" in ROADMAP.md (EX-5, CC-1) waits until everything else is done.
 - Mock-ups (one board per design, numbered): https://claude.ai/artifact/2XDZmS7J5NEPZsz91RQMiL (private to the user).
@@ -98,6 +98,8 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
   check runs every 30 s (PF-16); tests run it every 5 s (`alone-every` in playwright.config.ts).
 - A script with no touch for 2 minutes is away (PF-14, lib/away.md): no checks, no editing file. Tests that wait over
   2 minutes without moving the mouse must expect that; `away-after` shortens it.
+- The Undo toast lasts 30 s in e2e tests (`undo-for` in playwright.config.ts), 5 s for real (UX-14), and any key or
+  click outside it closes it: click Undo before typing or clicking elsewhere.
 - The timeline's drawer starts folded (SB-4): a test that uses the timeline sets `timeline-open` to '1' first
   (timeline.spec's beforeEach), or clicks its bar (/^Timeline/).
 - e2e tests start with the example's tour skipped (playwright.config.ts); a feature named in the tour keeps its

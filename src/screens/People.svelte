@@ -70,7 +70,8 @@
   }
 </script>
 
-<svelte:window onkeydown={(e) => e.key === 'Escape' && !e.defaultPrevented && close()} />
+<svelte:window onkeydown={(e) => e.key === 'Escape' && !e.defaultPrevented && close()}
+  onkeydowncapture={(e) => undo.carryOn(e)} onclickcapture={(e) => undo.carryOn(e)} />
 
 <div class="backdrop" role="presentation" onpointerdown={(e) => e.target === e.currentTarget && close()}>
   <div class="window" role="dialog" aria-modal="true" aria-labelledby="people-title" tabindex="-1">
@@ -82,7 +83,7 @@
     <div class="body">
       {#if error}<p class="error" role="alert">{error}<CopyDetails message={error} /></p>{/if}
       {#if undo.shown}
-        <div class="undo" aria-live="polite"><p>{undo.shown.what}</p><button class="outline" onclick={() => undo.take().catch((e) => (error = problem("They couldn't be put back. If the shared folder is still syncing, wait a moment and try again.", 'putting a person back', e)))}>Undo</button></div>
+        <div class="undo" aria-live="polite" data-undo><p>{undo.shown.what}</p><button class="outline" onclick={() => undo.take().catch((e) => (error = problem("They couldn't be put back. If the shared folder is still syncing, wait a moment and try again.", 'putting a person back', e)))}>Undo</button></div>
       {/if}
       {#if people && !people.length && !error}
         <p class="empty">Nobody yet.<span class="help"> People are added from a script: ⋯, then Credits.</span></p>

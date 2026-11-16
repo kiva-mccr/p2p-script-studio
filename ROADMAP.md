@@ -1012,6 +1012,9 @@ Fixes with no new look (UX-3, 5, 6, 8, 9) need no board.
   window (board 72, done 2026-11-15).
   The pointer links were taken out again at the user's ask (2026-11-15): "In review" beside them says enough. Ctrl+F
   stays.
+- [x] **UX-14** The Undo toast stayed 10 seconds whatever you did (the user: "the undo panes stick around way too
+  long"). Fix: 5 seconds, and it goes at once when you carry on (a key or a click anywhere but the toast; Tab and a
+  lone Shift, Ctrl or Alt don't count, so Undo can still be reached by keyboard). Done 2026-11-16.
 
 ## Last (the user's order: these wait until everything above is done)
 

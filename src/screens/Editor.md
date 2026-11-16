@@ -71,7 +71,7 @@ version (`Print.svelte`) and the teleprompter (`Teleprompter.svelte`, saves what
 - While playing and not following (UX-12), "↓ Back to row N" (↑ when the row is above) sits under the top bar, clear of
   the timeline drawer and the messages; it shows only while the playing row is out of view (`lookForRow` on scroll
   and on every new row). A hold or placeholder step counts as its row.
-- Deleting happens in Write, but the Undo bar and its 10 s timer are here (`lib/undo.svelte.ts`, UX-1), so it stays up
+- Deleting happens in Write, but the Undo bar, its 5 s timer and the carry-on listeners (capture phase) are here (`lib/undo.svelte.ts`, UX-1), so it stays up
   across the tabs. Write's `onDeleted` (blocks as they were) and `onUndo` (any `Offer`: a take, a file) feed it, and so
   does Restore (UX-11: `file.restore` returns the text before, Undo is `file.putBack`). A failed Undo shows a message.
 - `Print.svelte` is mounted here, at the top level, never inside another element (its print CSS needs that).
