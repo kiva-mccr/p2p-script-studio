@@ -10,7 +10,8 @@ button that opens a list of everyone who opened the script in the last 30 days, 
 
 ## Rules and pitfalls
 
-- The words come from `lib/editing.ts` (`editingText`, `lastHereText`, `seenWhen`); this file only shows them.
+- The words come from `lib/editing.ts` (`editingWords`, `lastHereText`, `seenWhen`); this file only shows them. Names sit in `data-hide` spans, so
+  Feedback's picture covers them even on these buttons.
 - "Now" is worked out again each time a new list comes in (the 5 s check), so "2 min ago" moves on by itself.
 - The bar names someone only up to 7 days back; your own visits never show (matched by `fileName`).
 - The list closes on Esc and on a click outside it, like the Header's menus; hovering the button gives the exact time.

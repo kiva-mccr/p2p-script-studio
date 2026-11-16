@@ -15,7 +15,7 @@
   let part = $state<Part | null>(null);
   let note = $state('');
   let withPicture = $state(true);
-  let blur = $state(true);
+  let cover = $state(true);
   let withName = $state(false);
   let picture = $state<{ blob: Blob; url: string } | null>(null);
   let making = $state(false);
@@ -133,7 +133,7 @@
     if (!withPicture || !picked) return;
     making = true;
     try {
-      const blob = await makePicture(picked, blur);
+      const blob = await makePicture(picked, cover);
       if (n === made) setPicture({ blob, url: URL.createObjectURL(blob) });
     } catch {
       if (n === made) pictureFailed = true;
@@ -211,7 +211,7 @@
       {/if}
       <div class="ticks">
         <label><input type="checkbox" bind:checked={withPicture} onchange={drawPicture} /> Add a picture of this part</label>
-        <label><input type="checkbox" bind:checked={blur} disabled={!withPicture} onchange={drawPicture} /> Blur the script's words in it</label>
+        <label><input type="checkbox" bind:checked={cover} disabled={!withPicture} onchange={drawPicture} /> Cover the script's words and names</label>
         <label><input type="checkbox" bind:checked={withName} /> Say which script</label>
       </div>
     </div>

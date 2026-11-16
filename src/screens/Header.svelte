@@ -125,9 +125,9 @@
     </a>
     <span class="title" title={title}>{title}</span>
     <!-- Beside the title, where Word and Google Docs put it (AP-16, the user's pick): it is about the script, not an action. -->
-    {#if ready}<span class="status" class:bad role="status" data-tour="saved" title={status === 'failed' ? problem : undefined}>{shownStatus}</span>{#if status === 'failed'}<CopyDetails message={SAVE_FAILED} />{/if}{/if}
+    {#if ready}<span class="status" class:bad role="status" data-tour="saved" data-keep title={status === 'failed' ? problem : undefined}>{shownStatus}</span>{#if status === 'failed'}<CopyDetails message={SAVE_FAILED} />{/if}{/if}
     <!-- The length follows Saved as one grey line (mock-up 30, A), and steps aside for a red message. -->
-    {#if ready && voiceText && !bad}<span class="voice" title={voiceText.includes('/') ? 'Voice-over recorded so far / the whole script (takes, plus read time for the rest)' : 'Read time of the whole script'}>{voiceText}</span>{/if}
+    {#if ready && voiceText && !bad}<span class="voice" data-keep title={voiceText.includes('/') ? 'Voice-over recorded so far / the whole script (takes, plus read time for the rest)' : 'Read time of the whole script'}>{voiceText}</span>{/if}
     <!-- The browser took back its OK to edit the folder: only a click can ask again (mock-up 18, option A). -->
     {#if ready && status === 'locked'}<button class="allow" onclick={onAllow}>Allow editing</button>{/if}
   </nav>
@@ -200,7 +200,7 @@
           {/if}
         </span>
       {/if}
-      {#if reviewStatus === 'approved' || (reviewStatus === 'in review' && mode !== 'review')}<span class="state">{reviewStatus === 'approved' ? 'Approved' : 'In review'}</span>{/if}
+      {#if reviewStatus === 'approved' || (reviewStatus === 'in review' && mode !== 'review')}<span class="state" data-keep>{reviewStatus === 'approved' ? 'Approved' : 'In review'}</span>{/if}
       {#if play}
         <button class="outline play" class:started={play.time} onclick={onPlay}
           aria-label={!play.time ? 'Play the script' : play.on ? 'Pause the script' : 'Carry on playing the script'}>

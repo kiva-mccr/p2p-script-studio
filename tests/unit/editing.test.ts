@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { editingText, fileName, lastHereText, othersEditing, seenWhen, whoWasHere, type Editing } from '../../src/lib/editing';
+import { editingWords, fileName, lastHereText, othersEditing, seenWhen, whoWasHere, type Editing } from '../../src/lib/editing';
 
 const entry = (who: string, seenMinutesAgo: number, now: number, left = false): Editing => {
   const seen = new Date(now - seenMinutesAgo * 60000).toISOString();
@@ -20,7 +20,9 @@ describe('editing', () => {
     expect(whoWasHere([entry('Sam', 2.5, now)], 'kiva', now).map((s) => s.state)).toEqual(['editing']);
     expect(whoWasHere([entry('Sam', 3.5, now)], 'kiva', now).map((s) => s.state)).toEqual(['quiet']);
   });
-  it('reads like a sentence', () => {
+  it('reads like a sentence, with the names marked', () => {
+    const editingText = (names: string[]) => editingWords(names).map((w) => w.text).join('');
+    expect(editingWords(['Sam', 'Ana']).filter((w) => w.name).map((w) => w.text)).toEqual(['Sam', 'Ana']);
     expect(editingText(['Sam'])).toBe('Sam is editing');
     expect(editingText(['Sam', 'Ana'])).toBe('Sam and Ana are editing');
     expect(editingText(['Sam', 'Ana', 'Lee'])).toBe('Sam, Ana and Lee are editing');

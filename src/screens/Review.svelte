@@ -183,7 +183,7 @@
         <button class="fold" aria-expanded="true" onclick={() => (hideSent = true)}>Hide</button>
       </div>
     {:else if sent}
-      <button class="sent-folded" aria-expanded="false" onclick={() => (hideSent = false)}>{sent.who}'s note</button>
+      <button class="sent-folded" aria-expanded="false" onclick={() => (hideSent = false)}><span data-hide>{sent.who}</span>'s note</button>
     {/if}
     <p class="hint help">Select any text, then press Comment, to comment or suggest a change. The writer accepts or rejects each suggestion.</p>
     {#if since}
