@@ -174,3 +174,19 @@ export function rangeAt(el: HTMLElement, start: number, end: number): Range | nu
   }
   return null;
 }
+
+// A section title cut into plain pieces and matches (#190), for the marks drawn behind its box: a highlight can't reach
+// inside a box, so Write lays the same letters, see-through, under it with the matched words tinted.
+export type TitleMark = { start: number; end: number; on: boolean };
+export function titlePieces(title: string, marks: TitleMark[]): { text: string; mark: boolean; on: boolean }[] {
+  const pieces: { text: string; mark: boolean; on: boolean }[] = [];
+  let at = 0;
+  for (const m of [...marks].sort((a, b) => a.start - b.start)) {
+    if (m.start < at) continue;
+    if (m.start > at) pieces.push({ text: title.slice(at, m.start), mark: false, on: false });
+    pieces.push({ text: title.slice(m.start, m.end), mark: true, on: m.on });
+    at = m.end;
+  }
+  if (at < title.length) pieces.push({ text: title.slice(at), mark: false, on: false });
+  return pieces;
+}
