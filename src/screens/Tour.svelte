@@ -85,8 +85,14 @@
     shown = parts(steps[i]);
     for (const el of shown) el.classList.add('tour-on'); // shows the parts that only show on hover, such as a row's tools
     if (shown.length) {
+      // The top bar stays up over the page, and the timeline's drawer over its foot: html's scroll padding is their
+      // height, so a part under either counts as off screen (a part in the bar itself never scrolls).
       const r = box();
-      if (r.top < 0 || r.bottom > innerHeight) shown[0].scrollIntoView({ block: r.height > innerHeight * 0.6 ? 'start' : 'nearest' });
+      const pad = getComputedStyle(document.documentElement);
+      const inBar = !!shown[0].closest('header');
+      const top = inBar ? 0 : parseFloat(pad.scrollPaddingTop) || 0;
+      const bottom = innerHeight - (inBar ? 0 : parseFloat(pad.scrollPaddingBottom) || 0);
+      if (r.top < top || r.bottom > bottom) shown[0].scrollIntoView({ block: r.height > (bottom - top) * 0.6 ? 'start' : 'nearest' });
     }
     await tick();
     place();

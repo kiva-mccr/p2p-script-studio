@@ -25,6 +25,12 @@ test('every tab plays its tour by itself once, each step on screen, then hands o
       const part = page.locator(`[data-tour="${step.target}"]`).first();
       await expect(part).toHaveClass(/tour-on/);
       await expect(part).toBeInViewport();
+      // …and not under the top bar, which stays up over the page (an Assets step was ringed there, behind the tabs).
+      const hidden = await part.evaluate((el) => {
+        const bar = document.querySelector('header');
+        return !!bar && !bar.contains(el) && el.getBoundingClientRect().top < bar.getBoundingClientRect().bottom;
+      });
+      expect(hidden, `${tab} step "${step.title}" is under the top bar`).toBe(false);
       await card(page).getByRole('button', { name: 'Next' }).click();
     }
     await expect(card(page).getByRole('heading', { name: 'Your turn' })).toBeVisible();
