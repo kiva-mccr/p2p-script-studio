@@ -46,3 +46,4 @@ shared with Write's Comments tab (RV-13). Approve / Send back (RV-3) are in `Hea
 - `text` is the cell-text function here (`fieldText as text`): never name a snippet `text`.
 - The storyboard timeline (SB-1) comes after the rows, read only (`Timeline.svelte` with `readOnly`): a click on a
   block opens a comment on its row "on the timeline" (`on: 'timeline'` in the note).
+- Starting Play clears `active` (#186), so the picked card's row and the playing row are never lit together.

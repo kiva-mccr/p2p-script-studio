@@ -187,6 +187,10 @@
     const steps = plan(script, voice.takes, speaking.wpm);
     player.start(dir, steps, from === undefined ? 0 : Math.max(0, steps.findIndex((s) => s.id === from)), voice.takes);
   }
+  // Playing lets go of the comment being read in Write (#186): its row's highlight and the playing row's lit together.
+  $effect(() => {
+    if (player.on) untrack(() => (talking = ''));
+  });
   // Scrolling yourself while it plays stops the page following the row (UX-12, board 74); a button goes back.
   $effect(() => watchScroll(player));
   let playingAway = $state<'' | 'up' | 'down'>(''); // where the playing row is when it is out of view

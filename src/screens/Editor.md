@@ -118,3 +118,5 @@ version (`Print.svelte`) and the teleprompter (`Teleprompter.svelte`, saves what
   passed to Review and Comments; `openThreads` (bubbles, tab counts) leaves held ones out, Approve's check lists them.
 - `main` has no bottom padding when it holds the timeline (#187): the drawer is the page's end, and padding under it
   left it resting 64 px above the window's bottom when scrolled to the end.
+- Starting Play clears `talking` (#186): the read comment's row and the playing row were lit at once. Only the start
+  does (the effect reads `player.on` alone), so picking a card while it plays still works.
