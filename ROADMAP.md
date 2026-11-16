@@ -451,6 +451,12 @@ and suggestions, keeps every version, and exports them for production.
   N"), on every screen with a top bar; nothing is left in the corners. Built so: a push counts only once the page has
   been at the bottom 0.2 s (wheel events are passive and can arrive after the scroll that reached it); not while
   playing; neither opening nor folding by itself is remembered; the drawer slides (0.15 s).
+- [x] **SB-7** The tour opens the timeline (asked by the user, 2026-11-16: "when it goes to the timeline, could it
+  unfold it to talk about it"): the tour's timeline step in Write (The storyboard timeline) and in Review (The
+  timeline, to look at) opens the drawer (SB-4); leaving the step (Next, Back, Skip, Esc, the end) folds it again,
+  only if it was folded (the user's pick on a decision card). Agreed from a short description, no board. The tour
+  never changes what this browser remembers (`timeline-open`). The Write card now says it "folds away at the bottom
+  of the screen: click its bar, or scroll past the bottom, to open it".
 - [x] **SB-3** Export the timeline as a video (asked by the user, 2026-11-15): the storyboard timeline (SB-1) saved
   as a video file: each row's pictures (collage or sequence, cut on a word), holds and placeholders, with the
   voice-over takes, at the timeline's timings, made in the browser. Mock-up: board 70, agreed (2026-11-15, "looks
