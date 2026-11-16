@@ -116,3 +116,5 @@ version (`Print.svelte`) and the teleprompter (`Teleprompter.svelte`, saves what
   Credits switch is on.
 - On hold (RV-19): `ends` (sends for review and official versions) is read with the review state (`readReview`) and
   passed to Review and Comments; `openThreads` (bubbles, tab counts) leaves held ones out, Approve's check lists them.
+- `main` has no bottom padding when it holds the timeline (#187): the drawer is the page's end, and padding under it
+  left it resting 64 px above the window's bottom when scrolled to the end.

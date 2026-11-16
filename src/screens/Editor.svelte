@@ -712,6 +712,9 @@
   .banner p { margin: 0; flex: 1 1 300px; font-size: 14px; }
   .page { display: flex; }
   main { flex: 1; max-width: 1180px; margin: 0 auto; padding: 32px 16px 64px; }
+  /* With the timeline's drawer (Write, Review), the drawer is the end of the page: no room below it, or scrolled to
+     the end it rested 64 px above the window's bottom, as if half open (#187). */
+  main:has(:global(.timeline)) { padding-bottom: 0; }
   .empty { text-align: center; padding-top: 10vh; }
   .empty h1 { margin: 0 0 8px; font-size: 22px; font-weight: 600; }
   .empty p { margin: 0 auto 12px; max-width: 460px; color: var(--muted); line-height: 1.5; }
