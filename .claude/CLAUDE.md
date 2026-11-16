@@ -65,7 +65,7 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
   running the real-world checks with the field test checklist:
   https://claude.ai/artifact/FT4p8XLBVTSrEQMow71NDb.
 - Queue (the user's order, 2026-11-14), mock-ups first, built one at a time: AP-44 (shortcuts, done), AP-43 (hide help
-  text, done), then SB-1 (storyboard timeline, done 2026-11-14), then AP-47 (the tour and the example catch up, done). SB-2 (unpin the timeline, the user, 2026-11-15, done). SB-3 (the timeline as a video, the user, 2026-11-15, done). AP-48 (feedback mode, the user, 2026-11-15, done). SB-4 (the timeline as a drawer at the bottom, replacing SB-2's Unpin and Hide, the user, 2026-11-15, done). SB-6 (which side of the word a cut falls on, board 78, the user, 2026-11-15, done). SB-5 (the drawer opens on a push past the bottom; Feedback, GitHub and the version in a ? menu, the user, 2026-11-15, done). SB-7 (the tour opens the drawer for its timeline step, the user, 2026-11-16, done). SB-8 (cuts timed from the take by a speech model, the user's pick B, 2026-11-16, agreed, next to build after the queue).
+  text, done), then SB-1 (storyboard timeline, done 2026-11-14), then AP-47 (the tour and the example catch up, done). SB-2 (unpin the timeline, the user, 2026-11-15, done). SB-3 (the timeline as a video, the user, 2026-11-15, done). AP-48 (feedback mode, the user, 2026-11-15, done). SB-4 (the timeline as a drawer at the bottom, replacing SB-2's Unpin and Hide, the user, 2026-11-15, done). SB-6 (which side of the word a cut falls on, board 78, the user, 2026-11-15, done). SB-5 (the drawer opens on a push past the bottom; Feedback, GitHub and the version in a ? menu, the user, 2026-11-15, done). SB-7 (the tour opens the drawer for its timeline step, the user, 2026-11-16, done). SB-8 (cuts timed from the take by a speech model, the user's pick B, 2026-11-16, done).
   Then (asked by the user, 2026-11-14): AP-15 (templates, done), then EX-19 (export to Resolve and Premiere, done).
   Then the speed check's fixes, one thread each (the user, 2026-11-14), before and after measured with perf/ in the
   project files: PF-1 (the 5 s check reads only what's new, done), PF-2 (History by name, done), PF-3 (the list reads
@@ -162,8 +162,10 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
 - Who was here (AP-37) with two real computers on the network drive: others' editing files are only written in
   tests; whether a closing tab (not leaving to the list) gets its "left" file written in time is unseen.
 - The storyboard timeline (SB-1) with real takes and camera files: waveforms and the preview were only seen with
-  the fake WAV take and made-up SVGs; cut-on-a-word timing is an estimate from the line, never checked against a
+  the fake WAV take and made-up SVGs; cut-on-a-word timing without a heard take is an estimate, never checked against a
   real voice; the drawer (SB-4) and its preview on a small real screen are unseen.
+- Cuts timed from the take (SB-8): Whisper (`whisper-base_timestamped`) was never downloaded or run here (no Hugging
+  Face); tests use a stand-in. Its word timings on a real voice, WebGPU vs WebAssembly, and the 150 MB download are unseen.
 - Resolve / Premiere export (EX-19): the FCP7 XML was never opened in real Resolve or Premiere (neither runs here);
   only its tags, frames and the zip's files were checked. Relative media paths may need one relink; the mp4 in the
   test isn't measured (test Chromium has no H.264), so a real camera video's scale and length in the XML are unseen.

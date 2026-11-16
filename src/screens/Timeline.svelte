@@ -6,7 +6,7 @@
   import { clock, speaking } from '../lib/readtime.svelte';
   import { keep, recall } from '../lib/remember';
   import { markTimelineOnly, rows, type Row, type Script } from '../lib/script';
-  import { changeChoices, cutPositions, cutWords, dialogueWords, layout, pictureFiles, readChoices, shapeOf, type After, type Shape, type TimeBlock } from '../lib/timeline';
+  import { changeChoices, cutPositions, cutWords, dialogueWords, heardWords, layout, pictureFiles, readChoices, shapeOf, type After, type Shape, type TimeBlock } from '../lib/timeline';
   import type { Player } from '../lib/play.svelte';
   import { rowLength, type VoiceOver } from '../lib/voice.svelte';
   import { waveform, wavePath } from '../lib/waveform';
@@ -110,10 +110,25 @@
     return { destroy: () => { seen.disconnect(); html.style.scrollPaddingBottom = ''; html.style.removeProperty('--drawer'); } };
   }
 
+  // Where a row's cut times come from (SB-8): heard in its take, or estimated from the line.
+  function timedBy(row: Row) {
+    const take = voice.takes[row.id];
+    if (!take) return 'Cuts estimated (no take).';
+    if (take.words) return heardWords(row.dialogue, take.words, 0, take.seconds) ? 'Cuts timed from the take.' : 'Cuts estimated: the take’s words weren’t heard.';
+    if (voice.hearing === row.id) return 'Cuts estimated until the take is heard…';
+    return voice.failed ? 'Cuts estimated: the take couldn’t be heard.' : 'Cuts estimated until the take is heard.';
+  }
+
   // Each row lasts its take, or its read time without one, as Play the script times it.
   const upright = $derived(shapeOf(script.front) === 'upright');
   const laid = $derived(layout(script, rowLength(voice.takes, speaking.wpm)));
   const total = $derived(laid.total);
+  // SB-8: the takes of rows cut on a word are heard once (Write only), so their cuts fall where the words are said.
+  const toHear = $derived(laid.blocks.filter((b) => b.kind === 'row' && b.take && b.shots.length > 1 && !voice.takes[b.id]?.words
+    && readChoices(byId.get(b.id)?.timeline ?? '').cuts.length).map((b) => b.id).join(' '));
+  $effect(() => {
+    if (!readOnly && toHear) voice.hearAll(dir, toHear.split(' '));
+  });
   const byId = $derived(new Map(rows(script).map((r) => [r.id, r])));
   const numbers = $derived(new Map(rows(script).map((r, i) => [r.id, i + 1])));
   const pct = (seconds: number) => (total ? (seconds / total) * 100 : 0);
@@ -421,6 +436,7 @@
                 {/each}
               </span>
               <span class="help">{block.picks.length} pictures: up to {block.picks.length - 1} cuts. Each starts the next picture just before its word; without them they share the time equally.</span>
+              <span class="timed">{timedBy(selRow)}</span>
             </div>
           {/if}
           <p class="foot">
@@ -499,7 +515,7 @@
   .mark { display: inline-flex; align-items: center; align-self: stretch; gap: 3px; margin-left: 4px; }
   .mark::before { content: ''; align-self: stretch; width: 2px; border-radius: 1px; background: var(--accent); }
   .num { min-width: 16px; height: 16px; padding: 0 3px; box-sizing: border-box; border-radius: 8px; background: var(--accent); color: #fff; font-size: 10px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; }
-  .words .help { flex-basis: 100%; font-size: 12px; color: var(--muted); }
+  .words .help, .words .timed { flex-basis: 100%; font-size: 12px; color: var(--muted); }
   .top { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 16px; padding: 2px 0; }
   .timeline:not(.folded) .top { margin-bottom: 6px; }
   .sum { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
