@@ -174,14 +174,14 @@
           <a class="row" href={routeHash(script.path)} data-name={script.path[0]} use:watch>
             <span class="title-cell"><span class="title">{script.title}</span>{#if script.counts?.flagged}<span class="flagged"><FlagIcon size={12} />{script.counts.flagged} flagged</span>{/if}{#if script.counts?.missing}<span class="missing">{script.counts.missing} missing</span>{/if}{#if me?.review}<span class="mine"><svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"></path><circle cx="12" cy="12" r="3"></circle></svg>Your review</span>{/if}{#if me?.replies}<span class="mine"><svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.8 7L3 21l2-6.2A8 8 0 1 1 21 12z"></path></svg>{me.replies === 1 ? '1 reply' : `${me.replies} replies`}</span>{/if}{#if me?.back}<span class="mine"><svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5M4 9h11a5 5 0 0 1 0 10h-3"></path></svg>Sent back to you</span>{/if}</span>
             {#if script.template}
-              <span class="status"><span class="dot template" aria-hidden="true"></span>Template</span>
+              <span class="status" data-keep><span class="dot template" aria-hidden="true"></span>Template</span>
             {:else}
-              <span class="status"><span class="dot {script.status.replace(' ', '-')}" aria-hidden="true"></span>{label[script.status] ?? script.status}</span>
+              <span class="status" data-keep><span class="dot {script.status.replace(' ', '-')}" aria-hidden="true"></span>{label[script.status] ?? script.status}</span>
             {/if}
             <span class="length" title={long ? (long.recorded ? 'Recorded voice-over, every row' : `Read time at ${speaking.wpm} words a minute`) : undefined}>
               {long?.text ?? ''}{#if long?.recorded}<svg role="img" aria-label="recorded" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v3"></path></svg>{/if}
             </span>
-            <span class="when">{script.who ? `${script.who} · ` : ''}{ago(script.edited)}</span>
+            <span class="when">{#if script.who}<span data-hide>{script.who}</span> · {/if}{ago(script.edited)}</span>
           </a>
         {/each}
       </div>

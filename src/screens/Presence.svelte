@@ -1,7 +1,7 @@
 <script lang="ts">
   // Who else is here (AP-37, board 62): "Sam is editing" as before, or else the last person here ("Sam was here
   // 12 min ago", "Sam last seen 3 min ago" when they went quiet without leaving). A click lists everyone.
-  import { editingText, lastHereText, seenWhen, type Seen } from '../lib/editing';
+  import { editingWords, lastHereText, seenWhen, type Seen } from '../lib/editing';
   import { at } from '../lib/when';
   let { editors, folding = '', seen }: { editors: string[]; folding?: string; seen: Seen[] } = $props();
   let open = $state(false);
@@ -26,11 +26,11 @@
   <span class="presence" data-tour="presence" bind:this={el}>
     {#if editors.length}
       <button class="editing" aria-expanded={open} onclick={() => (open = !open)}>
-        <span class="dot" aria-hidden="true"></span>{editingText(editors)}{#if folding}<span class="spin" role="img" aria-label="Bringing in {folding}’s changes" title="Bringing in {folding}’s changes"></span>{/if}
+        <span class="dot" aria-hidden="true"></span><span>{#each editingWords(editors) as word, i (i)}{#if word.name}<span data-hide>{word.text}</span>{:else}{word.text}{/if}{/each}</span>{#if folding}<span class="spin" role="img" aria-label="Bringing in {folding}’s changes" title="Bringing in {folding}’s changes"></span>{/if}
       </button>
     {:else}
       <button class="last" class:quiet aria-expanded={open} title={hover} onclick={() => (open = !open)}>
-        <span class="ring" aria-hidden="true"></span>{last}
+        <span class="ring" aria-hidden="true"></span><span><span data-hide>{seen[0].who}</span>{last.slice(seen[0].who.length)}</span>
       </button>
     {/if}
     {#if open}

@@ -158,22 +158,56 @@ export function plainText(title: string, body: string): string {
   return `${title}\n\n${body.replace('<!-- Paste the picture here: Ctrl+V -->', '(no picture)')}`;
 }
 
-// Kept clear of blurring: the app's own controls, whose words are the app's, not the script's.
+// Kept clear of covering: the app's own controls, whose words are the app's, not the script's.
 const CONTROLS = 'button, [role="button"], [role="tab"], label, select, option, summary, th';
+// Fully opaque, so nothing can be read back out of it (a blur can be undone).
+// `!important`, since the copy carries each element's own styles inline.
+const BOX = ['background:#a3a3a3', 'color:transparent', '-webkit-text-fill-color:transparent', 'border-radius:4px', 'text-shadow:none',
+  '-webkit-box-decoration-break:clone', 'box-decoration-break:clone'].map((d) => `${d} !important`).join(';');
 
-/** Blurs the words in a copy of the page (the picture's): every element with its own text, but the app's controls
- * outside rows. */
-export function blurWords(root: Element) {
-  const all = [root, ...root.querySelectorAll('*')];
-  for (const el of all) {
+/** Every letter as an x, spaces kept: the box keeps the words' shape, and the real text is not in the copy at all. */
+const masked = (text: string) => text.replace(/\S/g, 'x');
+
+/** True when this element's own words are covered: the script's words, and people's names. */
+function covered(el: Element): boolean {
+  if (el.closest('[data-hide]')) return true; // a name, even on a button ("Ana · 3 h ago")
+  if (el.closest('[data-keep]')) return false; // the app's own words outside controls ("In review", "Saved")
+  if (el.closest('[contenteditable="true"]')) return true;
+  const control = el.closest(CONTROLS);
+  // In a row, a control's own words are the script's (a file's name), unless it is an icon named by aria-label.
+  return !control || (!!el.closest('[data-row]') && !control.hasAttribute('aria-label'));
+}
+
+/** Covers the words in a copy of the page (the picture's) with solid grey boxes: the script's words and people's
+ * names, but not the app's controls outside rows nor what is marked `data-keep`. */
+export function coverWords(root: Element) {
+  const doc = root.ownerDocument;
+  const box = (text: string) => {
+    const span = doc.createElement('span');
+    span.setAttribute('style', BOX);
+    span.textContent = masked(text);
+    return span;
+  };
+  for (const el of [root, ...root.querySelectorAll('*')]) {
     if (!('style' in el)) continue; // the copy's elements may come from another document, so no instanceof
-    const h = el as HTMLElement;
-    const typed = h.tagName === 'TEXTAREA' || (h.tagName === 'INPUT' && !/^(checkbox|radio|range|button|submit)$/.test((h as HTMLInputElement).type));
-    const own = [...h.childNodes].some((n) => n.nodeType === 3 && n.textContent!.trim());
-    const control = h.closest(CONTROLS);
-    // In a row, a control's own words are the script's (a file's name), unless it is an icon named by aria-label.
-    const scripted = !control || (!!h.closest('[data-row]') && !control.hasAttribute('aria-label'));
-    if (typed || h.getAttribute('contenteditable') === 'true' || (own && scripted)) h.style.filter = 'blur(4px)';
+    const h = el as HTMLInputElement;
+    const typed = h.tagName === 'TEXTAREA' || (h.tagName === 'INPUT' && !/^(checkbox|radio|range|button|submit|color|file)$/.test(h.type));
+    if (!typed) continue;
+    // A text box becomes a box of the same look holding its words as grey boxes, line by line.
+    const stand = doc.createElement('div');
+    stand.setAttribute('style', h.getAttribute('style') ?? '');
+    stand.style.whiteSpace = h.tagName === 'TEXTAREA' ? 'pre-wrap' : 'pre';
+    stand.style.overflow = 'hidden';
+    if (h.value.trim()) stand.append(box(h.value));
+    h.replaceWith(stand);
+  }
+  const walker = doc.createTreeWalker(root, 4 /* text */);
+  const texts: Text[] = [];
+  while (walker.nextNode()) texts.push(walker.currentNode as Text);
+  for (const t of texts) {
+    const parent = t.parentElement;
+    if (!t.data.trim() || !parent || parent.tagName === 'STYLE' || parent.tagName === 'SCRIPT' || !covered(parent)) continue;
+    t.replaceWith(box(t.data));
   }
 }
 

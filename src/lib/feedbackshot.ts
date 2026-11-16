@@ -1,7 +1,7 @@
 // Feedback mode's picture (AP-48): the part that was clicked and what is round it, drawn from the page (no browser
-// prompt), outlined in orange, with the script's words blurred if asked. modern-screenshot is loaded only when used.
+// prompt), outlined in orange, with the script's words and people's names covered if asked. modern-screenshot is loaded only when used.
 
-import { blurWords } from './feedback';
+import { coverWords } from './feedback';
 
 const OUTLINE = '#e8590c';
 const PAD = 12;
@@ -18,7 +18,7 @@ export function pictureRoot(el: Element): Element {
 }
 
 /** A PNG of the part and what is round it, outlined. */
-export async function makePicture(el: Element, blur: boolean): Promise<Blob> {
+export async function makePicture(el: Element, cover: boolean): Promise<Blob> {
   const root = pictureRoot(el);
   const { domToCanvas } = await import('modern-screenshot');
   const scale = Math.min(2, devicePixelRatio || 1);
@@ -27,7 +27,7 @@ export async function makePicture(el: Element, blur: boolean): Promise<Blob> {
     backgroundColor: '#ffffff',
     font: false,
     filter: (n) => !(n instanceof Element && n.closest('[data-feedback-ui]')),
-    onCloneNode: blur ? (clone) => blurWords(clone as Element) : null,
+    onCloneNode: cover ? (clone) => coverWords(clone as Element) : null,
   });
   const at = root.getBoundingClientRect();
   const part = el.getBoundingClientRect();

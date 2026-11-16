@@ -89,11 +89,11 @@ export function seenWhen(seen: Seen, now = Date.now()): string {
   return now - seen.time < 24 * 60 * 60 * 1000 ? ago(seen.time, now) : at(seen.time, now);
 }
 
-// "Sam is editing", "Sam and Ana are editing", "Sam, Ana and Lee are editing".
-export function editingText(names: string[]): string {
-  if (!names.length) return '';
-  const list = names.length === 1 ? names[0] : `${names.slice(0, -1).join(', ')} and ${names.at(-1)}`;
-  return `${list} ${names.length === 1 ? 'is' : 'are'} editing`;
+// "Sam is editing", "Sam and Ana are editing", "Sam, Ana and Lee are editing", in pieces so the names can be marked
+// (Feedback's picture covers them).
+export function editingWords(names: string[]): { text: string; name?: true }[] {
+  return names.flatMap((name, i) => [{ text: name, name: true as const },
+    { text: i < names.length - 2 ? ', ' : i === names.length - 2 ? ' and ' : ` ${names.length === 1 ? 'is' : 'are'} editing` }]);
 }
 
 async function editingFolder(dir: FileSystemDirectoryHandle, create: boolean): Promise<FileSystemDirectoryHandle | null> {
