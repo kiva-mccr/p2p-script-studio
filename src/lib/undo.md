@@ -1,7 +1,7 @@
 # `src/lib/undo.svelte.ts`
 
 The one Undo toast (UX-1, board 72). An action calls `offer({ what, back })`; the toast shows `what` with Undo (or
-`label`) for 5 seconds (UX-14; 10 before), or until the person carries on (`carryOn`: a key or a click anywhere but
+`label`) for 5 seconds (UX-16; 10 before), or until the person carries on (`carryOn`: a key or a click anywhere but
 the toast), and a newer offer replaces it. Write's deletes, pastes and section changes, a take deleted or
 recorded again, a file removed from a row, and Restore in History all go through the Editor's `Undo`; the People
 window has its own.
