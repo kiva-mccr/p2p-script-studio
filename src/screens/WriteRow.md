@@ -9,7 +9,8 @@ flag's note.
 
 ## Rules and pitfalls
 
-- Delete the take (UX-1) reads its sound first (`voice.hold`), deletes it, then offers Undo (`voice.putBack`). A file
+- Delete the take (UX-1) reads its sound first (`voice.hold`), deletes it, then offers Undo (`voice.putBack`), with
+  `again` so Ctrl+Z and Ctrl+Y work on it too (UX-15). A file
   taken out with × (UX-10) offers Undo with the list as it was (`FilesCell`'s `onRemoved`).
 - Split out of `Write.svelte` (the user asked for the large screen files to be split): same markup and look. It edits
   its row in place (`bind:block`, a function binding in Write that sets `script.blocks[i]`) and calls `onChange`.

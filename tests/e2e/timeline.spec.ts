@@ -234,6 +234,23 @@ test('playing: the preview sits above the drawer, follows, a hold plays in silen
   await expect(page.locator('.preview')).toHaveCount(0);
 });
 
+test('upright and big, the preview stays between the top bar and the drawer in a short window', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 640 });
+  await fakeTake(page);
+  await setUp(page, '#/Episode%2003', files);
+  await page.getByRole('button', { name: 'Record row 2', exact: true }).click();
+  await page.getByRole('button', { name: 'Stop recording row 2' }).click();
+  const t = timeline(page);
+  await t.getByRole('button', { name: 'Upright' }).click();
+  await page.getByRole('button', { name: 'Play from row 2' }).click();
+  await t.getByRole('button', { name: 'Make the preview big' }).click();
+  await expect(page.locator('.preview.upright.big')).toBeVisible();
+  const p = (await page.locator('.preview').boundingBox())!, head = (await page.locator('header').first().boundingBox())!;
+  expect(p.y).toBeGreaterThanOrEqual(head.y + head.height);
+  expect(p.y + p.height).toBeLessThanOrEqual((await t.boundingBox())!.y);
+  await page.keyboard.press('Escape');
+});
+
 test('folded while playing: the strip shows the playhead, the preview sits above the bar, and it can unfold', async ({ page }) => {
   await fakeTake(page);
   await setUp(page, '#/Episode%2003', files);

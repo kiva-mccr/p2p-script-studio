@@ -27,6 +27,8 @@ offers its pictures, Sequence or Collage, + Add a picture (only for the timeline
   that is TimelineBar's class, which tests look for) folds and unfolds it, playing or not; folded, a thin `.strip` of
   the blocks and the playhead. Remembered in this browser for every script (`timeline-open`, '1' open); it starts
   folded. It replaced SB-2's Unpin / Pin and the old Hide (`timeline-hidden`, `timeline-unpinned` are no longer read).
+- The tour (SB-7) opens the drawer for its timeline step through the window's `tour-drawer` event and folds it again
+  after, only if it opened it (`byTour`); not remembered. Folding or opening by hand clears `byTour`.
 - Open, the tracks and panel scroll inside `.body` (at most about half the screen), never the section: overflow on
   the section would clip the preview above it.
 - `use:room` keeps the drawer's height as the page's `scroll-padding-bottom` (so `scrollIntoView` lands rows above
@@ -47,6 +49,8 @@ offers its pictures, Sequence or Collage, + Add a picture (only for the timeline
 - Wide / Upright (SB-3) is the script's (front matter `shape`, through `onShape`), not this browser's: the video export
   and EX-19's collages follow it. Upright, the preview is 9:16 (180 px, ⤢ 405 px) and a collage stacks its pictures.
   Not shown in Review (read only).
+- The preview's width is also capped by `--room` (the screen's height less the top bar, `--drawer` and the preview's
+  gap and bar) times its shape: upright and ⤢ ran off the top of a short window, the drawer open, before.
 - A click on a block always brings its row into view (`onShow`), since the drawer never leaves the screen; SB-2's
   "↑ Go to the row" went with it.
 - `selected` is shared with Write's bars (`TimelineBar.svelte`): picking a hold on the timeline opens its bar's

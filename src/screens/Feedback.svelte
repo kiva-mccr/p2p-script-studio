@@ -40,7 +40,10 @@
     hover = null;
   }
 
+  // The note belongs to one piece of feedback: once it's sent or copied, or the panel is closed, the next starts
+  // empty. Pick again before sending keeps it (the person is only changing the part).
   function again() {
+    if (done) note = '';
     mode = 'picking';
     rect = null;
     done = '';
@@ -52,6 +55,7 @@
     picked = null;
     rect = null;
     done = '';
+    note = '';
     setPicture(null);
   }
 
@@ -114,6 +118,7 @@
     rect = el.getBoundingClientRect();
     part = describe(el, location.hash);
     hover = null;
+    if (done) note = '';
     done = '';
     mode = 'open';
     drawPicture();

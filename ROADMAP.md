@@ -451,6 +451,21 @@ and suggestions, keeps every version, and exports them for production.
   N"), on every screen with a top bar; nothing is left in the corners. Built so: a push counts only once the page has
   been at the bottom 0.2 s (wheel events are passive and can arrive after the scroll that reached it); not while
   playing; neither opening nor folding by itself is remembered; the drawer slides (0.15 s).
+- [x] **SB-7** The tour opens the timeline (asked by the user, 2026-11-16: "when it goes to the timeline, could it
+  unfold it to talk about it"): the tour's timeline step in Write (The storyboard timeline) and in Review (The
+  timeline, to look at) opens the drawer (SB-4); leaving the step (Next, Back, Skip, Esc, the end) folds it again,
+  only if it was folded (the user's pick on a decision card). Agreed from a short description, no board. The tour
+  never changes what this browser remembers (`timeline-open`). The Write card now says it "folds away at the bottom
+  of the screen: click its bar, or scroll past the bottom, to open it".
+- [ ] **SB-8** Cut on a word timed from the take (asked by the user, 2026-11-16: "Is the sequence cut using the
+  audio? or is it just using the reading speed, it should use the audio"). Today a row's length is its take's, but
+  where each word falls inside it is estimated by letters (`estimateWords`). The user's pick on a decision card (B,
+  over listening for pauses): a speech model (Whisper with word timestamps, through transformers.js, as Follow my
+  voice) hears each take once and marks when every word starts; the timings are kept with the take so it is heard
+  only once, and the timeline, preview, Play the script and both exports use them. Rows with no take, and takes not
+  yet heard, keep the estimate. A small grey note in the row panel says "timed from the take" or "estimated (no
+  take)". About 150 MB downloaded once per computer. Agreed from a short description; can't be checked here (no
+  Hugging Face in this container), so tested with a stand-in, as EX-8. Builds after the queued ones.
 - [x] **SB-3** Export the timeline as a video (asked by the user, 2026-11-15): the storyboard timeline (SB-1) saved
   as a video file: each row's pictures (collage or sequence, cut on a word), holds and placeholders, with the
   voice-over takes, at the timeline's timings, made in the browser. Mock-up: board 70, agreed (2026-11-15, "looks
@@ -1016,6 +1031,16 @@ Fixes with no new look (UX-3, 5, 6, 8, 9) need no board.
   window (board 72, done 2026-11-15).
   The pointer links were taken out again at the user's ask (2026-11-15): "In review" beside them says enough. Ctrl+F
   stays.
+- [x] **UX-14** Find and replace couldn't be undone with Ctrl+Z (the user, 2026-11-16: "everything that can be done,
+  should be able to be undone using Ctrl+Z"). Done 2026-11-16 (bug fix, no mock-up): one Ctrl+Z and Ctrl+Y for the
+  script in Write (`lib/steps.ts`): typing (a box's typing is one step), formatting, Replace, Replace all, moves, adds,
+  deletes, § and ¶, pastes, Put it back, files in a row, the timeline, credits, Restore. Also from the find bar.
+  Others' saves since stay; a place someone else changed since can't be undone (said in the page).
+- [x] **UX-15** Ctrl+Z for what isn't the script's text: a take deleted or recorded again, a flag set or cleared
+  (the Undo toast covered takes; flags had none). Done 2026-11-16: takes (deleted, recorded again, a first take) and
+  flags (set, cleared, note changed) are steps in the same Ctrl+Z / Ctrl+Y order as the text; a toast's Undo and
+  Ctrl+Y agree. Left out on purpose: comments (Undo on their cards), status changes and official versions (others
+  are told at once), the planning panel's box (the browser's own undo).
 
 ## Last (the user's order: these wait until everything above is done)
 

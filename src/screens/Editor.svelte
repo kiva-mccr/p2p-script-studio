@@ -33,7 +33,8 @@
   import { addNote, flags, listNotes, threads, type Attachment, type Field, type Note } from '../lib/comments';
   import { News } from '../lib/news';
   import { Away } from '../lib/away';
-  import { Undo } from '../lib/undo.svelte';
+  import { Undo, type Offer } from '../lib/undo.svelte';
+  import type { Place } from '../lib/steps';
   import { bring, watchScroll } from '../lib/followrow';
   import { floor } from '../lib/floor';
   import { Places } from '../lib/tabplace';
@@ -70,7 +71,12 @@
   const script = $derived(file.script);
   const status = $derived(file.status);
   const clash = $derived(file.clash);
-  const changed = () => file.changed();
+  // Every edit is a step for Ctrl+Z (lib/steps.ts); typing in one box (the input's box) runs on as one step, but a
+  // change of formatting (`apart`, from TextField) is a step of its own.
+  const changed = (apart?: unknown) => {
+    const e = window.event;
+    file.edited(e?.type === 'input' && apart !== true ? e.target : undefined);
+  };
   const save = () => file.save();
   let missing = $state(false);
   let notice = $state('');
@@ -317,8 +323,14 @@
     switchMode('write');
   }
 
-  // Flags a row with a note (AP-9), or clears its flag (null).
-  const flag = (row: string, text: string | null) => note(text === null ? { kind: 'unflag', row } : { kind: 'flag', row, text });
+  // Flags a row with a note (AP-9), or clears its flag (null). Each is a Ctrl+Z step (UX-15): back to the flag as it was.
+  const setFlag = (row: string, text: string | null) => note(text === null ? { kind: 'unflag', row } : { kind: 'flag', row, text });
+  async function flag(row: string, text: string | null) {
+    const was = flagged.get(row)?.text ?? null;
+    const done = await setFlag(row, text);
+    if (done && was !== text) file.steps.act({ row, back: () => setFlag(row, was), again: () => setFlag(row, text) });
+    return done;
+  }
 
   // A comment, reply, resolve or reopen, in this person's name. Returns false if it couldn't be written.
   // `files` are new files attached to it (RV-11).
@@ -530,6 +542,31 @@
     } });
   }
 
+  // Ctrl+Z or Ctrl+Y in Write: the toast's Undo would now put back the wrong thing, so it goes. A take or a flag
+  // (an act) is run here; Write is told its row, to scroll to.
+  async function step(back: boolean): Promise<Place | { row: string } | null> {
+    const got = file.step(back);
+    if (got === 'clash') notice = "That can't be undone: someone else has changed the same place since.";
+    if (!got || got === 'clash') return null;
+    undo.clear();
+    if ('index' in got) return got;
+    try {
+      await (back ? got.back() : got.again());
+    } catch (e) {
+      notice = problem("That couldn't be undone. If the shared folder is busy, wait a moment and try again.", 'undoing', e);
+    }
+    return got.row ? { row: got.row } : null;
+  }
+
+  // The Undo toast (lib/undo.svelte.ts). An offer that can be done again (a take) is also a Ctrl+Z step; its Undo
+  // button then takes that step back, so Ctrl+Y can bring it again.
+  function offer(o: Offer) {
+    if (!o.again) return undo.offer(o);
+    const act = { back: async () => o.back(), again: o.again, row: o.row };
+    file.steps.act(act);
+    undo.offer({ ...o, back: async () => void (file.steps.isLast(act) ? await step(true) : await o.back()) });
+  }
+
   function undoNow() {
     undo.take().catch((e) => (notice = problem("That couldn't be undone. If the shared folder is busy, wait a moment and try again.", 'undoing', e)));
   }
@@ -644,7 +681,7 @@
     <History {dir} {notes} onRestore={restore} onPublish={(official) => file.publish(official)} onOpen={openComment} />
   {:else if script && dir}
     {#if showVisit && marks}{@render visitBar(marks)}{/if}
-    <Write bind:script={() => script!, (s) => (file.script = s)} bind:finding {dir} root={folder} folderName={path[0]} {voice} {player} canPlay={canPlay} onPlayFrom={play} {name} {flagged} onFlag={flag} onChange={changed} onDeleted={deleted} onUndo={(o) => undo.offer(o)} onNotice={(m) => (notice = m)}
+    <Write bind:script={() => script!, (s) => (file.script = s)} bind:finding {dir} root={folder} folderName={path[0]} {voice} {player} canPlay={canPlay} onPlayFrom={play} {name} {flagged} onFlag={flag} onChange={changed} onDeleted={deleted} onUndo={offer} onStep={step} onAct={(a) => file.steps.act(a)} onNotice={(m) => (notice = m)}
       talk={openThreads} {talking} onTalk={showComment} visit={marks} {came} started={file.started.rows} />
   {/if}
 </main>

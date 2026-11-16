@@ -14,4 +14,6 @@ window has its own.
   A take's sound is read into memory before it is deleted or replaced (`voice.hold`), so Undo writes the same bytes.
 - `take` clears the toast before running `back`, so a second click can't run it twice. A `back` that fails is
   reported by the caller (the Editor shows the message).
+- Ctrl+Z in Write is `lib/steps.ts`, not this toast; undoing a step there clears the toast. An offer with `again` (a
+  take) is also a Ctrl+Z step: the Editor's `offer` pushes it and its button undoes it through the steps.
 - Comment cards keep their own Undo on the card (RV-7, RV-19, the user's earlier boards); they don't use this.

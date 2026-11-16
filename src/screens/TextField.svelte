@@ -13,7 +13,8 @@
     onparagraphs,
     lists = false,
   }: {
-    value: string; label: string; placeholder: string; oninput: () => void;
+    // `apart`: a change of formatting, its own step for Write's Ctrl+Z rather than part of the typing (lib/steps.ts).
+    value: string; label: string; placeholder: string; oninput: (apart?: boolean) => void;
     // Bullet, number and tick box buttons always shown, and the marks shown as • ☐ ☑ (the planning panel, AP-24).
     // Enter, Backspace and renumbering work on lists in every field (AP-29).
     lists?: boolean;
@@ -22,6 +23,7 @@
   } = $props();
 
   let box = $state<HTMLTextAreaElement>();
+  let apart = false; // a formatting button or key is putting its change in
   let focused = $state(false);
   let selecting = $state(false);
   const html = $derived(toHtml(lists ? showLists(value) : value));
@@ -88,7 +90,9 @@
         })()
       : toggle(value, start, end, mark);
     box.focus();
+    apart = true;
     put(next.text, next.start, next.end);
+    apart = false;
     look();
   }
 
@@ -101,7 +105,7 @@
     const typed = diff.added ? document.execCommand('insertText', false, diff.added) : document.execCommand('delete');
     if (!typed) {
       value = text;
-      oninput();
+      oninput(apart);
     }
     box.setSelectionRange(start, end);
   }
@@ -110,7 +114,7 @@
   // undoing the renumbering would renumber again and Ctrl+Z could never go back past it.
   function input(e: Event) {
     if (box) value = box.value;
-    oninput();
+    oninput(apart);
     const kind = (e as InputEvent).inputType;
     if (!box || kind === 'historyUndo' || kind === 'historyRedo') return;
     const next = renumber(value);

@@ -31,7 +31,19 @@
   // starts folded. It replaced SB-2's Unpin and the old Hide.
   const KEY = 'timeline-open';
   let hidden = $state(recall(KEY) !== '1');
-  const fold = (on: boolean) => ((auto = false), keep(KEY, (hidden = on) ? '' : '1'));
+  const fold = (on: boolean) => ((auto = false), (byTour = false), keep(KEY, (hidden = on) ? '' : '1'));
+  // The tour (Tour.svelte) opens the drawer for its timeline step and folds it again after, only if it opened it.
+  // Neither is remembered.
+  let byTour = false;
+  $effect(() => {
+    const tour = (e: Event) => {
+      if ((e as CustomEvent<boolean>).detail) {
+        if (hidden) (hidden = false), (auto = false), (byTour = true);
+      } else if (byTour) (hidden = true), (byTour = false);
+    };
+    addEventListener('tour-drawer', tour);
+    return () => removeEventListener('tour-drawer', tour);
+  });
   // SB-5 (board 77): folded, a push past the bottom of the page (scrolling down again once there) unfolds it, and
   // scrolling up folds it again, but only if it opened so: opened with its bar, it stays. Neither is remembered.
   // Not while playing (Play moves the page itself). Only reaching the bottom does nothing, so the page's height
@@ -457,10 +469,12 @@
   .strip .head { top: -4px; bottom: -4px; border: 0; border-radius: 0; background: #d9480f; }
   .head { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: #d9480f; pointer-events: none; z-index: 2; }
   .blk.now { box-shadow: inset 0 0 0 2px #d9480f; }
-  .preview { position: absolute; right: 16px; bottom: calc(100% + 12px); width: 320px; border-radius: 10px; overflow: hidden; background: #0b0b0b; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25); }
-  .preview.big { width: min(720px, calc(100vw - 64px)); }
-  .preview.upright { width: 180px; }
-  .preview.upright.big { width: min(405px, calc(100vw - 64px)); }
+  /* The preview's picture is never taller than the room between the top bar and the drawer (less its 12 px gap, a
+     12 px margin and the 40 px bar under the picture), so upright and big never run off the top of the screen. */
+  .preview { --room: calc(100vh - var(--bar-h, 0px) - var(--drawer, 0px) - 64px); position: absolute; right: 16px; bottom: calc(100% + 12px); width: min(320px, calc(var(--room) * 16 / 9)); border-radius: 10px; overflow: hidden; background: #0b0b0b; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25); }
+  .preview.big { width: min(720px, calc(100vw - 64px), calc(var(--room) * 16 / 9)); }
+  .preview.upright { width: min(180px, calc(var(--room) * 9 / 16)); }
+  .preview.upright.big { width: min(405px, calc(100vw - 64px), calc(var(--room) * 9 / 16)); }
   .upright .screen { aspect-ratio: 9 / 16; flex-direction: column; }
   .upright .screen.collage-on { padding: 6% 8%; }
   .upright .screen img, .upright .screen video, .upright .screen .vid { min-height: 0; }

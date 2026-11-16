@@ -19,7 +19,7 @@ Status: a first working version. What it does today:
   equation, a plan, credits with six made-up people's contacts, a template, and a History with a send back)
   to click around in first; your changes stay in this browser, Start over puts it back as new, and the – folds the
   offer to one line for good. Inside it, a short guided tour shows each tab the first time you open it, the timeline
-  included: Next (or →)
+  included (its drawer opens for that step and folds again after): Next (or →)
   moves on, Skip tour (or Esc) stops the tours on every tab, and Take the tour in the blue strip plays it again.
 - **The list:** every script in the folder, its status, and who last edited it and when. New script starts one; the arrow beside it starts one from a template, or makes a new template (templates sit at the bottom of the list).
   It opens fast on a network drive: your computer remembers each script's line, looks only at file names and dates,
@@ -29,7 +29,9 @@ Status: a first working version. What it does today:
 - **Writing:** each row is dialogue, what's on screen, and its images and files. Click to type; hover a row to move,
   add or delete it. Keys: Tab goes to the next box (Shift+Tab back), Ctrl+Down and Ctrl+Up go straight to the row
   below or above (same column, past section titles), Ctrl+Enter adds a row below and Ctrl+Shift+Enter one above,
-  Alt+Up and Alt+Down move the row, Ctrl+Shift+Backspace deletes it (Undo at the bottom puts it back). In Review and
+  Alt+Up and Alt+Down move the row, Ctrl+Shift+Backspace deletes it (Undo at the bottom puts it back). Ctrl+Z undoes
+  any change to the script, in order (typing, Replace all, moves, deletes, pastes, the timeline, takes, flags), and Ctrl+Y or
+  Ctrl+Shift+Z does it again; someone else's saves since stay. In Review and
   Write's Comments tab, Alt+N and Alt+P go to the next and previous open comment (replying and deciding stay clicks).
   ⋯ > Settings lists every key; click one to change it (kept in this browser), Reset puts it back. No key switches
   between Write, Review and History. Add section puts a new section right after the box you are typing in (or at the end); a section
@@ -174,7 +176,7 @@ Status: a first working version. What it does today:
 - **Find and replace:** Ctrl+F in Write or Review (or ⋯ › Find and replace) opens a bar above the script. It finds in section
   titles, Dialogue, On screen and the notes and link names in Images & files, never in file names or links, and marks
   every match (the one you're on darker). Enter and Shift+Enter step through; Match case and Whole words narrow it.
-  Replace changes the match you're on and goes to the next; Replace all changes every one, with Undo at the bottom. A
+  Replace changes the match you're on and goes to the next; Replace all changes every one, with Undo at the bottom (Ctrl+Z works too). A
   replacement takes the capitals of the word it replaces (Glucose becomes Sugar). Esc closes the bar; Ctrl+F from
   inside it gives the browser's own find.
 - **Flags:** flag a row to come back to it (the flag under its number, shown when you point at the row), with an

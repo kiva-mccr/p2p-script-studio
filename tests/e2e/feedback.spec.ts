@@ -203,3 +203,37 @@ test('pictures in the picture are covered too', async ({ page }) => {
   await page.getByRole('region', { name: 'Feedback' }).getByLabel("Cover the script's words and names").uncheck();
   await expect.poll(() => redPixels(picture)).toBeGreaterThan(0);
 });
+
+test('the note starts empty each time, but Pick again before sending keeps it (a bug the user hit)', async ({ page }) => {
+  await openScript(page);
+  const panel = page.getByRole('region', { name: 'Feedback' });
+  const note = panel.getByRole('textbox');
+
+  // Sent, then closed: the next feedback starts empty.
+  await startFeedback(page);
+  await page.getByRole('button', { name: 'Record row 1' }).click();
+  await note.fill('First note.');
+  await issueFrom(page, () => panel.getByRole('button', { name: 'Open on GitHub' }).click());
+  await panel.getByRole('button', { name: 'Close' }).click();
+  await startFeedback(page);
+  await page.getByRole('button', { name: 'Record row 1' }).click();
+  await expect(note).toHaveValue('');
+
+  // Pick again before sending keeps the note; after copying, it starts empty.
+  await note.fill('Second note.');
+  await panel.getByRole('button', { name: 'Pick again' }).click();
+  await page.getByLabel('Dialogue, row 1').click();
+  await expect(note).toHaveValue('Second note.');
+  await panel.getByRole('button', { name: 'Copy instead' }).click();
+  await expect(panel.getByRole('status')).toContainText('Copied');
+  await panel.getByRole('button', { name: 'Pick again' }).click();
+  await page.getByRole('button', { name: 'Record row 1' }).click();
+  await expect(note).toHaveValue('');
+
+  // Cancelled: gone too.
+  await note.fill('Third note.');
+  await panel.getByRole('button', { name: 'Cancel' }).click();
+  await startFeedback(page);
+  await page.getByRole('button', { name: 'Record row 1' }).click();
+  await expect(note).toHaveValue('');
+});
