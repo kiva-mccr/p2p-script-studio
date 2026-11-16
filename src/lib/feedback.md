@@ -27,5 +27,7 @@ picture's copy of the page with solid grey boxes. Built so the issue can be acte
   a button must mark it. Row numbers and "+ Add" are the app's too (the user: not identifying).
 - A box on one line that cuts off (a file's chip, `white-space: nowrap`) is an inline-block cut to fit, or its
   rounded end was sliced square (x's are wider than most letters).
+- Pictures are the script's too (the user): every img, video, canvas and iframe becomes a grey box of its size,
+  unless inside `data-keep`. The app's icons are inline SVG, so they stay.
 - The note is cut at 2,000 characters so the link stays well under GitHub's length limit.
 - The `feedback` label in the link is only applied for people who may label issues; others' issues come unlabelled.

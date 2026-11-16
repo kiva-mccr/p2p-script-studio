@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { setUp } from './folder';
 
@@ -169,4 +169,37 @@ test('the picture covers names and the script in solid grey, but not "In review"
   expect(colours[1]).not.toContain(grey); // In review
   expect(colours[2]).toEqual([grey, grey, grey]); // the script's name
   expect(colours[3]).not.toContain(grey); // Saved
+});
+
+// How many red pixels the feedback picture has.
+const redPixels = (picture: Locator) =>
+  picture.evaluate(async (img: HTMLImageElement) => {
+    await img.decode();
+    const c = document.createElement('canvas');
+    c.width = img.naturalWidth;
+    c.height = img.naturalHeight;
+    const g = c.getContext('2d')!;
+    g.drawImage(img, 0, 0);
+    const d = g.getImageData(0, 0, c.width, c.height).data;
+    let n = 0;
+    for (let i = 0; i < d.length; i += 4) if (d[i] > 200 && d[i + 1] < 60 && d[i + 2] < 60) n++;
+    return n;
+  });
+
+test('pictures in the picture are covered too', async ({ page }) => {
+  const red = '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="120"><rect width="200" height="120" fill="#ff0000"/></svg>';
+  await page.context().grantPermissions(['clipboard-read', 'clipboard-write']);
+  await setUp(page, '#/Episode%2003', { 'Episode 03/script.md': example, 'Episode 03/assets/icons-ingredients.svg': red });
+  const shown = page.locator('[data-row]').nth(1).locator('img');
+  await expect(shown.first()).toBeVisible();
+  await startFeedback(page);
+  await page.getByLabel('Dialogue, row 2').click();
+  const picture = page.getByRole('region', { name: 'Feedback' }).getByRole('img', { name: 'The part, outlined' });
+  await expect(picture).toBeVisible();
+  // Not one red pixel: the preview is a grey box.
+  const reds = await redPixels(picture);
+  expect(reds).toBe(0);
+  // And it was there to cover: unticked, the preview shows.
+  await page.getByRole('region', { name: 'Feedback' }).getByLabel("Cover the script's words and names").uncheck();
+  await expect.poll(() => redPixels(picture)).toBeGreaterThan(0);
 });

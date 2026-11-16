@@ -248,8 +248,8 @@ Status: a first working version. What it does today:
 - **Feedback:** Feedback… in the ? menu at the right end of the top bar. Click it, then click the part of the screen
   that's giving you trouble or could be better (it gets an orange outline), and write a short note. Open on GitHub
   opens a new issue with your note and where the part is filled in, and copies a picture of the part to paste in
-  (Ctrl+V); you sign in to GitHub and press Submit there. GitHub is public, so the script's words and people's names are
-  covered with solid grey boxes in the picture, and its name is left out, unless you untick or tick them. No GitHub account? Copy instead copies the same text for
+  (Ctrl+V); you sign in to GitHub and press Submit there. GitHub is public, so the script's words, its pictures and people's names
+  are covered with solid grey boxes in the picture, and its name is left out, unless you untick or tick them. No GitHub account? Copy instead copies the same text for
   Teams or an email.
 
 Needs Chrome or Edge on a desktop computer. The ? at the right end of the top bar has the link to the code on GitHub and the live version, "Version: PR #62" for

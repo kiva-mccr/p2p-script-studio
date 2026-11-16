@@ -178,8 +178,8 @@ function covered(el: Element): boolean {
   return !control || (!!el.closest('[data-row]') && !control.hasAttribute('aria-label'));
 }
 
-/** Covers the words in a copy of the page (the picture's) with solid grey boxes: the script's words and people's
- * names, but not the app's controls outside rows nor what is marked `data-keep`. */
+/** Covers the words in a copy of the page (the picture's) with solid grey boxes: the script's words, its pictures and
+ * people's names, but not the app's controls outside rows nor what is marked `data-keep`. */
 export function coverWords(root: Element) {
   const doc = root.ownerDocument;
   const box = (text: string, line = false) => {
@@ -192,6 +192,18 @@ export function coverWords(root: Element) {
   for (const el of [root, ...root.querySelectorAll('*')]) {
     if (!('style' in el)) continue; // the copy's elements may come from another document, so no instanceof
     const h = el as HTMLInputElement;
+    if (/^(IMG|VIDEO|CANVAS|PICTURE|IFRAME)$/.test(h.tagName) && !h.closest('[data-keep]')) {
+      // A picture (a file's preview, a video's still, the timeline's) becomes a grey box of the same size.
+      const stand = doc.createElement('div');
+      stand.setAttribute('style', h.getAttribute('style') ?? '');
+      stand.style.setProperty('background', '#a3a3a3', 'important');
+      stand.style.setProperty('border-radius', '4px', 'important');
+      if (!stand.style.display || stand.style.display === 'inline') stand.style.display = 'inline-block';
+      if (!stand.style.width) stand.style.width = `${(h as unknown as HTMLImageElement).width || 0}px`;
+      if (!stand.style.height) stand.style.height = `${(h as unknown as HTMLImageElement).height || 0}px`;
+      h.replaceWith(stand);
+      continue;
+    }
     const typed = h.tagName === 'TEXTAREA' || (h.tagName === 'INPUT' && !/^(checkbox|radio|range|button|submit|color|file)$/.test(h.type));
     if (!typed) continue;
     // A text box becomes a box of the same look holding its words as grey boxes, line by line.
