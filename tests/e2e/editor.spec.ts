@@ -27,6 +27,14 @@ test('shows the three columns, sections and files', async ({ page }) => {
   await expect(page.getByRole('link', { name: 'Chloroplast zoom animation' })).toHaveAttribute('href', 'https://example.com/chloroplast-zoom.mp4');
 });
 
+test('the Write · Review · History · Assets tabs sit in the middle of the bar (#188)', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await openExample(page);
+  const [tabs, bar] = await Promise.all([page.getByRole('navigation', { name: 'Mode' }).boundingBox(), page.locator('header').boundingBox()]);
+  expect(Math.abs(tabs!.x + tabs!.width / 2 - (bar!.x + bar!.width / 2))).toBeLessThan(4);
+  expect(bar!.height).toBeLessThan(80); // still one line at 1280
+});
+
 test('saves on its own after you stop typing, and adds you as an author', async ({ page }) => {
   await openExample(page);
   await page.getByLabel('Dialogue, row 1').fill('Every leaf is a tiny factory.');

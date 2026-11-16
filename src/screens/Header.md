@@ -67,3 +67,5 @@ Copy for Teams, EX-10) above Export (Print…, Fountain, Final Draft, Voice-over
 - One line at 1280 in Write and Review, Presence shown (the user, 2026-11-15): tabs 12 px each side, the right group's
   gap 6 px, crumbs wrap below 260 px, Review's opener reads "Send back" (its name stays "Send back to writer"), and
   Presence is short. Anything new in the bar must keep Review at 1280 on one line (`review.spec`'s one-line test).
+- The tabs sit in the middle of the window (#188): `.crumbs` and `.right` have the same flex (1 1 260px), so they
+  share the room either side. Change one and change the other, or the tabs drift off centre.
