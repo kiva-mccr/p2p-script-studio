@@ -4,6 +4,10 @@ export type Offer = {
   what: string; // "Take of row 1 deleted."
   label?: string; // the button, when "Undo" alone isn't clear ("Undo, keep the old take")
   back: () => void | Promise<void>;
+  // Doing it again (Ctrl+Y), for a change outside the script's text (a take): with it, it is also a Ctrl+Z step
+  // (lib/steps.ts). `row`: the row it was on, scrolled to when undone with Ctrl+Z.
+  again?: () => Promise<unknown>;
+  row?: string;
 };
 
 export class Undo {

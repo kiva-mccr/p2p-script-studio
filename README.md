@@ -30,7 +30,7 @@ Status: a first working version. What it does today:
   add or delete it. Keys: Tab goes to the next box (Shift+Tab back), Ctrl+Down and Ctrl+Up go straight to the row
   below or above (same column, past section titles), Ctrl+Enter adds a row below and Ctrl+Shift+Enter one above,
   Alt+Up and Alt+Down move the row, Ctrl+Shift+Backspace deletes it (Undo at the bottom puts it back). Ctrl+Z undoes
-  any change to the script, in order (typing, Replace all, moves, deletes, pastes, the timeline), and Ctrl+Y or
+  any change to the script, in order (typing, Replace all, moves, deletes, pastes, the timeline, takes, flags), and Ctrl+Y or
   Ctrl+Shift+Z does it again; someone else's saves since stay. In Review and
   Write's Comments tab, Alt+N and Alt+P go to the next and previous open comment (replying and deciding stay clicks).
   ⋯ > Settings lists every key; click one to change it (kept in this browser), Reset puts it back. No key switches

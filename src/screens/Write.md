@@ -19,7 +19,8 @@ deleting, keys, the flag bar, find, quotes marked, removed rows). Any column but
   (stopping a take on another row needs that row's dialogue), and hands them to the row as callbacks.
 - No browser dialogs (the user's rule): a delete is handed to the Editor with the blocks as they were
   (`onDeleted`), which shows the Undo bar. A take recorded again offers "Undo, keep the old take" (`stopTake`, UX-2,
-  through `onUndo`).
+  through `onUndo`). Both, and a first take (`onAct`, no toast), are Ctrl+Z steps (UX-15): the new take is read back
+  into memory after it is saved, so Ctrl+Y can write it again.
 - The column headings are `position: sticky`: no scrolling box (`overflow`) may wrap the table, or they stick to
   it instead of the window. A narrow window scrolls the page sideways instead. They (and Find's wrapper) stick under
   the top bar, at `--bar-h` (set by `Header.svelte`, UX-4).

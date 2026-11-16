@@ -1023,8 +1023,11 @@ Fixes with no new look (UX-3, 5, 6, 8, 9) need no board.
   script in Write (`lib/steps.ts`): typing (a box's typing is one step), formatting, Replace, Replace all, moves, adds,
   deletes, § and ¶, pastes, Put it back, files in a row, the timeline, credits, Restore. Also from the find bar.
   Others' saves since stay; a place someone else changed since can't be undone (said in the page).
-- [ ] **UX-15** Ctrl+Z for what isn't the script's text: a take deleted or recorded again, a flag set or cleared
-  (the Undo toast covers takes; flags have none). Audit and build after UX-14.
+- [x] **UX-15** Ctrl+Z for what isn't the script's text: a take deleted or recorded again, a flag set or cleared
+  (the Undo toast covered takes; flags had none). Done 2026-11-16: takes (deleted, recorded again, a first take) and
+  flags (set, cleared, note changed) are steps in the same Ctrl+Z / Ctrl+Y order as the text; a toast's Undo and
+  Ctrl+Y agree. Left out on purpose: comments (Undo on their cards), status changes and official versions (others
+  are told at once), the planning panel's box (the browser's own undo).
 
 ## Last (the user's order: these wait until everything above is done)
 

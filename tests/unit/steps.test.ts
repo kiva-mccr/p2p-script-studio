@@ -66,6 +66,22 @@ describe('Steps (Ctrl+Z and Ctrl+Y)', () => {
   });
 });
 
+describe('Steps with acts (UX-15)', () => {
+  it('keeps a take or flag in order with the text, and hands it back to run', () => {
+    const steps = new Steps();
+    const [a, b] = [script(['r1', 'one']), script(['r1', 'one two'])];
+    steps.reset(a);
+    const act = { back: async () => {}, again: async () => {}, row: 'r1' };
+    steps.note(b);
+    steps.act(act);
+    expect(steps.isLast(act)).toBe(true);
+    expect(steps.undo(b)).toBe(act);
+    expect(steps.undo(b)).toBe(a);
+    expect(steps.redo(a)).toBe(b);
+    expect(steps.redo(b)).toBe(act);
+  });
+});
+
 describe('settle', () => {
   it('changes the page in place, keeping the rows that stay, and says where the change is', () => {
     const page = parseScript(script(['r1', 'one'], ['r2', 'two'], ['r3', 'three']));

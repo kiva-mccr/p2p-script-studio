@@ -6,7 +6,7 @@
   import { clock, sectionWords, speaking } from '../lib/readtime.svelte';
   import { emptyRow, type Block, type Script } from '../lib/script';
   import type { Offer } from '../lib/undo.svelte';
-  import type { Place } from '../lib/steps';
+  import type { Act, Place } from '../lib/steps';
   import { bring } from '../lib/followrow';
   import { plain } from '../lib/format';
   import { QuoteMarks } from '../lib/quotemarks';
@@ -37,14 +37,14 @@
   // visit: rows others changed since this person last looked (RV-15), marked; the rows stay editable as ever.
   // came: a file just added to a row from a comment (RV-12), named under its chip.
   // started: each row's words when the script was opened (AP-38), shown under a cell you changed; Put it back.
-  let { script = $bindable(), finding = $bindable(), dir, root, folderName, voice, player, canPlay, name, flagged, talk, talking, visit, came = null, started, onChange, onDeleted, onUndo, onStep, onNotice, onPlayFrom, onFlag, onTalk }: {
+  let { script = $bindable(), finding = $bindable(), dir, root, folderName, voice, player, canPlay, name, flagged, talk, talking, visit, came = null, started, onChange, onDeleted, onUndo, onStep, onAct, onNotice, onPlayFrom, onFlag, onTalk }: {
     script: Script; finding: boolean; dir: FileSystemDirectoryHandle; root: FileSystemDirectoryHandle; folderName: string; voice: VoiceOver; player: Player; canPlay: boolean; name: string;
     flagged: Map<string, Flag>; onFlag: (row: string, note: string | null) => Promise<boolean>;
     talk: Thread[]; talking: string; onTalk: (id: string) => void; visit: Marks | null; started: ReadonlyMap<string, Words>;
     came?: { row: string; line: string; from: string } | null;
     onChange: (apart?: boolean) => void; onPlayFrom: (id: string) => void;
     onDeleted: (before: Block[], what: string) => void; onUndo: (offer: Offer) => void; onNotice: (message: string) => void;
-    onStep: (back: boolean) => Place | null;
+    onStep: (back: boolean) => Promise<Place | { row: string } | null>; onAct: (act: Act) => void;
   } = $props();
 
   const words = $derived(sectionWords(script)); // each section's read time (AP-12)
@@ -82,9 +82,10 @@
     const typing = at.matches?.('input, textarea, select, [contenteditable]');
     if (typing && !(table?.contains(at) && at.matches(BOXES)) && !at.closest('.find')) return;
     e.preventDefault();
-    const place = onStep(back);
+    const place = await onStep(back);
     if (!place) return;
     await tick();
+    if ('row' in place) return void table?.querySelector(`[data-row="${place.row}"]`)?.scrollIntoView({ block: 'nearest' });
     const block = table?.querySelector<HTMLElement>(`[data-block="${place.index}"]`);
     const box = place.field === 'title' ? block?.querySelector<HTMLInputElement>('.section-title')
       : place.field ? block?.querySelector<HTMLTextAreaElement>(`.${place.field === 'onScreen' ? 'screen' : 'dialogue'} textarea`) : null;
@@ -101,12 +102,17 @@
     return row?.type === 'row' ? row.dialogue : '';
   };
 
-  // A take recorded again replaces the old one when it stops; Undo writes the old one back (UX-2, board 72).
+  // A take recorded again replaces the old one when it stops; Undo writes the old one back (UX-2, board 72). Ctrl+Z
+  // undoes a first take too (UX-15): it is deleted, and Ctrl+Y writes it back.
   async function stopTake(id: string) {
     const held = await voice.hold(dir, id);
     await voice.stop(dir, name, lineOf(id));
     const n = numbers.get(script.blocks.find((b) => b.type === 'row' && b.id === id)!);
-    if (held && voice.takes[id]) onUndo({ what: `New take for row ${n} saved.`, label: 'Undo, keep the old take', back: () => voice.putBack(dir, id, held) });
+    const made = voice.takes[id] && (await voice.hold(dir, id));
+    if (!made) return;
+    const again = () => voice.putBack(dir, id, made);
+    if (held) onUndo({ what: `New take for row ${n} saved.`, label: 'Undo, keep the old take', back: () => voice.putBack(dir, id, held), again, row: id });
+    else onAct({ back: () => voice.remove(dir, id), again, row: id });
   }
 
   async function mic(id: string) {
