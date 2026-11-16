@@ -14,6 +14,8 @@ picture's copy of the page with solid grey boxes. Built so the issue can be acte
   folder name and the page's address). A part's name comes from its label (aria-label, title, a button's own words),
   never a text box's contents; a name that looks like a file or path ("leaf.jpg", "../x") becomes "(a file)".
 - A click on an icon's drawing means the button it's in (`partOf`).
+- A menu item (`role="menuitem"`) or option is named by its own words, like a button (AP-49); before, a link in a
+  menu was only "link".
 - The selector starts from the nearest id, row (`data-row`) or a `data-tour` used only once: `data-tour="row"` is on
   every row, so it found the wrong one.
 - The row number is read from a label inside the row ("Dialogue, row 3"), since `data-block` counts sections too.

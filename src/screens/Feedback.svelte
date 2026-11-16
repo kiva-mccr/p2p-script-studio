@@ -64,41 +64,62 @@
     picture = next;
   }
 
-  // While picking, the page's own clicks and keys are held back: the click only says which part.
+  // While picking, the page's own clicks and keys are held back: the click only says which part. Holding Shift lets
+  // them through (AP-49), to open a menu or a dropdown; letting go picks again, and the menu stays open.
+  let through = $state(false);
   $effect(() => {
     if (mode !== 'picking') return;
+    let passing = false; // a press made with Shift held: its release and click go through too, even if Shift is let go
+    const shift = (e: KeyboardEvent | PointerEvent | MouseEvent) => {
+      through = e.shiftKey;
+      if (through) hover = null;
+    };
     const move = (e: PointerEvent) => {
-      hover = e.target instanceof Element && !ours(e.target) ? partOf(e.target).getBoundingClientRect() : null;
+      shift(e);
+      hover = !through && e.target instanceof Element && !ours(e.target) ? partOf(e.target).getBoundingClientRect() : null;
     };
     const hold = (e: Event) => {
       if (ours(e.target)) return;
+      if (e.type === 'pointerdown' || e.type === 'mousedown') passing = (e as MouseEvent).shiftKey;
+      if (passing || (e as MouseEvent).shiftKey) return;
       e.preventDefault();
       e.stopImmediatePropagation();
     };
     const click = (e: MouseEvent) => {
       if (ours(e.target)) return;
+      if (passing || e.shiftKey) return void (passing = false);
       hold(e);
       if (e.target instanceof Element) pick(partOf(e.target));
     };
     const key = (e: KeyboardEvent) => {
+      shift(e);
       if (e.key !== 'Escape') return;
       e.preventDefault();
       e.stopImmediatePropagation();
       stop();
     };
+    const lost = () => (through = false);
     const held = ['pointerdown', 'mousedown', 'pointerup', 'mouseup', 'dblclick', 'auxclick', 'contextmenu'];
     addEventListener('pointermove', move, true);
     held.forEach((t) => addEventListener(t, hold, true));
     addEventListener('click', click, true);
     addEventListener('keydown', key, true);
+    addEventListener('keyup', shift, true);
+    addEventListener('blur', lost);
     document.documentElement.classList.add('feedback-picking');
     return () => {
       removeEventListener('pointermove', move, true);
       held.forEach((t) => removeEventListener(t, hold, true));
       removeEventListener('click', click, true);
       removeEventListener('keydown', key, true);
+      removeEventListener('keyup', shift, true);
+      removeEventListener('blur', lost);
       document.documentElement.classList.remove('feedback-picking');
+      through = false;
     };
+  });
+  $effect(() => {
+    document.documentElement.classList.toggle('feedback-through', through);
   });
 
   // The picked part keeps its outline as the page scrolls or the window changes size.
@@ -183,7 +204,8 @@
 
 {#if mode === 'picking'}
   <div class="strip" role="status" data-feedback-ui>
-    <p><b>Feedback:</b> click the part that's giving you trouble or could be better. Esc to stop.</p>
+    <p><b>Feedback:</b> click the part that's giving you trouble or could be better.
+      <span class="help">Hold Shift to use the page, for example to open a menu.</span> Esc to stop.</p>
     <button type="button" class="outline" onclick={stop}>Stop</button>
   </div>
   {#if hover}<div class="ring" aria-hidden="true" style:left="{hover.left - 3}px" style:top="{hover.top - 3}px" style:width="{hover.width + 6}px" style:height="{hover.height + 6}px"></div>{/if}
@@ -229,7 +251,7 @@
 {/if}
 
 <style>
-  :global(html.feedback-picking), :global(html.feedback-picking *) { cursor: crosshair !important; }
+  :global(html.feedback-picking:not(.feedback-through)), :global(html.feedback-picking:not(.feedback-through) *) { cursor: crosshair !important; }
   .strip { position: fixed; z-index: 60; left: 50%; bottom: 40px; transform: translateX(-50%); width: min(720px, calc(100% - 32px));
     box-sizing: border-box; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 16px; padding: 6px 16px;
     border: 1px solid #c9d5f2; border-radius: 10px; background: #eef2fb; font-size: 14px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08); }
