@@ -80,7 +80,7 @@
   const save = () => file.save();
   let missing = $state(false);
   let notice = $state('');
-  // The last delete (and other undoable steps, UX-1), offered a few seconds so it can be undone (no browser dialogs).
+  // The last delete (and other undoable steps, UX-1), offered 5 seconds (or until you carry on) so it can be undone.
   const undo = new Undo();
   let printing = $state<(PrintChoices & { version: string }) | null>(null); // the print version, while printing (EX-1)
   let exporting = $state<{ to: Format; version: string } | null>(null); // the export screen (EX-9), in place of the script
@@ -618,7 +618,8 @@
   }
 </script>
 
-<svelte:window onscroll={() => (places.note(mode, scrollY), player.started && !player.following && lookForRow())} onbeforeunload={beforeUnload} onafterprint={() => (printing = null)} onkeydown={(e) => (saveKey(e), findKey(e), playKeys(e))} />
+<svelte:window onscroll={() => (places.note(mode, scrollY), player.started && !player.following && lookForRow())} onbeforeunload={beforeUnload} onafterprint={() => (printing = null)} onkeydown={(e) => (saveKey(e), findKey(e), playKeys(e))}
+  onkeydowncapture={(e) => undo.carryOn(e)} onclickcapture={(e) => undo.carryOn(e)} />
 <svelte:document onfocusin={(e) => { const at = (e.target as HTMLElement).closest?.<HTMLElement>('[data-block]'); if (at) cursorBlock = Number(at.dataset.block); }} onvisibilitychange={() => (document.hidden ? status === 'waiting' && save() : away.away ? away.touch() : checkOutside())} />
 
 {#if prompting && script}
@@ -640,7 +641,7 @@
 <!-- Messages sit at the bottom of the window, so they are seen wherever you have scrolled to. -->
 <div class="toasts">
   {#if undo.shown}
-    <div class="banner quiet" aria-live="polite">
+    <div class="banner quiet" aria-live="polite" data-undo>
       <p>{undo.shown.what}</p>
       <button class="outline" onclick={undoNow}>{undo.shown.label ?? 'Undo'}</button>
     </div>

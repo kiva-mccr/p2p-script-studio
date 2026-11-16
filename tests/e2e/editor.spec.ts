@@ -139,6 +139,25 @@ test('a delete can be undone, without any browser dialog', async ({ page }) => {
   expect(await readFile(page, SCRIPT)).toBe(example);
 });
 
+test('the Undo toast goes after 5 seconds, or at once when you carry on', async ({ page }) => {
+  await page.addInitScript(() => localStorage.removeItem('undo-for')); // the real 5 seconds
+  await page.clock.install();
+  await openExample(page);
+  const toast = page.locator('.toasts [data-undo]');
+  await page.getByRole('button', { name: 'Delete row 1' }).click();
+  await expect(toast).toContainText('Row 1 deleted.');
+  await page.keyboard.press('Tab'); // reaching for Undo by keyboard keeps it
+  await page.clock.runFor(4000);
+  await expect(toast).toBeVisible();
+  await page.clock.runFor(1000);
+  await expect(toast).toHaveCount(0);
+  // Clicking into a row to carry on writing: the toast goes.
+  await page.getByRole('button', { name: 'Delete row 1' }).click();
+  await expect(toast).toContainText('Row 1 deleted.');
+  await page.getByLabel('Dialogue, row 2').click();
+  await expect(toast).toHaveCount(0);
+});
+
 test('each tab keeps your place: Write, Review and back lands where you were (UX-3)', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 600 });
   await openExample(page);

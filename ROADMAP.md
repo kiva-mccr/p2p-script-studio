@@ -1037,6 +1037,9 @@ Fixes with no new look (UX-3, 5, 6, 8, 9) need no board.
   flags (set, cleared, note changed) are steps in the same Ctrl+Z / Ctrl+Y order as the text; a toast's Undo and
   Ctrl+Y agree. Left out on purpose: comments (Undo on their cards), status changes and official versions (others
   are told at once), the planning panel's box (the browser's own undo).
+- [x] **UX-16** The Undo toast stayed 10 seconds whatever you did (the user: "the undo panes stick around way too
+  long"). Fix: 5 seconds, and it goes at once when you carry on (a key or a click anywhere but the toast; Tab and a
+  lone Shift, Ctrl or Alt don't count, so Undo can still be reached by keyboard). Done 2026-11-16.
 
 ## Last (the user's order: these wait until everything above is done)
 

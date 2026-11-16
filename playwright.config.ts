@@ -8,7 +8,7 @@ export default defineConfig({
   use: {
     baseURL: 'http://localhost:4173/',
     trace: 'off',
-    storageState: { cookies: [], origins: [{ origin: 'http://localhost:4173', localStorage: [{ name: 'tour-skipped', value: 'yes' }, { name: 'save-every', value: '1500' }, { name: 'alone-every', value: '5000' }] }] },
+    storageState: { cookies: [], origins: [{ origin: 'http://localhost:4173', localStorage: [{ name: 'tour-skipped', value: 'yes' }, { name: 'save-every', value: '1500' }, { name: 'alone-every', value: '5000' }, { name: 'undo-for', value: '30000' }] }] },
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   webServer: { command: 'npm run build && npm run preview -- --port 4173 --strictPort', port: 4173, reuseExistingServer: false },
