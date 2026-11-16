@@ -259,7 +259,9 @@
     border-radius: 8px; color: var(--muted); }
   .back:hover { background: #f2f2f2; color: var(--accent); }
   .title { font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .right { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 4px; flex: 0 1 auto; margin-left: auto; }
+  /* The title side and the buttons side grow alike, so the tabs sit in the middle of the window (#188, the user's
+     pick); a side with more in it than its half pushes them over; it wraps whole onto a line of its own (fit-content) before its buttons wrap. */
+  .right { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 4px; flex: 1 1 260px; min-width: fit-content; margin-left: auto; }
   .right > * { white-space: nowrap; }
   .right :global(.outline), .right .dark { padding: 0 12px; } /* narrower than elsewhere: the bar is one line at 1280 */
   .modes { display: flex; gap: 2px; padding: 3px; border-radius: 10px; background: #f2f2f2; }
