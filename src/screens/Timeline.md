@@ -47,6 +47,8 @@ offers its pictures, Sequence or Collage, + Add a picture (only for the timeline
 - Wide / Upright (SB-3) is the script's (front matter `shape`, through `onShape`), not this browser's: the video export
   and EX-19's collages follow it. Upright, the preview is 9:16 (180 px, ⤢ 405 px) and a collage stacks its pictures.
   Not shown in Review (read only).
+- The preview's width is also capped by `--room` (the screen's height less the top bar, `--drawer` and the preview's
+  gap and bar) times its shape: upright and ⤢ ran off the top of a short window, the drawer open, before.
 - A click on a block always brings its row into view (`onShow`), since the drawer never leaves the screen; SB-2's
   "↑ Go to the row" went with it.
 - `selected` is shared with Write's bars (`TimelineBar.svelte`): picking a hold on the timeline opens its bar's
