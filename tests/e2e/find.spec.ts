@@ -51,7 +51,12 @@ test('Ctrl+F finds in every column but file names, steps through, and Esc closes
   const count = page.getByRole('search').getByRole('status');
   // The section title, both text columns, the "to find" note; never glucose-flow.mp4.
   await expect(count).toHaveText('1 of 6');
-  await expect(page.getByLabel('Section title')).toHaveClass(/found-on/);
+  // Only the matched word in the title is tinted, not the whole box (#190).
+  const titleMarks = page.locator('.section .title-marks mark');
+  await expect(titleMarks).toHaveCount(1);
+  await expect(titleMarks).toHaveClass(/on/);
+  const [word, box] = await Promise.all([titleMarks.boundingBox(), page.getByLabel('Section title').boundingBox()]);
+  expect(word!.width).toBeLessThan(box!.width / 2);
   await expect.poll(() => marks(page)).toEqual(['glucose', 'GLUCOSE', 'glucose', 'Glucose', 'glucose', 'on:']);
   await find.press('Enter');
   await expect(count).toHaveText('2 of 6');

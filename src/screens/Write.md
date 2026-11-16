@@ -64,3 +64,6 @@ deleting, keys, the flag bar, find, quotes marked, removed rows). Any column but
   (`lit` on `WriteRow`). Removing one goes through the Undo bar (`onDeleted`), copying the row first.
 - Before you started (AP-38): `started` (the Editor's `file.started.rows`) goes to each row as `start`; Put it back
   (`putBack`) copies the row for the Undo bar (`onDeleted`) before setting the field, like a paste.
+- Find's matches in a section title (#190) are a see-through copy of the title behind its box (`.title-marks`), with
+  the matched words tinted; the copy must keep the box's font and padding or the tint drifts off the letters. A title
+  longer than its box and scrolled sideways while typing can drift; Find's marks are for reading, not typing.

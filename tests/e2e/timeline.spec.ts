@@ -137,6 +137,9 @@ test('the drawer starts folded, folds and unfolds, and is remembered', async ({ 
   await expect(bar).toHaveAttribute('aria-expanded', 'false');
   await expect(t.locator('.strip span').first()).toBeVisible();
   await expect(t.getByRole('button', { name: /^Row 1 · / })).toHaveCount(0);
+  // Scrolled to the end, it still sits on the window's bottom edge, with no gap below it (#187).
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  await expect.poll(async () => Math.round((await t.boundingBox())!.y + (await t.boundingBox())!.height)).toBe(page.viewportSize()!.height);
   await bar.click();
   await expect(bar).toHaveAttribute('aria-expanded', 'true');
   await expect(t.getByRole('button', { name: /^Row 1 · / })).toBeVisible();
