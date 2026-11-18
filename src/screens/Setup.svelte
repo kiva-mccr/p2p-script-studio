@@ -83,7 +83,7 @@
     {:else if reopening && remembered}
       <h1>Welcome back{savedName ? `, ${savedName}` : ''}</h1>
       <p class="lead">The browser asks once more before opening your scripts folder.</p>
-      <button class="primary" onclick={reopen}>Open {remembered.name}</button>
+      <button class="primary" onclick={reopen}>Open <span data-hide>{remembered.name}</span></button>
       <button class="link" onclick={() => (reopening = false)}>Choose a different folder</button>
     {:else}
       <h1>Open your scripts folder</h1>

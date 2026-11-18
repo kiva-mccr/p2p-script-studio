@@ -77,7 +77,7 @@
       {#if kind === 'find'}
         {asset.label}
       {:else}
-        <button class="open" onclick={() => open(asset)}>{asset.label}</button>
+        <button class="open" onclick={() => open(asset)}><span data-hide>{asset.label}</span></button>
         <span class="where">{asset.kind === 'link' ? asset.target.replace(/^https?:\/\//, '') : asset.target}</span>
       {/if}
     </span>
@@ -110,9 +110,9 @@
                 {#if asset.kind === 'words'}
                   <li class="find">To find: {asset.label}</li>
                 {:else if asset.kind === 'path' && missing.has(asset.target)}
-                  <li class="lost"><button class="open" onclick={() => open(asset)}>{asset.label}</button> · missing</li>
+                  <li class="lost"><button class="open" onclick={() => open(asset)}><span data-hide>{asset.label}</span></button> · missing</li>
                 {:else}
-                  <li><button class="open" onclick={() => open(asset)}>{asset.label}</button>{asset.kind === 'link' ? ' ↗' : ''}</li>
+                  <li><button class="open" onclick={() => open(asset)}><span data-hide>{asset.label}</span></button>{asset.kind === 'link' ? ' ↗' : ''}</li>
                 {/if}
               {/each}
             </ul>

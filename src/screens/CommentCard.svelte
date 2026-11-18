@@ -130,7 +130,7 @@
 <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_noninteractive_element_interactions -->
 <article class="card" data-id={t.comment.id} class:active class:done={t.resolved} class:held={t.held && !recent} aria-label="{suggestion ? 'Suggestion' : 'Comment'} by {t.comment.who}"
   onclick={onActivate}>
-  <div class="who"><span><strong>{t.comment.who}</strong> {suggestion ? 'suggested' : 'commented'} · {where}</span><span>{@render time(t.comment)}</span></div>
+  <div class="who"><span><strong data-hide>{t.comment.who}</strong> <span data-keep>{suggestion ? 'suggested' : 'commented'} · {where}</span></span><span>{@render time(t.comment)}</span></div>
   {#if t.back}<p class="back-tag">Back from hold · put on hold by {t.back}</p>{/if}
   {#if gone && !t.decision}<p class="quiet">On text that has since changed: “{t.comment.quote}”</p>{/if}
   {#if editing === t.comment.id}

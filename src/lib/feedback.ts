@@ -38,6 +38,8 @@ export function partOf(target: Element): Element {
 export function onScrollbar(el: Element, x: number, y: number): boolean {
   if (!(el instanceof HTMLElement) || el === document.documentElement || el === document.body) return false;
   const css = getComputedStyle(el);
+  // Only a box that scrolls has a bar: an inline span (a file's name in its chip, issue #257) has a clientWidth of 0.
+  if (!/auto|scroll|overlay/.test(`${css.overflowX} ${css.overflowY}`)) return false;
   const side = el.offsetWidth - el.clientWidth - el.clientLeft - parseFloat(css.borderRightWidth); // 0 without a bar
   const below = el.offsetHeight - el.clientHeight - el.clientTop - parseFloat(css.borderBottomWidth);
   if (side < 1 && below < 1) return false; // an SVG drawing or a plain box has no bar (clientWidth 0 or all of it)
@@ -174,7 +176,7 @@ export function plainText(title: string, body: string): string {
   return `${title}\n\n${body.replace('<!-- Paste the picture here: Ctrl+V -->', '(no picture)')}`;
 }
 
-// Kept clear of covering: the app's own controls, whose words are the app's, not the script's.
+// Kept clear of covering: the app's own controls, whose words are the app's, not the script's (unless `data-hide`).
 const CONTROLS = 'button, [role="button"], [role="tab"], label, select, option, summary, th';
 // Fully opaque, so nothing can be read back out of it (a blur can be undone).
 // `!important`, since the copy carries each element's own styles inline.
@@ -189,13 +191,13 @@ function covered(el: Element): boolean {
   if (el.closest('[data-hide]')) return true; // a name, even on a button ("Ana · 3 h ago")
   if (el.closest('[data-keep]')) return false; // the app's own words outside controls ("In review", "Saved")
   if (el.closest('[contenteditable="true"]')) return true;
-  const control = el.closest(CONTROLS);
-  // In a row, a control's own words are the script's (a file's name), unless it is an icon named by aria-label.
-  return !control || (!!el.closest('[data-row]') && !control.hasAttribute('aria-label'));
+  // A control's own words are the app's ("Clear", "Choose a file…", issue #257); one that shows the script's words or a
+  // name (a file's chip, an asset's label) holds them in a `data-hide` span.
+  return !el.closest(CONTROLS);
 }
 
 /** Covers the words in a copy of the page (the picture's) with solid grey boxes: the script's words, its pictures and
- * people's names, but not the app's controls outside rows nor what is marked `data-keep`. */
+ * people's names, but not the app's controls nor what is marked `data-keep`. */
 export function coverWords(root: Element) {
   const doc = root.ownerDocument;
   const box = (text: string, line = false) => {

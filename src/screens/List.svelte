@@ -112,7 +112,7 @@
         {#if templates.length}
           <p>From a template</p>
           {#each templates as t (t.path.join('/'))}
-            <button role="menuitem" onclick={() => start(t)}>{t.title}</button>
+            <button role="menuitem" onclick={() => start(t)}><span data-hide>{t.title}</span></button>
           {/each}
           <hr />
         {/if}

@@ -110,7 +110,7 @@
       </button>
     {/if}
     {#if by}
-      <span class="mark" title="{by.who} · {when(Date.parse(by.when))}"><b>{was ? 'Changed' : 'New'}</b><span>{by.who}</span></span>
+      <span class="mark" title="{by.who} · {when(Date.parse(by.when))}"><b>{was ? 'Changed' : 'New'}</b><span data-hide>{by.who}</span></span>
       <button class="seen" aria-label="Seen, row {n}" title="Seen: clear this mark" onclick={() => visit?.onSeen(block.id)}>✓</button>
     {/if}
     <span class="tools" data-tour="row-tools">

@@ -225,9 +225,9 @@
             {:else}
               <span>{n}</span>
             {/if}
-            {#if was !== undefined}<span class="tag" title={by ? `${by.who} · ${at(Date.parse(by.when))}` : undefined}>{was ? 'Changed' : 'New'}</span>{/if}
+            {#if was !== undefined}<span class="tag" data-keep title={by ? `${by.who} · ${at(Date.parse(by.when))}` : undefined}>{was ? 'Changed' : 'New'}</span>{/if}
             {#if by}
-              <span class="by-who">{by.who}</span>
+              <span class="by-who" data-hide>{by.who}</span>
               <button class="seen" aria-label="Seen, row {n}" title="Seen: clear this mark" onclick={() => visit?.onSeen(block.id)}>✓</button>
             {/if}
             <button class="add" aria-label="Comment on row {n}" title="Comment on this row"

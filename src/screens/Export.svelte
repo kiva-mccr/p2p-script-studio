@@ -269,7 +269,7 @@
   <nav class="crumbs" aria-label="Breadcrumb">
     <a href="#/">{folder}</a>
     <span aria-hidden="true">/</span>
-    <button class="title" onclick={onBack}>{title}</button>
+    <button class="title" onclick={onBack}><span data-hide>{title}</span></button>
     <span aria-hidden="true">/</span>
     <span class="here">Export</span>
   </nav>
@@ -337,7 +337,7 @@
               <li>
                 <span class="num">{r + 1}</span>
                 {#if i >= 0}
-                  <button class="row" class:silent={lined[i].silent} onclick={() => from(i)}>{row.dialogue.trim() || '(no dialogue)'}</button>
+                  <button class="row" class:silent={lined[i].silent} onclick={() => from(i)}><span data-hide>{row.dialogue.trim() || '(no dialogue)'}</span></button>
                   <span class="missing">{lined[i].silent ? 'no take yet, silence' : ''}</span>
                   <span>{clock(lined[i].samples.length / RATE)}</span>
                 {:else}
