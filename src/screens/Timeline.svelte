@@ -360,7 +360,8 @@
     if (b.kind === 'hold') return `Hold · ${secs(b.seconds)} on the last picture`;
     if (b.kind === 'placeholder') return `Placeholder · ${secs(b.seconds)}${b.label ? ` — ${b.label}` : ''}`;
     const row = byId.get(b.id);
-    return `Row ${numbers.get(b.id)} · ${secs(b.seconds)}${row?.dialogue.trim() ? ` — “${plain(row.dialogue).trim()}”` : ''}`;
+    const none = b.kind === 'row' && !b.picks.length && !plain(row?.onScreen ?? '').trim() ? ' · No picture' : '';
+    return `Row ${numbers.get(b.id)} · ${secs(b.seconds)}${none}${row?.dialogue.trim() ? ` — “${plain(row.dialogue).trim()}”` : ''}`;
   };
 
   // The row panel's choices.
@@ -465,7 +466,8 @@
                 onmouseenter={(e) => showTip(b, e)} onmouseleave={() => (tipFor = '')} onfocus={(e) => showTip(b, e)} onblur={() => (tipFor = '')}>
                 {#if b.kind === 'row'}
                   {#if !b.picks.length}
-                    <span class="card">{plain(row?.onScreen ?? '').trim() || 'No picture'}</span>
+                    {@const words = plain(row?.onScreen ?? '').trim()}
+                    <span class="card">{#if words}{words}{:else}<svg class="none" aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 16l5-5 4 4 3-3 6 6" /><circle cx="16" cy="9" r="1.5" /><path class="halo" d="M4 3l17 18" /><path d="M4 3l17 18" /></svg>{/if}</span>
                   {:else if b.collage}
                     <span class="collage">
                       {#each b.picks as path (path)}{@render picture(path)}{/each}
@@ -683,6 +685,9 @@
   .vid { display: flex; align-items: flex-end; box-sizing: border-box; padding: 4px; background: #2b2b2b; color: #eee; font-size: 10px; overflow: hidden; white-space: nowrap; }
   .gap { display: block; background: #e4e4e4; min-width: 20px; }
   .card { align-items: center; justify-content: center; padding: 8px; background: #f4f4f4; color: var(--muted); font-size: 11px; line-height: 1.35; text-align: center; }
+  /* #264: a row with no picture and no On screen words: a picture with a line through it, centred. */
+  .card .none { width: 22px; height: 22px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+  .card .none .halo { stroke: #f4f4f4; stroke-width: 4; }
   .hold-in, .ph-in { flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: 6px; font-size: 11px; font-weight: 500; color: #3d3d3d; text-align: center; }
   .hold-in { background: repeating-linear-gradient(135deg, #f4f4f4 0 6px, #eaeaea 6px 12px); }
   .ph-in { border: 1px dashed #9a9a9a; background: #fafafa; }
