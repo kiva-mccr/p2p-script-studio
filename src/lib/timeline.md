@@ -5,6 +5,9 @@ The storyboard timeline (SB-1, mock-up 63): reads and writes a row's `Timeline:`
 (`layout`): rows, then the hold or placeholder after each, and the sections' spans. `shots` splits a sequence's
 time between its pictures, on the cut words when the take's word timings are known (`cutTimes`), else equally.
 
+`fitZoom` (issue #243) picks the zoom the timeline opens at: the least, doubling from 1× to `ZOOM_MAX` (64×), that
+gives the median row `readable` (120) pixels.
+
 The video's shape (SB-3) is the front matter's `shape: upright`, else wide (`shapeOf`, `withShape`).
 
 - **Used by:** `screens/Timeline.svelte`, `screens/Write.svelte`, `screens/Export.svelte`, `lib/merge.ts` (shape). **Tests:** `tests/unit/timeline.test.ts`.

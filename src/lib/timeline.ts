@@ -292,3 +292,15 @@ function split(line: string): string[] {
 
 const unquote = (text: string) => text.replace(/"/g, '”');
 const round = (n: number) => String(Math.round(n * 10) / 10);
+
+// Issue #243: the zoom a timeline opens at. The most of it on screen (the smallest zoom, doubling from 1) that still
+// gives a typical row (the median) `readable` pixels for its words and pictures; a few short rows don't zoom it all in.
+export const ZOOM_MAX = 64;
+export function fitZoom(seconds: number[], total: number, width: number, readable = 120): number {
+  if (!seconds.length || !total || width <= 0) return 1;
+  const sorted = [...seconds].sort((a, b) => a - b);
+  const median = sorted[Math.floor((sorted.length - 1) / 2)];
+  let zoom = 1;
+  while (zoom < ZOOM_MAX && (median / total) * width * zoom < readable) zoom *= 2;
+  return zoom;
+}
