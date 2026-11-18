@@ -31,7 +31,7 @@ Status: a first working version. What it does today:
   only back to its latest send for review, not all of it. Each script also keeps a small summary of what the list
   shows, so a computer new to the folder shows its counts in seconds, while the script's files still match it.
 - **Writing:** each row is dialogue, what's on screen, and its images and files. Click to type; hover a row to move,
-  add or delete it. Keys: Tab goes to the next box (Shift+Tab back), Ctrl+Down and Ctrl+Up go straight to the row
+  add or delete it. + Add under Images & files opens a small menu; Escape or a click outside closes it. Keys: Tab goes to the next box (Shift+Tab back), Ctrl+Down and Ctrl+Up go straight to the row
   below or above (same column, past section titles), Ctrl+Enter adds a row below and Ctrl+Shift+Enter one above,
   Alt+Up and Alt+Down move the row, Ctrl+Shift+Backspace deletes it (Undo at the bottom puts it back; it stays 5 seconds, or until you carry on typing or clicking). Ctrl+Z undoes
   any change to the script, in order (typing, Replace all, moves, deletes, pastes, the timeline, takes, flags), and Ctrl+Y or

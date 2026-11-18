@@ -10,6 +10,10 @@ preview get their kind and size on the chip.
 
 ## Rules and pitfalls
 
+- The add menu closes on Escape from any of its controls (the form's own keydown, stopped there so it doesn't also
+  stop playback) and on a pointerdown outside it (#263), but not while "From other scripts…" is open: that box's
+  clicks are outside the form, and its Escape closes only it. Escape puts focus back on + Add. Clicks in Feedback's panel
+  (`[data-feedback-ui]`) leave it open; opening the ? menu closes it, so feedback on it opens it with Shift (AP-49).
 - × calls `onChange` with the shorter list, then `onRemoved(label, before)` so the row can offer Undo (UX-10).
 - Previews (`lib/preview.ts`) are made from the folder's files, their blob URLs revoked when the row's files change
   or it closes. A file that is missing shows only its chip; one not really its kind (no preview made, or a video or

@@ -35,6 +35,21 @@
 
   let adding = $state(false);
   let browsing = $state(false);
+  // The add menu closes on Escape from any of its controls and on a click outside it (#263); while "From other
+  // scripts…" is open, clicks land in that box and its own Escape closes only it. Feedback's own panel leaves it open,
+  // so a note can be written about it.
+  let form = $state<HTMLFormElement>();
+  let addButton = $state<HTMLButtonElement>();
+  const away = (e: PointerEvent) => {
+    const at = e.target as Element;
+    if (adding && !browsing && !form?.contains(at) && !at.closest?.('[data-feedback-ui]')) adding = false;
+  };
+  function escape(e: KeyboardEvent) {
+    if (e.key !== 'Escape') return;
+    e.stopPropagation();
+    adding = false;
+    requestAnimationFrame(() => addButton?.focus());
+  }
   // The line last added from another script, and that script's title, shown under its chip.
   let copied = $state<{ line: string; from: string } | null>(null);
   // Previews of files in the script's folder, by path (AP-19), and the size of each found file, named on chips with
@@ -124,6 +139,8 @@
   }
 </script>
 
+<svelte:window onpointerdown={away} />
+
 <div class="files" data-tour="files" use:near={() => (shown = true)}>
   {#each files as line, i (i + line)}
     {#if extras || !timelineOnly(line)}
@@ -154,17 +171,17 @@
   {/if}
 
   {#if adding}
-    <form class="add-form" onsubmit={addTyped}>
+    <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+    <form class="add-form" bind:this={form} onsubmit={addTyped} onkeydown={escape}>
       <span class="ways">
         <button type="button" class="choose" onclick={() => picker.click()}>Choose a file…</button>
         <button type="button" class="choose" onclick={() => (browsing = true)}>From other scripts…</button>
       </span>
       <!-- svelte-ignore a11y_autofocus -->
-      <input bind:value={typed} placeholder="or paste a link, or describe it" aria-label="Link or description" autofocus
-        onkeydown={(e) => e.key === 'Escape' && (adding = false)} />
+      <input bind:value={typed} placeholder="or paste a link, or describe it" aria-label="Link or description" autofocus />
     </form>
   {:else}
-    <button class="add" data-keep onclick={() => (adding = true)}>+ Add</button>
+    <button class="add" data-keep bind:this={addButton} onclick={() => (adding = true)}>+ Add</button>
   {/if}
   <input type="file" multiple hidden bind:this={picker} onchange={picked} />
   {#if browsing}<SharedFiles {root} {here} {dir} {row} onAdd={addShared} onClose={() => (browsing = false)} />{/if}

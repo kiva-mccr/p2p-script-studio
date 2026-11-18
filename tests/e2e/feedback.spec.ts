@@ -364,9 +364,9 @@ test('Cover leaves the app\'s own words on buttons in a row, but covers file nam
   await openScript(page);
   const row = page.locator('[data-row]').first();
   await page.getByRole('button', { name: 'Flag row 1' }).click();
-  await row.getByRole('button', { name: '+ Add' }).click();
-  await expect(row.getByRole('button', { name: 'Choose a file…' })).toBeVisible();
   await startFeedback(page);
+  await row.getByRole('button', { name: '+ Add' }).click({ modifiers: ['Shift'] }); // opening ? closes the add menu (#263)
+  await expect(row.getByRole('button', { name: 'Choose a file…' })).toBeVisible();
   const clear = row.getByRole('button', { name: 'Clear', exact: true });
   await clear.click();
   const picture = page.getByRole('region', { name: 'Feedback' }).getByRole('img', { name: 'The part, outlined' });
