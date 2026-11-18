@@ -36,10 +36,14 @@
   let adding = $state(false);
   let browsing = $state(false);
   // The add menu closes on Escape from any of its controls and on a click outside it (#263); while "From other
-  // scripts…" is open, clicks land in that box and its own Escape closes only it.
+  // scripts…" is open, clicks land in that box and its own Escape closes only it. Feedback's own panel leaves it open,
+  // so a note can be written about it.
   let form = $state<HTMLFormElement>();
   let addButton = $state<HTMLButtonElement>();
-  const away = (e: PointerEvent) => adding && !browsing && !form?.contains(e.target as Node) && (adding = false);
+  const away = (e: PointerEvent) => {
+    const at = e.target as Element;
+    if (adding && !browsing && !form?.contains(at) && !at.closest?.('[data-feedback-ui]')) adding = false;
+  };
   function escape(e: KeyboardEvent) {
     if (e.key !== 'Escape') return;
     e.stopPropagation();
