@@ -38,7 +38,8 @@ offers its pictures, Sequence or Collage, + Add a picture (only for the timeline
 - Folded, pictures are not made, except while playing (for the preview); waveforms only open.
 - Playing: the panel is hidden, a playhead runs at `player.time`, and the preview (16:9, 320 px, ⤢ to 720 px) sits above the
   drawer's right end, folded or open, so it never covers the timeline (the user's condition from SB-2), showing the picture of the moment: the sequence's shot at `player.elapsed`, a collage's all, a hold the
-  last picture before it, a placeholder its words. Step ids are block ids (`plan` is made from `layout`).
+  last picture before it, a placeholder its words. Step ids are block ids (`plan` is made from `layout`). The picture
+  itself is `PreviewShot.svelte`, which keeps the old shot until the next is decoded (issue #260).
 - Cut on a word: the dialogue's words as buttons; a click toggles a cut there (at most one fewer than the
   pictures). Saved as the words (`cuts at "water"`), matched again in order; a repeated word is saved with the
   words after it that tell it apart (`cutWords`), never as the word alone, which would land on its first time.

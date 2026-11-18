@@ -6,11 +6,12 @@
   import { clock, speaking } from '../lib/readtime.svelte';
   import { keep, recall } from '../lib/remember';
   import { markTimelineOnly, rows, type Row, type Script } from '../lib/script';
-  import { changeChoices, cutPositions, cutWords, dialogueWords, heardWords, layout, pictureFiles, readChoices, shapeOf, type After, type Shape, type TimeBlock } from '../lib/timeline';
+  import { changeChoices, cutPositions, cutWords, dialogueWords, heardWords, isVideo, layout, pictureFiles, readChoices, shapeOf, type After, type Shape, type TimeBlock } from '../lib/timeline';
   import type { Player } from '../lib/play.svelte';
   import { rowLength, type VoiceOver } from '../lib/voice.svelte';
   import { waveform, wavePath } from '../lib/waveform';
   import AfterEditor from './AfterEditor.svelte';
+  import PreviewShot from './PreviewShot.svelte';
   import { near } from '../lib/near';
   import { makePreview, revokePreview, type Preview } from '../lib/preview';
 
@@ -185,7 +186,6 @@
       previews.forEach((p) => p.kind === 'video' && URL.revokeObjectURL(p.still));
     };
   });
-  const isVideo = (path: string) => /\.(mp4|webm|mov|m4v)$/i.test(path);
 
   // Waveforms of the takes, by row id, made once each.
   let waves = $state<Record<string, string>>({});
@@ -297,16 +297,8 @@
 <section class="timeline" class:folded={hidden} aria-label="Timeline" data-tour={readOnly ? 'review-timeline' : 'timeline'} bind:this={section} use:near={() => (shown = true)} use:room>
   {#if now}
     <div class="preview" class:big class:upright role="img" aria-label="Preview: {showing.tag}">
-      <div class="screen" class:collage-on={showing.paths.length > 1}>
-        {#each showing.paths as path (path)}
-          {#if isVideo(path) && urls[path]}
-            <video src={urls[path]} autoplay muted playsinline></video>
-          {:else if urls[path]}
-            <img src={urls[path]} alt="" />
-          {:else}
-            <span class="vid">{path.split('/').at(-1)}</span>
-          {/if}
-        {/each}
+      <div class="screen">
+        <PreviewShot paths={showing.paths} {urls} {upright} />
         {#if showing.card}<span class="pcard" class:ph={now.kind === 'placeholder'}>{showing.card}</span>{/if}
         <span class="tag">{showing.tag}</span>
       </div>
@@ -511,14 +503,10 @@
   .preview.big { width: min(720px, calc(100vw - 64px), calc(var(--room) * 16 / 9)); }
   .preview.upright { width: min(180px, calc(var(--room) * 9 / 16)); }
   .preview.upright.big { width: min(405px, calc(100vw - 64px), calc(var(--room) * 9 / 16)); }
-  .upright .screen { aspect-ratio: 9 / 16; flex-direction: column; }
-  .upright .screen.collage-on { padding: 6% 8%; }
-  .upright .screen img, .upright .screen video, .upright .screen .vid { min-height: 0; }
+  .upright .screen { aspect-ratio: 9 / 16; }
   .shape button { min-height: 28px; padding: 0 10px; font-size: 12px; }
-  .screen { position: relative; aspect-ratio: 16 / 9; display: flex; gap: 3px; }
-  .screen.collage-on { padding: 8% 6%; box-sizing: border-box; }
-  .screen img, .screen video, .screen .vid { flex: 1; min-width: 0; width: 100%; height: 100%; object-fit: contain; }
-  .pcard { flex: 1; display: flex; align-items: center; justify-content: center; padding: 12px; color: #dadada; font-size: 13px; text-align: center; background: #222; }
+  .screen { position: relative; aspect-ratio: 16 / 9; display: flex; }
+  .pcard { position: relative; flex: 1; display: flex; align-items: center; justify-content: center; padding: 12px; color: #dadada; font-size: 13px; text-align: center; background: #222; }
   .pcard.ph { background: repeating-linear-gradient(135deg, #2b2b2b 0 10px, #333 10px 20px); }
   .tag { position: absolute; left: 8px; top: 8px; padding: 2px 6px; border-radius: 4px; background: rgba(0, 0, 0, 0.6); color: #fff; font-size: 11px; }
   .pbar { display: flex; align-items: center; gap: 8px; padding: 6px 8px; color: #dadada; font-size: 12px; font-variant-numeric: tabular-nums; }

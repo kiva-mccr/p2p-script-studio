@@ -249,6 +249,40 @@ test('playing: the preview sits above the drawer, follows, a hold plays in silen
   await expect(page.locator('.preview')).toHaveCount(0);
 });
 
+// #260: a cut swapped the picture for a new <img>, which the browser showed only once decoded: a flicker of black.
+// Now the old shot stays until the next one is decoded: on every frame from the first picture to the end of the
+// row, a decoded (data-ready) picture is on show. Folded, as the drawer starts, the pictures are made only once
+// playing starts.
+test('playing: a cut in a sequence keeps a decoded picture on show', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('timeline-open', '0'));
+  await fakeTake(page);
+  await setUp(page, '#/Episode%2003', files);
+  await page.getByRole('button', { name: 'Record row 2', exact: true }).click();
+  await page.getByRole('button', { name: 'Stop recording row 2' }).click();
+  await page.evaluate(() => {
+    const w = window as unknown as { seen: string[]; gaps: string[] };
+    w.seen = []; w.gaps = [];
+    const look = () => {
+      const tag = document.querySelector('.preview .tag')?.textContent ?? '';
+      if (/^Row 2/.test(tag)) {
+        const on = [...document.querySelectorAll('.preview [data-ready] img')].some((img) => (img as HTMLImageElement).complete
+          && (img as HTMLImageElement).naturalWidth > 0);
+        if (on && !w.seen.includes(tag)) w.seen.push(tag);
+        if (!on && w.seen.length) w.gaps.push(tag);
+      }
+      requestAnimationFrame(look);
+    };
+    requestAnimationFrame(look);
+  });
+  await page.getByRole('button', { name: 'Play from row 2' }).click();
+  await expect(timeline(page).getByRole('img', { name: 'Preview: Row 2 · 2 of 2' })).toBeVisible({ timeout: 10000 });
+  await page.waitForTimeout(300);
+  await page.keyboard.press('Escape');
+  const { seen, gaps } = await page.evaluate(() => { const w = window as unknown as { seen: string[]; gaps: string[] }; return { seen: w.seen, gaps: w.gaps }; });
+  expect(seen).toEqual(['Row 2 · 1 of 2', 'Row 2 · 2 of 2']);
+  expect(gaps).toEqual([]);
+});
+
 test('upright and big, the preview stays between the top bar and the drawer in a short window', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 640 });
   await fakeTake(page);
