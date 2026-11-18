@@ -21,10 +21,19 @@ export function pictureRoot(el: Element): Element {
   return root;
 }
 
-/** A PNG of the part and what is round it, outlined. */
-export async function makePicture(el: Element, cover: boolean): Promise<Blob> {
+/** Two PNGs of the part and what is round it, outlined, from the same moment: one with the script's words and names
+ * covered, one without. Both are started at once, so ticking Cover on or off only switches between them and never
+ * takes a new picture of a page that has changed since the part was picked (issue #244). */
+export function makePictures(el: Element): { covered: Promise<Blob>; plain: Promise<Blob> } {
   const root = pictureRoot(el);
-  const { domToCanvas } = await import('modern-screenshot');
+  const at = root.getBoundingClientRect();
+  const part = el.getBoundingClientRect();
+  const lib = import('modern-screenshot');
+  return { covered: draw(lib, root, at, part, true), plain: draw(lib, root, at, part, false) };
+}
+
+async function draw(lib: Promise<typeof import('modern-screenshot')>, root: Element, at: DOMRect, part: DOMRect, cover: boolean): Promise<Blob> {
+  const { domToCanvas } = await lib;
   const scale = Math.min(2, devicePixelRatio || 1);
   const drawn = await domToCanvas(root, {
     scale,
@@ -33,8 +42,6 @@ export async function makePicture(el: Element, cover: boolean): Promise<Blob> {
     filter: (n) => !(n instanceof Element && n.closest('[data-feedback-ui]')),
     onCloneNode: cover ? (clone) => coverWords(clone as Element) : null,
   });
-  const at = root.getBoundingClientRect();
-  const part = el.getBoundingClientRect();
   const canvas = document.createElement('canvas');
   canvas.width = drawn.width + PAD * 2 * scale;
   canvas.height = drawn.height + PAD * 2 * scale;

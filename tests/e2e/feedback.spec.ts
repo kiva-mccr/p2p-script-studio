@@ -42,12 +42,12 @@ test('clicking a part opens a GitHub issue that says what and where, with the pi
   await panel.getByRole('textbox').fill('Hard to tell when it is recording.');
   const picture = panel.getByRole('img', { name: 'The part, outlined' });
   await expect(picture).toBeVisible();
-  // Unblurred, the picture is made again.
+  // Uncovered, the other picture shows; covered again, the first comes back as it was (issue #244).
   const blurred = await picture.getAttribute('src');
   await panel.getByLabel("Cover the script's words and names").uncheck();
   await expect(picture).not.toHaveAttribute('src', blurred!);
   await panel.getByLabel("Cover the script's words and names").check();
-  await expect(picture).toBeVisible();
+  await expect(picture).toHaveAttribute('src', blurred!);
 
   const { url, title, body } = await issueFrom(page, () => panel.getByRole('button', { name: 'Open on GitHub' }).click());
   expect(url.origin + url.pathname).toBe('https://github.com/kiva-mccr/p2p-script-studio/issues/new');
@@ -227,6 +227,28 @@ test('pictures in the picture are covered too', async ({ page }) => {
   // And it was there to cover: unticked, the preview shows.
   await page.getByRole('region', { name: 'Feedback' }).getByLabel("Cover the script's words and names").uncheck();
   await expect.poll(() => redPixels(picture)).toBeGreaterThan(0);
+});
+
+test('ticking Cover off shows the picture from when the part was picked, not the page as it is now (issue #244)', async ({ page }) => {
+  const red = '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="120"><rect width="200" height="120" fill="#ff0000"/></svg>';
+  await page.context().grantPermissions(['clipboard-read', 'clipboard-write']);
+  await setUp(page, '#/Episode%2003', { 'Episode 03/script.md': example, 'Episode 03/assets/icons-ingredients.svg': red });
+  const shown = page.locator('[data-row]').nth(1).locator('img');
+  await expect(shown.first()).toBeVisible();
+  await startFeedback(page);
+  await page.getByLabel('Dialogue, row 2').click();
+  const panel = page.getByRole('region', { name: 'Feedback' });
+  const picture = panel.getByRole('img', { name: 'The part, outlined' });
+  await expect(picture).toBeVisible();
+  // Wait until both pictures are made, then change the page: the red preview goes.
+  await panel.getByLabel("Cover the script's words and names").uncheck();
+  await expect.poll(() => redPixels(picture)).toBeGreaterThan(0);
+  await panel.getByLabel("Cover the script's words and names").check();
+  await shown.first().evaluate((img) => (img.style.visibility = 'hidden'));
+  // Unticked again, the picture is still the one from the pick: the red preview is in it.
+  await panel.getByLabel("Cover the script's words and names").uncheck();
+  await expect(picture).toBeVisible();
+  expect(await redPixels(picture)).toBeGreaterThan(0);
 });
 
 test('the note starts empty each time, but Pick again before sending keeps it (a bug the user hit)', async ({ page }) => {

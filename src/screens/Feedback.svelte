@@ -2,7 +2,7 @@
   import { tick, untrack } from 'svelte';
   import { feedback } from '../lib/help.svelte';
   import { describe, onScrollbar, partOf, placePanel, issueBody, issueTitle, issueUrl, plainText, type Env, type Part } from '../lib/feedback';
-  import { makePicture } from '../lib/feedbackshot';
+  import { makePictures } from '../lib/feedbackshot';
   import { parseRoute } from '../lib/route';
 
   // Feedback mode (AP-48, board 71): Feedback… in the ? menu of the top bar (SB-5), click the part that's the trouble, write a
@@ -17,12 +17,16 @@
   let withPicture = $state(true);
   let cover = $state(true);
   let withName = $state(false);
-  let picture = $state<{ blob: Blob; url: string } | null>(null);
-  let making = $state(false);
-  let pictureFailed = $state(false);
+  // Both pictures (covered and not) are taken once per pick, from the same moment: the ticks only choose (issue #244).
+  type Shot = { blob: Blob; url: string } | 'making' | 'failed' | null;
+  let shots = $state<{ covered: Shot; plain: Shot }>({ covered: null, plain: null });
+  const shot = $derived(withPicture ? shots[cover ? 'covered' : 'plain'] : null);
+  const picture = $derived(shot && typeof shot === 'object' ? shot : null);
+  const making = $derived(shot === 'making');
+  const pictureFailed = $derived(shot === 'failed');
   let done = $state<'' | 'sent' | 'sent-alone' | 'copied' | 'failed'>('');
   let box = $state<HTMLTextAreaElement>();
-  let made = 0; // which picture is the latest, so a slow one never replaces a newer one
+  let made = 0; // which pick the pictures are for, so a slow one never replaces a newer one
 
   // Started from the ? menu in the top bar (SB-5): it raises feedback.asked.
   let seenAsk = feedback.asked;
@@ -56,12 +60,13 @@
     rect = null;
     done = '';
     note = '';
-    setPicture(null);
+    clearPictures();
   }
 
-  function setPicture(next: { blob: Blob; url: string } | null) {
-    if (picture) URL.revokeObjectURL(picture.url);
-    picture = next;
+  function clearPictures() {
+    made++;
+    for (const s of [shots.covered, shots.plain]) if (s && typeof s === 'object') URL.revokeObjectURL(s.url);
+    shots = { covered: null, plain: null };
   }
 
   // While picking, the page's own clicks and keys are held back: the click only says which part. Holding Shift lets
@@ -170,24 +175,23 @@
     if (done) note = '';
     done = '';
     mode = 'open';
-    drawPicture();
+    clearPictures();
+    drawPictures();
     await tick();
     box?.focus();
   }
 
-  async function drawPicture() {
-    const n = ++made;
-    setPicture(null);
-    pictureFailed = false;
-    if (!withPicture || !picked) return;
-    making = true;
-    try {
-      const blob = await makePicture(picked, cover);
-      if (n === made) setPicture({ blob, url: URL.createObjectURL(blob) });
-    } catch {
-      if (n === made) pictureFailed = true;
-    } finally {
-      if (n === made) making = false;
+  // Taken when the part is picked, or when Add a picture is first ticked after that; never again for the same pick.
+  function drawPictures() {
+    if (!withPicture || !picked || shots.covered || shots.plain) return;
+    const n = made;
+    const taking = makePictures(picked);
+    for (const kind of ['covered', 'plain'] as const) {
+      shots[kind] = 'making';
+      taking[kind].then(
+        (blob) => { if (n === made) shots[kind] = { blob, url: URL.createObjectURL(blob) }; },
+        () => { if (n === made) shots[kind] = 'failed'; },
+      );
     }
   }
 
@@ -260,8 +264,8 @@
         </div>
       {/if}
       <div class="ticks">
-        <label><input type="checkbox" bind:checked={withPicture} onchange={drawPicture} /> Add a picture of this part</label>
-        <label><input type="checkbox" bind:checked={cover} disabled={!withPicture} onchange={drawPicture} /> Cover the script's words and names</label>
+        <label><input type="checkbox" bind:checked={withPicture} onchange={drawPictures} /> Add a picture of this part</label>
+        <label><input type="checkbox" bind:checked={cover} disabled={!withPicture} /> Cover the script's words and names</label>
         <label><input type="checkbox" bind:checked={withName} /> Say which script</label>
       </div>
     </div>

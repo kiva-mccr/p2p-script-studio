@@ -24,7 +24,8 @@ blur the script's words, say which script), Open on GitHub, Copy instead, Cancel
 - The panel is placed by its measured size (`placePanel` in lib/feedback.ts): below the part, else above, else
   shifted to fit. Placed by a guessed height, it opened above a part and was cut off at the top (a bug the user hit).
 - The strip sits at the bottom of the window, not under the top bar, so it never covers a part to pick.
-- A slow picture never replaces a newer one (`made` counts them); old picture URLs are revoked.
+- Both pictures (covered and not) are taken once per pick, from the same moment; the ticks only choose which one
+  shows (issue #244). A slow picture from an earlier pick never lands (`made` counts picks); old URLs are revoked.
 - Nothing is sent by the app: GitHub's page shows everything before the person presses Submit.
 - The note starts empty for each piece of feedback: Cancel or Close clears it, and so does picking again after it was
   sent or copied. It used to be one value for the whole visit, so the last note came back (a bug the user hit).
