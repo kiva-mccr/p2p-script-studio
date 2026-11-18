@@ -69,3 +69,14 @@ test('the script list shows each script’s length: read time, or recorded once 
   await expect(length('How Photosynthesis')).toHaveAttribute('title', 'Read time at 150 words a minute');
   await expect(length('Trailer')).toHaveText('');
 });
+
+test('a live word count of the dialogue sits by + Add row, without equations (#253)', async ({ page }) => {
+  await setUp(page, '#/Episode%2003', { 'Episode 03/script.md': example });
+  const count = page.locator('.adds .count');
+  await expect(count).toHaveText('63 words');
+  await expect(count).toHaveAttribute('title', "The dialogue. Equations aren't counted.");
+  await page.getByLabel('Dialogue, row 5').fill('Light is $E = mc^2$ here.'); // was 10 words, now 3
+  await expect(count).toHaveText('56 words');
+  await page.getByLabel('On screen, row 5').fill('Many more words that are not counted at all');
+  await expect(count).toHaveText('56 words');
+});

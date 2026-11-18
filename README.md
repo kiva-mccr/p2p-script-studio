@@ -137,6 +137,8 @@ Status: a first working version. What it does today:
   ⋯ > Settings (150 words a minute to start, kept in this browser); once you have takes it offers their average speed.
   The script list shows each script's length: the read time, or the recorded voice-over's length (with a mic) once
   every row has a take.
+- **Word count:** at the right of + Add row and + Add section in Write, the dialogue's words, live as you type.
+  Equations ($…$) and the On screen and Files columns aren't counted.
 - **Teleprompter:** reads the dialogue full screen, scrolling at the speaking speed (words a minute, the same as read time). Space starts
   and pauses, ↑ and ↓ change the speed, Esc leaves. It opens at the row your cursor was last in (else the top); ⤒ From the top
   goes back to the start. Mirror flips it for a teleprompter glass; On-screen cues show

@@ -751,6 +751,10 @@ and suggestions, keeps every version, and exports them for production.
   beside who flagged it, stepping to the previous or next flag like the count above the table (round from the last
   to the first). The same arrow on the flag stepped to takes the focus, so Enter keeps stepping. Hidden while there
   is only one flag.
+- [x] **AP-51** Word count (issue #253, board 81 agreed by the user, 2026-11-18; dialogue only, the user's pick): a
+  live word count in grey at the right of + Add row and + Add section ("1,284 words"), hovering says "The dialogue.
+  Equations aren't counted." Equations ($…$) are left out (read time still counts one as a word). `dialogueWords` and
+  `writtenWords` in `lib/readtime.svelte.ts`.
 - [x] **RV-23** Fold columns in Review too (asked by the user): the ‹ fold from AP-17 (Write only today) also works
   in Review, every column open by default.
   Built as mock-up 60: the same ‹ and › (shared `FoldHeads.svelte`, `lib/folds.svelte.ts`), a grey dot on rows with

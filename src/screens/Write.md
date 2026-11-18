@@ -3,9 +3,9 @@
 The Write screen (mock-up 3): one script as rows of three columns. Edit in place, add, move and delete rows and
 sections, add files, links and notes (`FilesCell.svelte`, with files from other scripts, AS-1), record a voice-over take for a row (AU-1), and follow the
 script as it plays (AU-2). Each row is `WriteRow.svelte`; Write keeps what spans rows (adding, moving,
-deleting, keys, the flag bar, find, quotes marked, removed rows). Any column but the last one open folds to a thin strip (AP-17).
+deleting, keys, the flag bar, find, quotes marked, removed rows, the word count by + Add row, AP-51). Any column but the last one open folds to a thin strip (AP-17).
 
-- **Used by:** `screens/Editor.svelte`. **Tests:** `tests/e2e/editor.spec.ts`, `format.spec.ts`, `voice.spec.ts`, `play.spec.ts`.
+- **Used by:** `screens/Editor.svelte`. **Tests:** `tests/e2e/editor.spec.ts`, `readtime.spec.ts` (word count), `format.spec.ts`, `voice.spec.ts`, `play.spec.ts`.
 
 ## Rules and pitfalls
 

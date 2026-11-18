@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { clock, countWords, scriptWords, sectionWords, setSpeed, speaking, SPEED, speedFrom } from '../../src/lib/readtime.svelte';
+import { clock, countWords, dialogueWords, writtenWords, scriptWords, sectionWords, setSpeed, speaking, SPEED, speedFrom } from '../../src/lib/readtime.svelte';
 import { parseScript } from '../../src/lib/script';
 
 const example = parseScript(readFileSync('docs/example/Episode 03 - How Photosynthesis Works/script.md', 'utf8'));
@@ -11,6 +11,17 @@ describe('countWords', () => {
     expect(countWords('Read [the guide](https://example.com) now')).toBe(4);
     expect(countWords('  ')).toBe(0);
     expect(countWords('one\ntwo  three')).toBe(3);
+  });
+});
+
+describe('the word count (#253)', () => {
+  it('leaves equations out, and counts the dialogue only', () => {
+    expect(writtenWords('Light is $E = mc^2$ here')).toBe(3);
+    expect(writtenWords('$x$ and $y$')).toBe(1);
+    expect(writtenWords('It costs $5 **now**')).toBe(4); // a lone $ isn't an equation
+    expect(dialogueWords(example)).toBe(63);
+    const script = parseScript('# One\n\n## 1 <!-- id: a1b2c -->\nDialogue:\nTwo $a+b$ words\n\nOn screen:\nNot counted here\n');
+    expect(dialogueWords(script)).toBe(2);
   });
 });
 

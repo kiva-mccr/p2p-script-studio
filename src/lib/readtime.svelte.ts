@@ -46,6 +46,16 @@ export function sectionWords(script: Script): Map<Block, number> {
   return words;
 }
 
+// The words written in a field, for the word count (#253): like `countWords`, but an equation ($…$) isn't a word.
+export function writtenWords(text: string): number {
+  return countWords(text.replace(/\$[^$\n]+\$/g, ' '));
+}
+
+// The word count under Write's rows (#253): the dialogue's written words, equations left out.
+export function dialogueWords(script: Script): number {
+  return rows(script).reduce((sum, row) => sum + writtenWords(row.dialogue), 0);
+}
+
 // The whole script's dialogue words.
 export function scriptWords(script: Script): number {
   return rows(script).reduce((sum, row) => sum + countWords(row.dialogue), 0);

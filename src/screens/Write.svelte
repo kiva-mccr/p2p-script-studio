@@ -3,7 +3,7 @@
   import { problem } from '../lib/problems';
   import { tick, untrack } from 'svelte';
   import { shortcuts, type Action } from '../lib/shortcuts.svelte';
-  import { clock, sectionWords, speaking } from '../lib/readtime.svelte';
+  import { clock, dialogueWords, sectionWords, speaking } from '../lib/readtime.svelte';
   import { emptyRow, type Block, type Script } from '../lib/script';
   import type { Offer } from '../lib/undo.svelte';
   import type { Act, Place } from '../lib/steps';
@@ -49,6 +49,7 @@
   } = $props();
 
   const words = $derived(sectionWords(script)); // each section's read time (AP-12)
+  const wordCount = $derived(dialogueWords(script)); // the word count by + Add row (#253)
   const numbers = $derived.by(() => {
     const map = new Map<Block, number>();
     let n = 0;
@@ -478,6 +479,7 @@
     <button class="link" onclick={() => insertRow(script.blocks.length)}>+ Add row</button>
     <!-- Keeps the cursor in its box on a click, so the section knows where to go. -->
     <button class="link" onmousedown={(e) => e.preventDefault()} onclick={addSection}>+ Add section</button>
+    <span class="count" title="The dialogue. Equations aren't counted.">{wordCount.toLocaleString('en')} {wordCount === 1 ? 'word' : 'words'}</span>
   </div>
 </div>
 <Timeline {script} {dir} {voice} {player} {canPlay} bind:selected={chosen} onTimeline={setTimeline} onFiles={setFiles} onRemoveAfter={removeAfter} onShape={setShape}
@@ -516,7 +518,9 @@
   .section .tools { flex-wrap: nowrap; }
   .time { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
   .note { margin: 0 0 8px; font-size: 13px; color: var(--muted); white-space: pre-wrap; }
-  .adds { display: flex; gap: 8px; margin-top: 12px; }
+  .adds { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; }
+  /* The word count (#253), at the right of + Add row and + Add section. */
+  .count { margin-left: auto; font-size: 13px; color: var(--muted); }
   /* Flags (AP-9): amber, like the page's other "come back to this" marks. */
   .flags { display: flex; justify-content: flex-end; margin-bottom: 8px; }
   .flags > span { display: inline-flex; align-items: center; gap: 4px; padding: 0 4px 0 12px; border: 1px solid #f5d9b5;
