@@ -27,6 +27,16 @@ test('the export screen opens on the picked format, in place of the script, and 
   await expect(page.getByLabel('Dialogue, row 1')).toBeVisible();
 });
 
+test('Fountain\'s two previews are as tall as each other (issue #236)', async ({ page }) => {
+  await page.setViewportSize({ width: 1920, height: 911 });
+  await openExport(page, 'Fountain (.fountain)');
+  const preview = page.getByLabel('Preview');
+  const file = await preview.locator('pre.file').boundingBox();
+  const look = await preview.locator('.screenplay').boundingBox();
+  expect(file!.y).toBe(look!.y); // side by side
+  expect(file!.height).toBe(look!.height);
+});
+
 test('Fountain settings change the preview and the file, and are remembered', async ({ page }) => {
   await openExport(page, 'Fountain (.fountain)');
   const file = page.getByLabel('Preview').locator('pre');

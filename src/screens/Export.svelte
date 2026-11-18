@@ -467,7 +467,7 @@
   .page.landscape { max-width: 1030px; aspect-ratio: 11 / 8.5; }
   .pair { display: flex; flex-wrap: wrap; gap: 16px; }
   .pair > :global(*) { flex: 1 1 280px; min-width: 0; }
-  .file { margin: 0; max-height: 75vh; overflow: auto; padding: 16px 18px; border: 1px solid var(--line); border-radius: 10px;
+  .file { box-sizing: border-box; margin: 0; max-height: 75vh; overflow: auto; padding: 16px 18px; border: 1px solid var(--line); border-radius: 10px;
     font: 12.5px/1.6 ui-monospace, Menlo, monospace; color: #3d3d3d; white-space: pre-wrap; }
   .screenplay { max-height: 75vh; overflow: auto; box-sizing: border-box; padding: 28px 32px; border: 1px solid var(--line); border-radius: 4px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08); font: 12.5px/1.5 'Courier New', Courier, monospace; }
