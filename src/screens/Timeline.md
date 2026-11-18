@@ -10,6 +10,8 @@ offers its pictures, Sequence or Collage, + Add a picture (only for the timeline
 
 ## Rules and pitfalls
 
+- A row with no picture and no On screen words shows a small icon (a picture with a line through it), centred in its
+  block (#264); its words "No picture" are in the block's hover text and name instead. The icon is drawn in `currentColor`.
 - The hover text (UX-8) lines up with the block's right edge (`.tip.end`) when it would run past the timeline's box or
   the window on the right (`showTip` measures; `TIP` is its width with padding).
 - Mostly a view: every choice goes into the row's `Timeline:` line through `onTimeline` (or its Files through

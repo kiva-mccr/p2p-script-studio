@@ -490,6 +490,9 @@ and suggestions, keeps every version, and exports them for production.
   dragged to the tracks' left or right edge, they scroll that way; let go, it plays from there. ← and → on the dot
   jump 5 s. While playing, the tracks scroll a page at a time to keep the playhead in view, unless you scrolled them
   yourself (wheel, touch, scroll bar) in the last 5 s.
+- [x] **SB-13** "No picture" as an icon (issue #264, board 80 agreed by the user, 2026-11-18, with the note that it is
+  centred): a block with no picture and no On screen words shows a small picture with a line through it, centred,
+  instead of the words; its hover text says "No picture".
 - [x] **SB-3** Export the timeline as a video (asked by the user, 2026-11-15): the storyboard timeline (SB-1) saved
   as a video file: each row's pictures (collage or sequence, cut on a word), holds and placeholders, with the
   voice-over takes, at the timeline's timings, made in the browser. Mock-up: board 70, agreed (2026-11-15, "looks

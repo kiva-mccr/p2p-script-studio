@@ -119,6 +119,23 @@ test('a click on a block brings its row into view above the drawer, and the pane
   await expect(t.getByRole('button', { name: '↑ Go to the row' })).toHaveCount(0);
 });
 
+test('a row with no picture and no On screen words shows a centred icon, and its hover says No picture (#264)', async ({ page }) => {
+  const bare = '# Bare\n\n## 1 <!-- id: a -->\nDialogue:\nA line with nothing to show.\n\n## 2 <!-- id: b -->\nDialogue:\nA line with words to show.\n\nOn screen:\nA title card.\n';
+  await setUp(page, '#/Bare', { 'Bare/script.md': bare });
+  const t = timeline(page);
+  const row1 = t.getByRole('button', { name: /^Row 1 · / });
+  await expect(row1).toHaveAccessibleName(/^Row 1 · .* · No picture — /);
+  await expect(row1).not.toContainText('No picture');
+  const icon = row1.locator('svg.none');
+  await expect(icon).toBeVisible();
+  const [box, card] = [(await icon.boundingBox())!, (await row1.locator('.card').boundingBox())!];
+  expect(Math.abs(box.x + box.width / 2 - (card.x + card.width / 2))).toBeLessThan(2);
+  expect(Math.abs(box.y + box.height / 2 - (card.y + card.height / 2))).toBeLessThan(2);
+  const row2 = t.getByRole('button', { name: /^Row 2 · / });
+  await expect(row2.locator('.card')).toHaveText('A title card.');
+  await expect(row2).not.toHaveAccessibleName(/No picture/);
+});
+
 test('the last blocks\' hover text stays inside the timeline (UX-8)', async ({ page }) => {
   await setUp(page, '#/Episode%2003', files);
   const t = timeline(page);
