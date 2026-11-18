@@ -391,3 +391,24 @@ test('Cover leaves "commented" on a comment card, but covers who wrote it (issue
   expect(await greyAt(picture, card.locator('.who strong'), [card.locator('.who strong'), card.locator('.who [data-keep]'), card.locator('p.text')]))
     .toEqual([true, false, true]); // the name, "commented · row 4", the comment's words
 });
+
+test("a part as big as the window keeps its outline on screen (issue #216)", async ({ page }) => {
+  await openScript(page);
+  await startFeedback(page);
+  await page.keyboard.down('Shift');
+  await page.getByRole('button', { name: 'More' }).click();
+  await page.getByRole('button', { name: 'Settings' }).click();
+  await page.keyboard.up('Shift');
+  await expect(page.getByRole('dialog', { name: 'Settings' })).toBeVisible();
+
+  // The Settings backdrop fills the window: its outline used to sit just past every edge.
+  await page.mouse.click(6, 400);
+  await expect(page.getByRole('region', { name: 'Feedback' }).getByRole('heading')).toHaveText('Feedback on: presentation');
+  const view = page.viewportSize()!;
+  const ring = (await page.locator('.ring').boundingBox())!;
+  expect(ring.x).toBeGreaterThanOrEqual(0);
+  expect(ring.y).toBeGreaterThanOrEqual(0);
+  expect(ring.x + ring.width).toBeLessThanOrEqual(view.width);
+  expect(ring.y + ring.height).toBeLessThanOrEqual(view.height);
+  expect(ring.width).toBeGreaterThan(view.width - 40);
+});
