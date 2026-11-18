@@ -68,6 +68,28 @@ test('a long timeline opens zoomed in to where its rows can be read; a short one
   await expect(t.getByRole('button', { name: 'Zoom out' })).toBeDisabled();
 });
 
+test('open, the strip stays above the tracks, with a box around the part in view and the picked row lit (#245)', async ({ page }) => {
+  await setUp(page, '#/Episode%2003', files);
+  const t = timeline(page);
+  const strip = t.locator('.strip.open');
+  const box = strip.locator('.view');
+  await expect(strip).toBeVisible();
+  // Whole: the box goes round the whole strip.
+  await expect.poll(async () => Math.round((await box.boundingBox())!.width)).toBe(Math.round((await strip.boundingBox())!.width));
+  // Zoomed in, it's a quarter as wide, and it follows the tracks as they scroll.
+  await t.getByRole('button', { name: 'Zoom in' }).click();
+  await t.getByRole('button', { name: 'Zoom in' }).click();
+  await expect.poll(async () => Math.round((await box.boundingBox())!.width / 4)).toBe(Math.round((await strip.boundingBox())!.width / 16));
+  const at = (await box.boundingBox())!.x;
+  await t.locator('.scroll').evaluate((el) => (el.scrollLeft = el.scrollWidth));
+  await expect.poll(async () => (await box.boundingBox())!.x).toBeGreaterThan(at + 50);
+  // A picked row lights up in the strip; not playing, there's no playhead.
+  await expect(strip.locator('span.on')).toHaveCount(0);
+  await t.getByRole('button', { name: /^Row 2 · / }).click();
+  await expect(strip.locator('span.on')).toHaveCount(1);
+  await expect(t.locator('.head')).toHaveCount(0);
+});
+
 test('a video in the timeline shows a still from it, not a chip', async ({ page }) => {
   const clip = await webm(page);
   await setUp(page, '#/Episode%2003', { ...files, 'Episode 03/script.md': script.replace('leaf-push-in.mp4', 'clip.webm'),
