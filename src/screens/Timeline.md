@@ -46,6 +46,16 @@ offers its pictures, Sequence or Collage, + Add a picture (only for the timeline
   drawer's right end, folded or open, so it never covers the timeline (the user's condition from SB-2), showing the picture of the moment: the sequence's shot at `player.elapsed`, a collage's all, a hold the
   last picture before it, a placeholder its words. Step ids are block ids (`plan` is made from `layout`). The picture
   itself is `PreviewShot.svelte`, which keeps the old shot until the next is decoded (issue #260).
+- The playhead drags (SB-12, #207, board 80), playing or paused (`player.started`): its dot (`.grip`, a 32 × 26 button
+  round a 14 px dot) sits in the ruler's top band, above its times (the user: never on them); the ruler is 32 px for it.
+  A press on the dot or the ruler grabs it (pointer capture), pausing; `drag` holds the time meanwhile, and `now`,
+  `into` and `headTime` follow it, so the preview shows what's under it. Near the box's sides (`EDGE`) a rAF loop
+  scrolls the tracks; the time is taken from the pointer clamped to the box, so the head stays at the edge. Let go:
+  `player.seek` plays from there. Stopping while held drops the drag.
+- Playing, the tracks follow the playhead a page at a time, unless scrolled by hand in the last `OWN` ms: only a
+  wheel, touch or press on the box itself (its scroll bar) counts, never a scroll event (focusing the dot scrolls
+  too). `ownAt` starts at -Infinity: `performance.now()` counts from the page's load, so 0 blocked following for the
+  first 5 s.
 - ✕ on the preview closes it (SB-11, #225): kept in this browser for every script (`timeline-preview`, 'closed'), so
   it stays closed when playing again, until Show preview (`.show`, in `.top`, only while playing with it closed).
   Folded with it closed, no pictures are made. The time in its bar never wraps (it ellipsizes): with ✕ the bar of the

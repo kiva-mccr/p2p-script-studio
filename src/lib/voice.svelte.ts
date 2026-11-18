@@ -116,11 +116,13 @@ export class Sound {
   // Seconds into the take.
   get time() { return this.#started ? Math.min(this.duration, this.#ctx.currentTime - this.#at) : 0; }
 
-  async play() {
+  // From `offset` seconds into the take the first time (a playhead dropped part way through a row, #207).
+  async play(offset = 0) {
     if (!this.#started) {
+      const skip = Math.min(Math.max(0, offset), this.duration);
       this.#started = true;
-      this.#at = this.#ctx.currentTime;
-      this.#source.start(0, this.#from, this.duration);
+      this.#at = this.#ctx.currentTime - skip;
+      this.#source.start(0, this.#from + skip, this.duration - skip);
     }
     await this.#ctx.resume();
   }

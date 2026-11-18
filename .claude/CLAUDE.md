@@ -88,6 +88,8 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
   Then security (the user, 2026-11-18, issue #267): SE-1 (Content Security Policy, done), SE-4 (headers via
   Cloudflare, done); the rest (SE-2, 3, 5 to 8) and D2 (models from the app, agreed) are in docs/security.md.
   Then issue #254 (EX-22, zoom in the Resolve / Premiere preview, board 79, done 2026-11-18).
+  Then board 80's issues (the user, 2026-11-18), one PR each: #245, #238, #225, #207 (SB-9 to SB-12, done); next #264
+  ("No picture" as an icon), then boards 81, 82 and 83.
   The rest (AP-8 …) waits
   for the user's next ranking; "Last" in ROADMAP.md (EX-5, CC-1) waits until everything else is done.
 - Mock-ups (one board per design, numbered): https://claude.ai/artifact/2XDZmS7J5NEPZsz91RQMiL (private to the user).
@@ -198,4 +200,6 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
   copied picture into a real GitHub issue and the `feedback` label (applied only for people who may label) are unseen.
 - The policy (SE-1) in real Chrome/Edge with the real speech models: only a tiny ONNX session was seen loading the
   runtime from the app's own files; a real model download from Hugging Face under the policy is unseen.
+- Dragging the playhead (SB-12) with a real take and a real mouse or touch screen: a take starting part way was only
+  played as the fake WAV; nothing was heard here.
 - Allow editing (AP-25) after Chrome really takes back access: tests fake the lost OK; how long Chrome waits is unseen.

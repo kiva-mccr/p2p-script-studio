@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { untrack } from 'svelte';
   import { slide } from 'svelte/transition';
   import { problem } from '../lib/problems';
   import { addAsset, assetFile } from '../lib/folder';
@@ -227,8 +228,78 @@
 
   // Playing (PR 3): a playhead runs along the timeline (along the thin strip when folded) and a preview shows the
   // picture of the moment above the drawer's right end; ⤢ makes the preview big.
-  const now = $derived(player.started ? laid.blocks.find((b) => b.id === player.row) : undefined);
-  const into = $derived(Math.min(player.elapsed, now?.seconds ?? 0));
+  let drag = $state<number | null>(null); // seconds from the top, while dragging
+  // While the playhead is dragged (#207), the block and the picture under it.
+  const now = $derived(!player.started ? undefined
+    : drag !== null ? laid.blocks.findLast((b) => b.start <= (drag ?? 0)) ?? laid.blocks[0] : laid.blocks.find((b) => b.id === player.row));
+  const into = $derived(Math.min(drag === null ? player.elapsed : drag - (now?.start ?? 0), now?.seconds ?? 0));
+  const headTime = $derived(drag ?? player.time);
+
+  // The playhead can be dragged (#207, board 80), playing or paused. Grabbing its dot, or pressing anywhere on the
+  // ruler, pauses it there (a moving dot is hard to catch); it follows the pointer, and at the tracks' left or right
+  // edge the tracks scroll that way; let go, it plays from there. The dot sits above the ruler's times, never on them.
+  let box: HTMLElement | undefined; // .scroll, while open
+  let pointerX = 0;
+  let edgeLoop = 0;
+  const EDGE = 40; // px from the box's sides where the tracks scroll
+  function timeAt(x: number) {
+    const b = box!.getBoundingClientRect(), r = box!.firstElementChild!.getBoundingClientRect();
+    return Math.min(total, Math.max(0, ((Math.min(b.right, Math.max(b.left, x)) - r.left) / r.width) * total));
+  }
+  function grab(e: PointerEvent) {
+    if (!player.started || !box || e.button !== 0) return;
+    e.preventDefault();
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    if (player.on) player.toggle();
+    drag = timeAt((pointerX = e.clientX));
+    edgeLoop = requestAnimationFrame(edge);
+  }
+  const move = (e: PointerEvent) => drag !== null && (drag = timeAt((pointerX = e.clientX)));
+  function edge() {
+    if (drag === null || !box) return;
+    const b = box.getBoundingClientRect();
+    const by = pointerX < b.left + EDGE ? pointerX - b.left - EDGE : pointerX > b.right - EDGE ? pointerX - b.right + EDGE : 0;
+    if (by) (scrollTracks(box.scrollLeft + Math.sign(by) * Math.min(24, 2 + Math.abs(by) / 3)), (drag = timeAt(pointerX)));
+    edgeLoop = requestAnimationFrame(edge);
+  }
+  function drop() {
+    if (drag === null) return;
+    cancelAnimationFrame(edgeLoop);
+    player.seek(drag);
+    drag = null;
+  }
+  $effect(() => {
+    if (!player.started && drag !== null) untrack(() => (cancelAnimationFrame(edgeLoop), (drag = null)));
+  });
+  // From the keyboard, the dot's ← and → jump 5 s.
+  function nudge(e: KeyboardEvent) {
+    const by = e.key === 'ArrowLeft' ? -5 : e.key === 'ArrowRight' ? 5 : 0;
+    if (!by) return;
+    e.preventDefault();
+    player.seek(Math.min(Math.max(0, player.time + by), Math.max(0, total - 0.01)));
+  }
+  // While playing, the tracks scroll on their own to keep the playhead in view, a page at a time (#207), unless you
+  // scrolled them yourself in the last few seconds: a wheel, a touch, or a press on their scroll bar (not a scroll
+  // event, which focusing the dot or the tracks' own scrolling also send).
+  let ownAt = -Infinity;
+  const OWN = 5000;
+  const scrollTracks = (left: number) => box && (box.scrollLeft = left);
+  function tracksBox(node: HTMLElement) {
+    box = node;
+    const own = (e: Event) => (e.type !== 'pointerdown' || e.target === node) && (ownAt = performance.now());
+    const kinds = ['wheel', 'touchmove', 'pointerdown'];
+    kinds.forEach((k) => node.addEventListener(k, own, { passive: true }));
+    return { destroy: () => (kinds.forEach((k) => node.removeEventListener(k, own)), (box = undefined)) };
+  }
+  $effect(() => {
+    const f = pct(headTime) / 100;
+    if (!now || drag !== null || hidden) return;
+    untrack(() => {
+      if (!box || performance.now() - ownAt < OWN) return;
+      const at = f * box.firstElementChild!.clientWidth;
+      if (at < box.scrollLeft || at > box.scrollLeft + box.clientWidth - EDGE) scrollTracks(at - EDGE);
+    });
+  });
   let big = $state(false);
   // ✕ closes the preview (#225, board 80); it stays closed while playing, in this browser for every script, until
   // Show preview in the drawer's bar brings it back.
@@ -331,7 +402,7 @@
         <span class="tag">{showing.tag}</span>
       </div>
       <div class="pbar">
-        <span>{clock(player.time)} / {clock(player.total)}</span>
+        <span>{clock(headTime)} / {clock(player.total)}</span>
         <button aria-label={big ? 'Make the preview small' : 'Make the preview big'} title={big ? 'Make the preview small' : 'Make the preview big'} onclick={() => (big = !big)}>{big ? '⤡' : '⤢'}</button>
         <button aria-label="Close the preview" title="Close the preview" onclick={() => showPreview(false)}>✕</button>
       </div>
@@ -374,9 +445,10 @@
       <p class="empty help">The timeline fills in as rows get dialogue or a take.</p>
     {:else}
       {@render strip(true)}
-      <div class="scroll" use:fit use:inView>
+      <div class="scroll" use:fit use:inView use:tracksBox>
         <div class="tracks" style:width="{zoom * 100}%">
-          <div class="ruler" aria-hidden="true">
+          <!-- svelte-ignore a11y_no_static_element_interactions -->
+          <div class="ruler" class:grab={!!now} aria-hidden="true" onpointerdown={grab} onpointermove={move} onpointerup={drop} onpointercancel={drop}>
             {#each ticks as t (t)}<span style:left="{pct(t)}%">{clock(t)}</span>{/each}
           </div>
           <div class="lane">
@@ -416,7 +488,11 @@
               </button>
             {/each}
           </div>
-          {#if now}<span class="head" aria-hidden="true" style:left="{pct(player.time)}%"></span>{/if}
+          {#if now}
+            <span class="head" aria-hidden="true" style:left="{pct(headTime)}%"></span>
+            <button class="grip" class:held={drag !== null} style:left="{pct(headTime)}%" aria-label="Playhead at {clock(headTime)}: drag to play from somewhere else"
+              title="Drag to play from somewhere else" onpointerdown={grab} onpointermove={move} onpointerup={drop} onpointercancel={drop} onkeydown={nudge}></button>
+          {/if}
           <div class="lane voice">
             {#each laid.blocks as b (b.id)}
               {#if b.kind === 'row'}
@@ -518,7 +594,7 @@
   <span class="strip" class:open aria-hidden="true">
     {#each laid.blocks as b (b.id)}<span class:on={selected === b.id} class:now={now?.id === b.id} style:left="{pct(b.start)}%" style:width="{pct(b.seconds)}%"></span>{/each}
     {#if open}<span class="view" style:left="{view.left}%" style:width="{view.width}%"></span>{/if}
-    {#if now}<span class="head" style:left="{pct(player.time)}%"></span>{/if}
+    {#if now}<span class="head" style:left="{pct(headTime)}%"></span>{/if}
   </span>
 {/snippet}
 
@@ -539,7 +615,13 @@
   .strip.open { display: block; height: 8px; margin: 4px 0 10px; }
   .strip .view { top: -4px; bottom: -4px; border: 1.5px solid #6b7fa8; border-radius: 4px; background: rgba(42, 91, 215, 0.06); }
   .strip .head { top: -4px; bottom: -4px; border: 0; border-radius: 0; background: #d9480f; }
-  .head { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: #d9480f; pointer-events: none; z-index: 2; }
+  .head { position: absolute; top: 7px; bottom: 0; width: 2px; margin-left: -1px; background: #d9480f; pointer-events: none; z-index: 2; }
+  /* The playhead's dot (#207): in the ruler's top band, above its times; the button round it is far bigger than the
+     dot, so it's easy to catch. */
+  .grip { position: absolute; top: -4px; z-index: 3; width: 32px; height: 26px; margin-left: -16px; padding: 0; border: 0; border-radius: 6px; background: none; cursor: grab; touch-action: none; }
+  .grip::before { content: ''; position: absolute; left: 50%; top: 4px; width: 14px; height: 14px; margin-left: -7px; box-sizing: border-box; border: 2px solid #fff; border-radius: 50%; background: #d9480f; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3); }
+  .grip:hover::before, .grip.held::before { transform: scale(1.2); }
+  .grip.held { cursor: grabbing; }
   .blk.now { box-shadow: inset 0 0 0 2px #d9480f; }
   /* The preview's picture is never taller than the room between the top bar and the drawer (less its 12 px gap, a
      12 px margin and the 40 px bar under the picture), so upright and big never run off the top of the screen. */
@@ -580,7 +662,8 @@
   .empty { margin: 0; font-size: 13px; color: var(--muted); }
   .scroll { overflow-x: auto; padding-top: 4px; }
   .tracks { position: relative; min-width: 100%; }
-  .ruler { position: relative; height: 18px; margin-bottom: 4px; border-bottom: 1px solid var(--line); }
+  .ruler { position: relative; height: 32px; margin-bottom: 4px; border-bottom: 1px solid var(--line); touch-action: none; }
+  .ruler.grab { cursor: pointer; }
   .ruler span { position: absolute; bottom: 2px; padding-left: 3px; border-left: 1px solid var(--line-strong); font-size: 10px; line-height: 12px; color: #6b6b6b; font-variant-numeric: tabular-nums; }
   .lane { position: relative; height: 30px; margin-bottom: 4px; }
   .lane.blocks { height: 92px; }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { plan } from '../../src/lib/play.svelte';
+import { plan, Player } from '../../src/lib/play.svelte';
 import type { Script } from '../../src/lib/script';
 
 const row = (id: string, dialogue: string) => ({ type: 'row' as const, id, dialogue, onScreen: '', files: [], timeline: '', note: '' });
@@ -30,5 +30,27 @@ describe('plan with the storyboard timeline (SB-1)', () => {
       { id: 'hold:a', seconds: 2, take: false, start: 4 },
       { id: 'placeholder:b', seconds: 3, take: false, start: 6 }, // row b has no time, its placeholder still plays
     ]);
+  });
+});
+
+describe('Player.seek (#207: the timeline\'s playhead dropped somewhere)', () => {
+  const steps = [{ id: 'a', seconds: 4, take: false, start: 0 }, { id: 'b', seconds: 2, take: false, start: 4 }, { id: 'c', seconds: 3, take: false, start: 6 }];
+  it('jumps part way into the step at that time and plays, even if it was paused', async () => {
+    const player = new Player();
+    await player.start({} as FileSystemDirectoryHandle, steps);
+    player.toggle();
+    player.following = false;
+    await player.seek(5.5);
+    expect([player.row, player.elapsed, player.time, player.on, player.following]).toEqual(['b', 1.5, 5.5, true, true]);
+    await player.seek(0);
+    expect([player.row, player.time]).toEqual(['a', 0]);
+    await player.seek(8.9);
+    expect([player.row, player.time]).toEqual(['c', 8.9]);
+    player.stop();
+  });
+  it('does nothing when stopped', async () => {
+    const player = new Player();
+    await player.seek(3);
+    expect(player.started).toBe(false);
   });
 });

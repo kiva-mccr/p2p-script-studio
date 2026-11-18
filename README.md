@@ -230,7 +230,9 @@ Status: a first working version. What it does today:
   timings with the take; until then, and for rows with no take, they are estimated. The row's panel says which.
   While the script plays, a playhead runs along it (along the strip when folded), and a small preview above the
   drawer's right end shows the picture of the moment, cutting from one to the next without a flicker (⤢ makes it big, ✕ closes it until you click Show preview in the drawer's bar; this browser
-  remembers it). A long timeline opens zoomed in, as far as it takes for its rows to be read; − and + zoom. Wide / Upright sets the video's
+  remembers it). Drag the playhead's red dot, or press anywhere on the ruler, to jump: it pauses while you hold it,
+  the tracks scroll when you reach their edge, and it plays from where you let go (← and → on the dot jump 5 s). While
+  playing, the tracks keep the playhead in view, unless you've just scrolled them yourself. A long timeline opens zoomed in, as far as it takes for its rows to be read; − and + zoom. Wide / Upright sets the video's
   shape for everyone (kept in the script): the preview turns upright and collages stack their pictures one above the
   other, here and in the exports.
   Review shows the same timeline, read only: click a block to comment on its row ("row 2, on the timeline"). Kept in the row's `Timeline:` line in script.md.
