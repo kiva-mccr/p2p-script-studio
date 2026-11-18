@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { Attachment, Field, Note, Thread } from '../lib/comments';
+  import { grow } from '../lib/slide';
   import { ago } from '../lib/when';
   import AttachBox from './AttachBox.svelte';
   import Attached from './Attached.svelte';
@@ -155,7 +156,7 @@
   {#if editing === t.comment.id}
     <!-- Its own edit box is open above: no other actions until Save or Cancel. -->
   {:else if replying}
-    <form class="reply-form" onsubmit={sendReply}>
+    <form class="reply-form" onsubmit={sendReply} in:grow>
       {#snippet buttons()}
         <button class="primary small" type="submit">Reply</button>
         <button class="link" type="button" onclick={() => (replying = false)}>Cancel</button>

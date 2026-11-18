@@ -7,6 +7,8 @@
   import List from './screens/List.svelte';
   import Setup from './screens/Setup.svelte';
   import { openExample, startOver } from './lib/example';
+  import { closed } from './lib/leaving';
+  import { tick } from 'svelte';
   import Feedback from './screens/Feedback.svelte';
   import { exampleBar } from './lib/examplebar.svelte';
 
@@ -39,6 +41,7 @@
     if (!example) exampleBar.height = 0;
   });
   let undoStart = $state<(() => Promise<FileSystemDirectoryHandle>) | null>(null);
+  let swapping = $state(false); // the example's screens are closed while its folder is swapped (lib/leaving.md)
   let undoTimer: ReturnType<typeof setTimeout> | undefined;
 
 
@@ -97,7 +100,7 @@
   // Start over goes through an Undo bar, like a delete.
   async function restart() {
     if (!example) return;
-    const { folder, undo } = await startOver();
+    const { folder, undo } = await swap(startOver);
     example = { ...example, folder, fresh: example.fresh + 1 };
     undoStart = undo;
     clearTimeout(undoTimer);
@@ -106,9 +109,21 @@
 
   async function undoRestart() {
     if (!example || !undoStart) return;
-    const folder = await undoStart();
+    const folder = await swap(undoStart);
     undoStart = null;
     example = { ...example, folder, fresh: example.fresh + 1 };
+  }
+
+  // The open script is closed and has saved before the folder changes under it (lib/leaving.md).
+  async function swap<T>(change: () => Promise<T>): Promise<T> {
+    swapping = true;
+    try {
+      await tick();
+      await closed();
+      return await change();
+    } finally {
+      swapping = false;
+    }
   }
 </script>
 
@@ -122,7 +137,9 @@
     <button class="outline" onclick={leaveExample}>Open your scripts folder</button>
   </div>
   {#key example.fresh}
-    {#if route.length === 0}
+    {#if swapping}
+      <!-- Closed while its folder is swapped. -->
+    {:else if route.length === 0}
       <List folder={example.folder} name={example.name} onChangeFolder={leaveExample} />
     {:else}
       {#key route.join('/')}

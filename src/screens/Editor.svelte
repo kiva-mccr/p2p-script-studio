@@ -2,6 +2,7 @@
   import { problem } from '../lib/problems';
   import CopyDetails from './CopyDetails.svelte';
   import { onDestroy, onMount, tick, untrack } from 'svelte';
+  import { closing } from '../lib/leaving';
   import { assetList, missingFiles } from '../lib/assets';
   import { Player, plan } from '../lib/play.svelte';
   import { clock, speaking } from '../lib/readtime.svelte';
@@ -289,7 +290,7 @@
     unlisten();
     const d = file.dir;
     const who = name; // read now: leaving the example takes the props away before leave() is done
-    file.leave().finally(() => file.here(true, who, d)); // "Sam was here" for the others (AP-37)
+    closing(file.leave().finally(() => file.here(true, who, d))); // "Sam was here" for the others (AP-37)
   });
 
   // The newest mode asked for: Review or History, shown only once what is waiting is saved, never replaces a mode

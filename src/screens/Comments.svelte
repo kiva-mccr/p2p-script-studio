@@ -2,7 +2,7 @@
   import { onDestroy, tick, untrack } from 'svelte';
   import { Linger } from '../lib/linger.svelte';
   import { stepComment } from '../lib/shortcuts.svelte';
-  import { slideAway } from '../lib/slide';
+  import { grow, slideAway } from '../lib/slide';
   import { quoteGone, threads, type Attachment, type Field, type Note } from '../lib/comments';
   import type { Version } from '../lib/history';
   import type { Row, Script } from '../lib/script';
@@ -128,13 +128,15 @@
       {showHeld ? '▾' : '▸'} On hold · {held.length}
     </button>
     {#if showHeld}
-      <p class="quiet help">Back in the open list at the next Send for review or official version.</p>
-      {#each held as t (t.comment.id)}
-        <div class="slot" out:slideAway>
-          <CommentCard {t} {dir} {me} where={where(t.comment)} gone={quoteGone(t.comment, rows)} active={t.comment.id === active}
-            onActivate={() => ((active = t.comment.id), t.comment.row && onShow(t.comment.row))} {onAdd} {onApply} onDecided={() => {}} onGone={() => {}} />
-        </div>
-      {/each}
+      <div class="group" in:grow>
+        <p class="quiet help">Back in the open list at the next Send for review or official version.</p>
+        {#each held as t (t.comment.id)}
+          <div class="slot" out:slideAway>
+            <CommentCard {t} {dir} {me} where={where(t.comment)} gone={quoteGone(t.comment, rows)} active={t.comment.id === active}
+              onActivate={() => ((active = t.comment.id), t.comment.row && onShow(t.comment.row))} {onAdd} {onApply} onDecided={() => {}} onGone={() => {}} />
+          </div>
+        {/each}
+      </div>
     {/if}
   {/if}
   {#if resolved.length}
@@ -142,12 +144,14 @@
       {showResolved ? '▾' : '▸'} Resolved · {resolved.length}
     </button>
     {#if showResolved}
-      {#each resolved as t (t.comment.id)}
-        <div class="slot" out:slideAway>
-          <CommentCard {t} {dir} {me} where={where(t.comment)} gone={quoteGone(t.comment, rows)} active={false} onActivate={() => {}}
-            {onAdd} {onApply} onDecided={() => {}} onGone={() => {}} />
-        </div>
-      {/each}
+      <div class="group" in:grow>
+        {#each resolved as t (t.comment.id)}
+          <div class="slot" out:slideAway>
+            <CommentCard {t} {dir} {me} where={where(t.comment)} gone={quoteGone(t.comment, rows)} active={false} onActivate={() => {}}
+              {onAdd} {onApply} onDecided={() => {}} onGone={() => {}} />
+          </div>
+        {/each}
+      </div>
     {/if}
   {/if}
   <p class="quiet help">Click a card to go to its row. New comments are started in Review.</p>
@@ -161,6 +165,7 @@
   .message { margin-top: 2px; white-space: pre-wrap; overflow-wrap: anywhere; }
   .link { align-self: flex-start; }
   .slot { display: flex; flex-direction: column; }
+  .group { display: flex; flex-direction: column; gap: inherit; }
   .quiet { margin: 0; font-size: 12px; color: var(--muted); }
   .bar { display: flex; justify-content: flex-end; }
   .kind { margin: 4px 0 0; font-size: 12px; font-weight: 600; color: var(--muted); }

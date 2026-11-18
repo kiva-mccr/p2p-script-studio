@@ -1,6 +1,7 @@
 <script lang="ts">
   import { bring } from '../lib/followrow';
   import { problem } from '../lib/problems';
+  import { grow } from '../lib/slide';
   import { tick, untrack } from 'svelte';
   import { fieldText as text, threads, type Field, type Flag, type Note } from '../lib/comments';
   import FlagIcon from './FlagIcon.svelte';
@@ -175,7 +176,7 @@
 <div class="review">
   <div class="script" bind:this={table}>
     {#if sent && !hideSent}
-      <div class="sent" data-tour="review-note" role="note" aria-label="Note from {sent.who}">
+      <div class="sent" data-tour="review-note" role="note" aria-label="Note from {sent.who}" in:grow>
         <div>
           <p class="from"><b>{sent.who}</b> sent this for review · {at(Date.parse(sent.when))}</p>
           <p class="message">{sent.message}</p>
@@ -216,7 +217,7 @@
         {@const sounding = voice.playing === block.id || (here && player.on)}
         {@const by = was !== undefined ? visitBy(block.id) : undefined}
         <div class="row grid" class:active={open.some((t) => t.comment.id === active && t.comment.row === block.id)}
-          style:grid-template-columns={grid} class:changed={was !== undefined} class:visit-on={by && visit?.on === block.id} class:here data-play={block.id} data-visit={by ? block.id : undefined} data-tour="review-row">
+          style:grid-template-columns={grid} class:changed={was !== undefined} class:visit-on={by && visit?.on === block.id} class:here data-play={block.id} data-visit={by ? block.id : undefined} data-tour="review-row" in:grow>
           <div class="num">
             {#if canPlay && here && player.on}
               <button class="playfrom" aria-label="Pause at row {n}" title="Pause" onclick={() => player.toggle()}>❚❚</button>
