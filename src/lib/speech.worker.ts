@@ -3,7 +3,8 @@
 // computer. Moonshine (EX-12) rather than Whisper: its work grows with the length of the sound, where Whisper always
 // works through 30 s, so a few seconds are heard several times faster. On the graphics card (WebGPU) where there is
 // one, otherwise on the processor (WebAssembly).
-import { pipeline, type AutomaticSpeechRecognitionPipeline } from '@huggingface/transformers';
+import type { AutomaticSpeechRecognitionPipeline } from '@huggingface/transformers';
+import { pipeline } from './models';
 
 const MODEL = 'onnx-community/moonshine-base-ONNX';
 // Per device, as Hugging Face's own Moonshine demo runs it: the encoder at full precision, the decoder squeezed.

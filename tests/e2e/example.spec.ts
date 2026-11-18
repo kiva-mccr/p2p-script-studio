@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './base';
 import { fakeFolder } from './folder';
 
 // The example to try (AP-33): a made-up script kept in the browser's private storage, never in the shared folder.

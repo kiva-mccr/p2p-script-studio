@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './base';
 import { readFile, readJsonFiles, setUp } from './folder';
 
 // Credits and contacts (AP-31, board 50): people are kept once for the folder (.studio/people/), and each script's

@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './base';
 import { TABS, TOURS, type Tab } from '../../src/lib/tour';
 
 // The guided tour in the example (AP-34, board 53). Other tests start with it skipped (playwright.config.ts).

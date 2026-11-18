@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './base';
 import { readFileSync } from 'node:fs';
 import { readJsonFiles, setUp, writeChange } from './folder';
 

@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './base';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { listFiles, readFile, readJsonFiles, setUp, writeFile } from './folder';

@@ -1053,6 +1053,21 @@ Fixes with no new look (UX-3, 5, 6, 8, 9) need no board.
   long"). Fix: 5 seconds, and it goes at once when you carry on (a key or a click anywhere but the toast; Tab and a
   lone Shift, Ctrl or Alt don't count, so Undo can still be reached by keyboard). Done 2026-11-16.
 
+### Security (asked by the user, 2026-11-18, issue #267)
+
+The goal: 100/100 on MDN's HTTP Observatory, OWASP's checks, and an easy way for the team's IT to see that nothing
+the team writes leaves their computers.
+
+- [x] **SE-1** A Content Security Policy (no mock-up: nothing visible). Done 2026-11-18: a `<meta>` policy in the
+  built page (GitHub Pages can't send headers): scripts only from this site (plus WebAssembly for the speech
+  models), no `eval`, no plugins, no forms sent anywhere, stylesheets only from the app's files, and the page can
+  reach only this site and Hugging Face (model downloads). No Referer on links out. Found while doing it: the speech
+  models' runtime (ONNX Runtime's code and WebAssembly) was loaded from cdn.jsdelivr.net when a model started; it now
+  comes from the app's own files (`lib/models.ts`). Every e2e test now fails if the page breaks the policy.
+- [ ] **SE-2** to **SE-8**: supply chain checks, untrusted script files, security headers (needs D1), models served
+  from the app (D2, agreed), offline app, proof of what's running, the IT pack. The plan and decisions:
+  docs/security.md.
+
 ## Last (the user's order: these wait until everything above is done)
 
 - [x] **AS-1** A shared asset browser between scripts (asked by the user): browse and reuse the files of every

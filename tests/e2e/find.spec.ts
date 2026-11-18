@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './base';
 import { readFile, setUp } from './folder';
 
 // Find and replace in a script (AP-32, board 44).

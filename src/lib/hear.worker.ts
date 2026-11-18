@@ -1,7 +1,8 @@
 // Whisper with word timings (SB-8), in a worker so the page stays smooth while a take is heard. On the graphics card
 // (WebGPU) where there is one, otherwise on the processor (WebAssembly), as Follow my voice (speech.worker.ts).
 // Whisper rather than Moonshine: only Whisper says when each word starts.
-import { pipeline, type AutomaticSpeechRecognitionPipeline } from '@huggingface/transformers';
+import type { AutomaticSpeechRecognitionPipeline } from '@huggingface/transformers';
+import { pipeline } from './models';
 
 const MODEL = 'onnx-community/whisper-base_timestamped';
 const DTYPE = {

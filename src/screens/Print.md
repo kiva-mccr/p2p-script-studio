@@ -18,6 +18,8 @@ printing (the browser's print window makes the PDF, "Save as PDF"), and with `on
 - `landscape` (EX-18) sets `@page { size }`, which turns the print window's page; Chrome then hides its own Layout
   choice. Paper size stays the browser's.
 - The footer (title, version, page N of M) is an `@page` margin box, so the title goes in as an escaped CSS string.
+  It is an adopted stylesheet made in code (`new CSSStyleSheet`), never a `<style>` tag: the Content Security Policy
+  (SE-1) refuses those.
 - `<thead>` repeats the headings on every page, and `break-inside: avoid` keeps a row on one page.
 - Text sizes are in `em` from the page's font size, so the text size choice scales all of them; images don't.
 - `white-space: pre-wrap` sits on an inner `.text` only: on the cell it printed the template's spaces before the text.

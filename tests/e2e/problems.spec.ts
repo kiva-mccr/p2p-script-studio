@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './base';
 
 // Copy details (AP-41): an error has a small copy icon that copies what went wrong; a hint has none.
 

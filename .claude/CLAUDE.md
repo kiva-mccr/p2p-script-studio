@@ -84,6 +84,9 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
   A UI audit (2026-11-15) added UX-1 to UX-13 to ROADMAP.md; the user wants all, boards 72 to 75 agreed. Built one
   small PR at a time: UX-4 + UX-13 pointer (done), the shared Undo (UX-1, 2, 10, 11, 13, done), UX-7 (done), UX-12, 6, 8, 3 (done; UX-5 dropped for SB-4's drawer), UX-9 (done).
   Then (the user, 2026-11-16): Ctrl+Z for everything: UX-14 (the script's text, done), then UX-15 (takes, flags, done). UX-16 (Undo toast 5 s, gone when you carry on, done).
+  Then security (the user, 2026-11-18, issue #267): SE-1 (Content Security Policy, done); SE-2 to SE-8 and decisions
+  D1 (Cloudflare in front of GitHub Pages, waiting on the user) and D2 (models from the app, agreed) are in
+  docs/security.md.
   The rest (AP-8 …) waits
   for the user's next ranking; "Last" in ROADMAP.md (EX-5, CC-1) waits until everything else is done.
 - Mock-ups (one board per design, numbered): https://claude.ai/artifact/2XDZmS7J5NEPZsz91RQMiL (private to the user).
@@ -113,6 +116,8 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
   and count them with `expect.poll`, never `listFiles` + `readFile` + `JSON.parse`.
 - Flaky tests show up under load: `npx playwright test --repeat-each=6 --workers=8 --trace off` (about 5 minutes)
   before handing over anything that touches saving, History or the folder. Fix the race, never add retries.
+- The built page has a Content Security Policy (SE-1, lib/csp.md). e2e specs import `test` from `./base`, which fails
+  a test on any policy refusal; a feature that needs a new source adds the narrowest one in `lib/csp.ts`, with why.
 
 ## Known gaps (never seen for real; confirm when the user can)
 - The team now uses a Windows mapped network drive (SMB), not OneDrive. FX-2's change files, keeper and spinner with
@@ -190,4 +195,6 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
   with ffmpeg; real Chrome's AAC, hardware H.264, real camera .mov/.mp4 clips and a long script's memory are unseen.
 - Feedback mode (AP-48) in real Chrome/Edge: the issue link was only caught in tests (no GitHub here); pasting the
   copied picture into a real GitHub issue and the `feedback` label (applied only for people who may label) are unseen.
+- The policy (SE-1) in real Chrome/Edge with the real speech models: only a tiny ONNX session was seen loading the
+  runtime from the app's own files; a real model download from Hugging Face under the policy is unseen.
 - Allow editing (AP-25) after Chrome really takes back access: tests fake the lost OK; how long Chrome waits is unseen.

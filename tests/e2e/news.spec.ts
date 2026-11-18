@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './base';
 import { readFileSync } from 'node:fs';
 import { changeFile, listFiles, setUp, writeFile } from './folder';
 

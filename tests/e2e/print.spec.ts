@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './base';
 import { readFileSync } from 'node:fs';
 import { setUp } from './folder';
 
@@ -159,7 +159,7 @@ test('landscape or portrait: the preview turns, the print window opens turned, r
 
   await page.getByLabel('Settings').getByRole('button', { name: 'Print…' }).click();
   await expect.poll(() => page.evaluate(() => (window as unknown as { printed: number }).printed)).toBe(1);
-  const pageRule = () => page.evaluate(() => [...document.querySelectorAll('style')].map((s) => s.textContent).find((t) => t?.includes('@page')));
+  const pageRule = () => page.evaluate(() => document.adoptedStyleSheets.flatMap((s) => [...s.cssRules].map((r) => r.cssText)).find((t) => t.includes('@page')));
   expect(await pageRule()).toContain('size: landscape');
   await page.evaluate(() => window.dispatchEvent(new Event('afterprint')));
   await page.getByRole('button', { name: 'Back to the script' }).click();
