@@ -56,8 +56,11 @@
         const range = el ? rangeAt(el, spot.start, spot.end) : null;
         if (range) (i === on ? onMark : marks).push(range);
       });
-      CSS.highlights.set('find', new Highlight(...marks));
-      CSS.highlights.set('find-on', new Highlight(...onMark));
+      // Above the comments' marks (priority 0), which are yellow too and hid a match in a quote (#215).
+      const [found, here] = [new Highlight(...marks), new Highlight(...onMark)];
+      [found.priority, here.priority] = [1, 2];
+      CSS.highlights.set('find', found);
+      CSS.highlights.set('find-on', here);
     });
   });
   $effect(() => () => {

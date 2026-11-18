@@ -12,6 +12,9 @@ Replace with, Replace, Replace all, ×. The logic is `lib/find.ts`.
   which highlights can't reach: their matches go back to Write (`titles`, block → start, end, on), which lays the
   same letters see-through behind the box and tints only the matched words (#190: tinting the whole box looked as if
   the whole title matched).
+- The marks are drawn above the comments' quote marks (`priority` 1 and 2; theirs is 0), in a stronger yellow than
+  theirs: at equal priority the comments' marks, set later, covered a match inside a quote, and the count named a
+  word nobody could see (#215).
 - The marks are set again after every change to the script (`JSON.stringify(script.blocks)`), and removed with the bar.
 - Replace goes on to the first match not before the words just put in, so replacing "leaf" with "leaves" never stops on
   its own replacement.

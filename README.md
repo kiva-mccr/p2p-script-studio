@@ -179,7 +179,7 @@ Status: a first working version. What it does today:
   Nothing is written to the shared folder: your last visit is kept in this browser.
 - **Find and replace:** Ctrl+F in Write or Review (or ⋯ › Find and replace) opens a bar above the script. It finds in section
   titles, Dialogue, On screen and the notes and link names in Images & files, never in file names or links, and marks
-  every match (the one you're on darker). Enter and Shift+Enter step through; Match case and Whole words narrow it.
+  every match (the one you're on darker, both stronger than a comment's yellow, so a match inside a commented quote shows). Enter and Shift+Enter step through; Match case and Whole words narrow it.
   Replace changes the match you're on and goes to the next; Replace all changes every one, with Undo at the bottom (Ctrl+Z works too). A
   replacement takes the capitals of the word it replaces (Glucose becomes Sugar). Esc closes the bar; Ctrl+F from
   inside it gives the browser's own find.
