@@ -1,7 +1,7 @@
 <script lang="ts">
   import { tick, untrack } from 'svelte';
   import { feedback } from '../lib/help.svelte';
-  import { describe, onScrollbar, partOf, placePanel, issueBody, issueTitle, issueUrl, plainText, type Env, type Part } from '../lib/feedback';
+  import { describe, onScrollbar, partOf, placePanel, ringBox, issueBody, issueTitle, issueUrl, plainText, type Env, type Part } from '../lib/feedback';
   import { makePictures } from '../lib/feedbackshot';
   import { parseRoute } from '../lib/route';
 
@@ -234,17 +234,22 @@
   });
 </script>
 
+{#snippet ring(r: DOMRect)}
+  {@const b = ringBox(r, { width: document.documentElement.clientWidth, height: document.documentElement.clientHeight })}
+  <div class="ring" aria-hidden="true" style:left="{b.left}px" style:top="{b.top}px" style:width="{b.width}px" style:height="{b.height}px"></div>
+{/snippet}
+
 {#if mode === 'picking'}
   <div class="strip" role="status" data-feedback-ui>
     <p><b>Feedback:</b> click the part that's giving you trouble or could be better.
       <span class="help">Hold Shift to use the page, for example to open a menu.</span> Esc to stop.</p>
     <button type="button" class="outline" onclick={stop}>Stop</button>
   </div>
-  {#if hover}<div class="ring" aria-hidden="true" style:left="{hover.left - 3}px" style:top="{hover.top - 3}px" style:width="{hover.width + 6}px" style:height="{hover.height + 6}px"></div>{/if}
+  {#if hover}{@render ring(hover)}{/if}
 {/if}
 
 {#if mode === 'open' && part}
-  {#if rect}<div class="ring" aria-hidden="true" style:left="{rect.left - 3}px" style:top="{rect.top - 3}px" style:width="{rect.width + 6}px" style:height="{rect.height + 6}px"></div>{/if}
+  {#if rect}{@render ring(rect)}{/if}
   <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
   <section class="panel" aria-label="Feedback" data-feedback-ui style={panelStyle} bind:offsetWidth={panelW} bind:offsetHeight={panelH}
     onkeydown={(e) => { if (e.key === 'Escape') { e.stopPropagation(); stop(); } }}>

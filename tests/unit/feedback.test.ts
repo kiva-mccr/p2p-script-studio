@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { issueBody, issueTitle, issueUrl, placePanel, plainText, type Part } from '../../src/lib/feedback';
+import { issueBody, issueTitle, issueUrl, placePanel, plainText, ringBox, type Part } from '../../src/lib/feedback';
 
 const part: Part = { label: 'button "Record row 3"', file: 'WriteRow.svelte', tour: 'take', selector: '[data-row="r1"] > div.mic-cell > button.mic',
   row: 3, column: 'the mic', screen: 'Write' };
@@ -62,5 +62,16 @@ describe('the feedback panel stays on screen (AP-48 fix)', () => {
     expect(at.top + panel.height).toBeLessThanOrEqual(592);
     // A panel taller than the window starts at the top edge (it scrolls inside).
     expect(placePanel({ left: 0, top: 10, bottom: 20 }, { width: 440, height: 900 }, view).top).toBe(8);
+  });
+});
+
+describe('the ring round a part (issue #216)', () => {
+  const view = { width: 1280, height: 800 };
+  it('sits 3 px outside a part', () => {
+    expect(ringBox({ left: 100, top: 50, right: 300, bottom: 80 }, view)).toEqual({ left: 97, top: 47, width: 206, height: 36 });
+  });
+  it('stays inside the window for a part as big as the window, or it was all off screen', () => {
+    expect(ringBox({ left: 0, top: 0, right: 1280, bottom: 800 }, view)).toEqual({ left: 0, top: 0, width: 1280, height: 800 });
+    expect(ringBox({ left: -40, top: 700, right: 200, bottom: 900 }, view)).toEqual({ left: 0, top: 697, width: 203, height: 103 });
   });
 });

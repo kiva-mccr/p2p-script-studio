@@ -29,3 +29,5 @@ blur the script's words, say which script), Open on GitHub, Copy instead, Cancel
 - Nothing is sent by the app: GitHub's page shows everything before the person presses Submit.
 - The note starts empty for each piece of feedback: Cancel or Close clears it, and so does picking again after it was
   sent or copied. It used to be one value for the whole visit, so the last note came back (a bug the user hit).
+- The orange ring is kept inside the window (`ringBox` in lib/feedback.ts): a part as big as the window (the Settings
+  or Assets backdrop) put its ring 3 px past every edge, so none of it showed (issue #216).

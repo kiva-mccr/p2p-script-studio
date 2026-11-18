@@ -247,6 +247,15 @@ const EDGE = 8;
 
 /** Where the panel goes: below the part if it fits, else above, else wherever it is whole on screen (over the part
  * if it must). Never past an edge of the window. */
+/** The orange ring round a part on screen, 3 px out but kept inside the window: a part as big as the window (the
+ * Assets backdrop) put its ring just past every edge, so none of it showed (issue #216). */
+export function ringBox(part: { left: number; top: number; right: number; bottom: number }, view: { width: number; height: number }):
+  { left: number; top: number; width: number; height: number } {
+  const left = Math.max(0, part.left - 3), top = Math.max(0, part.top - 3);
+  const right = Math.min(view.width, part.right + 3), bottom = Math.min(view.height, part.bottom + 3);
+  return { left, top, width: Math.max(0, right - left), height: Math.max(0, bottom - top) };
+}
+
 export function placePanel(part: { left: number; top: number; bottom: number } | null, panel: { width: number; height: number },
   view: { width: number; height: number }): { left: number; top: number } {
   const clamp = (v: number, max: number) => Math.max(EDGE, Math.min(v, max));
