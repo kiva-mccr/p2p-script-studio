@@ -196,6 +196,18 @@ test('the drawer starts folded, folds and unfolds, and is remembered', async ({ 
   await expect(t.getByRole('button', { name: /^Row 1 · / })).toBeVisible();
   // Open, it takes at most about half the screen.
   expect((await t.boundingBox())!.height).toBeLessThanOrEqual(page.viewportSize()!.height / 2 + 4);
+  // Fold is the last control of the bar, right of Wide / Upright and zoom (SB-10, #238), and folds and unfolds it too.
+  const foldButton = t.getByRole('button', { name: 'Fold', exact: true });
+  const zoomIn = await t.getByRole('button', { name: 'Zoom in' }).boundingBox();
+  const upright = await t.getByRole('button', { name: 'Upright' }).boundingBox();
+  const fb = (await foldButton.boundingBox())!;
+  expect(fb.x).toBeGreaterThan(zoomIn!.x + zoomIn!.width);
+  expect(fb.x).toBeGreaterThan(upright!.x + upright!.width);
+  expect(fb.x + fb.width).toBeGreaterThan((await t.boundingBox())!.x + (await t.boundingBox())!.width - 40);
+  await foldButton.click();
+  await expect(bar).toHaveAttribute('aria-expanded', 'false');
+  await t.getByRole('button', { name: 'Unfold', exact: true }).click();
+  await expect(bar).toHaveAttribute('aria-expanded', 'true');
   // Opening the script again (from the list) keeps it open; folding is kept too.
   await page.getByRole('link', { name: 'Back to Video Scripts' }).click();
   await page.getByRole('link', { name: /How Photosynthesis Works/ }).click();

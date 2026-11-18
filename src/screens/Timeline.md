@@ -29,7 +29,8 @@ offers its pictures, Sequence or Collage, + Add a picture (only for the timeline
 - The drawer (SB-4): the section is always `position: sticky; bottom: 0`, so it stays at the bottom of the screen and,
   scrolled to the end, rests under the last row (the last row is never behind it). Its bar (`.foldbar`, not `.bar`:
   that is TimelineBar's class, which tests look for) folds and unfolds it, playing or not; folded, a thin `.strip` of
-  the blocks and the playhead. Remembered in this browser for every script (`timeline-open`, '1' open); it starts
+  the blocks and the playhead. Fold / Unfold is its own button (`.fold`), the last in `.top`, so it sits at the far
+  right after Wide / Upright and zoom (SB-10, #238); never put it back inside `.foldbar`. Remembered in this browser for every script (`timeline-open`, '1' open); it starts
   folded. It replaced SB-2's Unpin / Pin and the old Hide (`timeline-hidden`, `timeline-unpinned` are no longer read).
 - Open, the same strip (the `strip` snippet) sits above the tracks with `.view`, a box around the part in view
   (SB-9, #245): `use:inView` measures `.scroll` on scroll and on resize of it and of `.tracks` (zoom changes the
