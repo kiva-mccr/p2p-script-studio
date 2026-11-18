@@ -133,7 +133,7 @@
   onclick={onActivate}>
   <div class="who"><span><strong data-hide>{t.comment.who}</strong> <span data-keep>{suggestion ? 'suggested' : 'commented'} · {where}</span></span><span>{@render time(t.comment)}</span></div>
   {#if t.back}<p class="back-tag">Back from hold · put on hold by {t.back}</p>{/if}
-  {#if gone && !t.decision}<p class="quiet">On text that has since changed: “{t.comment.quote}”</p>{/if}
+  {#if gone && !t.decision && !t.gone}<p class="quiet">On text that has since changed: “{t.comment.quote}”</p>{/if}
   {#if editing === t.comment.id}
     {#if t.comment.quote}<blockquote>{t.comment.quote}</blockquote>{/if}
     {@render editor(t.comment, suggestion ? 'Replace with' : 'Edit comment')}
@@ -142,6 +142,13 @@
   {:else}
     {#if t.comment.text}<p class="text">{t.comment.text}</p>{/if}
     {#if t.comment.files?.length}<Attached {dir} files={t.comment.files} use={using(t.comment)} />{/if}
+  {/if}
+  {#if t.resolved && t.gone}
+    <!-- Resolved by deleting its row or replacing its words (RV-24): what was there is kept. -->
+    <div class="was">
+      <span class="was-head">{t.gone.why === 'deleted' ? `Row ${t.gone.n}, as it was when deleted:` : 'The words it was on were changed:'}</span>
+      <s>{t.gone.was}</s>{t.gone.why === 'replaced' && t.gone.now ? ` → ${t.gone.now}` : ''}
+    </div>
   {/if}
   {#each t.replies as r (r.id)}
     {#if r.deleted}
@@ -175,7 +182,7 @@
       {:else if suggestion && t.decision}
         <span class="decided">{t.decision === 'accepted' ? 'Accepted. The script is updated.' : 'Rejected. The original stays.'}</span>
         <button class="link" onclick={undo}>Undo</button>
-      {:else if suggestion}
+      {:else if suggestion && !t.resolved}
         <button class="primary small" onclick={() => decide(true)}>Accept</button>
         <button class="outline" onclick={() => decide(false)}>Reject</button>
         <button class="link" onclick={startReply}>Reply</button>
@@ -190,6 +197,7 @@
         <span class="decided">Resolved.</span>
         <button class="link" onclick={() => onAdd({ kind: 'reopen', about: t.comment.id })}>Undo</button>
       {:else}
+        {#if t.gone}<span class="quiet gone">{t.gone.why === 'deleted' ? `Resolved when ${t.gone.who} deleted the row` : 'Resolved when the words were replaced'} · {ago(Date.parse(t.gone.when))}</span>{/if}
         <button class="link" onclick={() => onAdd({ kind: 'reopen', about: t.comment.id })}>Reopen</button>
       {/if}
     </div>
@@ -259,4 +267,9 @@
   .small { min-height: 40px; padding: 0 16px; font-size: 14px; }
   .missing { margin: 0; font-size: 13px; color: var(--danger); }
   .quiet { margin: 0; font-size: 13px; color: var(--muted); }
+  /* What a deleted row or replaced words said (RV-24, board 81). */
+  .was { padding: 8px 10px; border-left: 3px solid #c4c4c4; border-radius: 0 6px 6px 0; background: #fff; font-size: 13px; line-height: 1.5; color: var(--muted); overflow-wrap: anywhere; }
+  .was-head { display: block; margin-bottom: 2px; font-size: 12px; }
+  .was s { color: #3d3d3d; }
+  .gone { display: inline-flex; align-items: center; flex: 1; font-size: 12px; }
 </style>

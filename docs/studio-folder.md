@@ -272,6 +272,10 @@ It is a warning, not a lock: anyone can still edit, and conflicts are caught as 
   list: the ones it keeps keep their paths, and new ones go in `.studio/files/<the edit's id>/`. Up to 50 MB each.
 - `row` and `field` say where it belongs (`dialogue`, `on_screen` or `files`); the row id keeps it attached when
   rows move. If its quote is no longer in the row, it shows as "on text that has since changed".
+- Deleting a row, or replacing the words a comment is on, resolves it (RV-24): the `resolve` is written by whoever
+  saved that change and keeps what was there: `"why": "deleted"` with `was` (the row's words), `n` (its number then)
+  and `after` (the row before it, `""` if it was first, so it keeps its place), or `"why": "replaced"` with `was`
+  and `now` (the old and new words). A save that brings them back writes a `reopen`.
 
 Flags on rows (AP-9) are kept here too: `flag` (with `row`, and the note in `text`, which may be empty) and
 `unflag` (with `row`). The newest of the two about a row says whether it is flagged; a changed note is a new

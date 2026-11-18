@@ -737,6 +737,12 @@ and suggestions, keeps every version, and exports them for production.
   copies live only while the script is open (the user's pick; nothing written to the folder). After: 17 ms a frame
   with the photos, the longest frame while new rows came in 33 ms (photos) and 76 ms (videos). A file whose preview
   can't be made (not really a picture) now shows its kind and size on the chip, like a video that won't play.
+- [x] **RV-24** Comments that lose their place are resolved, not lost (issue #249 and its follow-up, board 81 agreed
+  by the user, 2026-11-18): deleting a row resolves its open comments and suggestions ("Resolved when Sam deleted the
+  row"), with the row's words kept on the card, struck ("Row 4, as it was when deleted"), and the card stays where
+  the row was in line order. Replacing the words a comment is on resolves it the same way, with the old and new
+  words. Undo (or Ctrl+Z, at the next save) reopens them. Written by the save that made the change
+  (lib/autoresolve.md); deleting a row saves at once.
 - [x] **RV-23** Fold columns in Review too (asked by the user): the ‹ fold from AP-17 (Write only today) also works
   in Review, every column open by default.
   Built as mock-up 60: the same ‹ and › (shared `FoldHeads.svelte`, `lib/folds.svelte.ts`), a grey dot on rows with

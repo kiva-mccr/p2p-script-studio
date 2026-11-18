@@ -152,7 +152,9 @@ Status: a first working version. What it does today:
   change (a double-click only selects a word; what you type is kept when you switch between the two or pick other
   words, until Cancel), or comment on a
   whole row; reply, resolve, reopen; accept or reject suggestions (accepting changes the script, Undo puts it
-  back). What opens (the comment box, a reply box, On hold, Resolved, the review note, rows shown again) grows into
+  back). Deleting a row resolves its comments ("Resolved when Sam deleted the row"), keeping the row's words on the
+  card and the card where the row was; replacing the words a comment is on resolves it with the old and new words.
+  Undo brings them back open. What opens (the comment box, a reply box, On hold, Resolved, the review note, rows shown again) grows into
   place rather than jumping in, unless the computer is set to reduce motion. Put on hold shelves a comment or suggestion for later (here and in Write's Comments tab): after 5 seconds
   with Undo it slides into a folded "On hold" list, isn't counted as open, and comes back into the open list, marked
   "Back from hold", at the next Send for review or official version (Send for review says so); Take off hold brings

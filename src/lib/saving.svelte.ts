@@ -54,6 +54,7 @@ export class Saving {
   last: Version | null = null; // the newest History entry this page knows of
   started = new Started(); // each row's words on opening, moved along by others' changes (AP-38)
   steps = new Steps(); // Ctrl+Z and Ctrl+Y in Write (lib/steps.ts)
+  saved: (before: string, after: string) => void = () => {}; // this person's save, from what to what (RV-24)
   #seen = new Set<string>(); // change files already in `shared`
   #authors = new Set<string>(); // whose changes are in `shared` since the last History entry
   #entries: Editing[] = []; // everyone's "… is editing" files, from the last check
@@ -512,7 +513,9 @@ export class Saving {
       const delta = diff(this.shared, text);
       if (delta) {
         this.#seen.add(await writeChange(this.dir, this.name(), delta));
+        const before = this.shared;
         this.shared = text;
+        this.saved(before, text);
         this.#authors.add(this.name());
         this.script.front = parseScript(text).front; // this person among the authors, in the page too
         this.steps.sync(this.#pageText(false));

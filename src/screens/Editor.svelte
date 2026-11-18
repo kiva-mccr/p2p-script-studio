@@ -32,6 +32,7 @@
   import { sinceVisit, visitKey, type Marks, type Visit } from '../lib/visit';
   import { reviewCount, seenKey, stamp, writeCount } from '../lib/tabcounts';
   import { addNote, flags, listNotes, threads, type Attachment, type Field, type Note } from '../lib/comments';
+  import { autoResolve } from '../lib/autoresolve';
   import { News } from '../lib/news';
   import { Away } from '../lib/away';
   import { Undo, type Offer } from '../lib/undo.svelte';
@@ -351,6 +352,18 @@
     }
   }
 
+  // A save that deleted a row or replaced the words a comment is on resolves those comments, keeping what was there;
+  // one that brings it back reopens them (RV-24, lib/autoresolve.ts).
+  file.saved = (before, after) => {
+    const at = dir;
+    const entries = at ? autoResolve(allThreads, before, after, name) : [];
+    if (!at || !entries.length) return;
+    (async () => {
+      for (const entry of entries) await addNote(at, entry);
+      notes = await listNotes(at);
+    })().catch((e) => (notice = problem("The comments on what you deleted or replaced couldn't be marked resolved. Resolve them in Comments instead.", 'resolving comments', e)));
+  };
+
   // An accepted suggestion (or its Undo): `from` becomes `to` in the row's field, then saved as usual.
   function apply(row: string, field: Field, from: string, to: string): boolean {
     const block = script?.blocks.find((b) => b.type === 'row' && b.id === row);
@@ -539,12 +552,15 @@
   }
 
   // A row or section was deleted in Write (or a paste made rows): the blocks as they were, for Undo.
+  // Saved at once, so a deleted row's comments are resolved (RV-24) as it goes, and reopened as Undo brings it back.
   function deleted(blocks: Block[], what: string) {
     undo.offer({ what, back: () => {
       if (!script) return;
       script.blocks = blocks;
       changed();
+      void save();
     } });
+    queueMicrotask(save);
   }
 
   // Ctrl+Z or Ctrl+Y in Write: the toast's Undo would now put back the wrong thing, so it goes. A take or a flag

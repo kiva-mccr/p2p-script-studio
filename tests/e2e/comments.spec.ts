@@ -126,12 +126,52 @@ test('in Write the writer accepts a suggestion, resolves with Undo and replies w
   await ana.getByLabel('Reply').fill('We can, next week.');
   await ana.getByRole('button', { name: 'Reply' }).click();
   await expect(ana).toContainText('We can, next week.');
+  // Replacing the words it is on resolves it once saved, keeping the old and new words (RV-24).
   await page.getByLabel('On screen, row 1').fill('Slow push-in on a real leaf.');
-  await expect(ana).toContainText('On text that has since changed: “sunlit leaf”');
+  await expect(ana).toHaveCount(0);
+  await panel.getByRole('button', { name: /Resolved · / }).click();
+  await expect(ana).toContainText('The words it was on were changed: sunlit leaf → real leaf');
+  await expect(ana).toContainText('Resolved when the words were replaced');
+  await expect(ana).toContainText('We can, next week.');
 
   const files = await readJsonFiles(page, COMMENTS);
-  expect(files.map((f) => f.kind).sort()).toEqual(['accept', 'comment', 'comment', 'reopen', 'reply', 'resolve', 'suggestion']);
+  expect(files.map((f) => f.kind).sort()).toEqual(['accept', 'comment', 'comment', 'reopen', 'reply', 'resolve', 'resolve', 'suggestion']);
   expect(files.find((f) => f.kind === 'reply')).toMatchObject({ who: 'Sam', about: 'ana00001' });
+  expect(files.find((f) => f.about === 'ana00001' && f.kind === 'resolve')).toMatchObject({ who: 'Sam', why: 'replaced', was: 'sunlit leaf', now: 'real leaf' });
+});
+
+test('deleting a row resolves its comments, keeping its words and its place; Undo reopens them (RV-24)', async ({ page }) => {
+  // Ana's suggestion on row 3 and Lee's comment on row 5 were resolved before.
+  const LEE = note({ id: 'lee00001', kind: 'comment', who: 'Lee', when: '2026-11-10T09:03:00Z', row: id(5), field: 'dialogue', quote: '', text: 'Nice ending.' });
+  const done = (about: string, n: number) => note({ id: `done000${n}`, kind: 'resolve', who: 'Ana', when: `2026-11-10T09:0${n}:00.000Z`, about });
+  await open(page, [SUGGEST, BEN, LEE, done('ana00002', 4), done('lee00001', 5)]);
+  await page.getByRole('button', { name: 'Open comments, 1 open' }).click();
+  const panel = page.getByRole('complementary', { name: 'Comments' });
+  const ben = panel.getByRole('article', { name: 'Comment by Ben' });
+  const benNotes = async () => (await readJsonFiles(page, COMMENTS)).filter((f) => f.about === 'ben00001');
+  const del = async () => {
+    await page.getByLabel('Dialogue, row 4').hover();
+    await page.getByRole('button', { name: 'Delete row 4' }).click();
+  };
+  // Saved at once: the resolve is written while Undo is still offered (any click elsewhere closes it).
+  await del();
+  await expect(panel.getByRole('button', { name: 'Comments · 0' })).toBeVisible();
+  await expect.poll(async () => (await benNotes()).map((f) => f.kind)).toEqual(['resolve']);
+  expect((await benNotes())[0]).toMatchObject({ who: 'Sam', why: 'deleted', n: 4, after: id(3) });
+  await page.getByRole('button', { name: 'Undo' }).click();
+  await expect(page.getByRole('button', { name: '1 open comment on row 4' })).toBeVisible();
+  await expect(ben.getByRole('button', { name: 'Resolve' })).toBeVisible();
+  await expect.poll(async () => (await benNotes()).map((f) => f.kind).sort()).toEqual(['reopen', 'resolve']);
+
+  await del();
+  await expect(panel.getByRole('button', { name: 'Comments · 0' })).toBeVisible();
+  await panel.getByRole('button', { name: 'Resolved · 3' }).click();
+  await expect(ben).toHaveCount(1); // once the open card has gone
+  await expect(ben).toContainText('Ben commented · a deleted row');
+  await expect(ben).toContainText('Row 4, as it was when deleted: They turn it into sugar the plant uses to grow.');
+  await expect(ben).toContainText('Resolved when Sam deleted the row');
+  // Where the row was, not at the end.
+  await expect.poll(() => names(panel.getByRole('article'))).toEqual(['Suggestion by Ana', 'Comment by Ben', 'Comment by Lee']);
 });
 
 test('a resolved or decided card waits 5 seconds with Undo, then moves into Resolved by itself (RV-18)', async ({ page }) => {
