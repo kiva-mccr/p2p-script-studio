@@ -4,6 +4,7 @@
 </script>
 
 <script lang="ts">
+  import { exampleBar } from '../lib/examplebar.svelte';
   import CopyDetails from './CopyDetails.svelte';
   import HelpMenu from './HelpMenu.svelte';
   import { SAVE_FAILED } from '../lib/saving.svelte';
@@ -101,10 +102,11 @@
     setTimeout(() => ((copied = ''), (menu = '')), copied === 'failed' ? 2500 : 1200);
   }
 
-  // The bar's height, for the column headings, Find, the side panel and scrolling to sit under it (UX-4).
+  // The bar's height, for the column headings, Find, the side panel and scrolling to sit under it (UX-4). In the
+  // example it sticks under the example's bar (issue #203), which counts too.
   let barHeight = $state(0);
   $effect(() => {
-    document.documentElement.style.setProperty('--bar-h', `${barHeight}px`);
+    document.documentElement.style.setProperty('--bar-h', `${barHeight + exampleBar.height}px`);
     return () => document.documentElement.style.removeProperty('--bar-h');
   });
 
@@ -117,7 +119,7 @@
 
 <svelte:window onpointerdown={away} onkeydown={(e) => e.key === 'Escape' && (menu = '')} />
 
-<header bind:offsetHeight={barHeight}>
+<header bind:offsetHeight={barHeight} style:top="{exampleBar.height}px">
   <nav class="crumbs" class:locked={ready && status === 'locked'} aria-label="Breadcrumb">
     <!-- A folder icon back to the list (mock-up 30, the user's pick): it leaves room for the length beside Saved. -->
     <a href="#/" class="back" aria-label="Back to {folder}" title="Back to {folder}">

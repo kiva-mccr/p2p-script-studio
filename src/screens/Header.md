@@ -38,6 +38,8 @@ Copy for Teams, EX-10) above Export (Print…, Fountain, Final Draft, Voice-over
   included (`offsetHeight`), is `--bar-h` on the page's root while a script is open: Write's and Review's column
   headings, Find, the Planning panel and the Review comments stick under it, and `html`'s `scroll-padding-top` keeps
   scrolled-to things out from under it. Something new that sticks to the top must use it too.
+  In the example the bar sticks under the example's blue strip (issue #203): its `top` is the strip's height and
+  `--bar-h` counts both (`lib/examplebar.svelte.ts`).
   That padding counts the bar's own place as hidden, so focusing a button in it scrolled the page up (UX-3's test found
   it); everything in the bar has a scroll margin one bar lower, which keeps it "in view".
   It covers the top of `main`, so a test must not click there to leave a text field (`play.spec.ts` blurs instead).

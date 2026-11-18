@@ -22,3 +22,6 @@ bar, and Open your scripts folder).
   stays in it; leaving it clears the link's `#/…`, since its script means nothing in the real folder.
 - The picked folder is remembered (IndexedDB) before the list shows: saved after, a reload straight away found no
   folder (a flaky set-up test under load).
+- The example's blue strip is sticky at the top (issue #203), over the script's top bar (z 8 over 7), which sticks
+  under it at `exampleBar.height` (`lib/examplebar.svelte.ts`). Its buttons get the same scroll margin as the top
+  bar's, or focusing Take the tour scrolled the page to "show" it.
