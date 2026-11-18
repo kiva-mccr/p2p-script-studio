@@ -104,7 +104,7 @@ Status: a first working version. What it does today:
 - **Export screen:** each export opens a screen in place of the script, with the formats on the left, a preview of
   the result in the middle (it follows the settings as you change them) and the settings on the right, with Print…
   or Save. Settings are remembered on this computer. Back to the script (or Esc) returns.
-- **Print:** Print makes the three-column version for paper or a PDF ("Save as PDF" in the print window). Add a
+- **Print:** Print makes the three-column version for paper or a PDF ("Save as PDF" in the print window; if words can't be selected in the PDF, choose "Microsoft Print to PDF" instead of "Adobe PDF"). Add a
   blank Notes column on each row or Notes lines at the foot of every page (2 to 8 lines), and set the text size. Untick any of the three
   columns (for example to print the dialogue only); the others widen to fill the page, Dialogue first, then Notes.
   Pick Portrait or Landscape for the page: landscape gives the columns more room, and the print window opens already

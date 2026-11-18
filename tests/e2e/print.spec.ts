@@ -170,3 +170,14 @@ test('landscape or portrait: the preview turns, the print window opens turned, r
   await expect.poll(() => page.evaluate(() => (window as unknown as { printed: number }).printed)).toBe(2);
   expect(await pageRule()).toContain('size: portrait');
 });
+
+test('a help line under Print… names the PDF printer to use when words cannot be selected (EX-21)', async ({ page }) => {
+  await openExample(page);
+  await openPrint(page);
+  const tip = page.getByLabel('Settings').getByText('Microsoft Print to PDF');
+  await expect(tip).toBeVisible();
+  await expect(tip).toHaveClass(/help/);
+  await expect(tip).toContainText('instead of "Adobe PDF"');
+  await page.getByRole('button', { name: 'Fountain' }).click();
+  await expect(tip).toBeHidden();
+});
