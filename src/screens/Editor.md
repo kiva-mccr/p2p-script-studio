@@ -45,7 +45,8 @@ version (`Print.svelte`) and the teleprompter (`Teleprompter.svelte`, saves what
 - "… is editing": `file` writes yours on opening and every 60 s (`heartbeat` here, PF-18); leaving, the Editor writes a last
   one marked `left` (`file.here(true, who, dir)`, AP-37), with the name and folder read as the editor closes (leaving
   the example takes its props away first, which threw). Closing the tab tries the same from `beforeUnload`, best
-  effort: if the tab is gone first, the others see "last seen" instead of "was here".
+  effort: if the tab is gone first, the others see "last seen" instead of "was here". The closing `leave()` and that
+  file go through `closing()` (`lib/leaving.ts`), so the example's Start over and Undo wait for them.
 - No browser dialogs (the user's rule): deleting shows an Undo bar; messages sit at the bottom of the window.
   Only a failed save keeps the browser's "Leave site?" prompt, because leaving then would lose work.
 - Review and History are shown only once what is waiting is saved; `switchMode` keeps the newest mode asked for, so

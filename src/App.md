@@ -25,3 +25,6 @@ bar, and Open your scripts folder).
 - The example's blue strip is sticky at the top (issue #203), over the script's top bar (z 8 over 7), which sticks
   under it at `exampleBar.height` (`lib/examplebar.svelte.ts`). Its buttons get the same scroll margin as the top
   bar's, or focusing Take the tour scrolled the page to "show" it.
+- Start over and its Undo close the example's screens first (`swapping`) and wait for their last saves (`closed()`,
+  `lib/leaving.ts`) before swapping the folder: the Editor closed by the swap used to write its text into the copy
+  Undo had just put back, so the edit was lost (a flaky example.spec test under load).

@@ -21,6 +21,7 @@ Start over and its Undo, and whether the offer on the first-time screen is folde
   just then: removing fails while a file is being written, so `removeWhenFree` tries again (Undo did nothing now and
   then, seen as a flaky test under load). A file added while it is being removed throws InvalidModificationError,
   retried too (seen once the example had more files, AP-47).
+- The App closes the open script and waits for its last saves before calling `startOver` or `undo` (`lib/leaving.md`).
 - Many tests list the example's files (review.spec.ts reads its `assets/` folder): adding a file to a row means
   updating the tests that expect that row's Files lines.
 - The takes are a made-up voice (espeak-ng with the MBROLA us2 voice, then Opus in webm); each JSON's `text` is the
