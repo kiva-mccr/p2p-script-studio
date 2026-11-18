@@ -342,7 +342,6 @@
       {:else}
         <span class="grow"></span>
       {/if}
-      <span class="fold">{hidden ? 'Unfold' : 'Fold'}</span>
     </button>
     {#if !hidden && total && !readOnly}
       <span class="segs shape" role="group" aria-label="Video shape" title="The shape of the preview, its collages and the exported video">
@@ -356,6 +355,8 @@
         <button aria-label="Zoom in" title="Zoom in" disabled={zoom >= ZOOM_MAX} onclick={() => zoomBy(2)}>+</button>
       </span>
     {/if}
+    <!-- Fold sits at the far right, after Wide / Upright and zoom (#238, board 80); the bar still folds too. -->
+    <button class="fold" aria-expanded={!hidden} onclick={() => fold(!hidden)}>{hidden ? 'Unfold' : 'Fold'}</button>
   </div>
 
   {#if !hidden}
@@ -565,7 +566,7 @@
   .zoom { display: inline-flex; gap: 2px; }
   .zoom button { width: 32px; height: 32px; border: 1px solid var(--line-strong); border-radius: 6px; background: #fff; font-size: 15px; }
   .zoom button:disabled { opacity: 0.4; }
-  .fold { flex: none; font-size: 13px; color: var(--accent); }
+  .fold { flex: none; min-height: 44px; padding: 0 4px; border: 0; background: none; font-size: 13px; color: var(--accent); cursor: pointer; }
   .empty { margin: 0; font-size: 13px; color: var(--muted); }
   .scroll { overflow-x: auto; padding-top: 4px; }
   .tracks { position: relative; min-width: 100%; }
