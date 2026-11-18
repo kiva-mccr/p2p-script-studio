@@ -14,7 +14,7 @@ export const HEADERS: Record<string, string> = {
   'x-frame-options': 'DENY',
   'referrer-policy': 'no-referrer',
   // Only the microphone (voice-over takes, Follow my voice), and only for the app itself.
-  'permissions-policy': 'microphone=(self), camera=(), geolocation=(), payment=(), usb=(), serial=(), hid=(), bluetooth=(), midi=()',
+  'permissions-policy': 'microphone=(self), camera=(), geolocation=(), payment=(), usb=(), serial=(), hid=(), midi=()',
   'cross-origin-opener-policy': 'same-origin',
   'cross-origin-resource-policy': 'same-origin',
 };

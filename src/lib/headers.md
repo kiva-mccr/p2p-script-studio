@@ -16,3 +16,4 @@ header rule. This file is the list that rule must match.
 - `strangerScripts` exists because Cloudflare can add its own scripts to the page (Web Analytics did, 2026-11-18).
   The policy blocks them, but they mustn't be there.
 - Imports `./csp.ts` with its extension, so Node can run the live check without a build.
+- Only features Chrome knows go in the Permissions-Policy: an unknown one (`bluetooth`) logs an error on every visit.
