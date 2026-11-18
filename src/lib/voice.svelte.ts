@@ -273,21 +273,25 @@ export class VoiceOver {
   async play(dir: FileSystemDirectoryHandle, id: string) {
     if (this.playing === id) return this.stopPlaying();
     this.stopPlaying();
+    const turn = this.#turn;
     const take = this.takes[id];
     const sound = await Sound.open(await takeFile(dir, id), take ?? { by: '', at: 0, seconds: 0, text: '' });
-    if (this.#sound) this.#sound.close(); // another click while this one loaded
+    // Another click (or a stop) while this one loaded: the newer one wins. Two at once made two clocks fight
+    // over the bar, which flickered (#265).
+    if (turn !== this.#turn) return sound.close();
     this.#sound = sound;
-    const tick = setInterval(() => (this.at = sound.duration ? Math.min(1, sound.time / sound.duration) : 0), 100);
+    this.#tick = setInterval(() => (this.at = sound.duration ? Math.min(1, sound.time / sound.duration) : 0), 100);
     sound.onended = () => this.stopPlaying();
-    this.#tick = tick;
     this.playing = id;
     this.at = 0;
     await sound.play();
   }
 
   #tick: ReturnType<typeof setInterval> | undefined;
+  #turn = 0; // goes up with every play and stop, so a take that loads late is dropped
 
   stopPlaying() {
+    this.#turn++;
     clearInterval(this.#tick);
     this.#sound?.close();
     this.#sound = null;

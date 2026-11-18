@@ -42,6 +42,42 @@ test('record a take for a row, see its length and words a minute, and play it ba
   await expect(page.getByRole('button', { name: 'Play row 1' })).toBeVisible({ timeout: 5000 }); // played to the end
 });
 
+test('a take clicked twice while it loads plays once, and its bar only moves forward (#265)', async ({ page }) => {
+  await openExample(page);
+  await page.getByRole('button', { name: 'Record row 1', exact: true }).click();
+  await page.getByRole('button', { name: 'Stop recording row 1' }).click();
+  const play = page.getByRole('button', { name: /^(Play|Pause) row 1$/ });
+  await expect(play).toContainText('▶');
+  // Two clicks before the first has loaded its sound: before #265, both loads played and both kept moving the bar.
+  // The first click's file comes slower than the second's, as on a busy network drive.
+  await page.evaluate(() => {
+    const read = Blob.prototype.arrayBuffer;
+    let calls = 0;
+    Blob.prototype.arrayBuffer = function () {
+      const slow = calls++ === 0;
+      return read.call(this).then((data) => new Promise((done) => setTimeout(() => done(data), slow ? 150 : 0)));
+    };
+  });
+  await play.dblclick();
+  await expect(play).toContainText('❚❚');
+  // Watch the bar every frame until the take ends: it must never step back.
+  const widths = await page.evaluate(() => new Promise<number[]>((done) => {
+    const seen: number[] = [];
+    const look = () => {
+      const bar = document.querySelector<HTMLElement>('[data-row] .take .bar > span');
+      const button = document.querySelector('[data-row] .take .play');
+      seen.push(parseFloat(bar?.style.width || '0'));
+      if (button?.textContent?.includes('▶')) done(seen);
+      else requestAnimationFrame(look);
+    };
+    look();
+  }));
+  while (widths.length && widths.at(-1) === 0) widths.pop(); // back to empty once it has ended
+  const back = widths.filter((w, i) => i > 0 && w < widths[i - 1]);
+  expect(back, `bar widths: ${widths.join(' ')}`).toEqual([]);
+  expect(Math.max(...widths)).toBeGreaterThan(50);
+});
+
 test('a take says Outdated once its line is changed, and keeps its words a minute', async ({ page }) => {
   await openExample(page);
   await page.getByRole('button', { name: 'Record row 1', exact: true }).click();
