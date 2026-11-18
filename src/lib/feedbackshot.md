@@ -9,6 +9,9 @@ an orange outline, from the page itself (modern-screenshot, MIT, loaded only whe
 
 - What is drawn is `pictureRoot`: the widest parent no wider than the window and no taller than 480 px (a row, the
   top bar). Drawing the whole page was slow on a long script and too big for a canvas.
+- It stops at a parent that doesn't hold the whole part: a part placed outside its parent (the timeline's preview sits
+  above the drawer, `position: absolute`) isn't in that parent's picture, so the picture showed the fold bar with the
+  outline off its edge (issue #247).
 - The feedback panel, strip and outline (`data-feedback-ui`) are left out; the outline is drawn on afterwards.
 - `font: false`: the app's fonts are the computer's own, so nothing is fetched.
 - A web link can't carry a picture, so Feedback copies it to the clipboard for the person to paste into the issue.

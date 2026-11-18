@@ -6,12 +6,16 @@ import { coverWords } from './feedback';
 const OUTLINE = '#e8590c';
 const PAD = 12;
 
-/** What to draw: the widest parent of `el` that still fits the window's width and 480 px of height (its row, a bar). */
+/** What to draw: the widest parent of `el` that still fits the window's width and 480 px of height (its row, a bar),
+ * and still holds the part: one that sticks out of its parent (the timeline's preview, above the drawer) is drawn
+ * without that parent, or the picture showed the parent and not the part (issue #247). */
 export function pictureRoot(el: Element): Element {
+  const part = el.getBoundingClientRect();
   let root = el;
   for (let p = el.parentElement; p && p !== el.ownerDocument.body; p = p.parentElement) {
     const r = p.getBoundingClientRect();
     if (r.width > innerWidth + 1 || r.height > 480) break;
+    if (part.left < r.left - 1 || part.top < r.top - 1 || part.right > r.right + 1 || part.bottom > r.bottom + 1) break;
     root = p;
   }
   return root;
