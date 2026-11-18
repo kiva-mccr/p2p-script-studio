@@ -1,0 +1,23 @@
+name: Live security check
+
+# SE-4: the live site's security headers (added by Cloudflare) must match src/lib/headers.ts, and the page must carry
+# no script but the app's. Daily, after every deploy, and by hand. A failure emails the repo's owner.
+on:
+  schedule:
+    - cron: '17 9 * * *'
+  workflow_run:
+    workflows: [Deploy to GitHub Pages]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with: { node-version: 22 }
+      - run: node --experimental-strip-types --no-warnings scripts/livecheck.ts

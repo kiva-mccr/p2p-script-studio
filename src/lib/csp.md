@@ -10,6 +10,8 @@ site and Hugging Face (the speech models).
 
 ## Rules and pitfalls
 
+- The live site also sends the policy as a header, from Cloudflare (SE-4, `lib/headers.ts`): a change here must be
+  made in Cloudflare's rule too, or the daily live check fails.
 - A `<meta>` tag because GitHub Pages can't send headers. A meta policy can't hold `frame-ancestors`, `report-uri` or
   `sandbox`, and the browser only applies it from the tag on, so it must come before any script (right after charset).
 - Build only (`apply: 'build'`): the dev server's hot reload runs inline scripts the policy would stop. The e2e tests

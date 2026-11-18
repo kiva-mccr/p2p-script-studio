@@ -1065,7 +1065,15 @@ the team writes leaves their computers.
   reach only this site and Hugging Face (model downloads). No Referer on links out. Found while doing it: the speech
   models' runtime (ONNX Runtime's code and WebAssembly) was loaded from cdn.jsdelivr.net when a model started; it now
   comes from the app's own files (`lib/models.ts`). Every e2e test now fails if the page breaks the policy.
-- [ ] **SE-2** to **SE-8**: supply chain checks, untrusted script files, security headers (needs D1), models served
+- [x] **SE-4** Security headers (D1: Cloudflare's free plan in front of GitHub Pages, the user's pick, 2026-11-18).
+  Done 2026-11-18: the domain's DNS moved from Hostinger to Cloudflare (every record kept; only the app's subdomain
+  goes through Cloudflare, the Hostinger site and email are DNS only). One response header rule adds the policy with
+  `frame-ancestors 'none'`, HSTS (this subdomain only), nosniff, X-Frame-Options, no-referrer, a Permissions-Policy
+  allowing only the microphone, COOP and CORP; http redirects to https; TLS 1.2 at least; Cloudflare's page
+  rewriting off. `src/lib/headers.ts` is the list; `.github/workflows/live.yml` checks the live site daily and after
+  each deploy, and fails on a different header or a script that isn't the app's. COEP (faster speech models) waits
+  for SE-5.
+- [ ] **SE-2**, **SE-3**, **SE-5** to **SE-8**: supply chain checks, untrusted script files, security headers (needs D1), models served
   from the app (D2, agreed), offline app, proof of what's running, the IT pack. The plan and decisions:
   docs/security.md.
 
