@@ -52,6 +52,8 @@ export type Thread = {
   comment: Note; replies: Note[]; resolved: boolean; by?: string; decision?: 'accepted' | 'rejected'; deleted?: boolean;
   held?: { who: string; when: string }; back?: string;
   gone?: Note; // resolved by a save that deleted its row or replaced its words (RV-24): that resolve
+  done?: string; // when it was resolved, accepted or rejected (Resolved is sorted by it, newest first, RV-25)
+  after?: string; // its row was deleted: the row that was before it ('' for the first), kept after a reopen (RV-24)
 };
 export type Flag = { row: string; text: string; who: string; when: string };
 
@@ -155,11 +157,14 @@ export function threads(notes: Note[], withDeleted = false, ends: string[] = [])
     }
     thread.held = thread.back = thread.gone = undefined; // whatever happens to it next ends a hold
     if (note.kind === 'hold') thread.held = { who: note.who, when: note.when };
-    else if (note.kind === 'reopen') (thread.resolved = false), (thread.decision = undefined), (thread.by = undefined);
-    else if (note.kind === 'resolve') (thread.resolved = true), (thread.by = note.who), (thread.gone = note.why ? note : undefined);
-    else if (note.kind === 'accept' || note.kind === 'reject') {
+    else if (note.kind === 'reopen') (thread.resolved = false), (thread.decision = undefined), (thread.by = thread.done = undefined);
+    else if (note.kind === 'resolve') {
+      (thread.resolved = true), (thread.by = note.who), (thread.done = note.when), (thread.gone = note.why ? note : undefined);
+      if (note.why === 'deleted' && note.after !== undefined) thread.after = note.after;
+    } else if (note.kind === 'accept' || note.kind === 'reject') {
       thread.resolved = true;
       thread.by = note.who;
+      thread.done = note.when;
       thread.decision = note.kind === 'accept' ? 'accepted' : 'rejected';
     }
   }

@@ -638,7 +638,7 @@ and suggestions, keeps every version, and exports them for production.
   Agreed on board 55 ("Love it") with its suggested choices: a "Sort Line · Time · Type" switch beside
   "Open · n" in Review and atop Write's Comments tab; in a row the whole-row comment first, then words by column and
   place in the text, deleted rows last; Time newest first; Type with small headings and counts; one choice per
-  computer for both screens; On hold and Resolved sorted the same. Built so: `lib/commentsort.ts`, `SortSwitch.svelte`.
+  computer for both screens; On hold and Resolved sorted the same (Resolved: newest first since RV-25). Built so: `lib/commentsort.ts`, `SortSwitch.svelte`.
 - [x] **RV-17** Clicking a row's comment bubble again scrolls back to its comment (a bug the user hit): when the
   comment is still selected but scrolled out of view, a second click on its bubble does nothing; it should bring the
   comment back into view. Bug fix, no mock-up needed. Built so: a click on a quote does the same.
@@ -740,9 +740,13 @@ and suggestions, keeps every version, and exports them for production.
 - [x] **RV-24** Comments that lose their place are resolved, not lost (issue #249 and its follow-up, board 81 agreed
   by the user, 2026-11-18): deleting a row resolves its open comments and suggestions ("Resolved when Sam deleted the
   row"), with the row's words kept on the card, struck ("Row 4, as it was when deleted"), and the card stays where
-  the row was in line order. Replacing the words a comment is on resolves it the same way, with the old and new
+  the row was in line order (in Resolved, newest first since RV-25; reopened, in line order). Replacing the words a comment is on resolves it the same way, with the old and new
   words. Undo (or Ctrl+Z, at the next save) reopens them. Written by the save that made the change
   (lib/autoresolve.md); deleting a row saves at once.
+- [x] **RV-25** Resolved, newest resolved first (issue #250, board 81 agreed by the user, 2026-11-18): the Resolved
+  list in Review and in Write's Comments is sorted by when each was resolved, accepted or rejected, whatever Line /
+  Time / Type says (that switch still sorts the open list and On hold), with a grey "Newest resolved first." at its
+  top. A card resolved by deleting its row (RV-24) is on top right after; reopened, it goes back where the row was.
 - [x] **RV-23** Fold columns in Review too (asked by the user): the ‹ fold from AP-17 (Write only today) also works
   in Review, every column open by default.
   Built as mock-up 60: the same ‹ and › (shared `FoldHeads.svelte`, `lib/folds.svelte.ts`), a grey dot on rows with

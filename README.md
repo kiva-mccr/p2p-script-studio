@@ -153,13 +153,14 @@ Status: a first working version. What it does today:
   words, until Cancel), or comment on a
   whole row; reply, resolve, reopen; accept or reject suggestions (accepting changes the script, Undo puts it
   back). Deleting a row resolves its comments ("Resolved when Sam deleted the row"), keeping the row's words on the
-  card and the card where the row was; replacing the words a comment is on resolves it with the old and new words.
+  card and, if reopened, the card where the row was; replacing the words a comment is on resolves it with the old and new words.
   Undo brings them back open. What opens (the comment box, a reply box, On hold, Resolved, the review note, rows shown again) grows into
   place rather than jumping in, unless the computer is set to reduce motion. Put on hold shelves a comment or suggestion for later (here and in Write's Comments tab): after 5 seconds
   with Undo it slides into a folded "On hold" list, isn't counted as open, and comes back into the open list, marked
   "Back from hold", at the next Send for review or official version (Send for review says so); Take off hold brings
   it back sooner. Comments are listed in line order; Sort switches to newest first (Time) or to suggestions, then
-  comments on words, then comments on a whole row (Type), remembered for Review and Write alike. Columns fold away
+  comments on words, then comments on a whole row (Type), remembered for Review and Write alike. Resolved is always
+  newest resolved first, so what you resolved last is on top. Columns fold away
   with their ‹ as in Write, but Review keeps its own (all open until you fold them here); picking a comment on a
   folded column opens it. Edit or Delete what you wrote yourself while it is still open ("edited" shows after the time; Delete
   has Undo). Comments and replies can carry files: Attach file, drop files on the box, or paste a screenshot (up to
