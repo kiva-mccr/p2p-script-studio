@@ -481,6 +481,9 @@ and suggestions, keeps every version, and exports them for production.
   while playing.
 - [x] **SB-10** Fold at the far right (issue #238, board 80 agreed by the user, 2026-11-18): the drawer's Fold / Unfold
   is its own button after Wide / Upright and zoom; the Timeline bar still folds and unfolds it too.
+- [x] **SB-11** Close the preview (issue #225, board 80 agreed by the user, 2026-11-18): the playing preview gets a ✕
+  beside ⤢. Closed, it stays closed while playing (remembered in this browser, `timeline-preview`) until Show preview
+  in the drawer's bar, which shows only while playing with the preview closed.
 - [x] **SB-3** Export the timeline as a video (asked by the user, 2026-11-15): the storyboard timeline (SB-1) saved
   as a video file: each row's pictures (collage or sequence, cut on a word), holds and placeholders, with the
   voice-over takes, at the timeline's timings, made in the browser. Mock-up: board 70, agreed (2026-11-15, "looks

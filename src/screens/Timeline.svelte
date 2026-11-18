@@ -178,7 +178,7 @@
   const paths = $derived([...new Set(rows(script).flatMap((r) => pictureFiles(r).map((p) => p.path)))].join('\n'));
   $effect(() => {
     const list = paths ? paths.split('\n') : [];
-    if ((hidden && !player.started) || !shown) return; // folded, still made while playing, for the preview
+    if ((hidden && !(player.started && previewOn)) || !shown) return; // folded, still made while playing, for the preview
     let gone = false;
     const made: string[] = [];
     const previews: Preview[] = [];
@@ -230,6 +230,11 @@
   const now = $derived(player.started ? laid.blocks.find((b) => b.id === player.row) : undefined);
   const into = $derived(Math.min(player.elapsed, now?.seconds ?? 0));
   let big = $state(false);
+  // ✕ closes the preview (#225, board 80); it stays closed while playing, in this browser for every script, until
+  // Show preview in the drawer's bar brings it back.
+  const PREVIEW = 'timeline-preview';
+  let previewOn = $state(recall(PREVIEW) !== 'closed');
+  const showPreview = (on: boolean) => keep(PREVIEW, (previewOn = on) ? '' : 'closed');
   // The picture(s) on screen: a sequence's shot of the moment, a collage's all, a hold the last one before it.
   const showing = $derived.by((): { paths: string[]; card: string; tag: string } => {
     if (!now) return { paths: [], card: '', tag: '' };
@@ -318,7 +323,7 @@
 </script>
 
 <section class="timeline" class:folded={hidden} aria-label="Timeline" data-tour={readOnly ? 'review-timeline' : 'timeline'} bind:this={section} use:near={() => (shown = true)} use:room>
-  {#if now}
+  {#if now && previewOn}
     <div class="preview" class:big class:upright role="img" aria-label="Preview: {showing.tag}">
       <div class="screen">
         <PreviewShot paths={showing.paths} {urls} {upright} />
@@ -328,6 +333,7 @@
       <div class="pbar">
         <span>{clock(player.time)} / {clock(player.total)}</span>
         <button aria-label={big ? 'Make the preview small' : 'Make the preview big'} title={big ? 'Make the preview small' : 'Make the preview big'} onclick={() => (big = !big)}>{big ? '⤡' : '⤢'}</button>
+        <button aria-label="Close the preview" title="Close the preview" onclick={() => showPreview(false)}>✕</button>
       </div>
     </div>
   {/if}
@@ -343,6 +349,9 @@
         <span class="grow"></span>
       {/if}
     </button>
+    {#if now && !previewOn}
+      <button class="show" onclick={() => showPreview(true)}>Show preview</button>
+    {/if}
     {#if !hidden && total && !readOnly}
       <span class="segs shape" role="group" aria-label="Video shape" title="The shape of the preview, its collages and the exported video">
         <button aria-pressed={!upright} class:on={!upright} onclick={() => onShape('wide')}>Wide</button>
@@ -544,9 +553,9 @@
   .pcard { position: relative; flex: 1; display: flex; align-items: center; justify-content: center; padding: 12px; color: #dadada; font-size: 13px; text-align: center; background: #222; }
   .pcard.ph { background: repeating-linear-gradient(135deg, #2b2b2b 0 10px, #333 10px 20px); }
   .tag { position: absolute; left: 8px; top: 8px; padding: 2px 6px; border-radius: 4px; background: rgba(0, 0, 0, 0.6); color: #fff; font-size: 11px; }
-  .pbar { display: flex; align-items: center; gap: 8px; padding: 6px 8px; color: #dadada; font-size: 12px; font-variant-numeric: tabular-nums; }
-  .pbar span { flex: 1; }
-  .pbar button { min-width: 32px; min-height: 28px; border: 1px solid #555; border-radius: 6px; background: none; color: #eee; font-size: 12px; }
+  .pbar { display: flex; align-items: center; gap: 6px; padding: 6px 8px; color: #dadada; font-size: 12px; font-variant-numeric: tabular-nums; }
+  .pbar span { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pbar button { min-width: 32px; height: 28px; padding: 0; line-height: 1; border: 1px solid #555; border-radius: 6px; background: none; color: #eee; font-size: 12px; }
   .words { gap: 4px; }
   .said { display: flex; flex-wrap: wrap; align-items: center; row-gap: 6px; }
   /* A cut is a line with the next picture's number before its word (board 78, option B). */
@@ -566,6 +575,7 @@
   .zoom { display: inline-flex; gap: 2px; }
   .zoom button { width: 32px; height: 32px; border: 1px solid var(--line-strong); border-radius: 6px; background: #fff; font-size: 15px; }
   .zoom button:disabled { opacity: 0.4; }
+  .show { flex: none; min-height: 32px; padding: 0 10px; font-size: 13px; }
   .fold { flex: none; min-height: 44px; padding: 0 4px; border: 0; background: none; font-size: 13px; color: var(--accent); cursor: pointer; }
   .empty { margin: 0; font-size: 13px; color: var(--muted); }
   .scroll { overflow-x: auto; padding-top: 4px; }

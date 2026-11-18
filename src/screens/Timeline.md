@@ -46,6 +46,10 @@ offers its pictures, Sequence or Collage, + Add a picture (only for the timeline
   drawer's right end, folded or open, so it never covers the timeline (the user's condition from SB-2), showing the picture of the moment: the sequence's shot at `player.elapsed`, a collage's all, a hold the
   last picture before it, a placeholder its words. Step ids are block ids (`plan` is made from `layout`). The picture
   itself is `PreviewShot.svelte`, which keeps the old shot until the next is decoded (issue #260).
+- ✕ on the preview closes it (SB-11, #225): kept in this browser for every script (`timeline-preview`, 'closed'), so
+  it stays closed when playing again, until Show preview (`.show`, in `.top`, only while playing with it closed).
+  Folded with it closed, no pictures are made. The time in its bar never wraps (it ellipsizes): with ✕ the bar of the
+  small upright preview wrapped, made it taller and ran it under the top bar in a short window.
 - Cut on a word: the dialogue's words as buttons; a click toggles a cut there (at most one fewer than the
   pictures). Saved as the words (`cuts at "water"`), matched again in order; a repeated word is saved with the
   words after it that tell it apart (`cutWords`), never as the word alone, which would land on its first time.

@@ -375,6 +375,33 @@ test('folded while playing: the strip shows the playhead, the preview sits above
   await page.keyboard.press('Escape');
 });
 
+// #225 (board 80): ✕ closes the preview; it stays closed while playing, in this browser, until Show preview.
+test('the preview closes with ✕ and stays closed until Show preview', async ({ page }) => {
+  await fakeTake(page);
+  await setUp(page, '#/Episode%2003', files);
+  await page.getByRole('button', { name: 'Record row 2', exact: true }).click();
+  await page.getByRole('button', { name: 'Stop recording row 2' }).click();
+  const t = timeline(page);
+  await page.getByRole('button', { name: 'Play from row 1' }).click();
+  const preview = t.getByRole('img', { name: /^Preview: / });
+  await expect(preview).toBeVisible();
+  await expect(t.getByRole('button', { name: 'Show preview' })).toHaveCount(0);
+  await t.getByRole('button', { name: 'Close the preview' }).click();
+  await expect(preview).toHaveCount(0);
+  await page.keyboard.press('Escape');
+  // Played again, and after a reload, it stays closed; Show preview (only while playing) brings it back.
+  await expect(t.getByRole('button', { name: 'Show preview' })).toHaveCount(0);
+  await page.reload();
+  await page.getByRole('button', { name: 'Play from row 1' }).click();
+  await expect(t.getByRole('button', { name: 'Show preview' })).toBeVisible();
+  await expect(preview).toHaveCount(0);
+  await t.getByRole('button', { name: 'Show preview' }).click();
+  await expect(preview).toBeVisible();
+  await expect(t.getByRole('button', { name: 'Show preview' })).toHaveCount(0);
+  expect(await page.evaluate(() => localStorage.getItem('timeline-preview'))).toBe('');
+  await page.keyboard.press('Escape');
+});
+
 test('in Review the timeline is read only, and a click on a block comments on its row', async ({ page }) => {
   await setUp(page, '#/Episode%2003', { ...files, 'Episode 03/script.md': script.replace('- assets/music-bed.mp3\n', '- assets/music-bed.mp3\n\nTimeline: then hold 1 s\n') });
   await page.getByRole('button', { name: /^Review/ }).click();
