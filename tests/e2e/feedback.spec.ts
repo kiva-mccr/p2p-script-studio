@@ -412,3 +412,32 @@ test("a part as big as the window keeps its outline on screen (issue #216)", asy
   expect(ring.y + ring.height).toBeLessThanOrEqual(view.height);
   expect(ring.width).toBeGreaterThan(view.width - 40);
 });
+
+test("the picture shows the chosen row's blue, as the app does (issue #235)", async ({ page }) => {
+  const id = example.match(/## 4 <!-- id: (\w+) -->/)![1];
+  const ben = JSON.stringify({ v: 1, id: 'ben00001', kind: 'comment', who: 'Benedict', when: '2026-11-10T09:02:00Z', row: id, field: 'dialogue', quote: '', text: 'Say where the oxygen goes too.' });
+  await page.context().grantPermissions(['clipboard-read', 'clipboard-write']);
+  await setUp(page, '#/Episode%2003', { 'Episode 03/script.md': example, 'Episode 03/.studio/comments/20261110T090200Z_ben00001.json': ben });
+  const bubble = page.getByRole('button', { name: '1 open comment on row 4' });
+  await bubble.click();
+  const row = page.locator('.row.talking');
+  await expect(row).toHaveCSS('background-color', 'rgb(238, 243, 253)');
+  await startFeedback(page);
+  // The bubble sticks out of its number cell a little: the picture is still of the whole row, not the cell.
+  await bubble.click();
+  const picture = page.getByRole('region', { name: 'Feedback' }).getByRole('img', { name: 'The part, outlined' });
+  await expect(picture).toBeVisible();
+  const box = (await row.boundingBox())!;
+  const colour = await picture.evaluate(async (img: HTMLImageElement, box) => {
+    await img.decode();
+    const c = document.createElement('canvas');
+    c.width = img.naturalWidth;
+    c.height = img.naturalHeight;
+    const g = c.getContext('2d')!;
+    g.drawImage(img, 0, 0);
+    const scale = img.naturalWidth / (box.width + 24);
+    // An empty spot near the bottom of the row, in the middle (12 px of margin round the row).
+    return [...g.getImageData(Math.round((12 + box.width / 2) * scale), Math.round((12 + box.height - 12) * scale), 1, 1).data.slice(0, 3)].join(',');
+  }, box);
+  expect(colour).toBe('238,243,253');
+});

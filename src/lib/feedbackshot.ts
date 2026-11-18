@@ -15,7 +15,7 @@ export function pictureRoot(el: Element): Element {
   for (let p = el.parentElement; p && p !== el.ownerDocument.body; p = p.parentElement) {
     const r = p.getBoundingClientRect();
     if (r.width > innerWidth + 1 || r.height > 480) break;
-    if (part.left < r.left - 1 || part.top < r.top - 1 || part.right > r.right + 1 || part.bottom > r.bottom + 1) break;
+    if (part.left < r.left - 1 || part.top < r.top - 1 || part.right > r.right + 1 || part.bottom > r.bottom + 1) continue;
     root = p;
   }
   return root;
@@ -26,18 +26,28 @@ export function pictureRoot(el: Element): Element {
  * takes a new picture of a page that has changed since the part was picked (issue #244). */
 export function makePictures(el: Element): { covered: Promise<Blob>; plain: Promise<Blob> } {
   const root = pictureRoot(el);
+  const ground = groundOf(root);
   const at = root.getBoundingClientRect();
   const part = el.getBoundingClientRect();
   const lib = import('modern-screenshot');
-  return { covered: draw(lib, root, at, part, true), plain: draw(lib, root, at, part, false) };
+  return { covered: draw(lib, root, ground, at, part, true), plain: draw(lib, root, ground, at, part, false) };
 }
 
-async function draw(lib: Promise<typeof import('modern-screenshot')>, root: Element, at: DOMRect, part: DOMRect, cover: boolean): Promise<Blob> {
+/** The colour seen behind `root`: the first parent with a background (a tinted row behind one of its cells), else white.
+ * The picture is laid on it, so a tint behind the part shows as it does in the app (issue #235). */
+export function groundOf(root: Element): string {
+  for (let p = root.parentElement; p; p = p.parentElement) {
+    const bg = getComputedStyle(p).backgroundColor;
+    if (bg && bg !== 'transparent' && !/^rgba\(.*,\s*0\)$/.test(bg)) return bg;
+  }
+  return '#ffffff';
+}
+
+async function draw(lib: Promise<typeof import('modern-screenshot')>, root: Element, ground: string, at: DOMRect, part: DOMRect, cover: boolean): Promise<Blob> {
   const { domToCanvas } = await lib;
   const scale = Math.min(2, devicePixelRatio || 1);
   const drawn = await domToCanvas(root, {
     scale,
-    backgroundColor: '#ffffff',
     font: false,
     filter: (n) => !(n instanceof Element && n.closest('[data-feedback-ui]')),
     onCloneNode: cover ? (clone) => coverWords(clone as Element) : null,
@@ -47,6 +57,8 @@ async function draw(lib: Promise<typeof import('modern-screenshot')>, root: Elem
   canvas.height = drawn.height + PAD * 2 * scale;
   const c = canvas.getContext('2d')!;
   c.fillStyle = '#ffffff';
+  c.fillRect(0, 0, canvas.width, canvas.height);
+  c.fillStyle = ground;
   c.fillRect(0, 0, canvas.width, canvas.height);
   c.drawImage(drawn, PAD * scale, PAD * scale);
   c.strokeStyle = OUTLINE;
