@@ -36,6 +36,12 @@ export type Note = {
   replace?: string; // a suggestion's new text for `quote`
   about?: string; // the comment a reply, resolve, reopen, hold, edit or delete is about
   files?: Attachment[]; // a comment's or reply's files; on an edit, the whole new list
+  // A resolve written by a save (RV-24, lib/autoresolve.ts): the row was deleted or the words it was on replaced.
+  why?: 'deleted' | 'replaced';
+  was?: string; // the deleted row's words, or the old words
+  now?: string; // the new words (replaced)
+  n?: number; // the deleted row's number then
+  after?: string; // the row before the deleted one ('' if it was first), so it keeps its place in line order
   // Worked out by threads(), never written: when its author last edited it, and whether it is deleted.
   edited?: string;
   deleted?: boolean;
@@ -45,6 +51,7 @@ export type Note = {
 export type Thread = {
   comment: Note; replies: Note[]; resolved: boolean; by?: string; decision?: 'accepted' | 'rejected'; deleted?: boolean;
   held?: { who: string; when: string }; back?: string;
+  gone?: Note; // resolved by a save that deleted its row or replaced its words (RV-24): that resolve
 };
 export type Flag = { row: string; text: string; who: string; when: string };
 
@@ -146,10 +153,10 @@ export function threads(notes: Note[], withDeleted = false, ends: string[] = [])
       own.set(reply.id, reply);
       continue;
     }
-    thread.held = thread.back = undefined; // whatever happens to it next ends a hold
+    thread.held = thread.back = thread.gone = undefined; // whatever happens to it next ends a hold
     if (note.kind === 'hold') thread.held = { who: note.who, when: note.when };
     else if (note.kind === 'reopen') (thread.resolved = false), (thread.decision = undefined), (thread.by = undefined);
-    else if (note.kind === 'resolve') (thread.resolved = true), (thread.by = note.who);
+    else if (note.kind === 'resolve') (thread.resolved = true), (thread.by = note.who), (thread.gone = note.why ? note : undefined);
     else if (note.kind === 'accept' || note.kind === 'reject') {
       thread.resolved = true;
       thread.by = note.who;

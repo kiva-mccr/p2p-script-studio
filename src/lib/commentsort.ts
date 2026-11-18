@@ -16,7 +16,7 @@ function typeOf(t: Thread): number {
 }
 
 // Sorts `list` (newest first, as threads() gives it). Line: by row; in a row the whole-row comment first, then words by
-// column and where they stand in the text; a deleted row last. Time: newest first. Type: by typeOf, then line order.
+// column and where they stand in the text; a deleted row where it was (RV-24), else last. Time: newest first. Type: by typeOf, then line order.
 // Ties keep the newest first.
 export function sortThreads(list: Thread[], how: Sort, rows: Row[]): Thread[] {
   if (how === 'time') return list;
@@ -25,7 +25,12 @@ export function sortThreads(list: Thread[], how: Sort, rows: Row[]): Thread[] {
   const place = (t: Thread): number[] => {
     const c = t.comment;
     const row = byId.get(c.row ?? '');
-    if (!row) return [rows.length, 0, 0];
+    // A row deleted with its comments resolved (RV-24) stays where it was: after the row before it.
+    if (!row) {
+      const after = t.gone?.after;
+      if (after === undefined) return [rows.length, 0, 0];
+      return [after === '' ? -0.5 : index.has(after) ? index.get(after)! + 0.5 : rows.length, -1, 0];
+    }
     if (!c.quote) return [index.get(row.id)!, -1, 0];
     const field = c.field ?? 'dialogue';
     const at = fieldText(row, field).indexOf(c.quote);

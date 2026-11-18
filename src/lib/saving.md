@@ -17,6 +17,9 @@ back, `onEntry` says a status change's entry was written. `script`, `dir`, `stat
   one back in place. Every change to the page that isn't this person's calls `steps.sync` (`#show`, the author added
   on a save, a status change); Restore and its Undo are steps (`#show(text, true)`).
 
+- `saved(before, after)` is called after each change file of this person's is written (RV-24: the Editor resolves
+  comments on deleted rows and replaced words). Never for others' changes folded in.
+
 - `restore` returns the text as it was before (for Undo, UX-11) or null; `putBack(text)` saves it again as an ordinary
   save, with no History entry of its own.
 - A failed save, restore or publish records its error with `problem()` (AP-41) for the copy icon. The copy OneDrive

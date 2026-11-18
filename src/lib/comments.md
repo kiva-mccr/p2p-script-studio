@@ -29,6 +29,8 @@ rows (AP-9) are kept here too (`flag`, `unflag`; `flags()` says which rows are f
   them to `entry.files`. Two with the same name in one note become "image.png" and "image 2.png" (pasted screenshots
   are all "image.png"). An edit's `files` is the whole new list; an edit without `files` keeps them. Files are never
   deleted. Note `safeName` strips leading dots, so the extension is cleaned separately.
+- A `resolve` written by a save (RV-24, lib/autoresolve.md) carries `why` and what was there; `threads()` hands it
+  over as `gone` while it is the newest about the comment.
 - On hold (RV-19): `hold` sets `held` (who, when); any later resolve, reopen or decision ends it, a reply doesn't.
   `threads(notes, withDeleted, ends)` ends a hold made before one of `ends` (sends for review and official versions,
   `holdEnds` in `lib/history.ts`), and marks the thread `back` with who had held it. Nothing is written when it

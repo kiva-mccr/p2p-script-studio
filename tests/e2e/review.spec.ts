@@ -191,7 +191,7 @@ test('suggest a change; accepting updates the script, and Undo puts it back', as
   await expect.poll(() => readFile(page, SCRIPT)).toBe(example);
 });
 
-test('rejecting keeps the original; a suggestion on changed text is not applied', async ({ page }) => {
+test('rejecting keeps the original; a suggestion whose words are replaced is resolved (RV-24)', async ({ page }) => {
   await openReview(page);
   await suggestOn(page, 'On screen, row 2', 'slide in one at a time', 'pop in, timed to each word');
   const card = page.getByRole('article', { name: 'Suggestion by Sam' });
@@ -203,10 +203,12 @@ test('rejecting keeps the original; a suggestion on changed text is not applied'
   await page.getByRole('button', { name: 'Write', exact: true }).click();
   await page.getByLabel('On screen, row 2').fill('Icons appear.');
   await page.getByRole('button', { name: /^Review/ }).click();
-  await expect(card).toContainText('On text that has since changed');
-  await card.getByRole('button', { name: 'Accept' }).click();
-  await expect(page.getByRole('alert')).toContainText('That text has changed since the suggestion was made.');
-  await expect(card.getByRole('button', { name: 'Accept' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Open · 0' })).toBeVisible();
+  await page.getByRole('button', { name: /Resolved · 1/ }).click();
+  await expect(card).toContainText('The words it was on were changed:');
+  await expect(card).toContainText('Resolved when the words were replaced');
+  await expect(card.getByRole('button', { name: 'Accept' })).toHaveCount(0);
+  await expect(card.getByRole('button', { name: 'Reopen' })).toBeVisible();
 });
 
 // The example's files, so none is missing and nothing is left open before Approve.

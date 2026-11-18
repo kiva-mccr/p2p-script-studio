@@ -20,4 +20,7 @@ the same card.
 - On hold (RV-19): Put on hold on open comments and undecided suggestions writes `hold`, then `onHeld` (the parent
   keeps it with Undo). A held card (not `recent`) is dashed, says who and when, and has Take off hold (a `reopen`)
   and Reply. `t.back` shows "Back from hold · put on hold by …".
+- Resolved by a save (RV-24, `t.gone`): the deleted row's words or the old and new words, struck, and "Resolved when
+  Sam deleted the row" / "Resolved when the words were replaced" beside Reopen. A resolved suggestion shows no
+  Accept or Reject.
 - `active` is a solid blue outline, ring and tint (RV-20): a pale border alone was too hard to see.
