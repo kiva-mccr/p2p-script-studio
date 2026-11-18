@@ -106,8 +106,8 @@
     {/if}
     {#if said.length}
       {@const kinds = said.every((t) => t.comment.kind === 'suggestion') ? 'suggestion' : said.some((t) => t.comment.kind === 'suggestion') ? 'comment or suggestion' : 'comment'}
-      <button class="bubble" aria-label="{said.length} open {kinds}{said.length === 1 ? '' : 's'} on row {n}" title="Open in Comments"
-        onclick={() => onTalk(said[0].comment.id)}>
+      <button class="bubble" aria-label="{said.length} open {kinds}{said.length === 1 ? '' : 's'} on row {n}" title={talking ? 'Unselect the comment' : 'Open in Comments'}
+        aria-pressed={talking} onclick={() => onTalk(talking ? '' : said[0].comment.id)}>
         <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M2.5 3.5h11v7h-6l-3 2.5v-2.5h-2z" /></svg>{said.length}
       </button>
     {/if}

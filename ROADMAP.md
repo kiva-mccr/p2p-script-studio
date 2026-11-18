@@ -641,7 +641,8 @@ and suggestions, keeps every version, and exports them for production.
   computer for both screens; On hold and Resolved sorted the same (Resolved: newest first since RV-25). Built so: `lib/commentsort.ts`, `SortSwitch.svelte`.
 - [x] **RV-17** Clicking a row's comment bubble again scrolls back to its comment (a bug the user hit): when the
   comment is still selected but scrolled out of view, a second click on its bubble does nothing; it should bring the
-  comment back into view. Bug fix, no mock-up needed. Built so: a click on a quote does the same.
+  comment back into view. Bug fix, no mock-up needed. Built so: a click on a quote does the same. Later (the user, issue #235):
+  a second click on the bubble of the chosen comment unselects it; a third chooses it again and scrolls back to it.
 - [x] **RV-18** A resolved comment moves into Resolved by itself (a bug the user hit): today it stays in the open list
   until the comment panel is closed and opened again. The user likes the Undo, so a resolved comment stays in place
   for about 5 seconds with Undo showing, then moves into the Resolved dropdown on its own. Bug fix, no mock-up needed.

@@ -52,3 +52,5 @@ flag's note.
   box's names never contain "Dialogue, row n" or "On screen, row n": tests find the text boxes with `getByLabel`, which
   matches part of a name.
 - `lit` (SB-1): the row's block is picked on the storyboard timeline; tinted like the row being played.
+- The bubble of the row whose comment is chosen (`talking`) unselects it when clicked again (`onTalk('')`, issue #235);
+  it is `aria-pressed` while chosen. A click on a quote still scrolls back to the chosen card (RV-17).
