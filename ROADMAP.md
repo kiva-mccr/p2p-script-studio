@@ -1126,6 +1126,10 @@ the team writes leaves their computers.
   rewriting off. `src/lib/headers.ts` is the list; `.github/workflows/live.yml` checks the live site daily and after
   each deploy, and fails on a different header or a script that isn't the app's. COEP (faster speech models) waits
   for SE-5.
+- [x] **SE-9** Integrity hashes on the app's own script and stylesheet (Subresource Integrity), asked by the user
+  2026-11-18 after the Observatory dropped from 145 to 140 when Cloudflare's script (which had one) left. Done
+  2026-11-18: the build stamps `integrity="sha384-…"` on them (`lib/sri.ts`); a changed file is refused; the daily
+  live check fails if one is missing.
 - [ ] **SE-2**, **SE-3**, **SE-5** to **SE-8**: supply chain checks, untrusted script files, security headers (needs D1), models served
   from the app (D2, agreed), offline app, proof of what's running, the IT pack. The plan and decisions:
   docs/security.md.

@@ -33,6 +33,21 @@ test('the page carries the policy, and nothing is sent to another site', async (
 test.describe(() => {
   test.use({ refusalsExpected: true });
 
+  test("the app's script and stylesheet carry integrity hashes, and a changed script is refused (SE-9)", async ({ page }) => {
+    await page.goto('./');
+    await expect(page.getByRole('button', { name: 'Open the example' })).toBeVisible();
+    for (const el of await page.locator('script[src^="./assets/"], link[rel="stylesheet"][href^="./assets/"]').all())
+      expect(await el.getAttribute('integrity')).toMatch(/^sha384-[A-Za-z0-9+/]{64}$/);
+
+    // The same page with one byte of its script changed on the way: the browser runs none of it.
+    await page.route(/\/assets\/index-[^/]+\.js$/, async (route) => {
+      const res = await route.fetch();
+      await route.fulfill({ response: res, body: (await res.text()) + '\n' });
+    });
+    await page.reload();
+    await expect(page.locator('#app')).toBeEmpty();
+  });
+
   test('the browser refuses a script, a stylesheet and a send the policy does not allow', async ({ page }) => {
     await page.goto('./');
     const refused = await page.evaluate(async () => {

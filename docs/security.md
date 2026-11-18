@@ -38,6 +38,7 @@ X-Content-Type-Options (-5) are lost: about 55 at best.
    Permissions-Policy allowing only the microphone, the policy as a header, COOP/COEP (lets the speech models use
    every core). A daily GitHub check fetches the live site and fails if a header is missing; the expected list is in
    the repo.
+   **SE-9** (asked by the user) Integrity hashes on the app's own script and stylesheet. Done 2026-11-18.
 5. **SE-5** Speech models served from the app (D2, agreed by the user 2026-11-18, built when there's room): the deploy
    downloads pinned model files from Hugging Face, checks their SHA-256 and publishes them with the app (never in
    the repo). The policy then becomes `connect-src 'self'`.

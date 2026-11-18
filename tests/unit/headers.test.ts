@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { policy } from '../../src/lib/csp';
-import { HEADERS, headerProblems, strangerScripts } from '../../src/lib/headers';
+import { HEADERS, headerProblems, strangerScripts, unhashed } from '../../src/lib/headers';
 
 describe('the live security headers (SE-4)', () => {
   it("send the page's own policy, plus frame-ancestors, which only a header can carry", () => {
@@ -22,5 +22,11 @@ describe('the live security headers (SE-4)', () => {
     const beacon = '<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{}">';
     expect(strangerScripts(`<head>${ours}</head><body>${beacon}</script></body>`)).toEqual([beacon]);
     expect(strangerScripts('<script>alert(1)</script>')).toEqual(['<script>']);
+  });
+
+  it("finds the app's own files that have no integrity hash (SE-9)", () => {
+    const bare = '<script type="module" crossorigin src="./assets/index-A.js">';
+    const hashed = `<link rel="stylesheet" href="./assets/index-B.css" integrity="sha384-${'a'.repeat(64)}">`;
+    expect(unhashed(bare + hashed)).toEqual([bare]);
   });
 });
