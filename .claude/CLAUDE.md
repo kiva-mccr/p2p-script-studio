@@ -89,7 +89,7 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
   Cloudflare, done); the rest (SE-2, 3, 5 to 8) and D2 (models from the app, agreed) are in docs/security.md.
   Then issue #254 (EX-22, zoom in the Resolve / Premiere preview, board 79, done 2026-11-18).
   Then board 80's issues (the user, 2026-11-18), one PR each: #245, #238, #225, #207 (SB-9 to SB-12, done), #264
-  (SB-13, "No picture" as an icon, done); board 81: #249 (RV-24, done), then #250, #256, #253, #262; then 82 and 83.
+  (SB-13, "No picture" as an icon, done); board 81: #249 (RV-24, done), #250 (RV-25, done), then #256, #253, #262; then 82 and 83.
   The rest (AP-8 …) waits
   for the user's next ranking; "Last" in ROADMAP.md (EX-5, CC-1) waits until everything else is done.
 - Mock-ups (one board per design, numbered): https://claude.ai/artifact/2XDZmS7J5NEPZsz91RQMiL (private to the user).

@@ -25,9 +25,9 @@ export function sortThreads(list: Thread[], how: Sort, rows: Row[]): Thread[] {
   const place = (t: Thread): number[] => {
     const c = t.comment;
     const row = byId.get(c.row ?? '');
-    // A row deleted with its comments resolved (RV-24) stays where it was: after the row before it.
+    // A row deleted with its comments resolved (RV-24) stays where it was: after the row before it, reopened too.
     if (!row) {
-      const after = t.gone?.after;
+      const after = t.after;
       if (after === undefined) return [rows.length, 0, 0];
       return [after === '' ? -0.5 : index.has(after) ? index.get(after)! + 0.5 : rows.length, -1, 0];
     }
@@ -50,4 +50,11 @@ export function heading(list: Thread[], i: number, how: Sort): string {
   const k = typeOf(list[i]);
   if (i > 0 && typeOf(list[i - 1]) === k) return '';
   return `${TYPES[k]} · ${list.filter((t) => typeOf(t) === k).length}`;
+}
+
+// Resolved, whatever the switch says (RV-25, board 81): newest resolved first, so what you just resolved is on top.
+// Ties keep `list`'s order.
+export function newestResolved(list: Thread[]): Thread[] {
+  const when = (t: Thread) => Date.parse(t.done ?? t.comment.when) || 0;
+  return [...list].sort((a, b) => when(b) - when(a));
 }

@@ -9,7 +9,7 @@
   import { ago } from '../lib/when';
   import CommentCard from './CommentCard.svelte';
   import SortSwitch from './SortSwitch.svelte';
-  import { heading, sortThreads, toSort, SORT_KEY } from '../lib/commentsort';
+  import { heading, newestResolved, sortThreads, toSort, SORT_KEY } from '../lib/commentsort';
   import { recall } from '../lib/remember';
 
   // Write's Comments tab (RV-13, board 37 idea A): the writer replies, resolves and accepts or rejects suggestions
@@ -60,7 +60,7 @@
   const sorted = $derived(sortThreads(all, sort, rows));
   const shown = $derived(sorted.filter((t) => (!t.resolved && !t.held) || recent.has(t.comment.id)));
   const held = $derived(sorted.filter((t) => !t.resolved && t.held && !recent.has(t.comment.id)));
-  const resolved = $derived(sorted.filter((t) => t.resolved && !recent.has(t.comment.id)));
+  const resolved = $derived(newestResolved(all.filter((t) => t.resolved && !recent.has(t.comment.id))));
   const numbers = $derived(new Map(rows.map((row, i) => [row.id, i + 1])));
 
   // "Use in script" (RV-12) on an open card's files, into its row; none for a deleted row.
@@ -145,6 +145,7 @@
     </button>
     {#if showResolved}
       <div class="group" in:grow>
+        <p class="quiet help">Newest resolved first.</p>
         {#each resolved as t (t.comment.id)}
           <div class="slot" out:slideAway>
             <CommentCard {t} {dir} {me} where={where(t.comment)} gone={quoteGone(t.comment, rows)} active={false} onActivate={() => {}}

@@ -140,7 +140,7 @@ test('in Write the writer accepts a suggestion, resolves with Undo and replies w
   expect(files.find((f) => f.about === 'ana00001' && f.kind === 'resolve')).toMatchObject({ who: 'Sam', why: 'replaced', was: 'sunlit leaf', now: 'real leaf' });
 });
 
-test('deleting a row resolves its comments, keeping its words and its place; Undo reopens them (RV-24)', async ({ page }) => {
+test('deleting a row resolves its comments, keeping its words and its place; Undo reopens them (RV-24, RV-25)', async ({ page }) => {
   // Ana's suggestion on row 3 and Lee's comment on row 5 were resolved before.
   const LEE = note({ id: 'lee00001', kind: 'comment', who: 'Lee', when: '2026-11-10T09:03:00Z', row: id(5), field: 'dialogue', quote: '', text: 'Nice ending.' });
   const done = (about: string, n: number) => note({ id: `done000${n}`, kind: 'resolve', who: 'Ana', when: `2026-11-10T09:0${n}:00.000Z`, about });
@@ -170,8 +170,13 @@ test('deleting a row resolves its comments, keeping its words and its place; Und
   await expect(ben).toContainText('Ben commented · a deleted row');
   await expect(ben).toContainText('Row 4, as it was when deleted: They turn it into sugar the plant uses to grow.');
   await expect(ben).toContainText('Resolved when Sam deleted the row');
-  // Where the row was, not at the end.
-  await expect.poll(() => names(panel.getByRole('article'))).toEqual(['Suggestion by Ana', 'Comment by Ben', 'Comment by Lee']);
+  // Resolved is newest resolved first (RV-25): Ben's, resolved just now, is on top, then Lee's (9:05), then Ana's (9:04).
+  await expect(panel.getByText('Newest resolved first.')).toBeVisible();
+  await expect.poll(() => names(panel.getByRole('article'))).toEqual(['Comment by Ben', 'Comment by Lee', 'Suggestion by Ana']);
+  // Reopened, it is back where the row was in line order, not at the end (RV-24).
+  await ben.getByRole('button', { name: 'Reopen' }).click();
+  await expect(panel.getByRole('button', { name: 'Comments · 1' })).toBeVisible();
+  await expect(ben.getByRole('button', { name: 'Resolve' })).toBeVisible();
 });
 
 test('a resolved or decided card waits 5 seconds with Undo, then moves into Resolved by itself (RV-18)', async ({ page }) => {

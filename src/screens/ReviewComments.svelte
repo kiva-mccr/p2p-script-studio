@@ -4,7 +4,7 @@
   import { stepComment } from '../lib/shortcuts.svelte';
   import { grow, slideAway } from '../lib/slide';
   import { quoteGone, threads, type Field, type Note, type Thread } from '../lib/comments';
-  import { heading, sortThreads, toSort, SORT_KEY } from '../lib/commentsort';
+  import { heading, newestResolved, sortThreads, toSort, SORT_KEY } from '../lib/commentsort';
   import { recall } from '../lib/remember';
   import type { Row } from '../lib/script';
   import AttachBox from './AttachBox.svelte';
@@ -67,7 +67,7 @@
   const sorted = $derived(sortThreads(all, sort, rows));
   const shown = $derived(sorted.filter((t) => (!t.resolved && !t.held) || recent.includes(t.comment.id) || holding.has(t.comment.id)));
   const held = $derived(sorted.filter((t) => !t.resolved && t.held && !holding.has(t.comment.id)));
-  const resolved = $derived(sorted.filter((t) => t.resolved && !recent.includes(t.comment.id)));
+  const resolved = $derived(newestResolved(all.filter((t) => t.resolved && !recent.includes(t.comment.id))));
 
   // Next and previous comment (AP-44): pick it as a click would, and bring its card and its row into view.
   let aside = $state<HTMLElement>();
@@ -191,7 +191,7 @@
       {showResolved ? '▾' : '▸'} Resolved · {resolved.length}
     </button>
     {#if showResolved}
-      <div class="group" in:grow>{#each resolved as t (t.comment.id)}<div class="slot" out:slideAway>{@render card(t)}</div>{/each}</div>
+      <div class="group" in:grow><p class="quiet help">Newest resolved first.</p>{#each resolved as t (t.comment.id)}<div class="slot" out:slideAway>{@render card(t)}</div>{/each}</div>
     {/if}
   {/if}
 </aside>

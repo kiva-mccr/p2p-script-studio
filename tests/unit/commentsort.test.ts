@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { threads, type Note } from '../../src/lib/comments';
-import { heading, sortThreads, toSort } from '../../src/lib/commentsort';
+import { heading, newestResolved, sortThreads, toSort } from '../../src/lib/commentsort';
 import type { Row } from '../../src/lib/script';
 
 const row = (id: string, dialogue: string, onScreen = ''): Row => ({ type: 'row', id, dialogue, onScreen, files: [] }) as unknown as Row;
@@ -34,5 +34,35 @@ describe('sortThreads (RV-16)', () => {
   });
   it('reads a remembered choice, Line when there is none', () => {
     expect([toSort(''), toSort('time'), toSort('type'), toSort('odd')]).toEqual(['line', 'time', 'type', 'line']);
+  });
+});
+
+describe('newestResolved (RV-25)', () => {
+  const done = (id: string, kind: Note['kind'], min: string, about: string, extra: Partial<Note> = {}) => note(id, kind, min, { about, ...extra });
+  const resolved = threads([
+    note('a', 'comment', '00', { row: 'r1', text: 'x' }),
+    note('b', 'suggestion', '01', { row: 'r2', field: 'dialogue', quote: 'water', replace: 'rain' }),
+    note('c', 'comment', '02', { row: 'gone', text: 'x' }),
+    note('d', 'comment', '03', { row: 'r1', text: 'x' }),
+    done('ra', 'resolve', '10', 'a'),
+    done('rb', 'accept', '20', 'b'),
+    done('rc', 'resolve', '30', 'c', { why: 'deleted', after: 'r1' }),
+    done('rd', 'resolve', '05', 'd'),
+    done('od', 'reopen', '06', 'd'),
+    done('rd2', 'resolve', '40', 'd'),
+  ]);
+  it('puts the newest resolved first, a resolve by deleting the row too, whatever the switch says', () => {
+    expect(newestResolved(resolved).map((t) => t.comment.id)).toEqual(['d', 'c', 'b', 'a']);
+    expect(newestResolved(sortThreads(resolved, 'type', rows)).map((t) => t.comment.id)).toEqual(['d', 'c', 'b', 'a']);
+  });
+  it('keeps a deleted row\'s place in line order once its comment is reopened (RV-24)', () => {
+    const reopened = threads([
+      note('c', 'comment', '02', { row: 'gone', text: 'x' }),
+      note('e', 'comment', '03', { row: 'r2', text: 'x' }),
+      done('rc', 'resolve', '30', 'c', { why: 'deleted', after: 'r1' }),
+      done('oc', 'reopen', '31', 'c'),
+    ]);
+    expect(reopened[1]).toMatchObject({ resolved: false, after: 'r1', done: undefined });
+    expect(sortThreads(reopened, 'line', rows).map((t) => t.comment.id)).toEqual(['c', 'e']);
   });
 });
