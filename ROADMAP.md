@@ -798,6 +798,8 @@ and suggestions, keeps every version, and exports them for production.
   "due Fri" tag on each script card.
 - [-] **EX-20** A shot list from On screen (suggested; shelved by the user, 2026-11-14): a one-click export of the On
   screen and Images columns as a checklist numbered by row, for a shoot day. Close to EX-17.
+- [x] **EX-21** Which PDF printer (issue #266, approved by the user, 2026-11-18): a help line under Print… says that
+  if words can't be selected in the PDF, choose "Microsoft Print to PDF" instead of "Adobe PDF". Text only, no mock-up.
 - [x] **AP-28** The live version in the bottom-left corner (asked by the user): the number of the last merged pull
   request, in the same small grey style as GitHub in the bottom-right, so a refresh shows when a new version is live
   and which features are in it. Agreed on board 32 ("looks perfect"): "PR #61" in the same grey, opens that PR on

@@ -437,6 +437,9 @@
       {/if}
       <p class="kept">Remembered on this computer for next time.</p>
       <button class="primary" disabled={(format === 'voice' && !file) || (format === 'edit' && (!edited?.total || making)) || (format === 'video' && (!videoPlan?.total || progress !== null))} onclick={save}>{format === 'edit' && making ? 'Making the .zip…' : format === 'video' && progress !== null ? 'Making the video…' : FORMATS.find((f) => f.id === format)?.action}</button>
+      {#if format === 'print'}
+        <p class="kept help">If words can't be selected in the PDF, choose "Microsoft Print to PDF" instead of "Adobe PDF".</p>
+      {/if}
     </div>
   </aside>
 </div>

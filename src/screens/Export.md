@@ -25,6 +25,8 @@ Print… or Save on the right. Back to the script, the title in the breadcrumb, 
   the print CSS needs. The preview's own Print sits inside this screen, hidden when printing.
 - Print's preview is drawn at the printed width (a Letter page less Print's margins: 725 px, 965 px landscape) and
   shrunk with `zoom` to fit the box, so the columns wrap as they will on paper. Change both if Print's margins change.
+- Under Print… a help line says to pick "Microsoft Print to PDF" if words can't be selected in the PDF (issue #266:
+  Adobe PDF's printer, with some settings, makes a PDF of pictures of text).
 - Messages (no takes, takes that can't be read) are shown in the preview, not as the Editor's toasts.
 - The Credits switch (AP-31) is one setting for Print, Fountain and Final Draft (`printing.credits`, kept as
   `export-credits`), shown only when the script has credits.
