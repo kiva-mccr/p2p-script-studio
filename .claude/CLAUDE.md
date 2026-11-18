@@ -84,9 +84,9 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
   A UI audit (2026-11-15) added UX-1 to UX-13 to ROADMAP.md; the user wants all, boards 72 to 75 agreed. Built one
   small PR at a time: UX-4 + UX-13 pointer (done), the shared Undo (UX-1, 2, 10, 11, 13, done), UX-7 (done), UX-12, 6, 8, 3 (done; UX-5 dropped for SB-4's drawer), UX-9 (done).
   Then (the user, 2026-11-16): Ctrl+Z for everything: UX-14 (the script's text, done), then UX-15 (takes, flags, done). UX-16 (Undo toast 5 s, gone when you carry on, done).
-  Then security (the user, 2026-11-18, issue #267): SE-1 (Content Security Policy, done); the plan for SE-2 to SE-8
-  and decisions D1 (host with headers) and D2 (models served from the app) is at
-  https://claude.ai/artifact/1D6Km4GJrP2UQoz1XjBNYw, waiting on the user.
+  Then security (the user, 2026-11-18, issue #267): SE-1 (Content Security Policy, done); SE-2 to SE-8 and decisions
+  D1 (Cloudflare in front of GitHub Pages, waiting on the user) and D2 (models from the app, agreed) are in
+  docs/security.md.
   The rest (AP-8 …) waits
   for the user's next ranking; "Last" in ROADMAP.md (EX-5, CC-1) waits until everything else is done.
 - Mock-ups (one board per design, numbered): https://claude.ai/artifact/2XDZmS7J5NEPZsz91RQMiL (private to the user).

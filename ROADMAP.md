@@ -1064,6 +1064,9 @@ the team writes leaves their computers.
   reach only this site and Hugging Face (model downloads). No Referer on links out. Found while doing it: the speech
   models' runtime (ONNX Runtime's code and WebAssembly) was loaded from cdn.jsdelivr.net when a model started; it now
   comes from the app's own files (`lib/models.ts`). Every e2e test now fails if the page breaks the policy.
+- [ ] **SE-2** to **SE-8**: supply chain checks, untrusted script files, security headers (needs D1), models served
+  from the app (D2, agreed), offline app, proof of what's running, the IT pack. The plan and decisions:
+  docs/security.md.
 
 ## Last (the user's order: these wait until everything above is done)
 
