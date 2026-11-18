@@ -1,7 +1,7 @@
 # `src/lib/play.svelte.ts`
 
 Play the script (AU-2, board 14): `plan` (the rows in order, each with how long it lasts and when it starts) and
-`Player` (plays a plan: the step, playing or paused, the time; start, toggle, stop).
+`Player` (plays a plan: the step, playing or paused, the time; start, toggle, seek, stop).
 
 - **Used by:** `screens/Editor.svelte` (makes one), `screens/Write.svelte`, `screens/WriteRow.svelte`, `screens/Review.svelte` (AU-9). **Tests:** `tests/unit/play.test.ts`,
   `tests/e2e/play.spec.ts`.
@@ -21,5 +21,8 @@ Play the script (AU-2, board 14): `plan` (the rows in order, each with how long 
 - A take that can't be read or played (still syncing) passes in silence for its noted length.
 - Loading a take is awaited, and the person may stop or jump meanwhile: `#turn` goes up with every step and stop,
   and a take that arrives for an old turn is dropped.
+- `seek` (SB-12, the timeline's playhead dropped) goes part way into a step: a silent one starts its clock there, a
+  take starts its sound there (`Sound.play(offset)`, only the first time it plays). It always plays after, and sets
+  `following` again. `toggle` hands `play` the elapsed time, so a take paused before it began still starts part way.
 - The plan is made when Play is pressed: rows changed while it plays are picked up on the next Play.
 - Never heard with real takes here: tests play the fake WAV takes (see `voice.md`).

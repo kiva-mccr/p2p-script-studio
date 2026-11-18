@@ -55,8 +55,18 @@ export class Player {
     if (!this.started) return;
     this.on = !this.on;
     this.#last = performance.now();
-    if (this.on) this.#sound?.play().catch(() => this.#silent());
+    if (this.on) this.#sound?.play(this.elapsed).catch(() => this.#silent()); // part way in, if it was paused before it began
     else this.#sound?.pause();
+  }
+
+  // Jump to `time` seconds from the top (#207: the timeline's playhead dropped there) and play from it, part way
+  // into its step; paused or not before, it plays after. The page follows the row again.
+  async seek(time: number) {
+    if (!this.started) return;
+    const i = Math.max(0, this.steps.findLastIndex((s) => s.start <= time));
+    this.on = true;
+    this.following = true;
+    await this.#go(i, Math.max(0, time - this.steps[i].start));
   }
 
   stop() {
@@ -68,13 +78,13 @@ export class Player {
     this.elapsed = 0;
   }
 
-  async #go(i: number) {
+  async #go(i: number, offset = 0) {
     const step = this.steps[i];
     if (!step || !this.#dir) return this.stop();
     const turn = ++this.#turn;
     this.#drop();
     this.i = i;
-    this.elapsed = 0;
+    this.elapsed = Math.min(offset, step.seconds);
     this.#last = performance.now();
     if (!step.take) return;
     try {
@@ -84,7 +94,7 @@ export class Player {
       if (turn !== this.#turn) return sound.close();
       sound.onended = () => turn === this.#turn && this.#go(i + 1);
       this.#sound = sound;
-      if (this.on) await sound.play();
+      if (this.on) await sound.play(offset);
     } catch {
       // A take that isn't there (still syncing) or can't be played: its length passes in silence.
       if (turn === this.#turn) this.#silent();

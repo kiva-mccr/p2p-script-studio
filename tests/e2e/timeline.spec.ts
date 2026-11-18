@@ -375,6 +375,73 @@ test('folded while playing: the strip shows the playhead, the preview sits above
   await page.keyboard.press('Escape');
 });
 
+// #207 (board 80): playing, the playhead's dot can be dragged: held, it pauses (the preview shows what's under it);
+// let go, it plays from there. A press on the ruler grabs it too; at the tracks' edge they scroll; playing, they
+// keep the playhead in view. The dot sits above the ruler's times.
+test('playing: the playhead drags to another place and plays from there (#207)', async ({ page }) => {
+  await fakeTake(page);
+  await setUp(page, '#/Episode%2003', files);
+  await page.getByRole('button', { name: 'Record row 2', exact: true }).click();
+  await page.getByRole('button', { name: 'Stop recording row 2' }).click();
+  const t = timeline(page);
+  await page.getByRole('button', { name: 'Play from row 1' }).click();
+  const dot = t.getByRole('button', { name: /^Playhead at / });
+  await expect(dot).toBeVisible();
+  expect(await t.locator('.ruler').evaluate((ruler) => {
+    const dotBottom = ruler.parentElement!.querySelector('.grip')!.getBoundingClientRect().top + 4 + 14;
+    return Math.min(...[...ruler.children].map((s) => s.getBoundingClientRect().top)) - dotBottom;
+  })).toBeGreaterThanOrEqual(0);
+  const time = t.locator('.pbar span');
+  const d = (await dot.boundingBox())!, y = d.y + d.height / 2;
+  const row4 = (await t.getByRole('button', { name: /^Row 4 · / }).boundingBox())!;
+  await page.mouse.move(d.x + d.width / 2, y);
+  await page.mouse.down();
+  await page.mouse.move(row4.x + row4.width / 2, y, { steps: 5 });
+  await expect(t.getByRole('img', { name: /^Preview: Row 4/ })).toBeVisible();
+  const held = await time.textContent();
+  await page.waitForTimeout(1200);
+  expect(await time.textContent()).toBe(held); // paused while held
+  await page.mouse.up();
+  await expect(page.locator('.row.here').getByLabel('Dialogue, row 4')).toBeVisible();
+  await expect(time).not.toHaveText(held!); // playing from there
+  // A press on the ruler takes the playhead there.
+  const row2 = (await t.getByRole('button', { name: /^Row 2 · / }).boundingBox())!;
+  await page.mouse.move(row2.x + row2.width / 2, y);
+  await page.mouse.down();
+  await expect(t.getByRole('img', { name: /^Preview: Row 2/ })).toBeVisible();
+  await page.mouse.up();
+  // Zoomed in, the tracks keep the playhead in view; dragged to the right edge, they scroll that way.
+  await t.getByRole('button', { name: 'Zoom in' }).click();
+  await t.getByRole('button', { name: 'Zoom in' }).click();
+  const scroll = t.locator('.scroll');
+  const box = (await scroll.boundingBox())!;
+  await expect.poll(async () => { const g = (await dot.boundingBox())!; return g.x >= box.x && g.x + g.width / 2 <= box.x + box.width; }).toBe(true);
+  const g = (await dot.boundingBox())!;
+  const left = await scroll.evaluate((el) => el.scrollLeft);
+  await page.mouse.move(g.x + g.width / 2, y);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width - 4, y, { steps: 5 });
+  await expect.poll(() => scroll.evaluate((el) => el.scrollLeft)).toBeGreaterThan(left + 100);
+  await page.mouse.up();
+  await expect.poll(async () => { const h = (await dot.boundingBox())!; return h.x >= box.x && h.x + h.width / 2 <= box.x + box.width; }).toBe(true);
+  // From the keyboard, → jumps 5 s on.
+  const seconds = async () => { const [m, s] = (await time.textContent())!.split(' / ')[0].split(':').map(Number); return m * 60 + s; };
+  const was = await seconds();
+  await dot.focus();
+  await page.keyboard.press('ArrowRight');
+  await expect.poll(seconds).toBeGreaterThanOrEqual(was + 4);
+  await expect.poll(async () => { const h = (await dot.boundingBox())!; return h.x >= box.x && h.x + h.width / 2 <= box.x + box.width; }).toBe(true);
+  await page.screenshot({ path: 'test-results/playhead.png' });
+  // Scrolled by hand, the tracks stay where they were put for a few seconds.
+  await page.mouse.move(box.x + 50, box.y + box.height / 2);
+  await page.mouse.wheel(-5000, 0);
+  await expect.poll(() => scroll.evaluate((el) => el.scrollLeft)).toBe(0);
+  await page.waitForTimeout(1000);
+  expect(await scroll.evaluate((el) => el.scrollLeft)).toBe(0);
+  await page.keyboard.press('Escape');
+  await expect(dot).toHaveCount(0);
+});
+
 // #225 (board 80): ✕ closes the preview; it stays closed while playing, in this browser, until Show preview.
 test('the preview closes with ✕ and stays closed until Show preview', async ({ page }) => {
   await fakeTake(page);
