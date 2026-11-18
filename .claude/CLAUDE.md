@@ -13,8 +13,9 @@ there as steps land and keep the IDs stable.
 - svelte-check needs TypeScript 6 (TypeScript 7 is not supported by it yet).
 - `.npmrc` skips onnxruntime-node's CUDA download (a dependency of transformers.js): its GPU binary went 404 on
   GitHub and broke `npm ci` in CI and here (2026-11-18). The app never uses it (it runs in the browser).
-- The app is at https://p2p-script-studio.kivamccr.xyz/ (custom domain set in repo Settings > Pages; DNS is a
-  CNAME to kiva-mccr.github.io at Hostinger). GitHub redirects the old kiva-mccr.github.io/Internal-Script-Studio/
+- The app is at https://p2p-script-studio.kivamccr.xyz/ (custom domain set in repo Settings > Pages; DNS is at
+  Cloudflare since 2026-11-18, a proxied CNAME to kiva-mccr.github.io; Cloudflare adds the security headers, SE-4,
+  lib/headers.md; the domain is still registered at Hostinger, whose site and email are DNS only). GitHub redirects the old kiva-mccr.github.io/Internal-Script-Studio/
   there. vite.config.ts `base` is `./`, so a build works at either address. `deploy.yml` publishes every push to main
   that changes code; Pages' source must be "GitHub Actions" (no CNAME file needed with Actions).
 - Pushes to main that change only `.md` files or docs skip the workflows; pull requests always run Tests, because
@@ -84,9 +85,8 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
   A UI audit (2026-11-15) added UX-1 to UX-13 to ROADMAP.md; the user wants all, boards 72 to 75 agreed. Built one
   small PR at a time: UX-4 + UX-13 pointer (done), the shared Undo (UX-1, 2, 10, 11, 13, done), UX-7 (done), UX-12, 6, 8, 3 (done; UX-5 dropped for SB-4's drawer), UX-9 (done).
   Then (the user, 2026-11-16): Ctrl+Z for everything: UX-14 (the script's text, done), then UX-15 (takes, flags, done). UX-16 (Undo toast 5 s, gone when you carry on, done).
-  Then security (the user, 2026-11-18, issue #267): SE-1 (Content Security Policy, done); SE-2 to SE-8 and decisions
-  D1 (Cloudflare in front of GitHub Pages, waiting on the user) and D2 (models from the app, agreed) are in
-  docs/security.md.
+  Then security (the user, 2026-11-18, issue #267): SE-1 (Content Security Policy, done), SE-4 (headers via
+  Cloudflare, done); the rest (SE-2, 3, 5 to 8) and D2 (models from the app, agreed) are in docs/security.md.
   The rest (AP-8 …) waits
   for the user's next ranking; "Last" in ROADMAP.md (EX-5, CC-1) waits until everything else is done.
 - Mock-ups (one board per design, numbered): https://claude.ai/artifact/2XDZmS7J5NEPZsz91RQMiL (private to the user).

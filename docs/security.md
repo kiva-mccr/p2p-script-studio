@@ -34,7 +34,7 @@ X-Content-Type-Options (-5) are lost: about 55 at best.
    0.19) and sharp (Node only, never shipped to browsers).
 3. **SE-3** Untrusted script files: review every place script text becomes HTML (formatting, links, equations,
    previews); tests that try to sneak in a script, a `javascript:` link or an `onerror` attribute (OWASP ASVS V5).
-4. **SE-4** Security headers (needs D1): HSTS, `frame-ancestors 'none'`, nosniff, Referrer-Policy, a
+4. **SE-4** Security headers. Done 2026-11-18, through Cloudflare (D1); COEP waits for SE-5: HSTS, `frame-ancestors 'none'`, nosniff, Referrer-Policy, a
    Permissions-Policy allowing only the microphone, the policy as a header, COOP/COEP (lets the speech models use
    every core). A daily GitHub check fetches the live site and fails if a header is missing; the expected list is in
    the repo.
@@ -48,8 +48,8 @@ X-Content-Type-Options (-5) are lost: about 55 at best.
 
 ## Decisions
 
-- **D1, hosting (waiting on the user).** Recommended: keep GitHub Pages with Cloudflare's free plan in front (DNS
-  moves from Hostinger to Cloudflare; one response-header rule; HSTS in Cloudflare's settings; proxy off undoes it).
+- **D1, hosting.** Picked by the user, 2026-11-18, and done: GitHub Pages with Cloudflare's free plan in front (DNS
+  moved from Hostinger to Cloudflare; one response-header rule; turning the subdomain's proxy off undoes it).
   Cloudflare Pages was the first idea, dropped because it caps files at 25 MB and SE-5's model files are larger
   (GitHub Pages allows 100 MB).
 - **D2, models served from the app.** Agreed by the user, 2026-11-18.
