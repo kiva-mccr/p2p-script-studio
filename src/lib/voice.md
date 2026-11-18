@@ -33,6 +33,9 @@ id as state, with start, stop, play, current, remove and load), `readTakes` (a f
   when they change (PF-1). The 5 s check and the script list both call it.
 - `Sound` plays through Web Audio (its own AudioContext), not an <audio>: the crop is exact and the gain can go over 1.
   Pause suspends that context.
+- `play` awaits loading the take, and a second click (or a stop, a recording) can come meanwhile: `#turn` goes up with
+  every play and stop, and a sound that arrives for an old turn is closed. Without it, a double-click on a slow drive
+  left two 100 ms clocks writing `at`, one stuck on a closed sound, and the bar flickered back and forth (#265).
 - SB-8: `words` in a take's JSON are what the speech model heard (`lib/hear.ts`), each word with its start in the
   whole recording (before the crop). `hearAll` hears the takes the timeline asks for (rows cut on a word, Write only),
   one at a time; it writes them only if the take wasn't recorded again meanwhile (same `at`). `[]` means heard with
