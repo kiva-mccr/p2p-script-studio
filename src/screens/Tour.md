@@ -23,3 +23,8 @@ ending on "Your turn". → and ← step, Esc skips. The steps are `lib/tour.ts`.
   html's bottom scroll padding (its own height), so it always looked off screen and was scrolled for nothing.
 - `unfold` steps open the drawer (`drawer()` sends `tour-drawer`); `finish` folds it, so every way out of the tour
   (Skip, Esc, Start playing) puts it back.
+- The ring follows its part every frame while a step shows (issue #208): watching only the page's size and the window's
+  scroll missed a part that moves without either (the top bar, the drawer, a panel scrolling). It slides only from
+  one step to the next (`glide`, 0.25 s); a part that moves is followed at once, or the ring trailed behind a scroll.
+- The ring is kept inside the window (`clientWidth`/`clientHeight`, not counting a scroll bar), so all of it shows:
+  the drawer touches the window's foot, and its ring's lower edge was drawn off screen.

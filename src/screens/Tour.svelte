@@ -8,6 +8,7 @@
   const PAD = 6; // room around the part shown
   const GAP = 12; // between it and the card
   const EDGE = 16; // the card keeps this far from the window's edges
+  const RING = 3; // the ring's width, drawn outside the hole
 
   let playing = $state<Tab | null>(null);
   let at = $state(0); // the step shown; steps.length is the "Your turn" card
@@ -18,6 +19,8 @@
   let nextEl = $state<HTMLButtonElement>();
   let shown: Element[] = []; // the part shown, in pieces
   let unfolded = false; // the timeline's drawer was asked to open for this step
+  let glide = $state(false); // the ring and card slide to a new step, but follow a part that moves (a scroll) at once
+  let glideTimer: ReturnType<typeof setTimeout> | undefined;
   let seenAgain = untrack(() => again); // a new script opened after Take the tour doesn't replay it
 
   // A tab's tour plays by itself the first time it opens; Take the tour plays the open tab's tour again.
@@ -53,12 +56,24 @@
 
   const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-  // The page can still change size under a step (a preview loading): the ring and card follow it.
+  // The part can still move under a step (a preview loading, the top bar or the drawer changing, a panel scrolling):
+  // its box is checked every frame and the ring and card follow it (issue #208). Watching only the page's size missed
+  // moves that don't change it.
   $effect(() => {
     if (!playing) return;
-    const watch = new ResizeObserver(() => place());
-    watch.observe(document.body);
-    return () => watch.disconnect();
+    let last = '';
+    let frame = requestAnimationFrame(function follow() {
+      if (shown.length) {
+        const r = box();
+        const now = `${r.left} ${r.top} ${r.width} ${r.height} ${innerWidth} ${innerHeight}`;
+        if (now !== last) {
+          last = now;
+          place();
+        }
+      }
+      frame = requestAnimationFrame(follow);
+    });
+    return () => cancelAnimationFrame(frame);
   });
 
   function find(step: Step | undefined): Element | null {
@@ -90,6 +105,8 @@
 
   async function show(i: number) {
     for (const el of shown) el.classList.remove('tour-on');
+    clearTimeout(glideTimer);
+    glide = true;
     at = i;
     const opening = !!steps[i]?.unfold && !unfolded;
     drawer(!!steps[i]?.unfold);
@@ -108,6 +125,8 @@
     }
     await tick();
     place();
+    clearTimeout(glideTimer);
+    glideTimer = setTimeout(() => (glide = false), 250);
     nextEl?.focus();
   }
 
@@ -122,7 +141,12 @@
       return;
     }
     const r = box();
-    hole = { x: r.left - PAD, y: r.top - PAD, w: r.width + 2 * PAD, h: r.height + 2 * PAD };
+    // The ring stays inside the window, so all of it shows: the timeline's drawer touches the window's foot, and its
+    // ring's lower edge was drawn off screen (issue #208).
+    const view = document.documentElement;
+    const x1 = Math.max(r.left - PAD, RING), y1 = Math.max(r.top - PAD, RING);
+    const x2 = Math.min(r.right + PAD, view.clientWidth - RING), y2 = Math.min(r.bottom + PAD, view.clientHeight - RING);
+    hole = { x: x1, y: y1, w: Math.max(x2 - x1, 0), h: Math.max(y2 - y1, 0) };
     const fitX = (x: number) => Math.max(EDGE, Math.min(x, innerWidth - w - EDGE));
     const fitY = (y: number) => Math.max(EDGE, Math.min(y, innerHeight - h - EDGE));
     const below = r.bottom + PAD + GAP;
@@ -170,7 +194,7 @@
   }
 </script>
 
-<svelte:window onkeydown={key} onresize={place} onscroll={place} />
+<svelte:window onkeydown={key} />
 
 {#if playing}
   {@const end = at >= steps.length}
@@ -178,11 +202,11 @@
     <!-- Catches clicks while a step shows, so a stray click doesn't lose the tour. The hole's shadow dims the rest. -->
     <div class="block" aria-hidden="true"></div>
     {#if hole}
-      <div class="hole" style:left="{hole.x}px" style:top="{hole.y}px" style:width="{hole.w}px" style:height="{hole.h}px"></div>
+      <div class="hole" class:glide style:left="{hole.x}px" style:top="{hole.y}px" style:width="{hole.w}px" style:height="{hole.h}px"></div>
     {:else}
       <div class="dim"></div>
     {/if}
-    <div class="card" role="dialog" aria-label="Tour" bind:this={cardEl} style:left="{card.x}px" style:top="{card.y}px">
+    <div class="card" class:glide role="dialog" aria-label="Tour" bind:this={cardEl} style:left="{card.x}px" style:top="{card.y}px">
       <p class="count">{end ? `${TABS[playing]} tour` : `${TABS[playing]} · ${at + 1} of ${steps.length}`}</p>
       <h2>{end ? 'Your turn' : steps[at].title}</h2>
       <p class="text">{end ? YOUR_TURN[playing] : steps[at].text}</p>
@@ -199,10 +223,12 @@
   .tour { position: fixed; inset: 0; z-index: 30; }
   .block { position: absolute; inset: 0; }
   .hole { position: absolute; border-radius: 10px; box-shadow: 0 0 0 3px var(--accent), 0 0 0 9999px rgba(20, 20, 20, 0.55);
-    pointer-events: none; transition: all 0.2s ease; }
+    pointer-events: none; }
+  .hole.glide { transition: all 0.2s ease; }
   .dim { position: absolute; inset: 0; background: rgba(20, 20, 20, 0.55); }
   .card { position: absolute; box-sizing: border-box; width: min(340px, calc(100vw - 32px)); padding: 18px 18px 14px;
-    border-radius: 12px; background: #fff; box-shadow: 0 8px 28px rgba(0, 0, 0, 0.22); transition: left 0.2s ease, top 0.2s ease; }
+    border-radius: 12px; background: #fff; box-shadow: 0 8px 28px rgba(0, 0, 0, 0.22); }
+  .card.glide { transition: left 0.2s ease, top 0.2s ease; }
   .count { margin: 0; font-size: 12px; font-weight: 500; color: var(--muted); }
   h2 { margin: 6px 0; font-size: 16px; font-weight: 600; }
   .text { margin: 0; font-size: 14px; line-height: 1.5; color: #3d3d3d; }
@@ -213,5 +239,5 @@
   .go { margin-left: auto; min-height: 40px; padding: 0 16px; border: 0; border-radius: 8px; background: var(--ink); color: #fff;
     font-size: 14px; font-weight: 500; }
   .skip + .outline, .skip + .go { margin-left: 0; }
-  @media (prefers-reduced-motion: reduce) { .hole, .card { transition: none; } }
+  @media (prefers-reduced-motion: reduce) { .hole.glide, .card.glide { transition: none; } }
 </style>
