@@ -84,6 +84,30 @@ test('step through flags in row order; Review shows them; they join the check be
   await expect(page.getByLabel('Flag note, row 4')).toBeFocused();
 });
 
+test("a flag's own ‹ › step to the previous or next flag (#256)", async ({ page }) => {
+  await open(page, flagFile(ids[3], 'Ana', 'Check the formula', '2026-11-09T10:00:00Z'));
+  // One flag: nothing to step to, so no arrows on it.
+  await expect(page.locator(`[data-row="${ids[3]}"] .flag-note`)).toBeVisible();
+  await expect(page.getByRole('group', { name: /^Flag \d of/ })).toHaveCount(0);
+  await page.getByLabel('Dialogue, row 1').hover();
+  await page.getByRole('button', { name: 'Flag row 1' }).click();
+  await page.getByRole('button', { name: 'Flag row 3' }).click();
+  const on = (i: number) => page.locator(`[data-row="${ids[i]}"]`);
+  const top = page.getByRole('group', { name: 'Flags' });
+  await expect(on(2).getByRole('group', { name: 'Flag 2 of 3' })).toContainText('2 of 3');
+  await on(2).getByRole('button', { name: 'Next flag' }).click();
+  await expect(top).toContainText('3 of 3 flagged');
+  await expect(on(3)).toHaveClass(/stepped/);
+  // The same arrow on the next flag takes the focus, so Enter keeps stepping; it goes round.
+  await expect(on(3).getByRole('button', { name: 'Next flag' })).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(top).toContainText('1 of 3 flagged');
+  await expect(on(0)).toHaveClass(/stepped/);
+  await on(0).getByRole('button', { name: 'Previous flag' }).click();
+  await expect(top).toContainText('3 of 3 flagged');
+  await expect(on(3).getByRole('button', { name: 'Previous flag' })).toBeFocused();
+});
+
 test('a flag on a deleted row is left out, and Undo brings it back', async ({ page }) => {
   await open(page, flagFile(ids[2], 'Ana', 'Too fast?', '2026-11-09T10:00:00Z'));
   await expect(page.getByRole('group', { name: 'Flags' })).toContainText('1 flagged');

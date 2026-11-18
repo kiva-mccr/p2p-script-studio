@@ -20,14 +20,16 @@
   // One row of Write (mock-up 3): its number and tools, mic, the three columns, and its flag's note.
   // block: the row, edited in place (onChange). i: its index in the script's blocks (data-block); n: its number.
   // columns: the grid's columns; folded: the columns folded away (AP-17). stepped: the flag stepped to (AP-9).
+  // flagAt, flagCount: where its flag is among them ("2 of 4"); onStepFlag: its ‹ › (#256), Write's.
   // said: its open comments (RV-13); talking: its card is being read. visit: RV-15's marks. came: RV-12's file.
   // start: its words when the script was opened (AP-38); onPutBack puts a cell's back (Write's, for the Undo bar).
   // onMove, onInsert, onRemove, onToSection and onToggleFlag are Write's (they change the blocks round it);
   // onMic: the mic (Write stops a take on another row first). onPaste: two or more paragraphs pasted into Dialogue (AP-13).
-  let { block = $bindable(), i, n, columns, folded, dir, root, folderName, voice, player, canPlay, name, lit = false, flag, stepped, said, talking, visit, came, start,
+  let { block = $bindable(), i, n, columns, folded, dir, root, folderName, voice, player, canPlay, name, lit = false, flag, flagAt, flagCount, onStepFlag, stepped, said, talking, visit, came, start,
     onChange, onPutBack, onUndo, onNotice, onPlayFrom, onFlag, onTalk, onMove, onInsert, onRemove, onToSection, onToggleFlag, onMic, onPaste }: {
     block: Row; i: number; n: number | undefined; columns: string; folded: Set<string>; dir: FileSystemDirectoryHandle; root: FileSystemDirectoryHandle;
-    folderName: string; voice: VoiceOver; player: Player; canPlay: boolean; name: string; lit?: boolean; flag: Flag | undefined; stepped: boolean;
+    folderName: string; voice: VoiceOver; player: Player; canPlay: boolean; name: string; lit?: boolean; flag: Flag | undefined; flagAt: number; flagCount: number;
+    onStepFlag: (by: number) => void; stepped: boolean;
     said: Thread[]; talking: boolean; visit: Marks | null; came: { row: string; line: string; from: string } | null;
     start: Words | undefined; onPutBack: (field: 'dialogue' | 'onScreen') => void;
     onChange: (apart?: boolean) => void; onUndo: (offer: Offer) => void; onNotice: (message: string) => void; onPlayFrom: (id: string) => void;
@@ -181,6 +183,13 @@
         <button class="chip" onclick={() => onFlag(block.id, 'Needs a source')}>Needs a source</button>
       {/if}
       <span class="by">{flag.who}</span>
+      {#if flagCount > 1}
+        <span class="steps" role="group" aria-label="Flag {flagAt} of {flagCount}">
+          <button data-step="-1" aria-label="Previous flag" title="Previous flag" onclick={() => onStepFlag(-1)}>‹</button>
+          <span>{flagAt} of {flagCount}</span>
+          <button data-step="1" aria-label="Next flag" title="Next flag" onclick={() => onStepFlag(1)}>›</button>
+        </span>
+      {/if}
       <button class="clear" onclick={() => onFlag(block.id, null)}>Clear</button>
     </div>
   {/if}
@@ -306,5 +315,8 @@
   .chip { min-height: 30px; padding: 0 10px; border: 1px solid #f5d9b5; border-radius: 999px; background: #fff; color: var(--flag); font-size: 13px; font-weight: 500; }
   .by { font-size: 12px; }
   .clear { min-height: 30px; padding: 0 10px; border: 0; border-radius: 6px; background: none; color: var(--flag); font-size: 13px; font-weight: 500; }
-  .clear:hover, .chip:hover { background: #fdebd3; }
+  .steps { display: inline-flex; align-items: center; gap: 2px; font-size: 12px; }
+  .steps span { min-width: 44px; text-align: center; }
+  .steps button { width: 30px; height: 30px; border: 0; border-radius: 6px; background: none; color: var(--flag); font-size: 15px; }
+  .clear:hover, .chip:hover, .steps button:hover { background: #fdebd3; }
 </style>

@@ -747,6 +747,10 @@ and suggestions, keeps every version, and exports them for production.
   list in Review and in Write's Comments is sorted by when each was resolved, accepted or rejected, whatever Line /
   Time / Type says (that switch still sorts the open list and On hold), with a grey "Newest resolved first." at its
   top. A card resolved by deleting its row (RV-24) is on top right after; reopened, it goes back where the row was.
+- [x] **AP-50** Arrows on a flag (issue #256, board 81 agreed by the user, 2026-11-18): a flag's note has ‹ 2 of 4 ›
+  beside who flagged it, stepping to the previous or next flag like the count above the table (round from the last
+  to the first). The same arrow on the flag stepped to takes the focus, so Enter keeps stepping. Hidden while there
+  is only one flag.
 - [x] **RV-23** Fold columns in Review too (asked by the user): the ‹ fold from AP-17 (Write only today) also works
   in Review, every column open by default.
   Built as mock-up 60: the same ‹ and › (shared `FoldHeads.svelte`, `lib/folds.svelte.ts`), a grey dot on rows with
