@@ -11,6 +11,8 @@ there as steps land and keep the IDs stable.
 - Checks: `npm run check` (types), `npm test` (Vitest, `tests/unit/`), `npm run e2e` (Playwright, `tests/e2e/`,
   builds and serves the app itself). Playwright is pinned to 1.63.0 to match this container's Chromium.
 - svelte-check needs TypeScript 6 (TypeScript 7 is not supported by it yet).
+- `.npmrc` skips onnxruntime-node's CUDA download (a dependency of transformers.js): its GPU binary went 404 on
+  GitHub and broke `npm ci` in CI and here (2026-11-18). The app never uses it (it runs in the browser).
 - The app is at https://p2p-script-studio.kivamccr.xyz/ (custom domain set in repo Settings > Pages; DNS is a
   CNAME to kiva-mccr.github.io at Hostinger). GitHub redirects the old kiva-mccr.github.io/Internal-Script-Studio/
   there. vite.config.ts `base` is `./`, so a build works at either address. `deploy.yml` publishes every push to main
