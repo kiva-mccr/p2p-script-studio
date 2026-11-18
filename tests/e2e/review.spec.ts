@@ -502,3 +502,33 @@ test('the top bar stays up on a long script, with no links beside the state (UX-
   await expect(page.getByRole('button', { name: 'Write', exact: true })).toHaveAttribute('aria-current', 'page');
   await expect(page.getByRole('textbox', { name: 'Find' })).toBeFocused();
 });
+
+// Heights of what `open` puts on the page, frame by frame, from the click on `button` (both in the page, so no gap).
+const growth = (page: Page, button: string, open: string) => page.evaluate(([button, open]) => new Promise<number[]>((done) => {
+  const heights: number[] = [];
+  (document.querySelector(`button[aria-label="${button}"]`) as HTMLElement).click();
+  const t0 = performance.now();
+  const frame = () => {
+    const el = document.querySelector(open) as HTMLElement | null;
+    if (el) heights.push(el.getBoundingClientRect().height);
+    if (performance.now() - t0 < 600) requestAnimationFrame(frame);
+    else done(heights);
+  };
+  requestAnimationFrame(frame);
+}), [button, open]);
+
+test('what opens grows into place instead of jumping in, unless motion is reduced (issue #214)', async ({ page }) => {
+  await openReview(page);
+  await expect(page.getByRole('button', { name: 'Comment on row 3' })).toBeVisible();
+  const heights = await growth(page, 'Comment on row 3', 'form[aria-label="New comment"]');
+  const full = heights.at(-1)!;
+  expect(full).toBeGreaterThan(100);
+  expect(heights[0]).toBeLessThan(full * 0.8); // it starts small…
+  expect(heights.filter((h) => h > heights[0] && h < full).length).toBeGreaterThan(0); // …and passes through sizes between
+  await page.getByRole('form', { name: 'New comment' }).getByRole('button', { name: 'Cancel' }).click();
+  await expect(page.getByRole('form', { name: 'New comment' })).toHaveCount(0);
+
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  const still = await growth(page, 'Comment on row 3', 'form[aria-label="New comment"]');
+  expect(still[0]).toBe(still.at(-1));
+});

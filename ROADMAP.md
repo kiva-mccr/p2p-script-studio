@@ -210,6 +210,9 @@ and suggestions, keeps every version, and exports them for production.
   Built as mock-up 4, without suggestions (RV-2) and Approve / Send back (RV-3). A Review tab, with the number of
   open comments, shows the script to read and the comments beside it; quotes are marked in their cells. Resolved
   comments fold under "Resolved" and can be reopened. Not yet: comments in History.
+  Issue #214 (the user, 2026-11-16, fixed 2026-11-18): things that open in Review jumped in and pushed the page down
+  at once. The comment box, a reply box, On hold, Resolved (also in Write's Comments), the review note and rows shown
+  again (Only changed rows off) now grow into place in 0.18 s (`grow`, `lib/slide.ts`); none with reduced motion.
 - [x] **RV-2** Suggestions: accept or reject.
   Built as mock-up 4: select text, Suggest a change (starts from the selected words); the card says "Replace … with
   …" with Accept, Reject and Reply. Accepting changes the script; a decision stays in place with Undo. The old words

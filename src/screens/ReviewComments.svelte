@@ -2,7 +2,7 @@
   import { onDestroy, tick } from 'svelte';
   import { Linger } from '../lib/linger.svelte';
   import { stepComment } from '../lib/shortcuts.svelte';
-  import { slideAway } from '../lib/slide';
+  import { grow, slideAway } from '../lib/slide';
   import { quoteGone, threads, type Field, type Note, type Thread } from '../lib/comments';
   import { heading, sortThreads, toSort, SORT_KEY } from '../lib/commentsort';
   import { recall } from '../lib/remember';
@@ -137,7 +137,7 @@
 <svelte:window onkeydown={stepKeys} />
 <aside aria-label="Comments" data-tour="review-cards" bind:this={aside}>
   {#if target}
-    <form class="card compose" aria-label="New comment" novalidate onsubmit={send}>
+    <form class="card compose" aria-label="New comment" novalidate onsubmit={send} in:grow>
       <div class="who">{suggesting ? 'Suggest a change to' : 'Comment on'} row {numbers.get(target.row)}{target.quote ? ` · ${LABELS[target.field]}` : target.on === 'timeline' ? ', on the timeline' : ''}</div>
       {#if target.quote && target.field !== 'files'}
         <div class="switch" role="group" aria-label="Comment or suggest">
@@ -179,8 +179,10 @@
       {showHeld ? '▾' : '▸'} On hold · {held.length}
     </button>
     {#if showHeld}
-      <p class="quiet help">Back in the open list at the next Send for review or official version.</p>
-      {#each held as t (t.comment.id)}<div class="slot" out:slideAway>{@render card(t)}</div>{/each}
+      <div class="group" in:grow>
+        <p class="quiet help">Back in the open list at the next Send for review or official version.</p>
+        {#each held as t (t.comment.id)}<div class="slot" out:slideAway>{@render card(t)}</div>{/each}
+      </div>
     {/if}
   {/if}
 
@@ -188,7 +190,9 @@
     <button class="link" aria-expanded={showResolved} onclick={() => (showResolved = !showResolved)}>
       {showResolved ? '▾' : '▸'} Resolved · {resolved.length}
     </button>
-    {#if showResolved}{#each resolved as t (t.comment.id)}<div class="slot" out:slideAway>{@render card(t)}</div>{/each}{/if}
+    {#if showResolved}
+      <div class="group" in:grow>{#each resolved as t (t.comment.id)}<div class="slot" out:slideAway>{@render card(t)}</div>{/each}</div>
+    {/if}
   {/if}
 </aside>
 
@@ -215,4 +219,5 @@
   .missing { margin: 0; font-size: 13px; color: var(--danger); }
   .quiet { margin: 0; font-size: 13px; color: var(--muted); }
   .slot { display: flex; flex-direction: column; }
+  .group { display: flex; flex-direction: column; gap: inherit; }
 </style>
