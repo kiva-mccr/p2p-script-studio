@@ -8,6 +8,7 @@
   import Setup from './screens/Setup.svelte';
   import { openExample, startOver } from './lib/example';
   import Feedback from './screens/Feedback.svelte';
+  import { exampleBar } from './lib/examplebar.svelte';
 
 
   let route = $state<string[]>([]);
@@ -28,6 +29,15 @@
   // The example to try (AP-33): open in place of the folder, never remembered as it. `fresh` restarts its screens.
   let tourAgain = $state(0); // the example's guided tour (AP-34): goes up when Take the tour is clicked
   let example = $state<{ folder: FileSystemDirectoryHandle; name: string; fresh: number } | null>(null);
+  // The example's bar stays at the top of the window (issue #203): the script's top bar sticks under it.
+  $effect(() => {
+    const h = example ? exampleBar.height : 0;
+    document.documentElement.style.setProperty('--example-h', `${h}px`);
+    return () => document.documentElement.style.removeProperty('--example-h');
+  });
+  $effect(() => {
+    if (!example) exampleBar.height = 0;
+  });
   let undoStart = $state<(() => Promise<FileSystemDirectoryHandle>) | null>(null);
   let undoTimer: ReturnType<typeof setTimeout> | undefined;
 
@@ -105,7 +115,7 @@
 <svelte:window onhashchange={onHash} />
 
 {#if example}
-  <div class="example">
+  <div class="example" bind:offsetHeight={exampleBar.height}>
     <p><b>Example script.</b> Try anything: your changes stay in this browser and are never shared.</p>
     {#if route.length}<button class="link start" onclick={() => tourAgain++}>Take the tour</button>{/if}
     <button class="link start" onclick={restart}>Start over</button>
@@ -144,6 +154,11 @@
 <style>
   .example { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 16px; padding: 4px 24px; background: #eef2fb;
     font-size: 14px; }
+  /* It stays at the top of the window (issue #203), over the script's top bar (z 7), which sticks under it. */
+  .example { position: sticky; top: 0; z-index: 8; }
+  /* html's scroll-padding-top counts the bar's own place as hidden: as in Header, each thing in it counts as drawn
+     lower, so focusing Take the tour doesn't scroll the page. */
+  .example :global(*) { scroll-margin: calc(-1 * var(--bar-h, var(--example-h, 0px))) 0 var(--bar-h, var(--example-h, 0px)); }
   .example p { flex: 1 1 320px; margin: 0; color: #3d3d3d; }
   .example b { color: var(--ink); font-weight: 600; }
   .example .start { color: var(--accent-dark); font-weight: 500; }

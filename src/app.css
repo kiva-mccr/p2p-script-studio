@@ -14,7 +14,7 @@
   background: var(--ground);
 }
 /* Always keep room for the scrollbar, so the top bar doesn't shift when a tab's page is shorter or longer. */
-html { scrollbar-gutter: stable; scroll-padding-top: var(--bar-h, 0px); } /* a script's top bar stays up (UX-4) */
+html { scrollbar-gutter: stable; scroll-padding-top: var(--bar-h, var(--example-h, 0px)); } /* a script's top bar stays up (UX-4), and the example's (#203) */
 body { margin: 0; }
 
 /* The kinds of button used everywhere. */

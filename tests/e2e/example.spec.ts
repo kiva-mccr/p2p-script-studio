@@ -26,6 +26,26 @@ test('the example opens with its pictures, comments and History, and nothing is 
   await expect(page.getByRole('heading', { name: 'Open your scripts folder' })).toBeVisible();
 });
 
+test('the example bar stays at the top of the window when the script scrolls, with the top bar under it (issue #203)', async ({ page }) => {
+  await page.goto('./');
+  await page.getByRole('button', { name: 'Open the example' }).click();
+  await page.getByText('How Photosynthesis Works').click();
+  await expect(page.getByLabel('Dialogue, row 1')).toBeVisible();
+  const bar = page.locator('.example');
+  const header = page.locator('header');
+  await page.mouse.wheel(0, 3000);
+  await expect.poll(() => page.evaluate(() => scrollY)).toBeGreaterThan(200);
+  const b = (await bar.boundingBox())!;
+  expect(b.y).toBe(0);
+  // The top bar sits right under it, nothing hides behind either, and the tour can still be started.
+  await expect.poll(async () => (await header.boundingBox())!.y).toBe(b.height);
+  const h = (await header.boundingBox())!;
+  expect(await page.evaluate(() => parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--bar-h')))).toBe(b.height + h.height);
+  await page.getByRole('button', { name: 'Take the tour' }).click();
+  await expect(page.getByRole('dialog', { name: 'Tour' })).toBeVisible();
+  expect((await bar.boundingBox())!.y).toBe(0);
+});
+
 test('keeps a typed name, but not Guest', async ({ page }) => {
   await page.goto('./');
   await page.getByRole('button', { name: 'Open the example' }).click();

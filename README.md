@@ -24,7 +24,7 @@ Status: a first working version. What it does today:
   to click around in first; your changes stay in this browser, Start over puts it back as new, and the – folds the
   offer to one line for good. Inside it, a short guided tour shows each tab the first time you open it, the timeline
   included (its drawer opens for that step and folds again after): Next (or →)
-  moves on, Skip tour (or Esc) stops the tours on every tab, and Take the tour in the blue strip plays it again.
+  moves on, Skip tour (or Esc) stops the tours on every tab, and Take the tour in the blue strip plays it again. The strip stays at the top of the window as you scroll.
 - **The list:** every script in the folder, its status, and who last edited it and when. New script starts one; the arrow beside it starts one from a template, or makes a new template (templates sit at the bottom of the list).
   It opens fast on a network drive: your computer remembers each script's line, looks only at file names and dates,
   and reads again only the scripts that changed, the ones on screen first. A first visit reads each script's History
