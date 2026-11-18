@@ -32,5 +32,7 @@ picture's copy of the page with solid grey boxes. Built so the issue can be acte
   rounded end was sliced square (x's are wider than most letters).
 - Pictures are the script's too (the user): every img, video, canvas and iframe becomes a grey box of its size,
   unless inside `data-keep`. The app's icons are inline SVG, so they stay.
+- `onScrollbar` measures the bar from the box's sizes: an SVG drawing has a clientWidth of 0, so without checking that
+  a bar is there at all every click on an icon counted as a scroll bar. Overlay bars (no width) aren't caught.
 - The note is cut at 2,000 characters so the link stays well under GitHub's length limit.
 - The `feedback` label in the link is only applied for people who may label issues; others' issues come unlabelled.

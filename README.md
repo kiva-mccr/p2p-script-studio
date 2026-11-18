@@ -253,7 +253,7 @@ Status: a first working version. What it does today:
   such as "Give it a name first." have no icon.
 - **Feedback:** Feedback… in the ? menu at the right end of the top bar. Click it, then click the part of the screen
   that's giving you trouble or could be better (it gets an orange outline), and write a short note. To reach
-  something in a menu or dropdown, hold Shift to use the page and open it, then let go and click the item. Open on GitHub
+  something in a menu or dropdown, hold Shift to use the page and open it, then let go and click the item. Scroll bars work the same: a click on one picks it, and Shift drags it. Open on GitHub
   opens a new issue with your note and where the part is filled in, and copies a picture of the part to paste in
   (Ctrl+V); you sign in to GitHub and press Submit there. GitHub is public, so the script's words, its pictures and people's names
   are covered with solid grey boxes in the picture, and its name is left out, unless you untick or tick them. No GitHub account? Copy instead copies the same text for
