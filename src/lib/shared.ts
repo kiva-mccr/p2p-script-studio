@@ -5,9 +5,10 @@ import { addAsset, assetFile, listScripts, readScript } from './folder';
 import { parseScript } from './script';
 import { subdir } from './dirs';
 
-// line: a link's line as its script has it, so it is added the same.
-export type SharedFile = { kind: 'path' | 'link'; name: string; target: string; line: string; uses: number };
-export type SharedScript = { folder: string; title: string; status: string; files: SharedFile[] };
+// line: a link's line as its script has it, so it is added the same. rows: the rows that use it.
+export type SharedFile = { kind: 'path' | 'link'; name: string; target: string; line: string; uses: number; rows: number[] };
+// here: this script itself, listed first by "Reuse a file…" (#262).
+export type SharedScript = { folder: string; title: string; status: string; files: SharedFile[]; here?: boolean };
 
 // Every script but `except` (its folder name) that has files, newest edited first: the files in its assets/ folder
 // by name, then the links its rows use. A script that can't be read is left out.
@@ -17,21 +18,27 @@ export async function sharedFiles(root: FileSystemDirectoryHandle, except: strin
     const folder = info.path[0];
     if (folder.toLowerCase() === except.toLowerCase()) continue;
     try {
-      const dir = await subdir(root, folder);
-      const used = assetList(parseScript(await readScript(dir)));
-      const uses = (kind: string, target: string) => used.find((a) => a.kind === kind && a.target === target)?.rows.length ?? 0;
-      const files: SharedFile[] = [];
-      for (const name of await assetNames(dir)) {
-        const target = `assets/${name}`;
-        files.push({ kind: 'path', name, target, line: target, uses: uses('path', target) });
-      }
-      for (const a of used) if (a.kind === 'link') files.push({ kind: 'link', name: a.label, target: a.target, line: a.line.trim(), uses: a.rows.length });
+      const files = await scriptFiles(await subdir(root, folder));
       if (files.length) found.push({ folder, title: info.title, status: info.status, files });
     } catch {
       // still syncing or unreadable: skip it
     }
   }
   return found;
+}
+
+// One script's files: those in its assets/ folder by name, then the links its rows use, each with the rows using it.
+export async function scriptFiles(dir: FileSystemDirectoryHandle): Promise<SharedFile[]> {
+  const used = assetList(parseScript(await readScript(dir)));
+  const rows = (kind: string, target: string) => used.find((a) => a.kind === kind && a.target === target)?.rows ?? [];
+  const files: SharedFile[] = [];
+  for (const name of await assetNames(dir)) {
+    const target = `assets/${name}`;
+    const r = rows('path', target);
+    files.push({ kind: 'path', name, target, line: target, uses: r.length, rows: r });
+  }
+  for (const a of used) if (a.kind === 'link') files.push({ kind: 'link', name: a.label, target: a.target, line: a.line.trim(), uses: a.rows.length, rows: a.rows });
+  return files;
 }
 
 // Copies a file from another script's folder into this one's assets/. Returns its line for the Files column.

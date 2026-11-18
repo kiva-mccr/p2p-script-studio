@@ -372,8 +372,8 @@ test('Cover leaves the app\'s own words on buttons in a row, but covers file nam
   const picture = page.getByRole('region', { name: 'Feedback' }).getByRole('img', { name: 'The part, outlined' });
   await expect(picture).toBeVisible();
   const grey = await greyAt(picture, clear, [clear, row.getByRole('button', { name: 'Choose a file…' }),
-    row.getByRole('button', { name: 'From other scripts…' }), row.locator('.flag-note .by'), row.locator('.chip [data-hide]').first()]);
-  expect(grey).toEqual([false, false, false, true, true]); // Clear, Choose a file…, From other scripts…, Sam, a file's name
+    row.getByRole('button', { name: 'Reuse a file…' }), row.locator('.flag-note .by'), row.locator('.chip [data-hide]').first()]);
+  expect(grey).toEqual([false, false, false, true, true]); // Clear, Choose a file…, Reuse a file…, Sam, a file's name
 });
 
 test('Cover leaves "commented" on a comment card, but covers who wrote it (issue #257)', async ({ page }) => {

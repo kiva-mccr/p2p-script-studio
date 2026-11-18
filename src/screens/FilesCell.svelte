@@ -7,9 +7,10 @@
   import { sizeText } from '../lib/comments';
   import { readFileRef, timelineOnly } from '../lib/script';
   import { near } from '../lib/near';
+  import { fileDrag } from '../lib/filedrag.svelte';
 
-  // files: the row's Files lines. root and here: the picked folder and this script's folder name, for "From other
-  // scripts…" (AS-1); row: the row's number. onChange: called with the new list. onNotice: a message for the page.
+  // files: the row's Files lines. root and here: the picked folder and this script's folder name, for "Reuse a
+  // file…" (AS-1, #262); row: the row's number. onChange: called with the new list. onNotice: a message for the page.
   // came: a line just added from a comment's files (RV-12), and whose: "From Sam's comment" under its chip.
   let {
     files,
@@ -35,8 +36,8 @@
 
   let adding = $state(false);
   let browsing = $state(false);
-  // The add menu closes on Escape from any of its controls and on a click outside it (#263); while "From other
-  // scripts…" is open, clicks land in that box and its own Escape closes only it. Feedback's own panel leaves it open,
+  // The add menu closes on Escape from any of its controls and on a click outside it (#263); while "Reuse a
+  // file…" is open, clicks land in that box and its own Escape closes only it. Feedback's own panel leaves it open,
   // so a note can be written about it.
   let form = $state<HTMLFormElement>();
   let addButton = $state<HTMLButtonElement>();
@@ -111,9 +112,37 @@
     setTimeout(() => URL.revokeObjectURL(url), 60000);
   }
 
-  async function picked() {
+  function picked() {
     const chosen = Array.from(picker.files ?? []);
     picker.value = '';
+    addFiles(chosen);
+  }
+
+  // Files dropped from Explorer (#262): while files are over the page every cell has a dashed outline
+  // (`fileDrag`), and this one turns solid under the pointer; dropped, they are copied in as Choose a file… does.
+  let hover = $state(false);
+  $effect(() => {
+    if (!fileDrag.on) hover = false;
+  });
+  const carriesFiles = (e: DragEvent) => !!e.dataTransfer?.types.includes('Files');
+  function dragover(e: DragEvent) {
+    if (!carriesFiles(e)) return;
+    e.preventDefault();
+    e.dataTransfer!.dropEffect = 'copy';
+    hover = true;
+  }
+  function dragleave(e: DragEvent) {
+    if (!(e.currentTarget as Node).contains(e.relatedTarget as Node | null)) hover = false;
+  }
+  function dropped(e: DragEvent) {
+    if (!carriesFiles(e)) return;
+    e.preventDefault();
+    hover = false;
+    addFiles(Array.from(e.dataTransfer!.files));
+  }
+
+  async function addFiles(chosen: File[]) {
+    if (!chosen.length) return;
     try {
       const paths = [];
       for (const file of chosen) paths.push(await addAsset(dir, file));
@@ -126,7 +155,7 @@
 
   function addShared(line: string, from: string) {
     onChange([...files, line]);
-    copied = { line, from };
+    copied = from ? { line, from } : null; // this script's own file: nothing was copied
     browsing = adding = false;
   }
 
@@ -141,7 +170,9 @@
 
 <svelte:window onpointerdown={away} />
 
-<div class="files" data-tour="files" use:near={() => (shown = true)}>
+<div class="files" class:target={fileDrag.on} class:over={hover} data-tour="files" use:near={() => (shown = true)}
+  role="group" aria-label="Images and files, row {row}" ondragover={dragover} ondragleave={dragleave} ondrop={dropped}>
+  {#if hover}<span class="drop-here">Drop to add to row {row}</span>{/if}
   {#each files as line, i (i + line)}
     {#if extras || !timelineOnly(line)}
     {@const ref = readFileRef(line)}
@@ -175,10 +206,11 @@
     <form class="add-form" bind:this={form} onsubmit={addTyped} onkeydown={escape}>
       <span class="ways">
         <button type="button" class="choose" onclick={() => picker.click()}>Choose a file…</button>
-        <button type="button" class="choose" onclick={() => (browsing = true)}>From other scripts…</button>
+        <button type="button" class="choose" onclick={() => (browsing = true)}>Reuse a file…</button>
       </span>
       <!-- svelte-ignore a11y_autofocus -->
       <input bind:value={typed} placeholder="or paste a link, or describe it" aria-label="Link or description" autofocus />
+      <span class="help drop-hint">or drop a file here</span>
     </form>
   {:else}
     <button class="add" data-keep bind:this={addButton} onclick={() => (adding = true)}>+ Add</button>
@@ -188,7 +220,14 @@
 </div>
 
 <style>
-  .files { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+  .files { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; border-radius: 6px; }
+  /* #262: dashed while files are over the page, solid under the pointer (the user's note on board 81). */
+  .files.target { min-height: 44px; outline: 2px dashed #9db0e0; outline-offset: 4px; }
+  .files.over { outline: 2px solid var(--accent); }
+  .drop-here { position: absolute; inset: -4px; z-index: 2; display: flex; align-items: center; justify-content: center;
+    padding: 8px; border-radius: 8px; background: rgba(238, 242, 251, 0.94); color: var(--accent); font-size: 13px;
+    font-weight: 500; text-align: center; pointer-events: none; }
+  .drop-hint { font-size: 12px; color: var(--muted); }
   .stand-in { display: block; width: 160px; max-width: 100%; height: 120px; border-radius: 6px; background: #ededed; }
   .stand-in.video { width: 213px; }
   .stand-in.pdf { width: 86px; height: 112px; border-radius: 3px; }
