@@ -1,10 +1,10 @@
 <script lang="ts">
   import { feedback } from '../lib/help.svelte';
-  import { versionLabel, versionTip, type Version } from '../lib/version';
+  import { REPO, versionLabel, versionTip, type Version } from '../lib/version';
 
   // The ? at the right end of every top bar (SB-5, board 77): Feedback, GitHub and the live version, which used to
-  // float in the bottom corners and got in the way of the timeline's drawer.
-  const REPO = 'https://github.com/kiva-mccr/p2p-script-studio';
+  // float in the bottom corners and got in the way of the timeline's drawer. On the website, Download sealed (SE-10);
+  // the sealed app itself has no GitHub link and its version is plain text (it opens no website).
   const version: Version | null = __VERSION__; // set at build time (vite.config.ts)
 
   let open = $state(false);
@@ -19,10 +19,16 @@
   {#if open}
     <div class="list" role="menu" aria-label="Help and version">
       <button role="menuitem" onclick={() => ((open = false), feedback.asked++)}>Feedback…</button>
-      <a role="menuitem" href={REPO} target="_blank" rel="noopener" onclick={() => (open = false)}>GitHub ↗</a>
-      <hr />
-      <a role="menuitem" class="version" href={version ? `${REPO}/pull/${version.pr}` : REPO} title={versionTip(version)} target="_blank" rel="noopener"
-        onclick={() => (open = false)}>Version: {versionLabel(version)} ↗</a>
+      {#if __SEALED__}
+        <hr />
+        <span class="version" title={versionTip(version)}>Version: {versionLabel(version)} · sealed</span>
+      {:else}
+        <a role="menuitem" href={REPO} target="_blank" rel="noopener" onclick={() => (open = false)}>GitHub ↗</a>
+        <a role="menuitem" href="#download-sealed" onclick={() => (open = false)}>Download sealed</a>
+        <hr />
+        <a role="menuitem" class="version" href={version ? `${REPO}/pull/${version.pr}` : REPO} title={versionTip(version)} target="_blank" rel="noopener"
+          onclick={() => (open = false)}>Version: {versionLabel(version)} ↗</a>
+      {/if}
     </div>
   {/if}
 </span>
@@ -37,5 +43,6 @@
     font: inherit; font-size: 14px; color: var(--ink); text-align: left; text-decoration: none; cursor: pointer; }
   .list button:hover, .list a:hover { background: #f5f5f5; }
   .list .version { min-height: 36px; font-size: 12px; color: var(--muted); }
+  span.version { display: flex; align-items: center; padding: 0 10px; }
   hr { height: 1px; margin: 4px; border: 0; background: #eee; }
 </style>

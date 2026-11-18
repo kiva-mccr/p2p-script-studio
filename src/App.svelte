@@ -11,12 +11,17 @@
   import { tick } from 'svelte';
   import Feedback from './screens/Feedback.svelte';
   import { exampleBar } from './lib/examplebar.svelte';
+  import DownloadSealed from './screens/DownloadSealed.svelte';
+  import SealedLinks from './screens/SealedLinks.svelte';
 
 
   let route = $state<string[]>([]);
   let review = $state(false); // a shared link: the script opens on Review (RV-10)
+  let downloading = $state(false); // the Download sealed page (SE-10), from the ? menu on the website
+  const DOWNLOAD = '#download-sealed';
   function onHash() {
-    route = parseRoute(location.hash);
+    downloading = !__SEALED__ && location.hash === DOWNLOAD;
+    route = downloading ? [] : parseRoute(location.hash);
     review = opensReview(location.hash);
     // The mark is dropped from the address once read, so a reload after moving to Write stays there.
     if (review) history.replaceState(null, '', location.pathname + location.search + routeHash(route));
@@ -129,7 +134,9 @@
 
 <svelte:window onhashchange={onHash} />
 
-{#if example}
+{#if downloading}
+  <DownloadSealed onBack={() => (history.length > 1 ? history.back() : (location.hash = ''))} />
+{:else if example}
   <div class="example" bind:offsetHeight={exampleBar.height}>
     <p><b>Example script.</b> Try anything: your changes stay in this browser and are never shared.</p>
     {#if route.length}<button class="link start" onclick={() => tourAgain++}>Take the tour</button>{/if}
@@ -167,6 +174,7 @@
 
 <!-- Feedback mode (AP-48), started from the ? menu in the top bar (HelpMenu, SB-5), with GitHub and the version. -->
 <Feedback />
+{#if __SEALED__}<SealedLinks />{/if}
 
 <style>
   .example { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 16px; padding: 4px 24px; background: #eef2fb;

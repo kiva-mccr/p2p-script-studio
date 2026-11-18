@@ -10,6 +10,8 @@ to one line, remembered by the browser (`lib/example.ts`).
 
 ## Rules and pitfalls
 
+- The sealed app (SE-10) has no example: Chrome gives a file opened from the computer no private storage.
+
 - The folder picker and the permission prompt only open from a click, so both are called straight from the
   button's handler, before anything else is awaited.
 - A missing name is said in the page (`novalidate`), not by the browser's bubble.

@@ -9,6 +9,8 @@ blur the script's words, say which script), Open on GitHub, Copy instead, Cancel
 
 ## Rules and pitfalls
 
+- The sealed app (SE-10) opens no website: only Copy, and no GitHub line.
+
 - While picking, clicks, presses and keys are caught on `window` in the capture phase, before the page's own
   handlers, so the click only picks (no recording starts, no box gets the cursor). Anything inside
   `data-feedback-ui` works as normal. Esc stops.

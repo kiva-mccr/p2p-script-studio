@@ -1136,6 +1136,15 @@ the team writes leaves their computers.
   2026-11-18 after the Observatory dropped from 145 to 140 when Cloudflare's script (which had one) left. Done
   2026-11-18: the build stamps `integrity="sha384-…"` on them (`lib/sri.ts`); a changed file is refused; the daily
   live check fails if one is missing.
+- [x] **SE-10** The sealed app (asked by the user 2026-11-18, board 89, "looks good"; first a PWA, then the user picked
+  "the url or fully sealed": no installed app, the website stays as it is). Done 2026-11-18: each deploy also builds
+  `script-studio-sealed.html` (`lib/sealed.ts`), the whole app in one file (about 36 MB) opened from the computer in
+  Chrome or Edge, whose policy names no address (its script and stylesheet by SHA-256 only); GitHub signs a build
+  attestation for it. ? › Download sealed (website only) opens a page with what to download and five checks for IT
+  (Get-FileHash, `gh attestation verify`, CSP Evaluator, DevTools Network / Process Monitor / Wireshark, VirusTotal).
+  In the file: links are copied, not opened; Feedback is Copy only; no example (no private storage for a file); the ?
+  says "sealed". The daily live check fails if the file doesn't match its fingerprint or its policy names a site.
+  Next: the speech models as its second file (SE-5, the user's pick).
 - [ ] **SE-2**, **SE-3**, **SE-5** to **SE-8**: supply chain checks, untrusted script files, security headers (needs D1), models served
   from the app (D2, agreed), offline app, proof of what's running, the IT pack. The plan and decisions:
   docs/security.md.

@@ -15,6 +15,13 @@ A free, minimalist web app for writing, reviewing and producing educational vide
 
 Open it at **https://p2p-script-studio.kivamccr.xyz/** (Chrome or Edge on a desktop computer).
 
+**Or download it sealed:** ? › Download sealed gives you the whole app as one file to open in Chrome or Edge, with no
+install. It can reach nothing but the folder you pick: no internet, no other address (its links are copied instead of
+opened, and Feedback is copied to pass on). It never updates itself; download it again for a new version. The page
+lists five standard checks IT can run: its SHA-256 fingerprint, GitHub's signed build attestation, its security
+policy, watching its network traffic, and a malware scan. The sealed file has no example to try, and no speech models
+yet (Follow my voice and cuts timed from the take).
+
 Status: a first working version. What it does today:
 
 - **First time:** type your name and choose your team's scripts folder ("Before you start" explains putting it on this
@@ -284,7 +291,8 @@ and clicking opens it on GitHub.
 
 ## For developers
 
-`npm ci`, then `npm run dev`. Checks: `npm run check`, `npm test`, `npm run e2e`. The live site's security headers
+`npm ci`, then `npm run dev`. Checks: `npm run check`, `npm test`, `npm run e2e`. `npm run build` makes the website in
+`dist/`, then the sealed file beside it (`vite build --mode sealed`, `src/lib/sealed.ts`). The live site's security headers
 (added by Cloudflare) are checked daily against `src/lib/headers.ts`: `node --experimental-strip-types scripts/livecheck.ts`.
 
 License: MIT.

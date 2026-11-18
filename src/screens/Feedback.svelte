@@ -275,15 +275,20 @@
       </div>
     </div>
     <div class="actions">
-      <button type="button" class="primary" onclick={send} disabled={making}>Open on GitHub</button>
-      <button type="button" class="outline" onclick={copy}>Copy instead</button>
+      {#if __SEALED__}
+        <!-- The sealed app opens no website (SE-10): the note is copied, to pass on by hand. -->
+        <button type="button" class="primary" onclick={copy}>Copy</button>
+      {:else}
+        <button type="button" class="primary" onclick={send} disabled={making}>Open on GitHub</button>
+        <button type="button" class="outline" onclick={copy}>Copy instead</button>
+      {/if}
       <button type="button" class="link" onclick={stop}>{done ? 'Close' : 'Cancel'}</button>
     </div>
     {#if done === 'sent'}<p class="done" role="status">GitHub opened in a new tab with your note filled in. The picture is copied: click in the issue's box and press Ctrl+V, then Submit new issue.</p>
     {:else if done === 'sent-alone'}<p class="done" role="status">GitHub opened in a new tab with your note filled in. Press Submit new issue there.</p>
     {:else if done === 'copied'}<p class="done" role="status">Copied. Paste it into Teams or an email to whoever looks after the app.</p>
-    {:else if done === 'failed'}<p class="done bad" role="status">Couldn't copy. Try Open on GitHub instead.</p>{/if}
-    <p class="help">GitHub is public. Nothing from the script goes in unless you tick it, and you see it all on GitHub before you submit.</p>
+    {:else if done === 'failed'}<p class="done bad" role="status">Couldn't copy.{__SEALED__ ? '' : ' Try Open on GitHub instead.'}</p>{/if}
+    {#if !__SEALED__}<p class="help">GitHub is public. Nothing from the script goes in unless you tick it, and you see it all on GitHub before you submit.</p>{/if}
   </section>
 {/if}
 

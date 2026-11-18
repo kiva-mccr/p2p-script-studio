@@ -1,5 +1,8 @@
 // The live version (AP-28): the pull request the site was built from, read from the merge commit at build time.
 
+/** The app's code on GitHub. */
+export const REPO = 'https://github.com/kiva-mccr/p2p-script-studio';
+
 export interface Version { pr: number; title: string; at: string }
 
 /** "Merge pull request #62 from …" with the PR's title as the body, or a squash merge "Title (#62)". */
