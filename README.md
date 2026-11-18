@@ -7,7 +7,8 @@ A free, minimalist web app for writing, reviewing and producing educational vide
 - **Locked down:** a Content Security Policy lets the browser run code only from this site and talk only to this
   site and Hugging Face (to download the speech models; nothing is sent there). Links to other sites send no Referer,
   and a picture linked from another site isn't loaded: its link shows, with no preview. The site also sends the
-  standard security headers (HTTPS only, never shown inside another site's frame), checked every day.
+  standard security headers (HTTPS only, never shown inside another site's frame), checked every day, and the
+  browser checks the app's own files against a fingerprint made when they were built.
 - **Every version kept:** see who changed what, and restore any earlier version.
 - **Review:** comments and suggestions that writers accept or reject.
 - **Production:** print, teleprompter, Fountain, Final Draft and subtitle exports, plus captions for YouTube.

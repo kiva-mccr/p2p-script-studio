@@ -32,3 +32,9 @@ export function headerProblems(got: Headers): string[] {
 export function strangerScripts(html: string): string[] {
   return [...html.matchAll(/<script\b[^>]*>/gi)].map((m) => m[0]).filter((tag) => !/\ssrc="\.\/assets\/[^"/]+\.js"/.test(tag));
 }
+
+/** The app's own scripts and stylesheets that have no integrity hash (SE-9): every one should. */
+export function unhashed(html: string): string[] {
+  return [...html.matchAll(/<(?:script|link)\b[^>]*\s(?:src|href)="\.\/assets\/[^"]+\.(?:js|css)"[^>]*>/gi)]
+    .map((m) => m[0]).filter((tag) => !/\sintegrity="sha384-/.test(tag));
+}
