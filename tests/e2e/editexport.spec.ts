@@ -38,8 +38,9 @@ test('the preview shows the tracks, what the zip holds and how to open it; the s
   await openExport(page);
   const preview = page.getByRole('region', { name: 'Preview' });
   await expect(preview.getByText('How Photosynthesis Works.zip · 1920 × 1080 · 30 fps')).toBeVisible();
-  await expect(preview.locator('.name')).toHaveText(['Marks', 'V1', 'A1']);
-  await expect(preview.locator('.mark')).toHaveText(['1 · Intro', '2', '3 · Inside the leaf', '4', '5 · Wrap-up']);
+  await expect(preview.locator('.name')).toHaveText(['Sections', 'Marks', 'V1', 'A1']);
+  await expect(preview.locator('.section')).toHaveText(['Intro', 'Inside the leaf', 'Wrap-up']);
+  await expect(preview.locator('.pin')).toHaveCount(5);
   await expect(preview.locator('.clip.take')).toHaveCount(5);
   await expect(preview.getByTitle(/^row-2-collage\.png/)).toBeVisible();
   await expect(preview.locator('.list')).toContainText('row-2-collage.png (made side by side)');
@@ -48,7 +49,7 @@ test('the preview shows the tracks, what the zip holds and how to open it; the s
   await expect(preview.getByText('Resolve: unzip, then File › Import › Timeline…')).toHaveClass(/help/);
 
   await page.getByLabel('Each picture on its own track').check();
-  await expect(preview.locator('.name')).toHaveText(['Marks', 'V2', 'V1', 'A1']);
+  await expect(preview.locator('.name')).toHaveText(['Sections', 'Marks', 'V2', 'V1', 'A1']);
   await expect(preview.locator('.list')).toContainText('icons-ingredients.png (from .svg)');
   await page.getByLabel('Dialogue as captions (.srt)').check();
   await page.getByLabel('A marker on each row, with its dialogue').uncheck();
@@ -63,6 +64,46 @@ test('the preview shows the tracks, what the zip holds and how to open it; the s
   await page.getByRole('button', { name: 'Resolve / Premiere (.zip)' }).click();
   await expect(page.getByLabel('Each picture on its own track')).toBeChecked();
   await expect(page.getByLabel('25')).toBeChecked();
+});
+
+test('the preview zooms in and scrolls sideways in its box; names show only where they fit; marks stay inside (#254)', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await openExport(page);
+  const preview = page.getByRole('region', { name: 'Preview' });
+  const scroll = preview.locator('.scroll');
+  await expect(preview.getByRole('button', { name: 'Zoom out' })).toBeDisabled();
+  await expect(preview.getByText('1×', { exact: true })).toBeVisible();
+  const box = (await scroll.boundingBox())!;
+  expect(await scroll.evaluate((e) => e.scrollWidth - e.clientWidth)).toBe(0); // the whole script shows at 1×
+
+  // Each pin is a thin line inside the box, whose hover gives the row and its time.
+  await expect(preview.locator('.pin').first()).toHaveAttribute('title', 'Row 1 · Intro at 0:00');
+  await expect(preview.locator('.section').nth(1)).toHaveAttribute('title', /^Inside the leaf · from row 3 at \d:\d\d$/);
+  for (const pin of await preview.locator('.pin').all()) {
+    const b = (await pin.boundingBox())!;
+    expect(b.width).toBeLessThanOrEqual(2);
+    expect(b.x).toBeGreaterThanOrEqual(box.x);
+    expect(b.x + b.width).toBeLessThanOrEqual(box.x + box.width);
+  }
+
+  // Clips leave a gap between them; takes are solid, in turn lighter and darker.
+  const clips = await preview.locator('.clip:not(.take)').evaluateAll((els) => els.map((e) => e.getBoundingClientRect()).map((r) => [r.left, r.right]));
+  for (let i = 1; i < clips.length; i++) expect(clips[i][0] - clips[i - 1][1]).toBeGreaterThanOrEqual(0.5);
+  const shades = await preview.locator('.clip.take').evaluateAll((els) => els.map((e) => getComputedStyle(e).backgroundImage + ' ' + getComputedStyle(e).backgroundColor));
+  expect(shades[0]).toBe('none rgb(214, 239, 226)');
+  expect(shades[1]).toBe('none rgb(191, 227, 210)');
+
+  // Zoomed in to 16×, the tracks scroll sideways inside the box (never the page) and the names show.
+  const named = async () => (await preview.locator('.clip').allTextContents()).filter((t) => t).length;
+  const before = await named();
+  for (let i = 0; i < 4; i++) await preview.getByRole('button', { name: 'Zoom in' }).click();
+  await expect(preview.getByText('16×', { exact: true })).toBeVisible();
+  await expect(preview.getByRole('button', { name: 'Zoom in' })).toBeDisabled();
+  expect(await scroll.evaluate((e) => e.scrollWidth / e.clientWidth)).toBeGreaterThan(15);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  expect(await named()).toBe(await preview.locator('.clip').count());
+  expect(before).toBeLessThan(await named());
+  await expect(preview.locator('.clip.take').first()).toHaveText('take-1');
 });
 
 test('Save .zip gives the XML, the media (takes as WAV, .svg as PNG, cards, the collage) and the captions', async ({ page }) => {

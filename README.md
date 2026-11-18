@@ -122,7 +122,9 @@ Status: a first working version. What it does today:
   as one picture. V1 has the pictures, A1 the takes, with the timeline's timings (holds keep the picture longer), and
   a marker on each row carries its number, section and dialogue (and any link that isn't in the zip). Settings: frame
   size, frames per second, collages as one picture or a track per picture, markers, and the dialogue as captions
-  (`.srt`). The preview draws the tracks roughly as the apps show them and lists the zip's files.
+  (`.srt`). The preview draws the tracks roughly as the apps show them (a band per section, a thin pin per row's
+  marker) and lists the zip's files; − and + zoom it from 1× to 16×, scrolling sideways in its box, and a clip's
+  name shows where it fits (hover gives it and its length).
 - **Video:** saves the storyboard timeline as a video, made in the browser, faster than playing it: each row's
   pictures (videos play, collages side by side, or stacked when upright), holds and placeholders, with the takes as
   its sound, at the timeline's timings. MP4 where the computer can make it, else WebM (the page says so). Settings:

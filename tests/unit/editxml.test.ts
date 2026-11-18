@@ -93,6 +93,11 @@ describe('plan', () => {
     expect(made({ markers: false }).markers).toEqual([]);
   });
 
+  it('gives the preview each named section, running to the next one, only when rows are marked (#254)', () => {
+    expect(made().sections).toEqual([{ start: 0, seconds: 14, title: 'Intro', row: 1 }, { start: 14, seconds: 2, title: 'Wrap-up', row: 3 }]);
+    expect(made({ markers: false }).sections).toEqual([]);
+  });
+
   it('gives two different files with the same name different names', () => {
     const s = parseScript(source.replace('- assets/push-in.mp4', '- other/leaf.jpg'));
     const p = plan(s, layout(s, (row: Row) => lengths[row.id]), EDIT);

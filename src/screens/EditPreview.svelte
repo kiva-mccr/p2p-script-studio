@@ -1,15 +1,23 @@
 <script lang="ts">
-  // The Resolve / Premiere export's preview (EX-19, board 68): roughly how the editors' apps show the timeline once
-  // opened (markers, V1 and any stacked tracks, A1 with the takes, C1 with captions), what the .zip holds, and how
-  // to open it. Drawn from the same plan as the file.
+  // The Resolve / Premiere export's preview (EX-19, board 68; zoom, board 79): roughly how the editors' apps show the
+  // timeline once opened (sections, a pin per marker, V1 and any stacked tracks, A1 with the takes, C1 with captions),
+  // what the .zip holds, and how to open it. Drawn from the same plan as the file.
   import { clock } from '../lib/readtime.svelte';
   import type { EditHow, Plan, Source } from '../lib/editxml';
 
   let { plan, how, name }: { plan: Plan; how: EditHow; name: string } = $props();
 
+  // Zoom (#254, board 79): − and + as on the storyboard timeline, 1× to 16×; the tracks scroll sideways in their box.
+  let zoom = $state(1);
+  let laneWidth = $state(0); // the visible width of the tracks, in px
   const pct = (s: number) => (plan.total ? (s / plan.total) * 100 : 0);
+  const px = (s: number) => (plan.total ? (s / plan.total) * laneWidth * zoom : 0);
+  // A clip's name shows only where about ten letters (or the whole name) fit; otherwise it's a plain block.
+  const fits = (s: number, text: string) => px(s) - 14 >= Math.min(text.length, 10) * 6;
+  // A 1 px gap after each clip, so the rounded boxes never run into each other; very short ones stay 3 px wide.
+  const width = (s: number) => `max(3px, calc(${pct(s)}% - 1px))`;
   const ticks = $derived.by(() => {
-    const step = [1, 2, 5, 10, 15, 30, 60, 120, 300, 600].find((s) => plan.total / s <= 8) ?? 600;
+    const step = [1, 2, 5, 10, 15, 30, 60, 120, 300, 600].find((s) => plan.total / s <= 8 * zoom) ?? 600;
     const list: number[] = [];
     for (let t = 0; t < plan.total - step / 3; t += step) list.push(t);
     return list;
@@ -30,36 +38,61 @@
   <p class="message" role="alert">The timeline is empty: write some dialogue or record a take first.</p>
 {:else}
   <div class="box">
-    <p class="small">Roughly how Resolve and Premiere show the timeline once it's opened</p>
-    <div class="tracks">
-      <span></span>
-      <div class="ruler">{#each ticks as t (t)}<span style:left="{pct(t)}%">{clock(t)}</span>{/each}</div>
-      {#if plan.markers.length}
-        <span class="name">Marks</span>
-        <div class="lane marks">{#each plan.markers as m (m.name)}<span class="mark" style:left="{pct(m.start)}%" title="{m.name}: {m.comment}">{m.name.replace('Row ', '')}</span>{/each}</div>
-      {/if}
-      {#each [...plan.video].reverse() as track, i (i)}
-        <span class="name">V{plan.video.length - i}</span>
-        <div class="lane">
-          {#each track as item, j (j)}
-            <span class="clip" class:card={isCard(item.name)} style:left="{pct(item.start)}%" style:width="{pct(item.seconds)}%" title="{label(item.name)} · {clock(item.seconds)}">{label(item.name)}</span>
-          {/each}
-        </div>
-      {/each}
-      <span class="name">A1</span>
-      <div class="lane">
-        {#each plan.audio as item (item.name)}
-          <span class="clip take" style:left="{pct(item.start)}%" style:width="{pct(item.seconds)}%" title="{item.name} · {clock(item.seconds)}">{item.name.replace('.wav', '')}</span>
-        {/each}
-      </div>
-      {#if plan.captions.length}
-        <span class="name">C1</span>
-        <div class="lane short">
-          {#each plan.captions as c, j (j)}<span class="clip words" style:left="{pct(c.start)}%" style:width="{pct(c.seconds)}%" title={c.text}>{c.text}</span>{/each}
-        </div>
-      {/if}
+    <div class="top">
+      <p class="small">Roughly how Resolve and Premiere show the timeline once it's opened</p>
+      <span class="zoom" role="group" aria-label="Zoom">
+        <button aria-label="Zoom out" title="Zoom out" disabled={zoom <= 1} onclick={() => (zoom = Math.max(1, zoom / 2))}>−</button>
+        <button aria-label="Zoom in" title="Zoom in" disabled={zoom >= 16} onclick={() => (zoom = Math.min(16, zoom * 2))}>+</button>
+        <span class="times">{zoom}×</span>
+      </span>
     </div>
-    <p class="small help">The same timings as the storyboard timeline at the bottom of Write: each take's length, the read time where there's no take, holds and placeholders.</p>
+    <div class="tracks">
+      <div class="names">
+        <span class="h-ruler"></span>
+        {#if plan.sections.length}<span class="name h-sections">Sections</span>{/if}
+        {#if plan.markers.length}<span class="name h-marks">Marks</span>{/if}
+        {#each plan.video as _, i (i)}<span class="name h-lane">V{plan.video.length - i}</span>{/each}
+        <span class="name h-lane">A1</span>
+        {#if plan.captions.length}<span class="name h-short">C1</span>{/if}
+      </div>
+      <div class="scroll" bind:clientWidth={laneWidth}>
+        <div class="lanes" style:width="{zoom * 100}%">
+          <div class="ruler h-ruler">{#each ticks as t (t)}<span style:left="{pct(t)}%">{clock(t)}</span>{/each}</div>
+          {#if plan.sections.length}
+            <div class="lane h-sections">
+              {#each plan.sections as g (g.start)}
+                <span class="section" style:left="{pct(g.start)}%" style:width="calc({pct(g.seconds)}% - 2px)" title="{g.title} · from row {g.row} at {clock(g.start)}">{g.title}</span>
+              {/each}
+            </div>
+          {/if}
+          {#if plan.markers.length}
+            <div class="lane h-marks">{#each plan.markers as m (m.name)}<span class="pin" style:left="calc({pct(m.start)}% + 1px)" title="{m.name} at {clock(m.start)}"></span>{/each}</div>
+          {/if}
+          {#each [...plan.video].reverse() as track, i (i)}
+            <div class="lane h-lane">
+              {#each track as item, j (j)}
+                {@const text = label(item.name)}
+                {@const show = fits(item.seconds, text)}
+                <span class="clip" class:card={isCard(item.name)} class:bare={!show} class:tiny={px(item.seconds) < 10} style:left="{pct(item.start)}%" style:width={width(item.seconds)} title="{text} · {clock(item.seconds)}">{show ? text : ''}</span>
+              {/each}
+            </div>
+          {/each}
+          <div class="lane h-lane">
+            {#each plan.audio as item, j (item.name)}
+              {@const text = item.name.replace('.wav', '')}
+              {@const show = fits(item.seconds, text)}
+              <span class="clip take" class:odd={j % 2 === 1} class:bare={!show} class:tiny={px(item.seconds) < 10} style:left="{pct(item.start)}%" style:width={width(item.seconds)} title="{item.name} · {clock(item.seconds)}">{show ? text : ''}</span>
+            {/each}
+          </div>
+          {#if plan.captions.length}
+            <div class="lane h-short">
+              {#each plan.captions as c, j (j)}{@const show = fits(c.seconds, c.text)}<span class="clip words" class:bare={!show} class:tiny={px(c.seconds) < 10} style:left="{pct(c.start)}%" style:width={width(c.seconds)} title={c.text}>{show ? c.text : ''}</span>{/each}
+            </div>
+          {/if}
+        </div>
+      </div>
+    </div>
+    <p class="small help">The same timings as the storyboard timeline at the bottom of Write. Zoom in with + to read the names, and hover over a block or pin for its name and time.</p>
   </div>
 
   <div class="pair">
@@ -92,19 +125,34 @@
   .pair > .box { flex: 1 1 260px; }
   .small { margin: 0 0 10px; font-size: 12px; color: var(--muted); }
   .small.help { margin: 10px 0 0; }
-  .tracks { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 6px 8px; font-size: 11px; }
-  .name { align-self: center; color: var(--muted); font-weight: 600; }
-  .ruler { position: relative; height: 16px; color: var(--muted); border-bottom: 1px solid var(--line); }
-  .ruler span, .mark, .clip { position: absolute; }
-  .lane { position: relative; height: 40px; border-radius: 4px; background: #fafafa; }
-  .lane.marks { height: 22px; background: none; }
-  .lane.short { height: 24px; }
-  .mark { top: 2px; padding: 1px 5px; border-radius: 3px; background: #fde7c7; color: #6b3d00; white-space: nowrap; }
+  .top { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 0 0 10px; }
+  .top .small { flex: 1 1 300px; margin: 0; }
+  .zoom { display: inline-flex; align-items: center; gap: 4px; }
+  .zoom button { width: 32px; height: 32px; border: 1px solid var(--line-strong); border-radius: 6px; background: #fff; font-size: 15px; }
+  .zoom button:disabled { opacity: 0.4; }
+  .times { min-width: 28px; font-size: 12px; color: var(--muted); }
+  .tracks { display: grid; grid-template-columns: 58px minmax(0, 1fr); gap: 0 8px; font-size: 11px; }
+  .names, .lanes { display: flex; flex-direction: column; gap: 6px; }
+  .scroll { overflow-x: auto; padding-bottom: 6px; }
+  .lanes { position: relative; }
+  .h-ruler { height: 16px; } .h-sections { height: 22px; } .h-marks { height: 14px; } .h-lane { height: 40px; } .h-short { height: 24px; }
+  .name { display: flex; align-items: center; color: var(--muted); font-weight: 600; }
+  .ruler { position: relative; overflow: hidden; box-sizing: border-box; color: var(--muted); border-bottom: 1px solid var(--line); }
+  .ruler span { white-space: nowrap; }
+  .ruler span, .section, .pin, .clip { position: absolute; }
+  .lane { position: relative; flex: none; overflow: hidden; border-radius: 4px; background: #fafafa; }
+  .lane.h-sections, .lane.h-marks { background: none; }
+  .section { top: 0; bottom: 0; box-sizing: border-box; padding: 3px 6px; border-left: 2px solid #e89a3c; border-radius: 0 3px 3px 0; background: #fde7c7;
+    color: #6b3d00; font-weight: 500; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .pin { top: 0; bottom: 0; width: 2px; margin-left: -1px; border-radius: 1px; background: #e89a3c; }
   .clip { top: 0; bottom: 0; box-sizing: border-box; padding: 4px 6px; border: 1px solid #8faae6; border-radius: 4px; background: #cfddf8;
     color: #1c3a80; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .clip.tiny { border-radius: 2px; }
   .clip.card { border: 1px dashed #9a9a9a; background: #e9e9e9; color: #3d3d3d; }
-  .clip.take { border-color: #7cc3a2; background: repeating-linear-gradient(90deg, #bfe3d2 0 2px, #ddf1e7 2px 4px); color: #0f4a31; }
+  .clip.take { padding: 3px 6px; border-color: #5fb08a; background: #d6efe2; color: #0f4a31; }
+  .clip.take.odd { background: #bfe3d2; }
   .clip.words { border-color: #c4c4c4; background: #fff; color: #3d3d3d; padding: 3px 6px; }
+  .clip.bare { padding: 0; }
   h3 { margin: 0 0 6px; font-size: 14px; font-weight: 600; }
   .list { margin: 0; padding: 0; list-style: none; font: 12.5px/1.8 ui-monospace, Menlo, monospace; color: #3d3d3d; }
   .list .in { padding-left: 2ch; }

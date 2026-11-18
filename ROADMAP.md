@@ -790,6 +790,11 @@ and suggestions, keeps every version, and exports them for production.
   .svg PNG; collages one picture side by side by default, or a track per picture; placeholders and rows with no
   pictures as grey cards, a hold as the picture held longer (a video's last frame); row markers on, captions (.srt)
   off by default. Built 2026-11-14 (lib/editxml.ts, lib/editmedia.ts, lib/zip.ts, screens/EditPreview.svelte).
+- [x] **EX-22** Zoom the Resolve / Premiere preview (issue #254, board 79 agreed by the user, 2026-11-18): − and +
+  from 1× to 16× as on the storyboard timeline, the tracks scrolling sideways inside their box; names only where they
+  fit; a 1 px gap between clips; a Sections row with a named band per section, and a thin pin per row in Marks (hover:
+  the row and its time), kept inside the box; takes solid green in alternating shades, no stripes. The .xml is
+  unchanged. Built 2026-11-18 (screens/EditPreview.svelte, `sections` in lib/editxml.ts's plan).
 - [-] **EX-17** A shoot checklist (suggested; shelved by the user, to talk through later): the asset list (EX-6) with
   shared tick boxes for each row's on-screen shots and files, for the day of filming.
 - [-] **AP-45** Dictate dialogue into a row (suggested; shelved by the user, 2026-11-14, to consider later): speak into
