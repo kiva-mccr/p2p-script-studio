@@ -86,6 +86,30 @@ test('a link or a note can be added to the files', async ({ page }) => {
   expect(await readFile(page, SCRIPT)).toContain('- assets/leaf-push-in.mp4\n- Drone shot of a forest (to find)\n');
 });
 
+test('the add menu closes on Escape from any of its controls, and on a click outside it (#263)', async ({ page }) => {
+  await openExample(page);
+  const add = page.getByRole('button', { name: '+ Add' }).first();
+  const choose = page.getByRole('button', { name: 'Choose a file…' });
+  await page.getByLabel('Dialogue, row 1').hover();
+  await add.click();
+  await page.getByRole('button', { name: 'From other scripts…' }).focus();
+  await page.keyboard.press('Escape');
+  await expect(choose).toHaveCount(0);
+  await expect(add).toBeFocused();
+  await add.click();
+  await page.getByLabel('Link or description').press('Escape');
+  await expect(choose).toHaveCount(0);
+  await add.click();
+  await page.getByLabel('Link or description').fill('kept while the menu is open');
+  await choose.hover();
+  await page.mouse.down();
+  await page.mouse.up();
+  await expect(page.getByLabel('Link or description')).toHaveValue('kept while the menu is open');
+  await page.getByLabel('On screen, row 2').click();
+  await expect(choose).toHaveCount(0);
+  await expect(page.getByLabel('On screen, row 2')).toBeFocused();
+});
+
 test("a missing asset says so instead of failing", async ({ page }) => {
   await openExample(page);
   await page.getByRole('button', { name: 'icons-ingredients.svg', exact: true }).click();
