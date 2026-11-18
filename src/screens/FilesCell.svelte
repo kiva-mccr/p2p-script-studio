@@ -133,10 +133,6 @@
       <Preview {preview} name={ref.label} onOpen={() => openAsset(ref.target)} onFail={() => failed(ref.target)} />
     {:else if ref.kind === 'path' && previewKind(ref.target) && !tried.has(ref.target)}
       <span class="stand-in {previewKind(ref.target)}" aria-hidden="true"></span>
-    {:else if ref.kind === 'link' && previewKind(ref.target) === 'image'}
-      <button class="thumb" aria-label="Open {ref.label}" onclick={() => window.open(ref.target, '_blank', 'noopener')}>
-        <img src={ref.target} alt="" onerror={(e) => ((e.currentTarget as HTMLElement).parentElement!.hidden = true)} />
-      </button>
     {/if}
     <span class="chip">
       {#if ref.kind === 'link'}
@@ -176,9 +172,6 @@
 
 <style>
   .files { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
-  .thumb { display: block; max-width: 100%; padding: 0; border: 1px solid var(--line); border-radius: 6px; background: #fafafa; overflow: hidden; }
-  .thumb:hover { border-color: var(--accent); }
-  .thumb img { display: block; max-width: 100%; max-height: 120px; object-fit: contain; }
   .stand-in { display: block; width: 160px; max-width: 100%; height: 120px; border-radius: 6px; background: #ededed; }
   .stand-in.video { width: 213px; }
   .stand-in.pdf { width: 86px; height: 112px; border-radius: 3px; }

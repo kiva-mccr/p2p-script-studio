@@ -13,3 +13,4 @@ that row in Write; a name opens the file or link.
 - Thumbnails (AP-19) are pictures, TIFFs, a PDF's page 1 or a video's still (AP-39), never a player, from the folder, as blob URLs
   revoked when the list changes; one that won't draw or play is hidden. Sound and text get none here.
 - Text after an `{#if}` loses its leading space in Svelte: the " · " separators are written as strings.
+- A picture linked from another site is never shown (SE-1, the user's pick): only its link. See lib/csp.md.

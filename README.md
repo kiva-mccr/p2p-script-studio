@@ -5,7 +5,8 @@ A free, minimalist web app for writing, reviewing and producing educational vide
 - **Three columns:** dialogue, what's on screen, and images and files, one row per shot.
 - **Your files stay yours:** scripts live in your team's shared folder, not on any server.
 - **Locked down:** a Content Security Policy lets the browser run code only from this site and talk only to this
-  site and Hugging Face (to download the speech models; nothing is sent there). Links to other sites send no Referer.
+  site and Hugging Face (to download the speech models; nothing is sent there). Links to other sites send no Referer,
+  and a picture linked from another site isn't loaded: its link shows, with no preview.
 - **Every version kept:** see who changed what, and restore any earlier version.
 - **Review:** comments and suggestions that writers accept or reject.
 - **Production:** print, teleprompter, Fountain, Final Draft and subtitle exports, plus captions for YouTube.

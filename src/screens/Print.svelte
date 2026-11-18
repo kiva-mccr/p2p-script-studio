@@ -72,7 +72,7 @@
   function preview(line: string): string {
     const ref = readFileRef(line);
     if (!IMAGE.test(ref.target)) return '';
-    return ref.kind === 'path' ? (previews[ref.target] ?? '') : ref.kind === 'link' ? ref.target : '';
+    return ref.kind === 'path' ? (previews[ref.target] ?? '') : ''; // never a picture on another site (SE-1)
   }
 </script>
 

@@ -23,3 +23,5 @@ site and Hugging Face (the speech models).
 - Hugging Face is allowed for downloads; the policy can't tell a download from an upload, so nothing in the app may
   send anything there (models only ever come down: `lib/models.ts`).
 - Links to other sites (GitHub, a file's link) are navigations the user clicks, which the policy doesn't cover.
+- A picture linked from another site is never loaded, so it has no preview anywhere (Write, Review, Print, Files):
+  its link shows instead (the user's pick, 2026-11-18). `img-src` stays this site, blob: and data:.

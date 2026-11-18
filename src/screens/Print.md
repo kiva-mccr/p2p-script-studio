@@ -30,3 +30,4 @@ printing (the browser's print window makes the PDF, "Save as PDF"), and with `on
   the last page. Both heights come from one CSS rule, so they can't drift apart. On screen they show once, after the rows.
 - Tests replace `window.print` and look at the page with `emulateMedia({ media: 'print' })`.
 - The credits (AP-31, `credits`) follow the rows, names and blurbs only; the export's Credits switch passes none.
+- A picture linked from another site is never shown (SE-1, the user's pick): only its link. See lib/csp.md.

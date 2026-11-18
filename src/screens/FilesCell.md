@@ -21,3 +21,4 @@ preview get their kind and size on the chip.
 - A file that is not there (still syncing, or renamed) gives a plain message, not an error.
 - "From Sam's comment" (`came`, RV-12) works like "Copied from …".
 - "Copied from …" under a chip is only kept while the cell is shown; the script does not record where a file came from.
+- A picture linked from another site is never shown (SE-1, the user's pick): only its link. See lib/csp.md.

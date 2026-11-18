@@ -62,7 +62,7 @@
     const preview = a.kind === 'path' ? previews[a.target] : null;
     if (preview?.kind === 'video') return preview.still;
     if (preview && 'url' in preview) return preview.url;
-    return a.kind === 'link' && previewKind(a.target) === 'image' ? a.target : null;
+    return null; // a picture on another site is never loaded (SE-1, the user's pick): its link shows ↗
   }
 </script>
 
