@@ -43,7 +43,9 @@ Status: a first working version. What it does today:
   left with no title is removed once you click out of it. A row's § (hover it) turns it into a section heading right
   where it is, and a section's ¶ turns it back into a row. Paste a draft (from Word, say) into a Dialogue box and
   each paragraph gets its own row; Undo at the bottom puts it back. Taking a file out of a row with × has Undo too. Add a file (copied into the script's `assets` folder), a link, or a note of something to find.
-  "From other scripts…" lists the files and links of every other script in the folder: pick one and it is copied in.
+  "Reuse a file…" lists this script's own files first, then the files and links of every other script in the folder:
+  pick one and it is added (copied in from another script). Files can also be dragged from Explorer onto a row's
+  Images & files: every row shows a dashed outline while you drag, and the one under the pointer turns solid.
   The script list's Files button shows the files of every script, to browse.
   Files show a small preview: a picture (also .tif, and a PDF's first page with its page count), a video that plays
   in place, a slim player for sound, or the first lines of a Word, text, Markdown or CSV file. Other kinds

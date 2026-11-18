@@ -756,6 +756,12 @@ and suggestions, keeps every version, and exports them for production.
   live word count in grey at the right of + Add row and + Add section ("1,284 words"), hovering says "The dialogue.
   Equations aren't counted." Equations ($…$) are left out (read time still counts one as a word). `dialogueWords` and
   `writtenWords` in `lib/readtime.svelte.ts`.
+- [x] **AP-52** Drop files onto a row (issue #262, board 81 agreed by the user, 2026-11-18): files dragged from
+  Explorer onto a row's Images & files are copied in like Choose a file…. While files are over the page every row's
+  cell has a dashed blue outline; the one under the pointer turns solid with "Drop to add to row 7" (the user's note:
+  solid says the drop will work). A drop anywhere else is refused, so the browser never opens the file in place of
+  the app (`lib/filedrag.svelte.ts`). "From other scripts…" became "Reuse a file…": this script's own files and links
+  come first ("In this script", with the rows using each, added as the same line, not copied), then the other scripts.
 - [x] **RV-23** Fold columns in Review too (asked by the user): the ‹ fold from AP-17 (Write only today) also works
   in Review, every column open by default.
   Built as mock-up 60: the same ‹ and › (shared `FoldHeads.svelte`, `lib/folds.svelte.ts`), a grey dot on rows with

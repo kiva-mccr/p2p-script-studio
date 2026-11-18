@@ -31,7 +31,7 @@
   // voice: the rows' voice-over takes (AU-1), kept by the Editor; `name` signs a new take.
   // player: Play the script (AU-2), kept by the Editor; canPlay: a row's number plays from that row (onPlayFrom).
   // flagged: the flagged rows (AP-9), in row order; onFlag flags a row with a note, or clears it (null).
-  // root and folderName: the picked folder and this script's folder name, for "From other scripts…" (AS-1).
+  // root and folderName: the picked folder and this script's folder name, for "Reuse a file…" (AS-1, #262).
   // talk: the open comments and suggestions (RV-13): a bubble on their rows, their quotes marked; talking is the one
   // read in the Comments tab; onTalk opens the tab at one (from a bubble, or a click on its quote).
   // finding: the find and replace bar is open (AP-32; Ctrl+F, or ⋯ in the top bar).

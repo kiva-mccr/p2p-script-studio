@@ -25,7 +25,7 @@ picture's copy of the page with solid grey boxes. Built so the issue can be acte
   x's, so it is not in the copy at all. The copy carries every element's styles inline, so the box's styles need
   `!important` (without it the words showed through). A text box is swapped for a div of the same look.
 - A control's own words (button, label, tab…) are the app's and are never covered, in rows too (issue #257: Cover hid
-  "Clear", "Choose a file…", "From other scripts…"). So the script's words or a name inside a control go in a
+  "Clear", "Choose a file…", "Reuse a file…"). So the script's words or a name inside a control go in a
   `data-hide` span: a file's chip (FilesCell, Attached), an asset's label (Assets), Export's title and rows, a
   template's name (List), the folder's name (Setup), Presence's buttons, Review's folded note. A new control that
   shows the script's words or a name must mark them.

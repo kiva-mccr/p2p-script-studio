@@ -92,7 +92,7 @@ test('the add menu closes on Escape from any of its controls, and on a click out
   const choose = page.getByRole('button', { name: 'Choose a file…' });
   await page.getByLabel('Dialogue, row 1').hover();
   await add.click();
-  await page.getByRole('button', { name: 'From other scripts…' }).focus();
+  await page.getByRole('button', { name: 'Reuse a file…' }).focus();
   await page.keyboard.press('Escape');
   await expect(choose).toHaveCount(0);
   await expect(add).toBeFocused();
