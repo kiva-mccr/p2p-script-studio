@@ -18,6 +18,8 @@ offers its pictures, Sequence or Collage, + Add a picture (only for the timeline
   the Resolve / Premiere export: the take's length, else the read time at the speaking speed. A row with neither is left off.
 - Blocks are placed with `left`/`width` in % of the whole length, inside a box zoomed by its width; the box scrolls
   sideways, the page doesn't.
+- It opens at `fitZoom` (issue #243: a long timeline opened whole was unreadable), measured by `use:fit` the first
+  time the tracks show; once set (or zoomed by hand) it isn't refitted, so editing or folding never jumps the zoom.
 - Pictures and waveforms are only made once the timeline comes near the screen (`use:near`, as AP-39): made at
   once, they slowed opening a script enough to fail tests under load.
 - Pictures are blob URLs from the script's folder, made while the timeline is shown and revoked after; a missing

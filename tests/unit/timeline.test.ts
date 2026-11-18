@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { parseScript, readFileRef, rows, timelineOnly, markTimelineOnly, writeScript, type Row } from '../../src/lib/script';
-import { changeChoices, cutPositions, cutTimes, cutWords, dialogueWords, estimateWords, heardWords, layout, picks, pictureFiles, readChoices, shots, writeChoices } from '../../src/lib/timeline';
+import { changeChoices, cutPositions, cutTimes, cutWords, dialogueWords, estimateWords, fitZoom, heardWords, layout, picks, pictureFiles, readChoices, shots, writeChoices } from '../../src/lib/timeline';
 
 const source = `# Intro
 
@@ -216,5 +216,23 @@ describe('word timings heard in the take (SB-8)', () => {
     const script = parseScript('## 1 <!-- id: a -->\nDialogue:\nSun and water\n\nFiles:\n- a.svg\n- b.svg\n\nTimeline: cuts at "water"\n');
     const row = layout(script, () => ({ seconds: 10, take: true, words: [{ word: 'Sun', start: 0 }, { word: 'and', start: 1 }, { word: 'water', start: 9 }] })).blocks[0];
     expect(row.kind === 'row' && row.shots[1].start).toBe(9);
+  });
+});
+
+describe('fitZoom (issue #243)', () => {
+  it('leaves a short timeline whole', () => {
+    expect(fitZoom([10, 12, 8], 30, 1800)).toBe(1);
+  });
+  it('zooms a long one in until a typical row has room to read', () => {
+    const rows = Array.from({ length: 200 }, () => 9); // 30 minutes of 9 s rows, 1,800 px wide: 9 px each
+    expect(fitZoom(rows, 1800, 1800)).toBe(16); // 144 px: the least zoom with 120 px or more
+  });
+  it('goes by the median, so a few short rows do not zoom it all in', () => {
+    expect(fitZoom([1, 1, 20, 20, 20], 62, 1240)).toBe(1); // 20 s is 400 px
+  });
+  it('stops at the most zoom, and at 1 with nothing to measure', () => {
+    expect(fitZoom(Array.from({ length: 5000 }, () => 1), 5000, 1000)).toBe(64);
+    expect(fitZoom([], 0, 1000)).toBe(1);
+    expect(fitZoom([5], 5, 0)).toBe(1);
   });
 });

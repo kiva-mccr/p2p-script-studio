@@ -51,6 +51,23 @@ test('the timeline lays out the rows; a click lights up the row and opens its pi
 });
 
 // #205: a video showed as a dark chip with its name, which looked unloaded; now its block shows a still of it.
+test('a long timeline opens zoomed in to where its rows can be read; a short one opens whole (#243)', async ({ page }) => {
+  const long = '# Long\n\n' + Array.from({ length: 150 }, (_, i) => `## ${i + 1} <!-- id: r${i} -->\nDialogue:\nA short line for row ${i + 1}, said in a few seconds.\n\nOn screen:\nCard ${i + 1}.\n`).join('\n');
+  await setUp(page, '#/Long', { 'Long/script.md': long, ...files });
+  const t = timeline(page);
+  const row1 = t.getByRole('button', { name: /^Row 1 · / });
+  await expect(row1).toBeVisible();
+  expect((await row1.boundingBox())!.width).toBeGreaterThanOrEqual(120);
+  await expect(t.getByRole('button', { name: 'Zoom out' })).toBeEnabled();
+  // Zoomed by hand, it stays as put.
+  await t.getByRole('button', { name: 'Zoom out' }).click();
+  expect((await row1.boundingBox())!.width).toBeLessThan(120);
+  // The example is short: whole, as before.
+  await page.evaluate(() => (location.hash = '#/Episode%2003'));
+  await expect(t.getByRole('button', { name: /^Row 1 · / })).toBeVisible();
+  await expect(t.getByRole('button', { name: 'Zoom out' })).toBeDisabled();
+});
+
 test('a video in the timeline shows a still from it, not a chip', async ({ page }) => {
   const clip = await webm(page);
   await setUp(page, '#/Episode%2003', { ...files, 'Episode 03/script.md': script.replace('leaf-push-in.mp4', 'clip.webm'),

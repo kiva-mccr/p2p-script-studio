@@ -6,7 +6,7 @@
   import { clock, speaking } from '../lib/readtime.svelte';
   import { keep, recall } from '../lib/remember';
   import { markTimelineOnly, rows, type Row, type Script } from '../lib/script';
-  import { changeChoices, cutPositions, cutWords, dialogueWords, heardWords, isVideo, layout, pictureFiles, readChoices, shapeOf, type After, type Shape, type TimeBlock } from '../lib/timeline';
+  import { changeChoices, cutPositions, cutWords, dialogueWords, fitZoom, heardWords, isVideo, layout, pictureFiles, readChoices, shapeOf, ZOOM_MAX, type After, type Shape, type TimeBlock } from '../lib/timeline';
   import type { Player } from '../lib/play.svelte';
   import { rowLength, type VoiceOver } from '../lib/voice.svelte';
   import { waveform, wavePath } from '../lib/waveform';
@@ -99,6 +99,14 @@
     };
   });
   let zoom = $state(1);
+  // Issue #243: the timeline opens at the zoom that shows the most rows with room to read them (fitZoom), measured
+  // the first time it opens with something on it; once zoomed by hand, it stays where it was put.
+  let zoomed = false;
+  function fit(node: HTMLElement) {
+    if (!zoomed) zoom = fitZoom(laid.blocks.filter((b) => b.kind === 'row').map((b) => b.seconds), total, node.clientWidth);
+    zoomed = true;
+  }
+  const zoomBy = (f: number) => ((zoomed = true), (zoom = Math.min(ZOOM_MAX, Math.max(1, zoom * f))));
   // The page keeps the drawer's height as its bottom scroll padding, so a row brought into view (a click on a block,
   // Play following the rows, the cursor) isn't left behind the drawer; and as --drawer, which lifts the corner links,
   // Undo and the messages above it.
@@ -332,8 +340,8 @@
     {/if}
     {#if !hidden && total}
       <span class="zoom" role="group" aria-label="Zoom">
-        <button aria-label="Zoom out" title="Zoom out" disabled={zoom <= 1} onclick={() => (zoom = Math.max(1, zoom / 2))}>−</button>
-        <button aria-label="Zoom in" title="Zoom in" disabled={zoom >= 16} onclick={() => (zoom = Math.min(16, zoom * 2))}>+</button>
+        <button aria-label="Zoom out" title="Zoom out" disabled={zoom <= 1} onclick={() => zoomBy(1 / 2)}>−</button>
+        <button aria-label="Zoom in" title="Zoom in" disabled={zoom >= ZOOM_MAX} onclick={() => zoomBy(2)}>+</button>
       </span>
     {/if}
   </div>
@@ -343,7 +351,7 @@
     {#if !total}
       <p class="empty help">The timeline fills in as rows get dialogue or a take.</p>
     {:else}
-      <div class="scroll">
+      <div class="scroll" use:fit>
         <div class="tracks" style:width="{zoom * 100}%">
           <div class="ruler" aria-hidden="true">
             {#each ticks as t (t)}<span style:left="{pct(t)}%">{clock(t)}</span>{/each}

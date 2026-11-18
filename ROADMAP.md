@@ -418,6 +418,9 @@ and suggestions, keeps every version, and exports them for production.
   holds and placeholders play in silence), the preview and cut on a word; Review read only with comments "on the
   timeline". Cut words are timed by an estimate (each word as far into the row as it is into the line, by letters),
   not by a speech model reading the take: said to the user; a model can refine it later.
+  Issue #243 (the user, 2026-11-16, fixed 2026-11-18): a long timeline opened whole, too small to read. It now opens
+  at the least zoom (1× to 64×, doubling) that gives a typical row (the median) 120 px (`fitZoom`); − and + then
+  keep it where they put it.
 - [x] **SB-2** Unpin the timeline while playing (asked by the user, 2026-11-15): the timeline pins to the bottom of
   the screen while the script plays (SB-1); let people unpin it so it goes back under the last row and scrolls with
   the page, and pin it again. Mock-up: board 69, agreed (2026-11-15) as drawn: the grey "Pinned to the bottom while
