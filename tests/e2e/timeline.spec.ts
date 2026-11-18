@@ -212,7 +212,9 @@ test('folded, a push past the bottom unfolds it and scrolling up folds it; opene
   await page.mouse.move(640, 300);
   // Reaching the bottom does nothing; a push past it unfolds the drawer.
   await page.mouse.wheel(0, 100000);
-  await expect.poll(() => page.evaluate(() => innerHeight + scrollY >= document.documentElement.scrollHeight - 2)).toBe(true);
+  // Pictures in the rows can still be loading and make the page taller after the wheel (seen in CI under load):
+  // finish the way down with scrollTo, which is no wheel, so it never counts as a push.
+  await expect.poll(() => page.evaluate(() => (scrollTo(0, document.documentElement.scrollHeight), innerHeight + scrollY >= document.documentElement.scrollHeight - 2))).toBe(true);
   await page.waitForTimeout(400); // a new push, not the same one going on
   await expect(bar).toHaveAttribute('aria-expanded', 'false');
   await page.mouse.wheel(0, 200);
