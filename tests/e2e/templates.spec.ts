@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './base';
 import { listFiles, readFile, setUp } from './folder';
 
 // AP-15 (board 67): templates, made from the arrow beside New script and started from in the same menu.

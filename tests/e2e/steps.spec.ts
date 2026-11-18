@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './base';
 import { readFile, setUp } from './folder';
 
 // Ctrl+Z and Ctrl+Y undo and redo every change to the script in Write, in order (lib/steps.ts).

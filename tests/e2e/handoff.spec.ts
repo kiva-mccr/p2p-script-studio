@@ -1,5 +1,5 @@
 // FX-2: saving survives a page closed at any step (the user asked for this to be robust).
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './base';
 import { readFileSync } from 'node:fs';
 import { changeFile, readFile, setUp, writeChange, writeFile } from './folder';
 

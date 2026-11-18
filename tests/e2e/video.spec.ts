@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './base';
 import { readdirSync, readFileSync } from 'node:fs';
 import { ALL_FORMATS, BufferSource, Input } from 'mediabunny';
 import { readFile, setUp } from './folder';

@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './base';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { listFiles, setUp } from './folder';

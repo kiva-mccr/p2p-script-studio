@@ -58,6 +58,17 @@
     return () => made.forEach((url) => URL.revokeObjectURL(url));
   });
 
+  // The page's size and footer, as a stylesheet made in code: the Content Security Policy (SE-1) refuses <style> tags.
+  $effect(() => {
+    if (onScreen) return;
+    const sheet = new CSSStyleSheet();
+    sheet.replaceSync(`@page { size: ${landscape ? 'landscape' : 'portrait'}; margin: 14mm 12mm 16mm;
+      @bottom-left { content: "${footer}"; font: 8pt Inter, system-ui, sans-serif; color: #8a8a8a; }
+      @bottom-right { content: "Page " counter(page) " of " counter(pages); font: 8pt Inter, system-ui, sans-serif; color: #8a8a8a; } }`);
+    document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
+    return () => (document.adoptedStyleSheets = document.adoptedStyleSheets.filter((s) => s !== sheet));
+  });
+
   function preview(line: string): string {
     const ref = readFileRef(line);
     if (!IMAGE.test(ref.target)) return '';
@@ -65,10 +76,6 @@
   }
 </script>
 
-<svelte:head>
-  {#if !onScreen}{@html `<style>@page { size: ${landscape ? 'landscape' : 'portrait'}; margin: 14mm 12mm 16mm; @bottom-left { content: "${footer}"; font: 8pt Inter, system-ui, sans-serif; color: #8a8a8a; }
-    @bottom-right { content: "Page " counter(page) " of " counter(pages); font: 8pt Inter, system-ui, sans-serif; color: #8a8a8a; } }</style>`}{/if}
-</svelte:head>
 
 <div class="sheet" class:print-view={!onScreen} bind:this={page} style:font-size="{10 * scale}pt">
   <div class="top">

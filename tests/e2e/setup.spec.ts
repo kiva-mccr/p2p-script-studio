@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './base';
 import { fakeFolder, setUp } from './folder';
 
 test('asks for a name and the folder, then remembers both', async ({ page }) => {
