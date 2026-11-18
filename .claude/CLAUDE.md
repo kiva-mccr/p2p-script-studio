@@ -87,6 +87,8 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
   Then (the user, 2026-11-16): Ctrl+Z for everything: UX-14 (the script's text, done), then UX-15 (takes, flags, done). UX-16 (Undo toast 5 s, gone when you carry on, done).
   Then security (the user, 2026-11-18, issue #267): SE-1 (Content Security Policy, done), SE-4 (headers via
   Cloudflare, done), SE-9 (integrity hashes, done); the rest (SE-2, 3, 5 to 8) and D2 (models from the app, agreed) are in docs/security.md.
+  Then (the user, 2026-11-18, ahead of boards 82 and 83): SE-10, the sealed app to download (done), then SE-5 (speech
+  models from the app, and as the sealed file's second download).
   Then issue #254 (EX-22, zoom in the Resolve / Premiere preview, board 79, done 2026-11-18).
   Then board 80's issues (the user, 2026-11-18), one PR each: #245, #238, #225, #207 (SB-9 to SB-12, done), #264
   (SB-13, "No picture" as an icon, done); board 81: #249 (RV-24, done), #250 (RV-25, done), #256 (AP-50, done), #253 (AP-51, word count, done), #262 (AP-52, drop files onto a row, done); then 82 and 83.
@@ -119,10 +121,15 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
   and count them with `expect.poll`, never `listFiles` + `readFile` + `JSON.parse`.
 - Flaky tests show up under load: `npx playwright test --repeat-each=6 --workers=8 --trace off` (about 5 minutes)
   before handing over anything that touches saving, History or the folder. Fix the race, never add retries.
+- `npm run build` also makes the sealed file (SE-10, lib/sealed.md); a worker made other than with
+  `new Worker(new URL('./x.worker.ts', import.meta.url), { type: 'module' })` breaks it.
 - The built page has a Content Security Policy (SE-1, lib/csp.md). e2e specs import `test` from `./base`, which fails
   a test on any policy refusal; a feature that needs a new source adds the narrowest one in `lib/csp.ts`, with why.
 
 ## Known gaps (never seen for real; confirm when the user can)
+- The sealed file (SE-10) in real Chrome/Edge on Windows: only test Chromium opened it from disk. Picking a folder
+  there (no picker in headless tests), whether it remembers the folder across openings, and the attestation (made only
+  in the deploy) are unseen. Its speech workers' runtime handover is unexercised until the models come (SE-5).
 - The team now uses a Windows mapped network drive (SMB), not OneDrive. FX-2's change files, keeper and spinner with
   two real computers there are unseen (no SMB share here; others are simulated by writing change files in tests).
 - The editor's saves and the 5 s check for others' saves with real OneDrive sync delays.

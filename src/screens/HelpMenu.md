@@ -2,7 +2,8 @@
 
 The ? at the right end of every top bar (SB-5, board 77): a menu with Feedback… (starts Feedback mode, AP-48),
 GitHub and "Version: PR #176" (the live version, AP-28: links to its pull request, the title and time on hover).
-These used to float in the bottom corners, over the script and the timeline's drawer.
+These used to float in the bottom corners, over the script and the timeline's drawer. On the website it also has
+Download sealed (SE-10); in the sealed app GitHub and the download go, and the version is plain text marked sealed.
 
 - **Used by:** `screens/Header.svelte` (a script's bar), `screens/List.svelte`, `screens/Setup.svelte`.
   **Tests:** `tests/e2e/app.spec.ts`, `tests/e2e/feedback.spec.ts`.

@@ -6,7 +6,9 @@ then the screen the link names (`lib/route.ts`): the list for `#/`, a script for
 Also the example to try (AP-33): opened in place of the folder with a blue strip on top (Start over, through an Undo
 bar, and Open your scripts folder).
 
-- **Tests:** `tests/e2e/app.spec.ts`, `tests/e2e/setup.spec.ts`, `tests/e2e/example.spec.ts`.
+Also the Download sealed page for `#download-sealed` (SE-10, website only), and in the sealed app `SealedLinks`.
+
+- **Tests:** `tests/e2e/sealed.spec.ts`, `tests/e2e/app.spec.ts`, `tests/e2e/setup.spec.ts`, `tests/e2e/example.spec.ts`.
 
 ## Rules and pitfalls
 
