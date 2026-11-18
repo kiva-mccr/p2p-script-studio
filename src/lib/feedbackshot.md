@@ -1,7 +1,7 @@
 # `src/lib/feedbackshot.ts`
 
-Feedback mode's picture (AP-48): `makePicture(el, blur)` draws the clicked part and what is round it as a PNG, with
-an orange outline, from the page itself (modern-screenshot, MIT, loaded only when used), so the browser asks nothing.
+Feedback mode's picture (AP-48): `makePictures(el)` draws the clicked part and what is round it as two PNGs (words
+covered, and not), with an orange outline, from the page itself (modern-screenshot, MIT, loaded only when used), so the browser asks nothing.
 
 - **Used by:** `screens/Feedback.svelte`. **Tests:** `tests/e2e/feedback.spec.ts`.
 
@@ -14,4 +14,6 @@ an orange outline, from the page itself (modern-screenshot, MIT, loaded only whe
   outline off its edge (issue #247).
 - The feedback panel, strip and outline (`data-feedback-ui`) are left out; the outline is drawn on afterwards.
 - `font: false`: the app's fonts are the computer's own, so nothing is fetched.
+- Both pictures are started at once when the part is picked, and Cover only chooses between them: making a new one
+  on each tick showed the page as it was by then, not as it was when picked (issue #244).
 - A web link can't carry a picture, so Feedback copies it to the clipboard for the person to paste into the issue.
