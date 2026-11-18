@@ -108,3 +108,22 @@ test('Replace changes one and moves on, keeping capitals and bold; Replace all h
   await expect(count).toHaveText('1 of 5');
   await expect(page.getByLabel('Section title')).toHaveValue('Sugar basics');
 });
+
+test('a match inside a commented quote is drawn over the comment\'s yellow (#215)', async ({ page }) => {
+  // The example's row 1 On screen is all one quote of Ana's comment; "sunlit" in it was the "it" nobody could see.
+  await page.goto('./');
+  await page.getByRole('button', { name: 'Open the example' }).click();
+  await page.getByText('How Photosynthesis Works').click();
+  await expect(page.getByText('Every leaf you have ever seen is running a tiny factory.')).toBeVisible();
+  await page.keyboard.press('Control+f');
+  await page.getByLabel('Find', { exact: true }).fill('sunlit');
+  await expect(page.getByRole('search').getByRole('status')).toHaveText('1 of 1');
+  // Highlights of the same priority stack in the order they were set: the comments' marks came later and hid it.
+  const drawn = () => page.evaluate(() => ['comment', 'find-on'].map((name) => {
+    const h = CSS.highlights.get(name);
+    return h ? `${name}: ${h.size > 0} at ${h.priority}` : `${name}: none`;
+  }));
+  await expect.poll(drawn).toEqual(['comment: true at 0', 'find-on: true at 2']);
+  await page.getByLabel('Find', { exact: true }).fill('leaf');
+  await expect.poll(() => page.evaluate(() => CSS.highlights.get('find')?.priority)).toBe(1);
+});
