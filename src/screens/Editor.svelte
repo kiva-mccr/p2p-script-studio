@@ -131,9 +131,11 @@
   let sideTab = $state<'planning' | 'comments'>(recall('side-tab') === 'comments' ? 'comments' : 'planning');
   let talking = $state(''); // the comment being read in Write's Comments tab
   let goTo = $state(0); // bumped on every bubble or quote click, so the same card is scrolled to again (RV-17)
-  // A bubble or a quote in Write: the panel opens on Comments at that card.
+  // A bubble or a quote in Write: the panel opens on Comments at that card. '' (the bubble of the row already chosen,
+  // clicked again) lets go of it (issue #235).
   function showComment(id: string) {
     talking = id;
+    if (!id) return;
     goTo++;
     sideTab = 'comments';
     sideOpen = true;

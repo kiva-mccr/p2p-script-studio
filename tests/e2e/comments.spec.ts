@@ -218,23 +218,31 @@ test('a resolved or decided card waits 5 seconds with Undo, then moves into Reso
   await expect(panel.getByRole('button', { name: 'Resolved · 1' })).toBeVisible();
 });
 
-test('clicking the bubble again scrolls back to the card, and the card stands out (RV-17, RV-20)', async ({ page }) => {
+test('the card stands out; clicking the bubble again unselects it, and once more scrolls back to it (RV-17, RV-20, issue #235)', async ({ page }) => {
   await open(page, [ANA, SUGGEST, BEN]);
   await page.setViewportSize({ width: 1280, height: 420 });
-  await page.getByRole('button', { name: '1 open comment on row 4' }).click();
+  const bubble = page.getByRole('button', { name: '1 open comment on row 4' });
+  await bubble.click();
   const ben = page.getByRole('complementary', { name: 'Comments' }).getByRole('article', { name: 'Comment by Ben' });
   await expect(ben).toBeInViewport({ ratio: 0.9 });
   expect(await ben.evaluate((el) => getComputedStyle(el).borderColor)).toBe('rgb(42, 91, 215)');
   await expect(page.locator('.row.talking')).toHaveCSS('background-color', 'rgb(238, 243, 253)');
-  // Scroll the panel away, then click the same bubble while Ben's is still selected.
+  await expect(bubble).toHaveAttribute('aria-pressed', 'true');
+  // A second click on the same bubble lets go of the comment: the row and the card lose their blue.
+  await bubble.click();
+  await expect(page.locator('.row.talking')).toHaveCount(0);
+  await expect(bubble).toHaveAttribute('aria-pressed', 'false');
+  expect(await ben.evaluate((el) => getComputedStyle(el).borderColor)).not.toBe('rgb(42, 91, 215)');
+  // Scroll the panel away; a third click chooses it again and brings it back into view.
   await ben.evaluate((el) => {
     let box = el.parentElement;
     while (box && box.scrollHeight <= box.clientHeight) box = box.parentElement;
     box!.scrollTop = 0; // Ben's is last in line order (RV-16)
   });
   await expect(ben).not.toBeInViewport({ ratio: 0.5 });
-  await page.getByRole('button', { name: '1 open comment on row 4' }).click();
+  await bubble.click();
   await expect(ben).toBeInViewport({ ratio: 0.9 });
+  await expect(page.locator('.row.talking')).toHaveCount(1);
 });
 
 test('a card takes Write to its row', async ({ page }) => {

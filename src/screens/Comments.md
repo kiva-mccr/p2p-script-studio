@@ -10,7 +10,7 @@ the script is a draft again. New comments are started in Review only.
 
 - `active` is bound to the Editor (`talking`): a bubble or a quote in Write sets it and bumps `goTo`, and this
   scrolls that card into view and flashes it. The scroll follows `goTo`, not `active`, so asking for the card that is
-  already selected scrolls back to it (RV-17); clicking a card sets it and asks the Editor to scroll Write to its
+  already selected scrolls back to it (RV-17; a quote now, since the bubble of the chosen row unselects it, issue #235); clicking a card sets it and asks the Editor to scroll Write to its
   row (`onShow`).
 - Decided, resolved and held cards stay in place with Undo (`recent`, a `Linger`) for 5 seconds, each on its own
   timer, then move into Resolved or On hold (RV-18, RV-19), sliding away (`out:slideAway` on the `.slot` wrapper).
