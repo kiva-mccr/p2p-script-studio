@@ -39,7 +39,9 @@ flag's note.
 - Flags (AP-9, mock-up 22): the flag button sits in the third slot of the row tools' top line (left 50px, clear of
   the mic), seen on hover and focus and always once flagged. A new flag puts the cursor in its note; the note is
   written on blur or Enter (`onchange`), not per key. "Needs a source" is offered while the note is empty. ‹ › above
-  the table (Write's) step in row order (`stepped`, tinted `.stepped`). The flag's Clear has no aria-label (the flag button
+  the table (Write's) step in row order (`stepped`, tinted `.stepped`); so do a flag's own ‹ n of m › (#256, AP-50, shown only with two or
+  more flags), Write's `stepFrom`, which focuses the same arrow on the next flag. That group is named "Flag 2 of 4", never
+  with "flags" in it: tests find the top one with `getByRole('group', { name: 'Flags' })`, which matches part of a name. The flag's Clear has no aria-label (the flag button
   already says "Clear the flag on row n"), so tests find it inside the row. Adding a flag goes through Write (`onToggleFlag`), which focuses the new note; saving is the Editor's (`onFlag`).
 - Row to section and back (AP-30, mock-up 39): § sits under the flag (`.promote`, placed like the flag), ¶ in a
   section's tools (Write's). Both are Write's (`onToSection`) and go through the Undo bar (`onDeleted`). The Undo message is worked out before the splice: after

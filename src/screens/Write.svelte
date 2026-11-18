@@ -159,6 +159,14 @@
     table?.querySelector(`[data-row="${current}"]`)?.scrollIntoView({ block: 'center', behavior: 'smooth' });
   }
 
+  // A flag's own ‹ › (#256, board 81) step from that flag, and the same arrow on the next flag takes the focus.
+  async function stepFrom(id: string, by: number) {
+    current = id;
+    step(by);
+    await tick();
+    table?.querySelector<HTMLElement>(`[data-row="${current}"] .flag-note [data-step="${by}"]`)?.focus({ preventScroll: true });
+  }
+
   // Review comments (RV-13): each row's open ones, for its bubble; their quotes are marked yellow in the fields
   // (CSS highlights on the formatted text, so not inside the box while it is being typed in).
   const talkByRow = $derived.by(() => {
@@ -452,7 +460,8 @@
       </div>
     {:else}
       <WriteRow bind:block={() => block, (b) => (script.blocks[i] = b)} {i} n={numbers.get(block)} {columns} folded={folds.folded} {dir} {root} {folderName} {voice} {player} {canPlay} {name}
-        lit={chosen === block.id} flag={flagged.get(block.id)} stepped={current === block.id} said={talkByRow.get(block.id) ?? []} talking={talkRow === block.id} {visit}
+        lit={chosen === block.id} flag={flagged.get(block.id)} flagAt={flagIds.indexOf(block.id) + 1} flagCount={flagIds.length}
+        onStepFlag={(by) => stepFrom(block.id, by)} stepped={current === block.id} said={talkByRow.get(block.id) ?? []} talking={talkRow === block.id} {visit}
         came={came?.row === block.id ? came : null} start={started.get(block.id)} onPutBack={(field) => putBack(block, field)} {onChange} {onUndo} {onNotice} {onPlayFrom} {onFlag} {onTalk}
         onMove={(by) => move(i, by)} onInsert={() => insertRow(i + 1)} onRemove={() => remove(i)} onToSection={() => toSection(i)}
         onToggleFlag={() => toggleFlag(block.id)} onMic={() => mic(block.id)} onPaste={(lines, head, tail) => pasteRows(block, lines, head, tail)} />

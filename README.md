@@ -190,7 +190,7 @@ Status: a first working version. What it does today:
   replacement takes the capitals of the word it replaces (Glucose becomes Sugar). Esc closes the bar; Ctrl+F from
   inside it gives the browser's own find.
 - **Flags:** flag a row to come back to it (the flag under its number, shown when you point at the row), with an
-  optional note such as "Needs a source". Step through flagged rows with ‹ › above the table and Clear each one.
+  optional note such as "Needs a source". Step through flagged rows with ‹ › above the table or on any flag's note ("2 of 4"), and Clear each one.
   Review shows them, the list counts them ("2 flagged"), and they are listed before Approve. Flags never change the
   script, never make a History version and never show in exports.
 - **Voice-over:** the mic beside each row's dialogue records a take of that line (grey: none yet; blue: there is
