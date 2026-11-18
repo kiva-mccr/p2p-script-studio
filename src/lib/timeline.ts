@@ -65,6 +65,7 @@ export function changeChoices(row: Row, change: (c: Choices) => void): string {
 
 const IMAGE = /\.(jpe?g|png|gif|webp|svg|avif|bmp)$/i;
 const VIDEO = /\.(mp4|webm|mov|m4v)$/i;
+export const isVideo = (path: string) => VIDEO.test(path);
 
 // The pictures a row can show: its Files paths that are images or videos, in order.
 export function pictureFiles(row: Row): { path: string; timelineOnly: boolean; video: boolean }[] {

@@ -223,7 +223,7 @@ Status: a first working version. What it does today:
   browser, about 150 MB downloaded once per computer) hears each take of a row cut on a word once and keeps the word
   timings with the take; until then, and for rows with no take, they are estimated. The row's panel says which.
   While the script plays, a playhead runs along it (along the strip when folded), and a small preview above the
-  drawer's right end shows the picture of the moment (⤢ makes it big). − and + zoom. Wide / Upright sets the video's
+  drawer's right end shows the picture of the moment, cutting from one to the next without a flicker (⤢ makes it big). − and + zoom. Wide / Upright sets the video's
   shape for everyone (kept in the script): the preview turns upright and collages stack their pictures one above the
   other, here and in the exports.
   Review shows the same timeline, read only: click a block to comment on its row ("row 2, on the timeline"). Kept in the row's `Timeline:` line in script.md.
