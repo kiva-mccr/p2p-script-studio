@@ -207,7 +207,7 @@ Status: a first working version. What it does today:
   Esc. It works the same in Review, where each line also shows its take to listen to, without the mic or delete.
 - **Storyboard timeline:** a drawer at the bottom of the screen in Write and Review, the script laid out in time:
   sections, then each row with its pictures (every image or video in its Files, one after another, or side by side as
-  a collage), then the voice-over as a waveform (a row with no take gets its read time). Click its bar to fold or
+  a collage; a video shows a still from its start), then the voice-over as a waveform (a row with no take gets its read time). Click its bar to fold or
   unfold it, playing or not; folded, it is one slim bar with a thin strip of the blocks. It starts folded, and this
   browser remembers it for every script. Folded, scrolling down again once you're at the end of the script slides it
   open, and scrolling up folds it again (opened with its bar, it stays open). Open, it takes at most about half the screen, and the script's last row

@@ -164,3 +164,23 @@ export async function writeChange(page: Page, scriptDir: string, who: string, be
   const [path, text] = changeFile(scriptDir, who, before, after, at);
   await writeFile(page, path, text);
 }
+
+// A real webm, recorded from a canvas in the test's browser.
+export async function webm(page: Page): Promise<string> {
+  await page.goto('about:blank');
+  return page.evaluate(async () => {
+    const canvas = Object.assign(document.createElement('canvas'), { width: 64, height: 36 });
+    const ctx = canvas.getContext('2d')!;
+    const recorder = new MediaRecorder(canvas.captureStream(25), { mimeType: 'video/webm' });
+    const parts: Blob[] = [];
+    recorder.ondataavailable = (e) => parts.push(e.data);
+    const timer = setInterval(() => ((ctx.fillStyle = `hsl(${Date.now() % 360} 60% 50%)`), ctx.fillRect(0, 0, 64, 36)), 40);
+    recorder.start();
+    await new Promise((resolve) => setTimeout(resolve, 600));
+    recorder.stop();
+    await new Promise((resolve) => (recorder.onstop = resolve));
+    clearInterval(timer);
+    const bytes = new Uint8Array(await new Blob(parts).arrayBuffer());
+    return 'base64:' + btoa(String.fromCharCode(...bytes));
+  });
+}

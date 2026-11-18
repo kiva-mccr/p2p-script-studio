@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
-import { readFile, readJsonFiles, setUp } from './folder';
+import { readFile, readJsonFiles, setUp, webm } from './folder';
 
 const example = readFileSync('docs/example/Episode 03 - How Photosynthesis Works/script.md', 'utf8');
 const svg = (fill: string) => `<svg xmlns="http://www.w3.org/2000/svg" width="160" height="90"><rect width="160" height="90" fill="${fill}"/></svg>`;
@@ -48,6 +48,18 @@ test('the timeline lays out the rows; a click lights up the row and opens its pi
   await expect(page.locator('.row.lit').getByLabel('Dialogue, row 2')).toBeVisible();
   await expect(t.locator('.panel strong')).toHaveText(/^Row 2 · /);
   await expect(t.getByRole('button', { name: /sun\.svg · timeline only/ })).toHaveAttribute('aria-pressed', 'true');
+});
+
+// #205: a video showed as a dark chip with its name, which looked unloaded; now its block shows a still of it.
+test('a video in the timeline shows a still from it, not a chip', async ({ page }) => {
+  const clip = await webm(page);
+  await setUp(page, '#/Episode%2003', { ...files, 'Episode 03/script.md': script.replace('leaf-push-in.mp4', 'clip.webm'),
+    'Episode 03/assets/clip.webm': clip });
+  const row1 = timeline(page).getByRole('button', { name: /^Row 1 · / });
+  const still = row1.locator('.still img');
+  await expect(still).toBeVisible();
+  expect(await still.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThan(0);
+  await expect(row1.locator('.vid')).toHaveCount(0);
 });
 
 test('a click on a block brings its row into view above the drawer, and the panel stays at hand', async ({ page }) => {

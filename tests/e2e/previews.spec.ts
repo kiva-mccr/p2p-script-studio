@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { setUp } from './folder';
+import { setUp, webm } from './folder';
 import { docx } from '../zip';
 
 // AP-19 (mock-up 41): files in Images & files get a preview of their kind. All the files are made here: a 2×2 TIFF,
@@ -56,26 +56,6 @@ function wav(seconds: number): Buffer {
   buf.writeUInt16LE(1, 20); buf.writeUInt16LE(1, 22); buf.writeUInt32LE(8000, 24); buf.writeUInt32LE(16000, 28);
   buf.writeUInt16LE(2, 32); buf.writeUInt16LE(16, 34); buf.write('data', 36); buf.writeUInt32LE(n * 2, 40);
   return buf;
-}
-
-// A real webm, recorded from a canvas in the test's browser.
-async function webm(page: Page): Promise<string> {
-  await page.goto('about:blank');
-  return page.evaluate(async () => {
-    const canvas = Object.assign(document.createElement('canvas'), { width: 64, height: 36 });
-    const ctx = canvas.getContext('2d')!;
-    const recorder = new MediaRecorder(canvas.captureStream(25), { mimeType: 'video/webm' });
-    const parts: Blob[] = [];
-    recorder.ondataavailable = (e) => parts.push(e.data);
-    const timer = setInterval(() => ((ctx.fillStyle = `hsl(${Date.now() % 360} 60% 50%)`), ctx.fillRect(0, 0, 64, 36)), 40);
-    recorder.start();
-    await new Promise((resolve) => setTimeout(resolve, 600));
-    recorder.stop();
-    await new Promise((resolve) => (recorder.onstop = resolve));
-    clearInterval(timer);
-    const bytes = new Uint8Array(await new Blob(parts).arrayBuffer());
-    return 'base64:' + btoa(String.fromCharCode(...bytes));
-  });
 }
 
 const row = (n: number, files: string[]) =>

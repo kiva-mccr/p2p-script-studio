@@ -21,7 +21,9 @@ offers its pictures, Sequence or Collage, + Add a picture (only for the timeline
 - Pictures and waveforms are only made once the timeline comes near the screen (`use:near`, as AP-39): made at
   once, they slowed opening a script enough to fail tests under load.
 - Pictures are blob URLs from the script's folder, made while the timeline is shown and revoked after; a missing
-  file is a grey stand-in. Waveforms come from `lib/waveform.ts`, made once per take.
+  file is a grey stand-in. A video's block shows a still from its start (`stills`, made by `makePreview` as Assets'
+  thumbnails, two at a time; never a `<video>` per block, AP-39); while it's being made, or if the browser can't play
+  it, the dark "▶ name" chip. That chip alone looked unloaded (issue #205). The playing preview plays the video itself. Waveforms come from `lib/waveform.ts`, made once per take.
 - The drawer (SB-4): the section is always `position: sticky; bottom: 0`, so it stays at the bottom of the screen and,
   scrolled to the end, rests under the last row (the last row is never behind it). Its bar (`.foldbar`, not `.bar`:
   that is TimelineBar's class, which tests look for) folds and unfolds it, playing or not; folded, a thin `.strip` of
