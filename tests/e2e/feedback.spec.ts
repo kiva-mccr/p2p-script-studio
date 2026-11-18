@@ -261,3 +261,38 @@ test('the note starts empty each time, but Pick again before sending keeps it (a
   await page.getByRole('button', { name: 'Record row 1' }).click();
   await expect(note).toHaveValue('');
 });
+
+test("the timeline's preview is pictured itself, not the drawer's bar under it (issue #247)", async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem('prompter-speed', '20'); // slow, so row 1 (no take) stays on the preview
+    // Play needs a take: recording gives a short silent WAV.
+    const wav = () => {
+      const n = 800, buf = new DataView(new ArrayBuffer(44 + n * 2));
+      const text = (at: number, s: string) => [...s].forEach((c, i) => buf.setUint8(at + i, c.charCodeAt(0)));
+      text(0, 'RIFF'); buf.setUint32(4, 36 + n * 2, true); text(8, 'WAVEfmt '); buf.setUint32(16, 16, true);
+      buf.setUint16(20, 1, true); buf.setUint16(22, 1, true); buf.setUint32(24, 8000, true); buf.setUint32(28, 16000, true);
+      buf.setUint16(32, 2, true); buf.setUint16(34, 16, true); text(36, 'data'); buf.setUint32(40, n * 2, true);
+      return new Blob([buf], { type: 'audio/wav' });
+    };
+    (window as unknown as { studioRecord: () => Promise<{ stop: () => Promise<Blob> }> }).studioRecord = async () => ({ stop: async () => wav() });
+  });
+  await openScript(page);
+  await page.getByRole('button', { name: 'Record row 2', exact: true }).click();
+  await page.getByRole('button', { name: 'Stop recording row 2' }).click();
+  await page.getByRole('button', { name: 'Play from row 1' }).click();
+  const preview = page.locator('.preview');
+  await expect(preview).toBeVisible();
+  await startFeedback(page);
+  await preview.locator('.screen').click();
+  const panel = page.getByRole('region', { name: 'Feedback' });
+  await expect(panel.getByRole('heading')).toHaveText(/^Feedback on: /);
+  const picture = panel.getByRole('img', { name: 'The part, outlined' });
+  await expect(picture).toBeVisible();
+  // The picture is the preview with its 12 px margin, not the drawer's bar the width of the window.
+  const box = (await preview.boundingBox())!;
+  const size = await picture.evaluate(async (img: HTMLImageElement) => (await img.decode(), [img.naturalWidth, img.naturalHeight]));
+  expect(size[0]).toBeLessThanOrEqual(box.width + 26);
+  expect(size[1]).toBeGreaterThan(box.height);
+  await panel.getByRole('button', { name: 'Cancel' }).click();
+  await page.keyboard.press('Escape');
+});
