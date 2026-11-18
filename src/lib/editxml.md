@@ -1,7 +1,8 @@
 # `src/lib/editxml.ts`
 
 The storyboard timeline for DaVinci Resolve and Premiere Pro (EX-19, board 68): `plan` (what goes on V1, any
-stacked tracks, A1, the markers and captions, and which media files are needed), `toXml` (Final Cut Pro 7 XML,
+stacked tracks, A1, the markers and captions, and which media files are needed; `sections` is only for the preview's
+Sections row, #254, and never reaches the XML), `toXml` (Final Cut Pro 7 XML,
 "xmeml" version 5) and `toSrt` (the dialogue as captions). `EDIT` is the default settings.
 
 - **Used by:** `screens/Export.svelte`, `screens/EditPreview.svelte`, `lib/editmedia.ts`.

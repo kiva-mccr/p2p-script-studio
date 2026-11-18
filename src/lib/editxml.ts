@@ -31,11 +31,13 @@ export type Item = { name: string; start: number; seconds: number }; // one clip
 export type Marker = { start: number; name: string; comment: string };
 export type Caption = { start: number; seconds: number; text: string };
 export type Link = { row: number; label: string; target: string };
+export type Section = { start: number; seconds: number; title: string; row: number }; // a named section's span, for the preview
 export type Plan = {
   total: number;
   video: Item[][]; // V1 first
   audio: Item[]; // A1: the takes
   markers: Marker[];
+  sections: Section[]; // the named sections the markers carry: only for the preview's Sections row, not in the XML
   captions: Caption[];
   media: Map<string, Source>; // by file name in the media folder
   links: Link[]; // files given as links: not in the zip, named in their row's marker
@@ -121,7 +123,8 @@ export function plan(script: Script, laid: { blocks: TimeBlock[]; lanes: Lane[];
       last = [put(0, { name: file(`card-placeholder-${n}.png`, { kind: 'card', text: b.label.trim() || 'Placeholder' }), start: b.start, seconds: b.seconds })];
     }
   }
-  return { total: laid.total, video, audio, markers, captions, media, links };
+  const sections = how.markers ? laid.lanes.filter((l) => l.title && l.seconds > 0).map((l) => ({ start: l.start, seconds: l.seconds, title: l.title, row: number.get(l.first) ?? 0 })) : [];
+  return { total: laid.total, video, audio, markers, sections, captions, media, links };
 }
 
 // What each media file turned out to be, once made: its size in pixels, and its length for a video or a take.

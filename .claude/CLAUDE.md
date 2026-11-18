@@ -87,6 +87,7 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
   Then (the user, 2026-11-16): Ctrl+Z for everything: UX-14 (the script's text, done), then UX-15 (takes, flags, done). UX-16 (Undo toast 5 s, gone when you carry on, done).
   Then security (the user, 2026-11-18, issue #267): SE-1 (Content Security Policy, done), SE-4 (headers via
   Cloudflare, done); the rest (SE-2, 3, 5 to 8) and D2 (models from the app, agreed) are in docs/security.md.
+  Then issue #254 (EX-22, zoom in the Resolve / Premiere preview, board 79, done 2026-11-18).
   The rest (AP-8 …) waits
   for the user's next ranking; "Last" in ROADMAP.md (EX-5, CC-1) waits until everything else is done.
 - Mock-ups (one board per design, numbered): https://claude.ai/artifact/2XDZmS7J5NEPZsz91RQMiL (private to the user).
