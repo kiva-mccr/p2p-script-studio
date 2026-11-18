@@ -164,6 +164,7 @@ test('the picture covers names and the script in solid grey, but not "In review"
   await page.context().grantPermissions(['clipboard-read', 'clipboard-write']);
   await setUp(page, '#/Episode%2003', { 'Episode 03/script.md': example, 'Episode 03/.studio/editing/ana_20261101T120000000Z.json': ana });
   const last = page.getByRole('button', { name: 'Ana · 3 h ago' });
+  await expect(last).toBeVisible(); // the script is open: a menu opened while it loads can close again
   await startFeedback(page);
   await last.click();
   const panel = page.getByRole('region', { name: 'Feedback' });

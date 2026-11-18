@@ -1,7 +1,7 @@
 <script lang="ts">
   import { tick, untrack } from 'svelte';
   import { feedback } from '../lib/help.svelte';
-  import { describe, partOf, placePanel, issueBody, issueTitle, issueUrl, plainText, type Env, type Part } from '../lib/feedback';
+  import { describe, onScrollbar, partOf, placePanel, issueBody, issueTitle, issueUrl, plainText, type Env, type Part } from '../lib/feedback';
   import { makePicture } from '../lib/feedbackshot';
   import { parseRoute } from '../lib/route';
 
@@ -84,6 +84,11 @@
       if (passing || (e as MouseEvent).shiftKey) return;
       e.preventDefault();
       e.stopImmediatePropagation();
+      const m = e as MouseEvent;
+      if (e.type === 'pointerdown' && m.target instanceof Element && onScrollbar(m.target, m.clientX, m.clientY)) {
+        keepScroll(m.target);
+        pick(m.target);
+      }
     };
     const click = (e: MouseEvent) => {
       if (ours(e.target)) return;
@@ -121,6 +126,29 @@
   $effect(() => {
     document.documentElement.classList.toggle('feedback-through', through);
   });
+
+  // A press on a scroll bar (the timeline's, issue #252) drags it whatever preventDefault says, and no click follows:
+  // it picks at once, and the bar is put back where it was until the button is let go. Scroll events come a frame
+  // late, so the last of a drag can land after the release: it is put back once more and watched a little longer,
+  // until the next press (which may be a drag with Shift).
+  function keepScroll(el: Element) {
+    const left = el.scrollLeft, top = el.scrollTop;
+    const back = () => el.scrollTo(left, top);
+    const end = () => {
+      el.removeEventListener('scroll', back);
+      removeEventListener('pointerdown', end, true);
+    };
+    const release = () => {
+      removeEventListener('pointerup', release, true);
+      removeEventListener('blur', release);
+      back();
+      addEventListener('pointerdown', end, true);
+      setTimeout(end, 300);
+    };
+    el.addEventListener('scroll', back);
+    addEventListener('pointerup', release, true);
+    addEventListener('blur', release);
+  }
 
   // The picked part keeps its outline as the page scrolls or the window changes size.
   $effect(() => {

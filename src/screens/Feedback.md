@@ -16,6 +16,9 @@ blur the script's words, say which script), Open on GitHub, Copy instead, Cancel
   normal (`feedback-through` on `<html>`). A press begun with Shift lets its release and click through even if Shift
   is let go first, else the click picked the button that opens the menu. Menus stay open after because their
   close-on-click-away listens on `window` without capture, which the picking's capture listener stops.
+- A scroll bar (the timeline's, issue #252) is dragged by the browser whatever `preventDefault` says, and no click
+  follows a press on it: so a press on one (`onScrollbar` in lib/feedback.ts) picks at once, and the box is scrolled
+  back to where it was until the button is let go (`keepScroll`). The page's own scroll bar still scrolls.
 - Open on GitHub copies the picture first, then opens the issue page: Chrome lets a page open a tab a few seconds
   after a click, so the await is fine, but the other way round the clipboard fails once the new tab has the focus.
 - The panel is placed by its measured size (`placePanel` in lib/feedback.ts): below the part, else above, else

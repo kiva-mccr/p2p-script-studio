@@ -507,7 +507,8 @@ and suggestions, keeps every version, and exports them for production.
   couldn't be opened to point at something in it). Agreed: hold Shift to use the page while picking (the strip says
   so); letting go picks again and the menu stays open. A press begun with Shift goes through even if Shift is let go
   before the button. The browser's own dropdown lists are drawn outside the page: pick the dropdown and name the
-  option in the note.
+  option in the note. Scroll bars too (issue #252): a press on one (the timeline's) picked nothing and dragged it, since
+  the browser drags a bar whatever the page says; it now picks the bar's box, and Shift drags it.
 - [ ] **YT-1** The published video: link the final YouTube video and keep its title, description and thumbnail with
   the script.
 - [x] **AU-1** Recording audio for each line: record the dialogue of a row in the browser, kept beside the script

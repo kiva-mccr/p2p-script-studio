@@ -33,6 +33,21 @@ export function partOf(target: Element): Element {
   return target.closest(CONTROL) ?? outside;
 }
 
+/** Whether a press at (x, y) is on `el`'s own scroll bar (issue #252): the browser drags a scroll bar whatever the page
+ *  says, and sends no click for it. The page's own scroll bar is left alone, to reach the parts below. */
+export function onScrollbar(el: Element, x: number, y: number): boolean {
+  if (!(el instanceof HTMLElement) || el === document.documentElement || el === document.body) return false;
+  const css = getComputedStyle(el);
+  const side = el.offsetWidth - el.clientWidth - el.clientLeft - parseFloat(css.borderRightWidth); // 0 without a bar
+  const below = el.offsetHeight - el.clientHeight - el.clientTop - parseFloat(css.borderBottomWidth);
+  if (side < 1 && below < 1) return false; // an SVG drawing or a plain box has no bar (clientWidth 0 or all of it)
+  const r = el.getBoundingClientRect();
+  const inX = x - r.left - el.clientLeft, inY = y - r.top - el.clientTop;
+  if (inX < 0 || inY < 0) return false;
+  return (side >= 1 && inX >= el.clientWidth && inX < el.clientWidth + side)
+    || (below >= 1 && inY >= el.clientHeight && inY < el.clientHeight + below);
+}
+
 /** A short name for what was clicked, from its own label (never the script's words in a text box). */
 export function partLabel(el: Element): string {
   const tag = el.tagName.toLowerCase();
