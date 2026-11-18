@@ -138,7 +138,7 @@
       {#if ref.kind === 'link'}
         <a href={ref.target} target="_blank" rel="noopener noreferrer" title={ref.target}>{ref.label}</a>
       {:else if ref.kind === 'path'}
-        <button class="open" title={ref.target} onclick={() => openAsset(ref.target)}>{ref.label}{#if sizes[ref.target] !== undefined && (previews[ref.target] === null || !previewKind(ref.target))}<span class="kind">{` · ${kindName(ref.target)}, ${sizeText(sizes[ref.target])}`}</span>{/if}</button>
+        <button class="open" title={ref.target} onclick={() => openAsset(ref.target)}><span data-hide>{ref.label}</span>{#if sizes[ref.target] !== undefined && (previews[ref.target] === null || !previewKind(ref.target))}<span class="kind">{` · ${kindName(ref.target)}, ${sizeText(sizes[ref.target])}`}</span>{/if}</button>
       {:else}
         <span class="words">{ref.label}</span>
       {/if}

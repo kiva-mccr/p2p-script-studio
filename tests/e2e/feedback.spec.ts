@@ -319,3 +319,75 @@ test("the timeline's preview is pictured itself, not the drawer's bar under it (
   await panel.getByRole('button', { name: 'Cancel' }).click();
   await page.keyboard.press('Escape');
 });
+
+// Whether the middle of each spot's words is solid grey in the covered picture of the picked part: the picture is of its
+// widest parent that fits the window and 480 px of height (`pictureRoot` in lib/feedbackshot.ts), with 12 px round it.
+async function greyAt(picture: Locator, part: Locator, spots: Locator[]) {
+  const at = await part.evaluate((el) => {
+    let root = el;
+    const p0 = el.getBoundingClientRect();
+    for (let p = el.parentElement; p && p !== document.body; p = p.parentElement) {
+      const r = p.getBoundingClientRect();
+      if (r.width > innerWidth + 1 || r.height > 480) break;
+      if (p0.left < r.left - 1 || p0.top < r.top - 1 || p0.right > r.right + 1 || p0.bottom > r.bottom + 1) break;
+      root = p;
+    }
+    const r = root.getBoundingClientRect();
+    return { x: r.x, y: r.y, width: r.width };
+  });
+  // Where each spot's words are (not its padding, which is never covered).
+  const boxes = await Promise.all(spots.map((l) => l.evaluate((el) => {
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    const r = range.getClientRects()[0];
+    return { x: r.x, y: r.y, width: r.width, height: r.height };
+  })));
+  return picture.evaluate(async (img: HTMLImageElement, { at, boxes }) => {
+    await img.decode();
+    const c = document.createElement('canvas');
+    c.width = img.naturalWidth;
+    c.height = img.naturalHeight;
+    const g = c.getContext('2d')!;
+    g.drawImage(img, 0, 0);
+    const scale = img.naturalWidth / (at.width + 24);
+    return boxes.map((s) => {
+      const y = Math.round((s.y - at.y + 12 + s.height / 2) * scale);
+      return [0.3, 0.5, 0.7].every((f) => {
+        const x = Math.round((s.x - at.x + 12 + s.width * f) * scale);
+        return [...g.getImageData(x, y, 1, 1).data.slice(0, 3)].join(',') === '163,163,163';
+      });
+    });
+  }, { at, boxes });
+}
+
+test('Cover leaves the app\'s own words on buttons in a row, but covers file names and names (issue #257)', async ({ page }) => {
+  await openScript(page);
+  const row = page.locator('[data-row]').first();
+  await page.getByRole('button', { name: 'Flag row 1' }).click();
+  await row.getByRole('button', { name: '+ Add' }).click();
+  await expect(row.getByRole('button', { name: 'Choose a file…' })).toBeVisible();
+  await startFeedback(page);
+  const clear = row.getByRole('button', { name: 'Clear', exact: true });
+  await clear.click();
+  const picture = page.getByRole('region', { name: 'Feedback' }).getByRole('img', { name: 'The part, outlined' });
+  await expect(picture).toBeVisible();
+  const grey = await greyAt(picture, clear, [clear, row.getByRole('button', { name: 'Choose a file…' }),
+    row.getByRole('button', { name: 'From other scripts…' }), row.locator('.flag-note .by'), row.locator('.chip [data-hide]').first()]);
+  expect(grey).toEqual([false, false, false, true, true]); // Clear, Choose a file…, From other scripts…, Sam, a file's name
+});
+
+test('Cover leaves "commented" on a comment card, but covers who wrote it (issue #257)', async ({ page }) => {
+  const id = example.match(/## 4 <!-- id: (\w+) -->/)![1];
+  const ben = JSON.stringify({ v: 1, id: 'ben00001', kind: 'comment', who: 'Benedict', when: '2026-11-10T09:02:00Z', row: id, field: 'dialogue', quote: '', text: 'Say where the oxygen goes too.' });
+  await page.context().grantPermissions(['clipboard-read', 'clipboard-write']);
+  await setUp(page, '#/Episode%2003', { 'Episode 03/script.md': example, 'Episode 03/.studio/comments/20261110T090200Z_ben00001.json': ben });
+  await page.getByRole('button', { name: '1 open comment on row 4' }).click();
+  const card = page.getByRole('article', { name: 'Comment by Benedict' });
+  await expect(card).toContainText('Benedict commented · row 4');
+  await startFeedback(page);
+  await card.locator('.who strong').click();
+  const picture = page.getByRole('region', { name: 'Feedback' }).getByRole('img', { name: 'The part, outlined' });
+  await expect(picture).toBeVisible();
+  expect(await greyAt(picture, card.locator('.who strong'), [card.locator('.who strong'), card.locator('.who [data-keep]'), card.locator('p.text')]))
+    .toEqual([true, false, true]); // the name, "commented · row 4", the comment's words
+});

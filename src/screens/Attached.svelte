@@ -87,14 +87,14 @@
     {#if preview}
       <div class="previewed">
         <Preview {preview} name={item.name} onOpen={() => open(item)} onFail={() => (previews = { ...previews, [item.path]: null })} />
-        <button type="button" class="under" title="Open {item.name}" onclick={() => open(item)}>{item.name} · {sizeText(item.size)}</button>
+        <button type="button" class="under" title="Open {item.name}" onclick={() => open(item)}><span data-hide>{item.name}</span> · {sizeText(item.size)}</button>
         {@render using(item)}
       </div>
     {:else}
       <div class="previewed">
         <button type="button" class="chip" title="Open {item.name}" onclick={() => open(item)}>
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" aria-hidden="true"><path d="M4 1.5h5.5L13 5v9.5H4z"></path><path d="M9.5 1.5V5H13"></path></svg>
-          <span class="name">{item.name}</span><span class="size">{sizeText(item.size)}</span>
+          <span class="name" data-hide>{item.name}</span><span class="size">{sizeText(item.size)}</span>
         </button>
         {@render using(item)}
       </div>
