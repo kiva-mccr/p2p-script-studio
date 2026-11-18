@@ -56,7 +56,7 @@
   const count = $derived((groups ?? []).reduce((n, g) => n + g.files.length, 0));
 
   function thumb(g: SharedScript, f: SharedFile): string {
-    if (f.kind === 'link') return IMAGE.test(f.target) ? f.target : '';
+    if (f.kind === 'link') return ''; // never a picture on another site (SE-1)
     return previews[`${g.folder}/${f.target}`] ?? '';
   }
 

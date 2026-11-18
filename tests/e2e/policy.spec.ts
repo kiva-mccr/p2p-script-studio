@@ -1,4 +1,5 @@
 import { expect, test } from './base';
+import { setUp } from './folder';
 
 // The Content Security Policy (SE-1): the built page carries it, the browser enforces it, and nothing the example does
 // sends anything to another site.
@@ -50,4 +51,20 @@ test.describe(() => {
     expect(refused.ran).toBe(false);
     expect(refused.seen).toEqual(expect.arrayContaining(['script-src-elem', 'style-src-elem', 'connect-src']));
   });
+});
+
+test('a picture linked from another site is never loaded: its link shows, with no preview (the user, 2026-11-18)', async ({ page }) => {
+  const elsewhere: string[] = [];
+  page.context().on('request', (r) => {
+    if (r.url().startsWith('https://example.com/')) elsewhere.push(r.url());
+  });
+  const script = '---\ntitle: Linked\n---\n\n# Files\n\n## 1\nDialogue:\nA leaf.\n\nOn screen:\nThe leaf.\n\nFiles:\n- [Leaf photo](https://example.com/leaf.jpg)\n';
+  await setUp(page, '', { 'Linked/script.md': script });
+  await page.getByText('Linked').click();
+  await expect(page.getByRole('link', { name: 'Leaf photo' })).toBeVisible();
+  await expect(page.locator('img[src^="https://example.com"]')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Export' }).click();
+  await page.getByRole('button', { name: 'Print…' }).click();
+  await expect(page.locator('img[src^="https://example.com"]')).toHaveCount(0);
+  expect(elsewhere).toEqual([]);
 });

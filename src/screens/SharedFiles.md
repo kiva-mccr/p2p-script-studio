@@ -14,3 +14,4 @@ listed, a file or link opens in a new tab, and a script's name opens that script
 - Thumbnails are blob URLs of images in other scripts' folders, revoked when the window closes; a linked image uses
   its link. One that won't draw is hidden and the tile is plain.
 - A file that can't be copied (still syncing, removed) says so in the footer; the window stays open.
+- A picture linked from another site is never shown (SE-1, the user's pick): only its link. See lib/csp.md.
