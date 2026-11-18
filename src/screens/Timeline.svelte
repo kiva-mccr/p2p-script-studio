@@ -12,6 +12,7 @@
   import { waveform, wavePath } from '../lib/waveform';
   import AfterEditor from './AfterEditor.svelte';
   import { near } from '../lib/near';
+  import { makePreview, revokePreview, type Preview } from '../lib/preview';
 
   // The storyboard timeline (SB-1, board 63), in a drawer at the bottom of the screen (SB-4, board 76): sections, rows with their pictures, and
   // the voice-over, laid out in time. Mostly a view of the script; the only choices are the pictures and the holds
@@ -146,25 +147,42 @@
   // The pictures, as blob URLs from the script's folder, made while the timeline is open and freed after. Like the
   // previews (AP-39), only once it comes near the screen: opening a script doesn't wait on the timeline's work.
   let shown = $state(false);
+  // A video's block shows a still from its start (#205: it was a dark chip with its name, which looked unloaded),
+  // made as Assets' thumbnails are (lib/preview.ts); the preview while playing plays the video itself.
   let urls = $state<Record<string, string>>({});
+  let stills = $state<Record<string, string>>({});
   const paths = $derived([...new Set(rows(script).flatMap((r) => pictureFiles(r).map((p) => p.path)))].join('\n'));
   $effect(() => {
     const list = paths ? paths.split('\n') : [];
     if ((hidden && !player.started) || !shown) return; // folded, still made while playing, for the preview
     let gone = false;
     const made: string[] = [];
+    const previews: Preview[] = [];
     (async () => {
       const next: Record<string, string> = {};
+      const files: [string, File][] = [];
       for (const path of list) {
         const file = await assetFile(dir, path);
         if (gone) return;
         if (file) made.push((next[path] = URL.createObjectURL(file)));
+        if (file && isVideo(path)) files.push([path, file]);
       }
       urls = next;
+      const still: Record<string, string> = {};
+      for (const [path, file] of files) {
+        const preview = await makePreview(file, path);
+        if (gone) return revokePreview(preview);
+        if (preview?.kind !== 'video') continue;
+        previews.push(preview);
+        URL.revokeObjectURL(preview.url); // only the still is used here
+        still[path] = preview.still;
+        stills = { ...still };
+      }
     })();
     return () => {
       gone = true;
       made.forEach((u) => URL.revokeObjectURL(u));
+      previews.forEach((p) => p.kind === 'video' && URL.revokeObjectURL(p.still));
     };
   });
   const isVideo = (path: string) => /\.(mp4|webm|mov|m4v)$/i.test(path);
@@ -460,7 +478,9 @@
 </section>
 
 {#snippet picture(path: string)}
-  {#if isVideo(path)}
+  {#if isVideo(path) && stills[path]}
+    <span class="still"><img src={stills[path]} alt="" /><span class="badge" aria-hidden="true">▶</span></span>
+  {:else if isVideo(path)}
     <span class="vid" aria-hidden="true">▶ {path.split('/').at(-1)}</span>
   {:else if urls[path]}
     <img src={urls[path]} alt="" />
@@ -542,8 +562,8 @@
   .seq { gap: 2px; padding: 2px; }
   .shot { height: 100%; flex: none; overflow: hidden; border-radius: 3px; }
   .collage { align-items: center; justify-content: center; background: #f4f4f4; }
-  .collage img, .collage .vid, .collage .gap { height: 62px; width: auto; max-width: 48%; margin: 0 1px; }
-  .seq img, .seq .vid, .seq .gap { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .collage img, .collage .vid, .collage .gap, .collage .still { height: 62px; width: auto; max-width: 48%; margin: 0 1px; }
+  .seq img, .seq .vid, .seq .gap, .seq .still { width: 100%; height: 100%; object-fit: cover; display: block; }
   .vid { display: flex; align-items: flex-end; box-sizing: border-box; padding: 4px; background: #2b2b2b; color: #eee; font-size: 10px; overflow: hidden; white-space: nowrap; }
   .gap { display: block; background: #e4e4e4; min-width: 20px; }
   .card { align-items: center; justify-content: center; padding: 8px; background: #f4f4f4; color: var(--muted); font-size: 11px; line-height: 1.35; text-align: center; }
@@ -567,7 +587,13 @@
   .pick { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 12px 0 6px; border: 1px solid var(--accent); border-radius: 8px; background: #fff; font-size: 13px; }
   .pick.off { border-color: var(--line-strong); opacity: 0.65; }
   .mini { display: inline-flex; width: 28px; height: 28px; border-radius: 4px; overflow: hidden; background: #e4e4e4; }
-  .mini img, .mini .vid { width: 100%; height: 100%; object-fit: cover; }
+  .mini img, .mini .vid, .mini .still { width: 100%; height: 100%; object-fit: cover; }
+  /* A video's still (#205), with a small ▶ so it reads as a clip. */
+  .still { position: relative; display: inline-block; overflow: hidden; }
+  .still img { width: 100%; height: 100%; max-width: none; margin: 0; object-fit: cover; display: block; }
+  .still .badge { position: absolute; left: 3px; bottom: 3px; padding: 0 4px; border-radius: 3px; background: rgb(0 0 0 / 0.55); color: #fff; font-size: 9px; line-height: 14px; }
+  .collage .still img { width: auto; }
+  .mini .still .badge { display: none; }
   .add { min-height: 40px; padding: 0 12px; border: 1px dashed var(--line-strong); border-radius: 8px; background: none; font-size: 13px; color: #3d3d3d; }
   .segs { display: inline-flex; gap: 2px; padding: 3px; border-radius: 10px; background: #e8e8e8; }
   .segs button { min-height: 34px; padding: 0 12px; border: 0; border-radius: 8px; background: none; font-size: 13px; font-weight: 500; }
