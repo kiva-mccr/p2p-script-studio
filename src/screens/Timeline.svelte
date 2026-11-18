@@ -107,6 +107,21 @@
     zoomed = true;
   }
   const zoomBy = (f: number) => ((zoomed = true), (zoom = Math.min(ZOOM_MAX, Math.max(1, zoom * f))));
+  // Issue #245 (board 80): open, the strip stays above the tracks with a box around the part in view, in % of the
+  // whole; kept up to date as the tracks scroll, zoom (they change width) or the window resizes.
+  let view = $state({ left: 0, width: 100 });
+  function inView(node: HTMLElement) {
+    const see = () => {
+      const w = node.scrollWidth || 1;
+      view = { left: (node.scrollLeft / w) * 100, width: Math.min(100, (node.clientWidth / w) * 100) };
+    };
+    const seen = new ResizeObserver(see);
+    seen.observe(node);
+    if (node.firstElementChild) seen.observe(node.firstElementChild);
+    node.addEventListener('scroll', see, { passive: true });
+    see();
+    return { destroy: () => (seen.disconnect(), node.removeEventListener('scroll', see)) };
+  }
   // The page keeps the drawer's height as its bottom scroll padding, so a row brought into view (a click on a block,
   // Play following the rows, the cursor) isn't left behind the drawer; and as --drawer, which lifts the corner links,
   // Undo and the messages above it.
@@ -323,10 +338,7 @@
       <span class="title">Timeline</span>
       {#if total}<span class="sum">{clock(total)}{#if !hidden}{' '}<span class="help">· {readOnly ? 'click a block to comment on its row' : 'from the takes, read time where there is none'}</span>{/if}</span>{/if}
       {#if hidden && total}
-        <span class="strip" aria-hidden="true">
-          {#each laid.blocks as b (b.id)}<span class:now={now?.id === b.id} style:left="{pct(b.start)}%" style:width="{pct(b.seconds)}%"></span>{/each}
-          {#if now}<span class="head" style:left="{pct(player.time)}%"></span>{/if}
-        </span>
+        {@render strip(false)}
       {:else}
         <span class="grow"></span>
       {/if}
@@ -351,7 +363,8 @@
     {#if !total}
       <p class="empty help">The timeline fills in as rows get dialogue or a take.</p>
     {:else}
-      <div class="scroll" use:fit>
+      {@render strip(true)}
+      <div class="scroll" use:fit use:inView>
         <div class="tracks" style:width="{zoom * 100}%">
           <div class="ruler" aria-hidden="true">
             {#each ticks as t (t)}<span style:left="{pct(t)}%">{clock(t)}</span>{/each}
@@ -489,6 +502,16 @@
   {/if}
 {/snippet}
 
+<!-- The thin strip of the whole script: in the bar when folded; open, above the tracks with a box around the part in
+     view (#245). A picked block lights up in it; the playhead only while playing. -->
+{#snippet strip(open: boolean)}
+  <span class="strip" class:open aria-hidden="true">
+    {#each laid.blocks as b (b.id)}<span class:on={selected === b.id} class:now={now?.id === b.id} style:left="{pct(b.start)}%" style:width="{pct(b.seconds)}%"></span>{/each}
+    {#if open}<span class="view" style:left="{view.left}%" style:width="{view.width}%"></span>{/if}
+    {#if now}<span class="head" style:left="{pct(player.time)}%"></span>{/if}
+  </span>
+{/snippet}
+
 <style>
   /* The drawer (SB-4): sticks to the bottom of the screen; at the end of the script it rests under the last row, so
      that row is never hidden behind it. Open, at most about half the screen: the rest scrolls inside .body (not the
@@ -501,7 +524,10 @@
   .title { font-size: 14px; font-weight: 600; }
   .strip { position: relative; flex: 1; min-width: 60px; height: 8px; }
   .strip span { position: absolute; top: 0; bottom: 0; box-sizing: border-box; border-right: 2px solid var(--ground); border-radius: 3px; background: #c9d7f2; }
+  .strip span.on { background: var(--accent); }
   .strip span.now { background: #f2c3ad; }
+  .strip.open { display: block; height: 8px; margin: 4px 0 10px; }
+  .strip .view { top: -4px; bottom: -4px; border: 1.5px solid #6b7fa8; border-radius: 4px; background: rgba(42, 91, 215, 0.06); }
   .strip .head { top: -4px; bottom: -4px; border: 0; border-radius: 0; background: #d9480f; }
   .head { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: #d9480f; pointer-events: none; z-index: 2; }
   .blk.now { box-shadow: inset 0 0 0 2px #d9480f; }

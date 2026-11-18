@@ -68,6 +68,28 @@ test('a long timeline opens zoomed in to where its rows can be read; a short one
   await expect(t.getByRole('button', { name: 'Zoom out' })).toBeDisabled();
 });
 
+test('open, the strip stays above the tracks, with a box around the part in view and the picked row lit (#245)', async ({ page }) => {
+  await setUp(page, '#/Episode%2003', files);
+  const t = timeline(page);
+  const strip = t.locator('.strip.open');
+  const box = strip.locator('.view');
+  await expect(strip).toBeVisible();
+  // Whole: the box goes round the whole strip.
+  await expect.poll(async () => Math.round((await box.boundingBox())!.width)).toBe(Math.round((await strip.boundingBox())!.width));
+  // Zoomed in, it's a quarter as wide, and it follows the tracks as they scroll.
+  await t.getByRole('button', { name: 'Zoom in' }).click();
+  await t.getByRole('button', { name: 'Zoom in' }).click();
+  await expect.poll(async () => Math.round((await box.boundingBox())!.width / 4)).toBe(Math.round((await strip.boundingBox())!.width / 16));
+  const at = (await box.boundingBox())!.x;
+  await t.locator('.scroll').evaluate((el) => (el.scrollLeft = el.scrollWidth));
+  await expect.poll(async () => (await box.boundingBox())!.x).toBeGreaterThan(at + 50);
+  // A picked row lights up in the strip; not playing, there's no playhead.
+  await expect(strip.locator('span.on')).toHaveCount(0);
+  await t.getByRole('button', { name: /^Row 2 · / }).click();
+  await expect(strip.locator('span.on')).toHaveCount(1);
+  await expect(t.locator('.head')).toHaveCount(0);
+});
+
 test('a video in the timeline shows a still from it, not a chip', async ({ page }) => {
   const clip = await webm(page);
   await setUp(page, '#/Episode%2003', { ...files, 'Episode 03/script.md': script.replace('leaf-push-in.mp4', 'clip.webm'),
@@ -190,7 +212,9 @@ test('folded, a push past the bottom unfolds it and scrolling up folds it; opene
   await page.mouse.move(640, 300);
   // Reaching the bottom does nothing; a push past it unfolds the drawer.
   await page.mouse.wheel(0, 100000);
-  await expect.poll(() => page.evaluate(() => innerHeight + scrollY >= document.documentElement.scrollHeight - 2)).toBe(true);
+  // Pictures in the rows can still be loading and make the page taller after the wheel (seen in CI under load):
+  // finish the way down with scrollTo, which is no wheel, so it never counts as a push.
+  await expect.poll(() => page.evaluate(() => (scrollTo(0, document.documentElement.scrollHeight), innerHeight + scrollY >= document.documentElement.scrollHeight - 2))).toBe(true);
   await page.waitForTimeout(400); // a new push, not the same one going on
   await expect(bar).toHaveAttribute('aria-expanded', 'false');
   await page.mouse.wheel(0, 200);
