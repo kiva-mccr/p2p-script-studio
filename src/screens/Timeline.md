@@ -72,7 +72,8 @@ offers its pictures, Sequence or Collage, + Add a picture (only for the timeline
   too). `ownAt` starts at -Infinity: `performance.now()` counts from the page's load, so 0 blocked following for the
   first 5 s.
 - ✕ on the preview closes it (SB-11, #225): kept in this browser for every script (`timeline-preview`, 'closed'), so
-  it stays closed when playing again, until Show preview (`.show`, in `.top`, only while playing with it closed).
+  it stays closed when playing again, until Show preview (`.show`, in `.top`, only while playing with it closed; blue text with a picture icon, styled
+  like Fold, #333).
   Folded with it closed, no pictures are made. The time in its bar never wraps (it ellipsizes): with ✕ the bar of the
   small upright preview wrapped, made it taller and ran it under the top bar in a short window.
 - Cut on a word: the dialogue's words as buttons; a click toggles a cut there (at most one fewer than the

@@ -427,7 +427,8 @@
       {/if}
     </button>
     {#if now && !previewOn}
-      <button class="show" onclick={() => showPreview(true)}>Show preview</button>
+      <!-- Blue text with a small picture, like Fold (#333, board 92). -->
+      <button class="show" onclick={() => showPreview(true)}><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 16l5-5 4 4 3-3 6 6" /><circle cx="16" cy="9" r="1.5" /></svg>Show preview</button>
     {/if}
     {#if !hidden && total && !readOnly}
       <span class="segs shape" role="group" aria-label="Video shape" title="The shape of the preview, its collages and the exported video">
@@ -667,7 +668,8 @@
   .zoom { display: inline-flex; gap: 2px; }
   .zoom button { width: 32px; height: 32px; border: 1px solid var(--line-strong); border-radius: 6px; background: #fff; font-size: 15px; }
   .zoom button:disabled { opacity: 0.4; }
-  .show { flex: none; min-height: 32px; padding: 0 10px; font-size: 13px; }
+  .show { flex: none; display: inline-flex; align-items: center; gap: 5px; min-height: 44px; padding: 0 4px; border: 0; background: none; font-size: 13px; color: var(--accent); cursor: pointer; }
+  .show svg { flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
   .fold { flex: none; min-height: 44px; padding: 0 4px; border: 0; background: none; font-size: 13px; color: var(--accent); cursor: pointer; }
   .empty { margin: 0; font-size: 13px; color: var(--muted); }
   .scroll { overflow-x: auto; padding-top: 4px; }
