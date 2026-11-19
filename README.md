@@ -55,6 +55,8 @@ Status: a first working version. What it does today:
   "Reuse a file…" lists this script's own files first, then the files and links of every other script in the folder:
   pick one and it is added (copied in from another script). Files can also be dragged from Explorer onto a row's
   Images & files: every row shows a dashed outline while you drag, and the one under the pointer turns solid.
+  A screen grab can be pasted straight in: click a row's Images & files and press Ctrl+V (saved as "pasted
+  date time.png").
   The script list's Files button shows the files of every script, to browse.
   Files show a small preview: a picture (also .tif, and a PDF's first page with its page count), a video that plays
   in place, a slim player for sound, or the first lines of a Word, text, Markdown or CSV file. Other kinds

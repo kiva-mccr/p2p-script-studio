@@ -8,6 +8,7 @@
   import { readFileRef, timelineOnly } from '../lib/script';
   import { near } from '../lib/near';
   import { fileDrag } from '../lib/filedrag.svelte';
+  import { pastedName } from '../lib/pasted';
 
   // files: the row's Files lines. root and here: the picked folder and this script's folder name, for "Reuse a
   // file…" (AS-1, #262); row: the row's number. onChange: called with the new list. onNotice: a message for the page.
@@ -141,6 +142,15 @@
     addFiles(Array.from(e.dataTransfer!.files));
   }
 
+  // A screen grab pasted with Ctrl+V while the cell (or anything in it) has the focus (#304): only pictures are
+  // taken, named "pasted 2026-11-18 21-14.png" (a grab is always called image.png); text pastes as usual.
+  function pasted(e: ClipboardEvent) {
+    const pictures = Array.from(e.clipboardData?.files ?? []).filter((file) => file.type.startsWith('image/'));
+    if (!pictures.length) return;
+    e.preventDefault();
+    addFiles(pictures.map((file) => new File([file], pastedName(file, new Date()), { type: file.type })));
+  }
+
   async function addFiles(chosen: File[]) {
     if (!chosen.length) return;
     try {
@@ -170,8 +180,10 @@
 
 <svelte:window onpointerdown={away} />
 
-<div class="files" class:target={fileDrag.on} class:over={hover} data-tour="files" use:near={() => (shown = true)}
-  role="group" aria-label="Images and files, row {row}" ondragover={dragover} ondragleave={dragleave} ondrop={dropped}>
+<!-- tabindex: a click on the cell gives it the focus, so Ctrl+V lands here (#304). -->
+<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+<div class="files" class:target={fileDrag.on} class:over={hover} data-tour="files" use:near={() => (shown = true)} tabindex="0"
+  role="group" aria-label="Images and files, row {row}" ondragover={dragover} ondragleave={dragleave} ondrop={dropped} onpaste={pasted}>
   {#if hover}<span class="drop-here">Drop to add to row {row}</span>{/if}
   {#each files as line, i (i + line)}
     {#if extras || !timelineOnly(line)}
@@ -210,10 +222,13 @@
       </span>
       <!-- svelte-ignore a11y_autofocus -->
       <input bind:value={typed} placeholder="or paste a link, or describe it" aria-label="Link or description" autofocus />
-      <span class="help drop-hint">or drop a file here</span>
+      <span class="help drop-hint">or drop a file here, or paste a picture</span>
     </form>
   {:else}
-    <button class="add" data-keep bind:this={addButton} onclick={() => (adding = true)}>+ Add</button>
+    <span class="add-line">
+      <button class="add" data-keep bind:this={addButton} onclick={() => (adding = true)}>+ Add</button>
+      <span class="help paste-hint">or paste a picture (Ctrl+V)</span>
+    </span>
   {/if}
   <input type="file" multiple hidden bind:this={picker} onchange={picked} />
   {#if browsing}<SharedFiles {root} {here} {dir} {row} onAdd={addShared} onClose={() => (browsing = false)} />{/if}
@@ -243,8 +258,13 @@
   .remove { border: 0; background: none; color: var(--muted); padding: 4px 8px; font-size: 15px; opacity: 0; }
   .chip:hover .remove, .remove:focus-visible { opacity: 1; }
   .remove:hover { color: var(--danger); }
-  .add { border: 0; background: none; padding: 4px 0; color: var(--muted); font-size: 13px; opacity: 0; }
-  .add:focus-visible, :global(.row:hover) .add, :global(.row:focus-within) .add { opacity: 1; }
+  .files:focus { outline: 1px solid var(--line-strong); outline-offset: 4px; }
+  /* The hint never takes a second line: in a narrow column it is cut short, so rows don't grow (#304). */
+  .add-line { display: flex; align-items: baseline; gap: 6px; max-width: 100%; }
+  .add, .paste-hint { opacity: 0; }
+  .add { flex: none; border: 0; background: none; padding: 4px 0; color: var(--muted); font-size: 13px; white-space: nowrap; }
+  .paste-hint { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; color: var(--muted); }
+  .add:focus-visible, :global(.row:hover) :is(.add, .paste-hint), :global(.row:focus-within) :is(.add, .paste-hint) { opacity: 1; }
   .add:hover { color: var(--accent); }
   .add-form { display: flex; flex-direction: column; gap: 6px; width: 100%; }
   .ways { display: flex; flex-wrap: wrap; gap: 6px; }
