@@ -250,12 +250,18 @@ test('approve, send for review again, and send back to the writer; each is in Hi
   await page.getByRole('button', { name: 'Approve' }).click(); // nothing open: approved at once
   await expect(page.getByRole('region', { name: 'Still open' })).toHaveCount(0);
   await expect(page.getByText('Approved', { exact: true })).toBeVisible();
+  // The pill says how long, and who on hover (#230).
+  const pill = page.locator('header .state');
+  await expect(pill.locator('.age')).toHaveText('just now'); // "· " is drawn by CSS
+  await expect(pill).toHaveAttribute('title', /^Approved by Sam, \w+day, \w{3} \d+, \d+:\d\d [ap]m$/);
   await expect.poll(() => readFile(page, SCRIPT)).toContain('status: approved\n');
   await expect(page.getByRole('button', { name: 'Send for review', exact: true })).toHaveCount(0); // only Write sends it
   await page.getByRole('button', { name: 'Write', exact: true }).click();
   await page.getByRole('button', { name: 'Send for review' }).click();
   await page.getByRole('region', { name: 'Send for review' }).getByRole('button', { name: 'Send for review' }).click(); // no note
   await expect(page.getByText('In review', { exact: true })).toBeVisible(); // Write shows where it stands
+  await expect(pill.locator('.age')).toHaveText('just now');
+  await expect(pill).toHaveAttribute('title', /^Sent for review by Sam, /);
   await page.getByRole('button', { name: /^Review/ }).click();
   await page.getByRole('button', { name: 'Send back to writer' }).click();
   await page.getByRole('region', { name: 'Send back to writer' }).getByRole('button', { name: 'Send back to writer' }).click(); // no note
@@ -503,8 +509,11 @@ test('columns fold in Review, apart from Write, and picking a comment opens its 
 test('the top bar is one line at 1280, in Write and in Review, with who was here shown', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 800 });
   const ago = new Date(Date.now() - 12 * 60000).toISOString();
+  const sentAt = new Date(Date.now() - 3 * 24 * 3600000);
+  const sent = JSON.stringify({ v: 1, id: 'sent0000', parents: [], who: 'Priya', when: sentAt.toISOString(), kind: 'review', note: 'Sent for review', sha256: '', text: example });
   await openReview(page, { ...ALL_FILES, 'Episode 03/.studio/editing/priya_20261101T120000000Z.json':
-    JSON.stringify({ v: 1, who: 'Priya', since: ago, seen: ago, last_written: '', left: ago }) }); // in review: Send back and Approve
+    JSON.stringify({ v: 1, who: 'Priya', since: ago, seen: ago, last_written: '', left: ago }), // in review: Send back and Approve
+    [`Episode 03/.studio/versions/${sentAt.toISOString().replace(/[-:]|\.\d+/g, '')}_sent0000.json`]: sent });
   await expect(page.getByRole('button', { name: 'Priya · 12 min ago' })).toBeVisible();
   const bar = page.locator('header').filter({ has: page.getByRole('navigation', { name: 'Mode' }) });
   const line = async () => (await bar.boundingBox())!.height;
@@ -512,7 +521,10 @@ test('the top bar is one line at 1280, in Write and in Review, with who was here
   expect(one).toBeLessThan(80);
   await page.getByRole('button', { name: 'Write', exact: true }).click();
   await expect(page.getByText('In review', { exact: true })).toBeVisible();
+  await expect(page.locator('header .state .age')).toHaveText('3 days'); // how long fits too (#230)
   expect(await line()).toBe(one);
+  await page.setViewportSize({ width: 1100, height: 800 });
+  await expect(page.locator('header .state .age')).toBeHidden(); // and goes first when the window is narrow
 });
 
 test('the top bar stays up on a long script, with no links beside the state (UX-4, UX-13)', async ({ page }) => {
