@@ -483,7 +483,7 @@
       </div>
     {:else}
       <WriteRow bind:block={() => block, (b) => (script.blocks[i] = b)} {i} n={numbers.get(block)} {columns} folded={folds.folded} cast={speakerColumn ? cast : null} {dir} {root} {folderName} {voice} {player} {canPlay} {name}
-        lit={chosen === block.id} flag={flagged.get(block.id)} flagAt={flagIds.indexOf(block.id) + 1} flagCount={flagIds.length}
+        lit={chosen === block.id && !player.started} flag={flagged.get(block.id)} flagAt={flagIds.indexOf(block.id) + 1} flagCount={flagIds.length}
         onStepFlag={(by) => stepFrom(block.id, by)} stepped={current === block.id} said={talkByRow.get(block.id) ?? []} talking={talkRow === block.id} {visit}
         came={came?.row === block.id ? came : null} start={started.get(block.id)} onPutBack={(field) => putBack(block, field)} {onChange} {onUndo} {onNotice} {onPlayFrom} {onFlag} {onTalk}
         onMove={(by) => move(i, by)} onInsert={() => insertRow(i + 1)} onRemove={() => remove(i)} onToSection={() => toSection(i)}

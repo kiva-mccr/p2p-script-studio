@@ -468,7 +468,7 @@
           <div class="lane blocks">
             {#each laid.blocks as b (b.id)}
               {@const row = b.kind === 'row' ? byId.get(b.id) : undefined}
-              <button class="blk {b.kind}" class:on={selected === b.id} class:now={now?.id === b.id} style:left="{pct(b.start)}%" style:width="{pct(b.seconds)}%"
+              <button class="blk {b.kind}" class:on={selected === b.id && !player.started} class:now={now?.id === b.id} style:left="{pct(b.start)}%" style:width="{pct(b.seconds)}%"
                 aria-label={tip(b)} aria-pressed={selected === b.id} onclick={() => pick(b)}
                 onmouseenter={(e) => showTip(b, e)} onmouseleave={() => (tipFor = '')} onfocus={(e) => showTip(b, e)} onblur={() => (tipFor = '')}>
                 {#if b.kind === 'row'}
@@ -610,10 +610,10 @@
 {/snippet}
 
 <!-- The thin strip of the whole script: in the bar when folded; open, above the tracks with a box around the part in
-     view (#245). A picked block lights up in it; the playhead only while playing. -->
+     view (#245). A picked block lights up in it, except while playing (#335); the playhead only while playing. -->
 {#snippet strip(open: boolean)}
   <span class="strip" class:open aria-hidden="true">
-    {#each laid.blocks as b (b.id)}<span class:on={selected === b.id} class:now={now?.id === b.id} style:left="{pct(b.start)}%" style:width="{pct(b.seconds)}%"></span>{/each}
+    {#each laid.blocks as b (b.id)}<span class:on={selected === b.id && !player.started} class:now={now?.id === b.id} style:left="{pct(b.start)}%" style:width="{pct(b.seconds)}%"></span>{/each}
     {#if open}<span class="view" style:left="{view.left}%" style:width="{view.width}%"></span>{/if}
     {#if now}<span class="head" style:left="{pct(headTime)}%"></span>{/if}
   </span>
