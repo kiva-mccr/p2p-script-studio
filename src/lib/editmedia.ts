@@ -57,7 +57,7 @@ async function make(dir: FileSystemDirectoryHandle, source: Source, width: numbe
       return { data: await draw(width, height, '#ffffff', async (g) => fit(g, await loadImage(file), 0, 0, width, height)), info: frame };
     }
     case 'card':
-      return { data: await draw(width, height, '#e9e9e9', (g) => card(g, source.text, width, height)), info: frame };
+      return { data: await draw(width, height, '#e9e9e9', (g) => card(g, source.text, width, height, source.find)), info: frame };
     case 'collage': {
       const pictures = await Promise.all(source.paths.map(async (path) => {
         const file = await assetFile(dir, path);
@@ -159,20 +159,36 @@ export function collage(g: CanvasRenderingContext2D, pictures: (Drawable | null)
   pictures.forEach((pic, i) => pic && (upright ? fit(g, pic, 0, i * each, width, each) : fit(g, pic, i * each, 0, each, height)));
 }
 
-// Words on a grey card, wrapped and centred, like the timeline's cards.
-export function card(g: CanvasRenderingContext2D, text: string, width: number, height: number) {
+// Words on a grey card, wrapped and centred, like the timeline's cards. `find` (#227, board 86): what is still to find
+// or film for that row, in smaller grey words under them.
+export function card(g: CanvasRenderingContext2D, text: string, width: number, height: number, find: string[] = []) {
   const size = Math.round(Math.min(width, height) / 16);
-  g.fillStyle = '#3d3d3d';
-  g.font = `${size}px Inter, system-ui, sans-serif`;
+  const small = Math.round(size * 0.6);
   g.textAlign = 'center';
   g.textBaseline = 'middle';
   const room = width * 0.8;
-  const lines: string[] = [];
-  for (const word of text.split(/\s+/)) {
-    const line = lines.length ? `${lines[lines.length - 1]} ${word}` : word;
-    if (lines.length && g.measureText(line).width <= room) lines[lines.length - 1] = line;
-    else lines.push(word);
-  }
-  const shown = lines.slice(0, 8);
-  shown.forEach((line, i) => g.fillText(line, width / 2, height / 2 + (i - (shown.length - 1) / 2) * size * 1.3));
+  const wrapped = (words: string, font: string, most: number) => {
+    g.font = font;
+    const lines: string[] = [];
+    for (const word of words.split(/\s+/).filter(Boolean)) {
+      const line = lines.length ? `${lines[lines.length - 1]} ${word}` : word;
+      if (lines.length && g.measureText(line).width <= room) lines[lines.length - 1] = line;
+      else lines.push(word);
+    }
+    return lines.length > most ? [...lines.slice(0, most - 1), `${lines[most - 1]}…`] : lines;
+  };
+  const big = `${size}px Inter, system-ui, sans-serif`;
+  const note = `${small}px Inter, system-ui, sans-serif`;
+  const shown = wrapped(text, big, 8);
+  const extra = find.length ? ['Still to find or film:', ...wrapped(find.join(' · '), note, 4)] : [];
+  const gap = shown.length && extra.length ? size * 0.6 : 0;
+  const tall = shown.length * size * 1.3 + gap + extra.length * small * 1.5;
+  let y = (height - tall) / 2;
+  g.font = big;
+  g.fillStyle = '#3d3d3d';
+  for (const line of shown) g.fillText(line, width / 2, (y += size * 1.3) - size * 0.65);
+  y += gap;
+  g.font = note;
+  g.fillStyle = '#5f5f5f';
+  for (const line of extra) g.fillText(line, width / 2, (y += small * 1.5) - small * 0.75);
 }

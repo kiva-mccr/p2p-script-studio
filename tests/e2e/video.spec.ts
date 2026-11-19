@@ -65,6 +65,33 @@ test('each clip shows a tiny picture of itself; a placeholder a grey card (#220)
   await expect(clips.nth(2)).toHaveText('Collage');
 });
 
+test("a row's card says what's still to find or film, unless the box is unticked (#227)", async ({ page }) => {
+  await openVideo(page);
+  const preview = page.getByRole('region', { name: 'Preview' });
+  const box = page.getByLabel("Say what's still to find on placeholders");
+  await expect(box).toBeChecked(); // on by default
+  await preview.locator('.clip').nth(5).click(); // row 5's card: "Park b-roll of a deep breath (to film)" in its Files
+  const canvas = preview.locator('canvas');
+  const drawn = () => canvas.evaluate((c: HTMLCanvasElement) => c.toDataURL());
+  // Grey words under the card's own: the card's lower part has dark pixels only while the box is ticked.
+  const lowerInk = () => canvas.evaluate((c: HTMLCanvasElement) => {
+    const { data } = c.getContext('2d')!.getImageData(0, Math.round(c.height * 0.6), c.width, Math.round(c.height * 0.35));
+    let ink = 0;
+    for (let i = 0; i < data.length; i += 4) if (data[i] < 160) ink++;
+    return ink;
+  });
+  await expect.poll(lowerInk).toBeGreaterThan(50);
+  const withList = await drawn();
+  await box.uncheck();
+  await expect.poll(drawn).not.toBe(withList);
+  await expect.poll(lowerInk).toBe(0);
+
+  await page.reload();
+  await page.getByRole('button', { name: 'Export / Share' }).click();
+  await page.getByRole('button', { name: 'Video (.mp4)' }).click();
+  await expect(box).not.toBeChecked();
+});
+
 test('very many clips stay inside the row and the page; narrow ones drop their picture (#220)', async ({ page }) => {
   const many = Array.from({ length: 400 }, (_, i) => `## ${i + 1} <!-- id: m${String(i).padStart(4, '0')} -->\nDialogue:\nWord.\n\nFiles:\n- assets/leaf-closeup.jpg\n`).join('\n');
   await openVideo(page, { 'Episode 03/script.md': `---\ntitle: Many\n---\n\n${many}` });

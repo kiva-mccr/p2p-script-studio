@@ -14,8 +14,9 @@ import type { Shape } from './timeline';
 export type VideoSize = '720' | '1080';
 // The video's settings: its size (its shape comes from the script, unless a size of your own is set, #217) and frame
 // rate (30 unless chosen), captions, rows with no take, videos' own sound.
-export type VideoHow = { size: VideoSize | 'custom'; fps: Fps | 'custom'; captions: boolean; skip: boolean; sound: boolean } & Own;
-export const VIDEO: VideoHow = { size: '1080', fps: '30', captions: false, skip: false, sound: false, ...OWN };
+// `find` (#227): placeholders' cards list what their row still has to find or film.
+export type VideoHow = { size: VideoSize | 'custom'; fps: Fps | 'custom'; captions: boolean; skip: boolean; sound: boolean; find: boolean } & Own;
+export const VIDEO: VideoHow = { size: '1080', fps: '30', captions: false, skip: false, sound: false, find: true, ...OWN };
 const RATE = 48000;
 const AUDIO_BITS = 128_000;
 
@@ -72,7 +73,7 @@ export function wrap(text: string, room: number, measure: (s: string) => number)
 // What a clip shows, ready to draw: pictures (one, or a collage's), a card, or a video playing.
 type Ready =
   | { kind: 'pics'; pics: (Drawable | null)[]; collage: boolean }
-  | { kind: 'card'; text: string }
+  | { kind: 'card'; text: string; find?: string[] }
   | { kind: 'video'; next: (local: number) => Promise<CanvasImageSource | null>; done: () => void };
 
 // Reads a clip's media from the folder. A file that can't be read is a card with its name (and named in `missing`).
@@ -85,7 +86,7 @@ async function ready(dir: FileSystemDirectoryHandle, source: Source, item: Item,
   };
   switch (source.kind) {
     case 'card':
-      return { kind: 'card', text: source.text };
+      return { kind: 'card', text: source.text, find: source.find };
     case 'collage': {
       const pics = await Promise.all(source.paths.map((path) => one(path)));
       source.paths.forEach((path, i) => !pics[i] && missing.add(path));
@@ -148,7 +149,7 @@ async function playVideo(file: File, item: Item, fps: number): Promise<Ready> {
 function paint(g: CanvasRenderingContext2D, width: number, height: number, look: Ready | null, shot: CanvasImageSource | null, caption: string) {
   g.fillStyle = look?.kind === 'card' ? '#e9e9e9' : '#000000';
   g.fillRect(0, 0, width, height);
-  if (look?.kind === 'card') card(g, look.text, width, height);
+  if (look?.kind === 'card') card(g, look.text, width, height, look.find);
   else if (look?.kind === 'pics') look.collage ? collage(g, look.pics, width, height) : look.pics[0] && fit(g, look.pics[0], 0, 0, width, height);
   else if (shot) fit(g, shot as Drawable, 0, 0, width, height);
   if (caption) drawCaption(g, caption, width, height);

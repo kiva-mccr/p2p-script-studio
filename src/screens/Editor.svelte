@@ -681,7 +681,7 @@
 </div>
 
 {#if exporting && script && dir}
-  <Export {script} {dir} folder={folder.name} title={title ?? ''} version={exporting.version} start={exporting.to} onPrint={print} onBack={() => (exporting = null)} />
+  <Export {script} {dir} folder={folder.name} title={title ?? ''} version={exporting.version} start={exporting.to} missing={lostFiles} onPrint={print} onBack={() => (exporting = null)} />
 {:else}
 <Header folder={folder.name} title={title ?? ''} ready={!!script} {mode} writeCount={mode === 'write' ? 0 : writeNew} reviewCount={mode === 'review' ? 0 : reviewNew} {loose} missingCount={lostFiles.size} {voiceText} voiceWpm={takesSpeed(voice.takes)} editors={file.editors} seen={file.seen} folding={file.folding} {reviewStatus} {stateAge} {heldCount} {status} problem={file.problem}
   play={canPlay ? { time: player.started ? `${clock(player.time)} / ${clock(player.total)}` : '', on: player.on } : null} onPlay={() => play()} onStop={() => player.stop()}

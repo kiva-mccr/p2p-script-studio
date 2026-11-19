@@ -901,6 +901,11 @@ and suggestions, keeps every version, and exports them for production.
   like the other settings. The video keeps Wide / Upright from the timeline unless a size of your own is set (made
   even, as H.264 needs), and now has a frame rate too (30 as before). Resolve / Premiere's frame size is radio
   buttons like the mock-up, no longer a list. Built 2026-11-19 (lib/framing.ts, screens/FrameChoices.svelte).
+- [x] **EX-27** Placeholders say what's still to find (issue #227, board 86 agreed by the user): in the video export
+  and its preview, a placeholder's card (and the card of a row with no pictures) lists under its words what that row
+  still has to find or film: its "to find" notes and its files missing from the folder, as in Assets. On by default;
+  "Say what's still to find on placeholders" turns it off, remembered like the other settings. The Resolve / Premiere
+  cards are as before. Built 2026-11-19 (lib/assets.ts `stillToFind`, lib/editmedia.ts `card`).
 - [-] **EX-17** A shoot checklist (suggested; shelved by the user, to talk through later): the asset list (EX-6) with
   shared tick boxes for each row's on-screen shots and files, for the day of filming.
 - [-] **AP-45** Dictate dialogue into a row (suggested; shelved by the user, 2026-11-14, to consider later): speak into

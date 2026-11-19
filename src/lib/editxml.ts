@@ -3,7 +3,7 @@
 // (`toSrt`). Only reads the script and the timeline's layout; the media files themselves are made by lib/editmedia.ts.
 
 import { clearMarks } from './format';
-import { readFileRef, rows, type Script } from './script';
+import { readFileRef, rows, type Row, type Script } from './script';
 import type { Lane, TimeBlock } from './timeline';
 import { OWN, frameRate, readFps, readSide, type Own } from './framing';
 
@@ -36,7 +36,8 @@ export const editFps = (how: EditHow): number | null => (how.fps === 'custom' ? 
 export type Source =
   | { kind: 'copy'; path: string; video: boolean } // a picture or video from the script's folder, as it is
   | { kind: 'png'; path: string } // an .svg, drawn as a PNG (neither app opens .svg)
-  | { kind: 'card'; text: string } // a grey card with words: a placeholder, or a row with no pictures
+  | { kind: 'card'; text: string; find?: string[] } // a grey card with words: a placeholder, or a row with no pictures;
+  // `find`: what that row still has to find or film (#227), under the words
   | { kind: 'collage'; paths: string[] } // a collage's pictures side by side, as one picture
   | { kind: 'last'; path: string } // a video's last frame, for a hold after it
   | { kind: 'take'; id: string }; // a row's voice-over take, as WAV
@@ -61,8 +62,9 @@ const SVG = /\.svg$/i;
 const base = (path: string) => path.split('/').at(-1) || path;
 const plainText = (text: string) => clearMarks(text).replace(/\s+/g, ' ').trim();
 
-// What goes where. `laid` is the timeline's `layout` of the script (the same timings as under the script).
-export function plan(script: Script, laid: { blocks: TimeBlock[]; lanes: Lane[]; total: number }, how: EditHow): Plan {
+// What goes where. `laid` is the timeline's `layout` of the script (the same timings as under the script). With
+// `toFind` (the video, #227), a placeholder's card and a row's with no pictures list what that row still has to find.
+export function plan(script: Script, laid: { blocks: TimeBlock[]; lanes: Lane[]; total: number }, how: EditHow, toFind?: (row: Row) => string[]): Plan {
   const all = rows(script);
   const number = new Map(all.map((r, i) => [r.id, i + 1]));
   const byId = new Map(all.map((r) => [r.id, r]));
@@ -88,6 +90,10 @@ export function plan(script: Script, laid: { blocks: TimeBlock[]; lanes: Lane[];
   }
   const picture = (path: string, isVideo: boolean): string =>
     SVG.test(path) ? file(base(path).replace(SVG, '.png'), { kind: 'png', path }) : file(base(path), { kind: 'copy', path, video: isVideo });
+  const cardOf = (text: string, row: Row | undefined): Source => {
+    const find = row && toFind ? toFind(row) : [];
+    return find.length ? { kind: 'card', text, find } : { kind: 'card', text };
+  };
   const put = (track: number, item: Item) => {
     while (video.length <= track) video.push([]);
     video[track].push(item);
@@ -101,7 +107,7 @@ export function plan(script: Script, laid: { blocks: TimeBlock[]; lanes: Lane[];
       const n = number.get(b.id)!;
       const isVideo = (path: string) => /\.(mp4|webm|mov|m4v)$/i.test(path);
       if (!b.picks.length) {
-        last = [put(0, { name: file(`card-row-${n}.png`, { kind: 'card', text: plainText(row.onScreen) || `Row ${n}` }), start: b.start, seconds: b.seconds })];
+        last = [put(0, { name: file(`card-row-${n}.png`, cardOf(plainText(row.onScreen) || `Row ${n}`, row)), start: b.start, seconds: b.seconds })];
       } else if (b.collage && !how.stacked) {
         last = [put(0, { name: file(`row-${n}-collage.png`, { kind: 'collage', paths: b.picks }), start: b.start, seconds: b.seconds })];
       } else if (b.collage) {
@@ -134,7 +140,7 @@ export function plan(script: Script, laid: { blocks: TimeBlock[]; lanes: Lane[];
       });
     } else {
       const n = number.get(b.after) ?? 0;
-      last = [put(0, { name: file(`card-placeholder-${n}.png`, { kind: 'card', text: b.label.trim() || 'Placeholder' }), start: b.start, seconds: b.seconds })];
+      last = [put(0, { name: file(`card-placeholder-${n}.png`, cardOf(b.label.trim() || 'Placeholder', byId.get(b.after))), start: b.start, seconds: b.seconds })];
     }
   }
   const sections = how.markers ? laid.lanes.filter((l) => l.title && l.seconds > 0).map((l) => ({ start: l.start, seconds: l.seconds, title: l.title, row: number.get(l.first) ?? 0 })) : [];

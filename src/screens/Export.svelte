@@ -25,6 +25,7 @@
   import { lineUp, readClips, wavFile, type Clip } from '../lib/voiceexport';
   import Print from './Print.svelte';
   import EditPreview from './EditPreview.svelte';
+  import { stillToFind } from '../lib/assets';
   import { EDIT, RATES, SIZES, editFps, editFrame, plan as editPlan } from '../lib/editxml';
   import FrameChoices from './FrameChoices.svelte';
   import { editZip } from '../lib/editmedia';
@@ -34,8 +35,9 @@
   import { readTakes, rowLength, type Take } from '../lib/voice.svelte';
 
   // version: "v3", or "" for a draft (Editor's `version()`, which saved what was waiting).
-  let { script, dir, folder, title, version, start, onPrint, onBack }: {
-    script: Script; dir: FileSystemDirectoryHandle; folder: string; title: string; version: string; start: Format;
+  // missing: the script's files not in the folder (Editor's check), for what placeholders still need (#227).
+  let { script, dir, folder, title, version, start, missing: lostFiles = new Set(), onPrint, onBack }: {
+    script: Script; dir: FileSystemDirectoryHandle; folder: string; title: string; version: string; start: Format; missing?: Set<string>;
     onPrint: (choices: PrintChoices) => void; onBack: () => void;
   } = $props();
 
@@ -196,7 +198,7 @@
     const length = rowLength(takes, speaking.wpm);
     return layout(script, video.skip ? (row) => (takes![row.id] ? length(row) : { seconds: 0, take: false }) : length);
   });
-  const videoPlan = $derived(videoLaid ? editPlan(script, videoLaid, { ...EDIT, stacked: false, markers: false, captions: video.captions }) : null);
+  const videoPlan = $derived(videoLaid ? editPlan(script, videoLaid, { ...EDIT, stacked: false, markers: false, captions: video.captions }, video.find ? (row) => stillToFind(row, lostFiles) : undefined) : null);
   const VIDEO_SIZES = [{ id: '720', name: '720p' }, { id: '1080', name: '1080p' }];
   // Save stays greyed while a Custom box (#217) holds something that isn't a size or a rate.
   const editReady = $derived(!!editFrame(edit) && !!editFps(edit));
@@ -424,6 +426,7 @@
           <label><input type="radio" name="notake" checked={video.skip} onchange={() => (video.skip = true)} /> Left out</label>
         </fieldset>
         <label><input type="checkbox" bind:checked={video.sound} /> Keep videos' own sound, under the voice</label>
+        <label><input type="checkbox" bind:checked={video.find} /> Say what's still to find on placeholders</label>
       {:else}
         <label><input type="checkbox" bind:checked={voiceHow.gap} /> Half a second between takes</label>
         <label><input type="checkbox" bind:checked={voiceHow.silence} /> Silence for rows with no take</label>
