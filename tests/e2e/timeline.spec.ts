@@ -580,6 +580,13 @@ test('the preview closes with ✕ and stays closed until Show preview', async ({
   await page.getByRole('button', { name: 'Play from row 1' }).click();
   await expect(t.getByRole('button', { name: 'Show preview' })).toBeVisible();
   await expect(preview).toHaveCount(0);
+  // #333: styled like Fold, blue text with a picture icon, no box.
+  const look = (sel: string) => t.locator(sel).evaluate((e) => {
+    const c = getComputedStyle(e);
+    return { color: c.color, background: c.backgroundColor, border: c.borderTopWidth, size: c.fontSize };
+  });
+  expect(await look('button.show')).toEqual(await look('button.fold'));
+  await expect(t.locator('button.show svg')).toBeVisible();
   await t.getByRole('button', { name: 'Show preview' }).click();
   await expect(preview).toBeVisible();
   await expect(t.getByRole('button', { name: 'Show preview' })).toHaveCount(0);
