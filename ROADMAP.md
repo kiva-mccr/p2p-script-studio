@@ -775,6 +775,10 @@ and suggestions, keeps every version, and exports them for production.
   it has been in review or approved, "In review · 2 days", and on hover who put it there and when ("Sent for review
   by Sam, Monday, Nov 16, 3:12 pm"), from History's newest review entry (`lib/statusage.ts`). The age goes first
   when the window is under 1180 px; a status changed by hand in script.md shows no age. Built 2026-11-19.
+- [x] **AP-58** File names over previews (issue #209, board 85 agreed by the user): a file with a preview loses its
+  chip below; hovering or focusing the preview fades its name and × in over the preview's bottom (over the top of a
+  video being played, where its controls are), so the row's height never changes. A sound's slim player and files
+  with no preview keep their chip. Built 2026-11-19.
 - [x] **AP-56** The ? menu everywhere (issues #219, #239, #232, board 87 agreed by the user): ? is in the top bar of
   every screen, Export included, and beside Exit in the Teleprompter (dark, opening upwards); in a script, Export
   and the Teleprompter it's a touch dimmer until hovered. "See the example" opens the made-up example at its list

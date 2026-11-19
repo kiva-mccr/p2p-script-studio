@@ -5,7 +5,8 @@ opens its page, plain words are shown in italics), × to remove, and + Add (choo
 describe something still to find, or reuse a file from this or another script: `SharedFiles.svelte`, AS-1, #262),
 files dropped from Explorer onto the cell (#262), or a picture pasted with Ctrl+V (#304). Files in the folder show a preview above their chip (`Preview.svelte`, AP-19:
 picture, PDF page 1, video, sound, first lines of text or Word); linked images show a thumbnail. Files with no
-preview get their kind and size on the chip.
+preview get their kind and size on the chip. A file with a preview has no chip: its name and × fade in over the
+preview's bottom on hover or focus (#209, AP-58).
 
 - **Used by:** `screens/WriteRow.svelte`. **Tests:** `tests/e2e/editor.spec.ts`, `shared.spec.ts`, `previews.spec.ts`.
 
@@ -32,4 +33,9 @@ preview get their kind and size on the chip.
 - Paste (#304): the cell has `tabindex="0"`, so a click on it (not on + Add) gives it the focus and Ctrl+V lands
   there; a paste anywhere inside (the link box too) bubbles to the cell. Only `image/` files are taken, renamed by
   `lib/pasted.ts` (a grab is always image.png); with none, the paste is left alone, so text still fills the link box.
+- #209: the name over a preview (`.shot .over`) lets clicks through to the preview (which opens the file); only ×
+  takes them. A sound keeps its chip (a name over the slim player would hide it); a video being played has its
+  controls at the bottom, so the name goes to the top. `.shot` is at least 120 × 48 so a tiny picture's name fits.
+  While a previewable file is still untried only its stand-in shows (no chip), so the row doesn't shrink when the
+  preview comes. Tests find a previewed file by its preview ("Open name"), not `.chip`.
 - A picture linked from another site is never shown (SE-1, the user's pick): only its link. See lib/csp.md.
