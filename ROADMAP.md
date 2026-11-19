@@ -852,6 +852,10 @@ and suggestions, keeps every version, and exports them for production.
   (a picture's small copy, a video's first frame, a collage's first picture, a grey card for a placeholder) with its
   name after it while there's room; a narrow clip shows the picture alone, a sliver neither; the clips never reach
   past their row. Built 2026-11-19 (screens/VideoPreview.svelte).
+- [x] **EX-24** A line of the script beside each file in Assets (issue #212, board 82 agreed by the user): under "In
+  the folder or linked", the start of the row's dialogue (its On screen words if it has none) sits between the file and
+  its row number, one grey line cut short with "…"; for a file in several rows, its first row's. Built 2026-11-19
+  (`excerpt` in lib/assets.ts, screens/Assets.svelte).
 - [-] **EX-17** A shoot checklist (suggested; shelved by the user, to talk through later): the asset list (EX-6) with
   shared tick boxes for each row's on-screen shots and files, for the day of filming.
 - [-] **AP-45** Dictate dialogue into a row (suggested; shelved by the user, 2026-11-14, to consider later): speak into

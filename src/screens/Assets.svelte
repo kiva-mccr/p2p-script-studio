@@ -18,6 +18,8 @@
   const toFind = $derived(all.filter((a) => a.kind === 'words'));
   const here = $derived(all.filter((a) => a.kind === 'link' || (a.kind === 'path' && !missing.has(a.target))));
   const used = $derived(rows.filter((r) => r.assets.length).length);
+  // The words of the first row a file is used in (#212, board 82), shown beside it under "In the folder or linked".
+  const words = $derived(new Map(rows.map((r) => [r.n, r.excerpt])));
 
   // Thumbnails (AP-19): pictures, TIFFs, a PDF's page 1 and a frame of a video in the folder, as short-lived blob
   // URLs; linked images use their link.
@@ -81,6 +83,9 @@
         <span class="where">{asset.kind === 'link' ? asset.target.replace(/^https?:\/\//, '') : asset.target}</span>
       {/if}
     </span>
+    {#if kind === 'here' && words.get(asset.rows[0])}
+      <span class="excerpt" title={words.get(asset.rows[0])}>{words.get(asset.rows[0])}</span>
+    {/if}
     <span class="rows">
       {#each asset.rows as n (n)}<button class="jump" data-tour="assets-jump" onclick={() => onJump(n)}>Row {n}</button>{/each}
     </span>
@@ -160,6 +165,9 @@
   .lost .thumb { border: 1px dashed #d08a84; box-sizing: border-box; }
   .find .thumb { background: #fff4e5; }
   .name { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .here .name { flex: 0 1 auto; max-width: 40%; }
+  .here .rows { margin-left: auto; }
+  .excerpt { flex: 1; min-width: 0; font-size: 13px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .find .name { color: #7a4a00; font-size: 14px; }
   .open { align-self: flex-start; max-width: 100%; padding: 0; border: 0; background: none; color: var(--ink); font-size: 14px;
     font-weight: 500; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

@@ -255,7 +255,8 @@ Status: a first working version. What it does today:
   Review shows the same timeline, read only: click a block to comment on its row ("row 2, on the timeline"). Kept in the row's `Timeline:` line in script.md.
 - **Assets:** the Assets tab lists every file, link and "still to find" note in the script once, with the rows that
   use it, with a thumbnail for pictures, PDFs and videos: what is missing from the folder first, then what is still to find or film, then the rest (or by row).
-  The tab and the script list show how many files are missing. A row number goes to that row.
+  Beside each file in the folder or linked, the start of its row's words (its dialogue, or its On screen words), so
+  you can tell what it is for. The tab and the script list show how many files are missing. A row number goes to that row.
 - **Two people:** the top of a script says who else is editing it, with a small spinner while their changes come in.
   When nobody else is, it says who was last here ("Sam · 12 min ago"), with an amber ring
   when Sam's computer went quiet without leaving (asleep, or off the drive), so their last typing may not be in yet.
