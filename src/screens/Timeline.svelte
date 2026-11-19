@@ -456,13 +456,13 @@
       <div class="scroll" use:fit use:inView use:tracksBox>
         <div class="tracks" style:width="{zoom * 100}%">
           <!-- svelte-ignore a11y_no_static_element_interactions -->
-          <div class="ruler" class:grab={!!now} aria-hidden="true" onpointerdown={grab} onpointermove={move} onpointerup={drop} onpointercancel={drop}>
+          <div class="ruler" class:grab={!!now} aria-hidden="true" data-keep onpointerdown={grab} onpointermove={move} onpointerup={drop} onpointercancel={drop}>
             {#each ticks as t (t)}<span style:left="{pct(t)}%">{clock(t)}</span>{/each}
           </div>
           <div class="lane">
             {#each laid.lanes as lane (lane.start + lane.title)}
               <button class="sec" style:left="{pct(lane.start)}%" style:width="{pct(lane.seconds)}%" title="{lane.title} · {clock(lane.seconds)}"
-                onclick={() => lane.first && onShow(lane.first)}>{lane.title || 'Untitled section'} <span>· {clock(lane.seconds)}</span></button>
+                onclick={() => lane.first && onShow(lane.first)}>{#if lane.title}<span data-hide>{lane.title}</span>{:else}Untitled section{/if} <span class="len">· {clock(lane.seconds)}</span></button>
             {/each}
           </div>
           <div class="lane blocks">
@@ -474,7 +474,7 @@
                 {#if b.kind === 'row'}
                   {#if !b.picks.length}
                     {@const words = plain(row?.onScreen ?? '').trim()}
-                    <span class="card">{#if words}{words}{:else}<svg class="none" aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 16l5-5 4 4 3-3 6 6" /><circle cx="16" cy="9" r="1.5" /><path class="halo" d="M4 3l17 18" /><path d="M4 3l17 18" /></svg>{/if}</span>
+                    <span class="card">{#if words}<span data-hide>{words}</span>{:else}<svg class="none" aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 16l5-5 4 4 3-3 6 6" /><circle cx="16" cy="9" r="1.5" /><path class="halo" d="M4 3l17 18" /><path d="M4 3l17 18" /></svg>{/if}</span>
                   {:else if b.collage}
                     <span class="collage">
                       {#each b.picks as path (path)}{@render picture(path)}{/each}
@@ -491,9 +491,9 @@
                 {:else if b.kind === 'hold'}
                   <span class="hold-in">❚❚ Hold<small>{secs(b.seconds)}</small></span>
                 {:else}
-                  <span class="ph-in">Placeholder · {secs(b.seconds)}<small>{b.label}</small></span>
+                  <span class="ph-in">Placeholder · {secs(b.seconds)}<small data-hide>{b.label}</small></span>
                 {/if}
-                {#if tipFor === b.id}<span class="tip" class:end={tipEnd} aria-hidden="true">{tip(b)}</span>{/if}
+                {#if tipFor === b.id}<span class="tip" class:end={tipEnd} aria-hidden="true" data-hide>{tip(b)}</span>{/if}
               </button>
             {/each}
           </div>
@@ -680,7 +680,7 @@
   .lane.voice { height: 34px; margin-bottom: 0; }
   .sec, .blk, .vo { position: absolute; top: 0; bottom: 0; box-sizing: border-box; border: 1.5px solid var(--ground); }
   .sec { padding: 0 10px; border-radius: 7px; background: #ededed; color: #3d3d3d; font-size: 13px; font-weight: 600; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .sec span { font-weight: 400; color: #6b6b6b; }
+  .sec .len { font-weight: 400; color: #6b6b6b; }
   .blk { padding: 0; border-radius: 7px; background: #fff; box-shadow: inset 0 0 0 1px #e0e0e0; overflow: visible; text-align: left; }
   .blk.on { box-shadow: inset 0 0 0 2px var(--accent); }
   .blk:hover { filter: brightness(0.97); }

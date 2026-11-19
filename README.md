@@ -313,7 +313,7 @@ Status: a first working version. What it does today:
   opens a new issue with your note and where the part is filled in, and copies a picture of the part to paste in
   (Ctrl+V); you sign in to GitHub and press Submit there. GitHub is public, so the script's words, its pictures and people's names
   are covered with solid grey boxes in the picture, and its name is left out, unless you untick or tick them. The app's own
-  words (buttons such as Clear or Choose a file…, labels such as Changed or commented) stay readable. The picture shows the part's row as it looks, with a chosen row's blue. No GitHub account? Copy instead copies the same text for
+  words (buttons such as Clear or Choose a file…, labels such as Changed or commented, the timeline's times) stay readable; the timeline's section titles are covered. The picture shows the part's row as it looks, with a chosen row's blue. No GitHub account? Copy instead copies the same text for
   Teams or an email.
 
 Needs Chrome or Edge on a desktop computer. The ? at the right end of the top bar, on every screen (a touch dimmer

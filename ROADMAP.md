@@ -500,6 +500,9 @@ and suggestions, keeps every version, and exports them for production.
 - [x] **SB-16** Only the moving highlight while playing (issue #335, a fix, no mock-up): Play from here on a picked
   timeline block no longer leaves that row and block lit; only the playing row moves. The pick comes back when it
   stops. Done 2026-11-19.
+- [x] **AP-63** Cover in Feedback's picture hides the timeline's section titles, not its times (issue #334, a fix, no
+  mock-up): section titles, a block's On screen words, a placeholder's label and the hover text are the script's and are
+  covered; the ruler's times and the preview's clock name nobody and stay. Done 2026-11-19.
 - [x] **AP-60** Versions named by what made them (issue #240, board 87 agreed by the user): official versions are r1,
   r2 … (sent for review), w1, w2 … (published by hand in History while writing) and ap1, ap2 … (approved), each
   letter counted on its own; r blue, w amber, ap green. Approve now makes a version too, always (even with nothing

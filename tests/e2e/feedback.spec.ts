@@ -441,3 +441,18 @@ test("the picture shows the chosen row's blue, as the app does (issue #235)", as
   }, box);
   expect(colour).toBe('238,243,253');
 });
+
+test("Cover hides the timeline's section titles and its words, but keeps its times (issue #334)", async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('timeline-open', '1'));
+  await openScript(page);
+  const timeline = page.getByRole('region', { name: 'Timeline' });
+  const sec = timeline.locator('.sec').first();
+  await expect(sec).toBeVisible();
+  await startFeedback(page);
+  await sec.click();
+  const picture = page.getByRole('region', { name: 'Feedback' }).getByRole('img', { name: 'The part, outlined' });
+  await expect(picture).toBeVisible();
+  const tick = timeline.locator('.ruler span').nth(1);
+  expect(await greyAt(picture, sec, [sec.locator('[data-hide]'), sec.locator('.len'), tick]))
+    .toEqual([true, false, false]); // the section's title, its length, a time on the ruler
+});
