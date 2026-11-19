@@ -298,6 +298,29 @@ test('cut on a repeated word: the cut stays on the one picked', async ({ page })
   await expect(words.getByRole('button', { name: 'water,' }).first()).toHaveAttribute('aria-pressed', 'false');
 });
 
+// #335: Play from here lights only the playing row and block; the picked one comes back when it stops.
+test('playing from a picked block lights only the playing row (#335)', async ({ page }) => {
+  await fakeTake(page);
+  await page.addInitScript(() => localStorage.setItem('prompter-speed', '60'));
+  await setUp(page, '#/Episode%2003', files);
+  await page.getByRole('button', { name: 'Record row 2', exact: true }).click();
+  await page.getByRole('button', { name: 'Stop recording row 2' }).click();
+  const t = timeline(page);
+  await t.getByRole('button', { name: /^Row 1 · / }).click();
+  await expect(page.locator('.row.lit')).toHaveCount(1);
+  await expect(t.locator('.blk.on')).toHaveCount(1);
+  await t.getByRole('button', { name: '▶ Play from here' }).click();
+  await page.getByRole('button', { name: 'Pause the script' }).click();
+  await expect(page.locator('.row.here')).toHaveCount(1);
+  await expect(page.locator('.row.lit')).toHaveCount(0);
+  await expect(t.locator('.blk.on')).toHaveCount(0);
+  await expect(t.locator('.strip .on')).toHaveCount(0);
+  await page.keyboard.press('Escape');
+  await expect(page.locator('.row.here')).toHaveCount(0);
+  await expect(page.locator('.row.lit')).toHaveCount(1);
+  await expect(t.locator('.blk.on')).toHaveCount(1);
+});
+
 // #226 (board 85): with the drawer open, the preview sits in it, right of the tracks.
 test('playing: the preview sits in the open drawer beside the tracks, follows, a hold plays in silence', async ({ page }) => {
   await fakeTake(page);

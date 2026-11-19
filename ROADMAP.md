@@ -497,6 +497,9 @@ and suggestions, keeps every version, and exports them for production.
   same; while playing, Review's comments follow the row being played (its cards lit and brought to the top, Line
   order, with a sort of their own while playing), and go back to the sort and place they had when it stops. Done
   2026-11-19.
+- [x] **SB-16** Only the moving highlight while playing (issue #335, a fix, no mock-up): Play from here on a picked
+  timeline block no longer leaves that row and block lit; only the playing row moves. The pick comes back when it
+  stops. Done 2026-11-19.
 - [x] **AP-60** Versions named by what made them (issue #240, board 87 agreed by the user): official versions are r1,
   r2 … (sent for review), w1, w2 … (published by hand in History while writing) and ap1, ap2 … (approved), each
   letter counted on its own; r blue, w amber, ap green. Approve now makes a version too, always (even with nothing

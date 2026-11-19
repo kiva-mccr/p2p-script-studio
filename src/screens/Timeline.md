@@ -48,6 +48,8 @@ offers its pictures, Sequence or Collage, + Add a picture (only for the timeline
   200 ms clock from `voice.started`), so its take shows red (`.vo.rec`) and grows, and the rows after it move right.
   Its old waveform isn't shown meanwhile, and it is left out of `toHear` (no take file yet to hear).
 - Folded, pictures are not made, except while playing (for the preview); waveforms only open.
+- Playing (or paused, `player.started`), the picked block and its row (Write's `lit`) don't light up (#335): only
+  the playing row and block move. The pick is kept, so the panel comes back when it stops.
 - Playing: the panel is hidden, a playhead runs at `player.time`, and the preview (`TimelinePreview.svelte`, #226,
   board 85) shows the picture of the moment: the sequence's shot at `player.elapsed`, a collage's all, a hold the
   last picture before it, a placeholder its words. Open, it is docked in `.body`, right of the tracks (`.beside`:
