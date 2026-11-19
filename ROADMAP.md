@@ -509,6 +509,9 @@ and suggestions, keeps every version, and exports them for production.
   under the tracks where the scroll bar was, grey section boxes above the blue line boxes, with ◀ ▶ at its ends; the
   browser's own bar is hidden (Shift + wheel and trackpads still scroll). A click or a drag of its box scrolls the
   tracks, and letting go (or ◀ ▶) brings the row in the middle into the script's view too. Folded, as before. Done 2026-11-19.
+- [x] **SB-19** Section names stay pinned left in the timeline (issue #332, board 92 agreed by the user): scrolled
+  sideways, a section's name and length stay at the left edge of the view while any part of it is in view, and slide
+  out with its end, so they never run into the next section. Done 2026-11-19.
 - [x] **AP-64** The tour's Feedback step lights the outlined row (issue #328, board 92 agreed by the user): the row with
   the orange outline is lit instead of dimmed, and the tour's card always sits on top of the outline, below or above
   the row, clear of Feedback's strip. Done 2026-11-19.

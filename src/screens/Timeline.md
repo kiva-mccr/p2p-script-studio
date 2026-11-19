@@ -38,6 +38,9 @@ offers its pictures, Sequence or Collage, + Add a picture (only for the timeline
   the blocks and the playhead. Fold / Unfold is its own button (`.fold`), the last in `.top`, so it sits at the far
   right after Wide / Upright and zoom (SB-10, #238); never put it back inside `.foldbar`. Remembered in this browser for every script (`timeline-open`, '1' open); it starts
   folded. It replaced SB-2's Unpin / Pin and the old Hide (`timeline-hidden`, `timeline-unpinned` are no longer read).
+- A section's name and length (`.name`) are `position: sticky` inside its button (#332, board 92): they stay at the
+  view's left while the section is in it and leave with its end. That needs the button to be `overflow: clip`; with
+  `hidden` the button becomes the sticky's scroll box and the name never moves. The ellipsis is on `.name`.
 - Open, the strip (the `strip` snippet, `.strip.open`, `role="scrollbar"`) is the tracks' scroll bar, under them in
   `.slider` with ◀ ▶ (`.step`) at its ends (SB-18, #336, board 92); `.scroll` hides the browser's own bar
   (`scrollbar-width: none`), so Shift + wheel and trackpads still scroll it. Sections (`.mark-s`) sit above the blocks

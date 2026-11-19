@@ -507,7 +507,7 @@
           <div class="lane">
             {#each laid.lanes as lane (lane.start + lane.title)}
               <button class="sec" style:left="{pct(lane.start)}%" style:width="{pct(lane.seconds)}%" title="{lane.title} · {clock(lane.seconds)}"
-                onclick={() => lane.first && onShow(lane.first)}>{#if lane.title}<span data-hide>{lane.title}</span>{:else}Untitled section{/if} <span class="len">· {clock(lane.seconds)}</span></button>
+                onclick={() => lane.first && onShow(lane.first)}><span class="name">{#if lane.title}<span data-hide>{lane.title}</span>{:else}Untitled section{/if} <span class="len">· {clock(lane.seconds)}</span></span></button>
             {/each}
           </div>
           <div class="lane blocks">
@@ -753,7 +753,10 @@
   .lane.blocks { height: 92px; }
   .lane.voice { height: 34px; margin-bottom: 0; }
   .sec, .blk, .vo { position: absolute; top: 0; bottom: 0; box-sizing: border-box; border: 1.5px solid var(--ground); }
-  .sec { padding: 0 10px; border-radius: 7px; background: #ededed; color: #3d3d3d; font-size: 13px; font-weight: 600; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* #332: a section's name and length stay pinned to the left of the view while the section is in it, and slide out
+     with its end. Sticky needs the button to clip without being a scroll box: overflow: clip, never hidden. */
+  .sec { padding: 0 10px; border-radius: 7px; background: #ededed; color: #3d3d3d; font-size: 13px; font-weight: 600; text-align: left; white-space: nowrap; overflow: clip; }
+  .sec .name { position: sticky; left: 10px; display: inline-block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; vertical-align: middle; }
   .sec .len { font-weight: 400; color: #6b6b6b; }
   .blk { padding: 0; border-radius: 7px; background: #fff; box-shadow: inset 0 0 0 1px #e0e0e0; overflow: visible; text-align: left; }
   .blk.on { box-shadow: inset 0 0 0 2px var(--accent); }
