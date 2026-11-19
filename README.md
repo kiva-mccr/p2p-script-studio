@@ -111,7 +111,7 @@ Status: a first working version. What it does today:
 - **Credits and contacts:** ⋯ › Credits lists who worked on the script, each with a short blurb on what they did on
   it. Add someone from the folder's people (Find narrows by name or role) or someone new by name. Each person's email
   and LinkedIn are kept once for the whole folder: change them from any script (Contact details) and every script
-  shows the change. A new person's first blurb becomes their usual role, which fills in the blurb in the next script.
+  shows the change. Each box there has Copy, and Write ↗ (a new email) or Open ↗ (the LinkedIn page). A new person's first blurb becomes their usual role, which fills in the blurb in the next script.
   The script list's People button shows everyone, how to reach them and the scripts that credit them; someone no
   script credits can be removed there. Print, Fountain, Final Draft and Copy for Teams carry the names and blurbs,
   never the contact details; a Credits switch in the export settings leaves them out.

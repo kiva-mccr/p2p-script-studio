@@ -31,8 +31,8 @@ test('credits pick from the folder, someone new joins it, and contact details ar
   await expect(box.getByRole('list', { name: 'People in the folder' }).getByRole('button')).toHaveText([/Jo\s*Editor\s*On 0 scripts/]);
   await box.getByLabel('Someone new').fill('Priya');
   await box.getByRole('button', { name: 'Add to the folder and here' }).click();
-  await box.getByLabel('Email').fill('priya@example.org');
-  await box.getByLabel('LinkedIn').fill('linkedin.com/in/priya');
+  await box.getByLabel('Email', { exact: true }).fill('priya@example.org');
+  await box.getByLabel('LinkedIn', { exact: true }).fill('linkedin.com/in/priya');
   await box.getByRole('button', { name: 'Done', exact: true }).first().click();
   await expect(box.getByText('priya@example.org · linkedin.com/in/priya')).toBeVisible();
   await box.getByLabel('What Priya did on this script').fill('Science reviewer');
@@ -83,7 +83,7 @@ test('People on the script list: how to reach everyone, the scripts that credit 
   await box.getByRole('button', { name: /^Jo/ }).click();
   await expect(box.getByText('Credited on Trailer')).toBeVisible();
   await expect(box.getByRole('button', { name: 'Remove from the folder' })).toHaveCount(0);
-  await box.getByLabel('Email').fill('jo@example.org');
+  await box.getByLabel('Email', { exact: true }).fill('jo@example.org');
   await box.locator('.contact').getByRole('button', { name: 'Done' }).click();
   await expect(box.getByRole('link', { name: 'jo@example.org' })).toBeVisible();
 
@@ -118,4 +118,31 @@ test('the credits print after the rows, go on the screenplay title page, and one
   await expect(preview.locator('pre')).not.toContainText('Credits:');
   await page.getByLabel('Credits on the title page').check();
   await expect(preview.locator('pre')).toContainText('Credits:\n    Jo, Cut the trailer\n');
+});
+
+test('contact details have Copy, and Write or Open once a box has something in it (#224, AP-55)', async ({ page, context }) => {
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  await setUp(page, '', FILES);
+  await page.getByRole('button', { name: 'People' }).click();
+  const box = page.getByRole('dialog', { name: 'People' });
+  await box.getByRole('button', { name: /^Jo/ }).click();
+  const contact = box.locator('.contact');
+  await expect(contact.getByRole('link')).toHaveCount(0); // nothing to copy or open yet
+  await expect(contact.getByRole('button', { name: /^Copy/ })).toHaveCount(0);
+
+  await contact.getByLabel('Email', { exact: true }).fill(' jo@example.org ');
+  await expect(contact.getByRole('link', { name: 'Write an email' })).toHaveAttribute('href', 'mailto:jo@example.org');
+  await expect(contact.getByRole('link', { name: 'Write an email' })).toHaveAttribute('target', '_blank');
+  await contact.getByRole('button', { name: 'Copy Email' }).click();
+  await expect(contact.getByRole('button', { name: 'Email: Copied' })).toHaveText('Copied');
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe('jo@example.org');
+  await expect(contact.getByRole('button', { name: 'Copy Email' })).toHaveText('Copy'); // back after a moment
+
+  await contact.getByLabel('LinkedIn', { exact: true }).fill('linkedin.com/in/jo');
+  await expect(contact.getByRole('link', { name: 'Open the LinkedIn page' })).toHaveAttribute('href', 'https://linkedin.com/in/jo');
+  await contact.getByRole('button', { name: 'Copy LinkedIn' }).click();
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe('linkedin.com/in/jo');
+
+  await contact.getByLabel('Email', { exact: true }).fill('');
+  await expect(contact.getByRole('link', { name: 'Write an email' })).toHaveCount(0);
 });
