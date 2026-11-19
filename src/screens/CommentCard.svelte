@@ -47,6 +47,7 @@
   let replying = $state(false);
   let reply = $state('');
   let replyFiles = $state<File[]>([]);
+  let whyShown = $state(false); // a suggestion's reason (#242) starts folded to one line
 
   // Editing your own (RV-7): one comment, suggestion or reply at a time, in place.
   let editing = $state('');
@@ -139,6 +140,11 @@
     {@render editor(t.comment, suggestion ? 'Replace with' : 'Edit comment')}
   {:else if suggestion}
     <p class="text">Replace “<span class="old">{t.comment.quote}</span>” with “<span class="new">{t.comment.replace}</span>”.</p>
+    {#if t.comment.text}
+      <button type="button" class="why" class:open={whyShown} aria-expanded={whyShown} onclick={() => (whyShown = !whyShown)}>
+        <span class="chev" aria-hidden="true">›</span><span class="why-text"><b>Why:</b> {t.comment.text}</span>
+      </button>
+    {/if}
   {:else}
     {#if t.comment.text}<p class="text">{t.comment.text}</p>{/if}
     {#if t.comment.files?.length}<Attached {dir} files={t.comment.files} use={using(t.comment)} />{/if}
@@ -253,6 +259,15 @@
   .text { margin: 0; font-size: 14px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
   .old { color: #8a2b2b; text-decoration: line-through; }
   .new { color: var(--accent); }
+  /* A suggestion's reason (#242, board 84): one line until clicked, then whole. */
+  .why { display: flex; gap: 6px; align-items: flex-start; min-width: 0; padding: 6px 8px; border: 0; border-radius: 6px; background: #f5f5f5;
+    text-align: left; font: inherit; font-size: 13px; line-height: 1.5; color: #3d3d3d; cursor: pointer; }
+  .why:hover { background: #eeeeee; }
+  .why b { font-weight: 600; }
+  .chev { display: inline-block; color: var(--muted); transition: transform 0.15s; }
+  .why.open .chev { transform: rotate(90deg); }
+  .why-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .why.open .why-text { white-space: pre-wrap; overflow-wrap: anywhere; }
   .decided { display: inline-flex; align-items: center; flex: 1; font-size: 14px; color: #3d3d3d; }
   .reply { display: flex; flex-direction: column; gap: 4px; padding-left: 12px; border-left: 2px solid var(--line); }
   blockquote { margin: 0; padding-left: 10px; border-left: 3px solid #e0b100; font-size: 14px; color: #3d3d3d; }

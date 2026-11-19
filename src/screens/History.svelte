@@ -279,6 +279,7 @@
           <div class="who"><span><strong>{t.comment.who}</strong> {suggestion ? 'suggested' : 'commented'}{inRest ? ` · ${cell(t)}` : ''} · {at(Date.parse(t.comment.when))}{t.comment.edited ? ' · edited' : ''}</span><span class="state">{stateText(t)}</span></div>
           {#if suggestion}
             <p class="text">Replace “<span class="was">{t.comment.quote}</span>” with “<span class="is">{t.comment.replace}</span>”.</p>
+            {#if t.comment.text}<p class="text why"><b>Why:</b> {t.comment.text}</p>{/if}
           {:else}
             {#if t.comment.quote}<blockquote>{t.comment.quote}</blockquote>{/if}
             {#if t.comment.text}<p class="text">{t.comment.text}</p>{/if}
@@ -377,6 +378,8 @@
   .comment .text { margin: 0; font-size: 14px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
   .was { color: #8a2b2b; text-decoration: line-through; }
   .is { color: var(--accent); }
+  .comment .why { font-size: 13px; color: #3d3d3d; }
+  .why b { font-weight: 600; }
   .comment .link { align-self: flex-start; min-height: 32px; padding: 0 4px; color: var(--accent); font-size: 13px; }
   .reply { display: flex; flex-direction: column; gap: 2px; padding-left: 12px; border-left: 2px solid var(--line); }
   .empty, .error { color: var(--muted); }

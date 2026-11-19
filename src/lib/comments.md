@@ -17,6 +17,7 @@ rows (AP-9) are kept here too (`flag`, `unflag`; `flags()` says which rows are f
   resolve and a reopen in the same second came out in a random order (bug found while building). File names keep
   seconds, like versions.
 - `by` on a thread is who resolved, accepted or rejected it (History shows it, RV-6); a reopen clears it.
+- A suggestion's optional `text` is its reason ("Why", RV-27); an edit of a suggestion sends only `replace`, so it keeps it.
 - Suggestions (`replace`) are threads too: the newest accept, reject or reopen about one decides it.
 - A comment on a whole row has an empty `quote` (and `field` "dialogue").
 - A quote is marked where it is first found in the cell; one no longer there is "on text that has since changed".

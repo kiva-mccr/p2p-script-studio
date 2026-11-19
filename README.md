@@ -164,7 +164,8 @@ Status: a first working version. What it does today:
   last, open comments and voice-over progress. It is a snapshot of when you copied it, and doesn't update.
 - **Review:** Write · Review · History. Select any text and press the small Comment button above it to comment or suggest a
   change (a double-click only selects a word; what you type is kept when you switch between the two or pick other
-  words, until Cancel), or comment on a
+  words, until Cancel; a suggestion can carry a reason, "+ Add a reason", shown folded to one line on its card until
+  clicked), or comment on a
   whole row; reply, resolve, reopen; accept or reject suggestions (accepting changes the script, Undo puts it
   back). Deleting a row resolves its comments ("Resolved when Sam deleted the row"), keeping the row's words on the
   card and, if reopened, the card where the row was; replacing the words a comment is on resolves it with the old and new words.
