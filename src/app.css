@@ -48,3 +48,9 @@ button { font: inherit; cursor: pointer; }
 
 /* Hide help text (AP-43): Settings puts help-off on <html>; anything marked class="help" goes. See lib/helptext.md. */
 :root.help-off .help { display: none !important; }
+
+/* An official version's name (#240): r (sent for review) blue, w (published while writing) amber, ap (approved) and
+   the older v green. The second class is the name's letters (lib/history.ts, seriesOf). */
+.version-tag { padding: 2px 8px; border-radius: 999px; background: #e7f4ec; color: #1b6b3e; font-size: 12px; font-weight: 600; }
+.version-tag.r { background: #eef2fc; color: #22479f; }
+.version-tag.w { background: #fff4e5; color: #6b4a00; }

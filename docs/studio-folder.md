@@ -169,11 +169,16 @@ except as the `who` of what they write.
 | `merge` | a conflict resolved | "Combined Sam's and Ana's changes" |
 | `outside` | `script.md` changed outside the app | "Changed outside the app" |
 | `restart` | `.studio/` was missing or empty | "History starts here" (also for scripts made before History existed) |
-| `official` | someone publishes an official version, `note` its name | "v2 · Sent to the narrator" (numbered by publish order) |
+| `official` | someone publishes an official version, `note` its name | "w2 · Sent to the narrator" (numbered by publish order) |
 
 A send for review is also the next official version (RV-9): its `review` entry then has `official: true` and counts
-in the numbering ("v3 · Sent for review"). It has none when the script is the same as the newest official version,
-leaving out the `status` and `authors` lines, so a version is never made twice.
+in the numbering ("r3 · Sent for review"). It has none when the script is the same as the newest official version,
+leaving out the `status` and `authors` lines, so a version is never made twice. An approval always is one (AP-60):
+`official: true` on its `review` entry ("ap1 · Approved").
+
+Every official version made since AP-60 has `series`: `"r"` (a send for review), `"w"` (published by hand) or
+`"ap"` (approved). Each series is counted on its own: r1, r2 …, w1 …, ap1 …. Official versions with no `series`
+(made before) keep their old count: v1, v2 ….
 
 ### chapters/: older History packed (PF-13)
 
@@ -195,9 +200,9 @@ random id, so two keepers packing at once never write the same file. Inside, unp
   file that arrived late from another computer stays, and is read as it is.
 - A chapter can't be opened in Notepad: use History in the app (or unzip it with 7-Zip).
 
-Official versions are numbered from the order they were published, so the number is never stored. Once a script
+Official versions are numbered from the order they were published (within their series), so the number is never stored. Once a script
 has one, History shows the official versions and folds the small saves between them into one line ("6 changes
-since v2") until opened.
+since r2") until opened.
 
 ### When an entry is made
 

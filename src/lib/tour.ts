@@ -37,7 +37,7 @@ export const TOURS: Record<Tab, Step[]> = {
   history: [
     { target: 'versions', title: 'Every version', text: 'Each save is a version, newest first, with who made it, when, and the note sent with it.' },
     { target: 'changes', title: 'What changed', text: 'Old words struck through, new ones in green. Restore this version brings back any older one.' },
-    { target: 'publish', title: 'Official versions', text: 'Publish a named version, v1, v2 …, when a draft is signed off. The small saves between them fold away.' },
+    { target: 'publish', title: 'Official versions', text: 'Publish a named version, w1, w2 …, when a draft is signed off. The small saves between them fold away.' },
   ],
   assets: [
     { target: 'assets-list', title: 'Everything the video needs', text: 'Every file, link and "still to find" note in the script, grouped by what needs doing.' },

@@ -78,7 +78,7 @@ version (`Print.svelte`) and the teleprompter (`Teleprompter.svelte`, saves what
   across the tabs. Write's `onDeleted` (blocks as they were) and `onUndo` (any `Offer`: a take, a file) feed it, and so
   does Restore (UX-11: `file.restore` returns the text before, Undo is `file.putBack`). A failed Undo shows a message.
 - `Print.svelte` is mounted here, at the top level, never inside another element (its print CSS needs that).
-- Print saves what is waiting first. Its choices come from `Export.svelte`. It shows "v3" only while the newest version is
+- Print saves what is waiting first. Its choices come from `Export.svelte`. It shows "r3" only while the newest version is
   official and script.md still matches it (`officialNumber`, through `version()`); otherwise "Draft".
 - Copy for Teams (`shareNow`, EX-10) saves what is waiting, then gives `lib/share.ts` the shared link (`?review`, RV-10), the version, the newest History
   entry's person and time (none for "Outside the app"), open comments and rows with a take.

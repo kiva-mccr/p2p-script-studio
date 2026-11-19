@@ -87,9 +87,10 @@ Status: a first working version. What it does today:
   can go straight into the script: "Use in script" under it copies it into assets/ and adds it to that comment's row.
 - **History:** Write · History at the top of a script. Every few minutes of editing is kept as a version: who, when
   and what changed, word for word. Restore any version (Undo at the bottom goes back to what you had). Changes made outside the app (say, in Notepad) are noted.
-  Publish official version names the script as it is now (v1, v2 …); History then shows those, with the small
-  saves between them folded away until you open them. Send for review also makes the next one, named "Sent for
-  review", unless nothing has changed since the newest (then it stays, say, v2, and no copy is made). Comments
+  Publish official version names the script as it is now (w1, w2 …); History then shows those, with the small
+  saves between them folded away until you open them. Send for review also makes one (r1, r2 …), named "Sent for
+  review", unless nothing has changed since the newest (then it stays, say, r2, and no copy is made), and Approve
+  makes one too (ap1, ap2 …). Each letter counts on its own; versions made before this keep their v1, v2 …. Comments
   show in History too: under the change they led to, so it is clear why a line changed, or at the bottom of the
   version they were made on if nothing has changed for them yet (with "Open in Review" while still open).
   A long History lists the newest 50 first; "Show 50 older" loads more, and after that older ones load as you

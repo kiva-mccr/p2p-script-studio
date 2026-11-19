@@ -9,7 +9,7 @@ export type Facts = {
   title: string;
   link: string;
   status: string; // 'draft', 'in review' or 'approved'
-  version: string; // 'v3' while the script is that official version, else ''
+  version: string; // 'r3' while the script is that official version, else ''
   who: string; // who saved last, '' if not known
   when: number; // when, in ms; 0 if not known
   open: number; // open comments

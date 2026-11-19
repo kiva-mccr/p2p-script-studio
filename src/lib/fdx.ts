@@ -6,7 +6,7 @@ import { creditLine, SCREENPLAY, speakerName, type Screenplay } from './fountain
 import type { Credit } from './people';
 import { frontList, type Script } from './script';
 
-// `stand`: the version and status ("v3 · Approved"). `date`: "Nov 10, 2026". Both go on the title page.
+// `stand`: the version and status ("ap1 · Approved"). `date`: "Nov 10, 2026". Both go on the title page.
 // `how`: the export screen's settings (EX-9). With `scenes` off a section is a General paragraph.
 // `credits` (AP-31) go on the title page, "Credits" and then one "Name, blurb" a line.
 export function toFdx(script: Script, title: string, stand: string, date: string, how: Screenplay = SCREENPLAY, credits: Credit[] = []): string {

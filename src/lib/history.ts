@@ -9,6 +9,9 @@ import { contents, listChapters, range, readChapter, type Contents } from './cha
 import { subdir } from './dirs';
 import type { SentNote } from './backnotes';
 
+// An official version's name (#240): r for a send for review, w for one published by hand while writing, ap for
+// an approval, each counted on its own. Ones made before keep v1, v2 ….
+export type Series = 'r' | 'w' | 'ap';
 type Kind = 'edit' | 'review' | 'restore' | 'merge' | 'outside' | 'restart' | 'official';
 export type Version = {
   v: 1;
@@ -20,7 +23,8 @@ export type Version = {
   note: string;
   message?: string; // the note with "Sent for review" (RV-8) or "Sent back to writer" (RV-13); absent when none was written
   notes?: SentNote[]; // a send back's notes from the other reviewers (#248); absent when none
-  official?: true; // a send for review that is also the next official version (RV-9); absent otherwise
+  official?: true; // a send for review that is also the next official version (RV-9), or an approval (#240); absent otherwise
+  series?: Series; // what made an official version (#240): its name's letters; absent on those made before (v1, v2 …)
   sha256: string;
   text: string;
 };
@@ -260,7 +264,7 @@ export function sinceReview(before: Script, after: Script): { changed: Map<strin
 // Writes a new version file and returns it.
 export async function addVersion(
   dir: FileSystemDirectoryHandle,
-  entry: { parents: string[]; who: string; kind: Kind; text: string; note?: string; message?: string; notes?: SentNote[]; official?: boolean },
+  entry: { parents: string[]; who: string; kind: Kind; text: string; note?: string; message?: string; notes?: SentNote[]; official?: boolean; series?: Series },
   now = new Date(),
 ): Promise<Version> {
   const version: Version = {
@@ -274,6 +278,7 @@ export async function addVersion(
     ...(entry.message ? { message: entry.message } : {}),
     ...(entry.notes?.length ? { notes: entry.notes } : {}),
     ...(entry.official ? { official: true as const } : {}),
+    ...(entry.series ? { series: entry.series } : {}),
     sha256: await sha256(entry.text),
     text: entry.text,
   };
@@ -313,12 +318,28 @@ export async function sha256(text: string): Promise<string> {
 export const isOfficial = (v: Version) => v.kind === 'official' || !!v.official;
 export const isSend = (v: Version) => v.kind === 'review' && v.note === 'Sent for review';
 
-// When comments on hold come back (RV-19): the times of every send for review and official version.
-export const holdEnds = (versions: Version[]) => versions.filter((v) => isSend(v) || isOfficial(v)).map((v) => v.when);
+// When comments on hold come back (RV-19): the times of every send for review and official version. An approval's
+// version (#240) is not one: holds come back when the script goes back for review, as before approvals made versions.
+export const holdEnds = (versions: Version[]) =>
+  versions.filter((v) => isSend(v) || (isOfficial(v) && v.series !== 'ap')).map((v) => v.when);
 
-// Official versions are numbered v1, v2 … in the order they were made (versions oldest first).
-export function officialNumbers(versions: Version[]): Map<string, number> {
-  return new Map(versions.filter(isOfficial).map((v, i) => [v.id, i + 1]));
+// Official versions' names (#240), by the order they were made (versions oldest first): "r2", "w1", "ap1", each
+// series counted on its own; ones made before #240 have no series and keep "v1", "v2" ….
+export function versionNames(versions: Version[]): Map<string, string> {
+  const counts = new Map<string, number>();
+  return new Map(versions.filter(isOfficial).map((v) => {
+    const s = v.series ?? 'v';
+    counts.set(s, (counts.get(s) ?? 0) + 1);
+    return [v.id, `${s}${counts.get(s)}`];
+  }));
+}
+
+// A version name's letters ("ap" for "ap1"), for its colour.
+export const seriesOf = (name: string) => name.replace(/\d+$/, '');
+
+// The name the next official version of a series gets.
+export function nextName(versions: Version[], series: Series): string {
+  return `${series}${versions.filter((v) => isOfficial(v) && v.series === series).length + 1}`;
 }
 
 // Two texts are the same script when only the review status or the authors differ: a send or a save by someone
@@ -328,18 +349,19 @@ export function sameScript(a: string, b: string): boolean {
   return plain(a) === plain(b);
 }
 
-// The number of the official version a script's text is, or 0 once anything has changed since the newest official
+// The name of the official version a script's text is, or '' once anything has changed since the newest official
 // version (versions oldest first). Printing and the exports show it (EX-1, EX-7).
-export function officialNumber(versions: Version[], text: string): number {
+export function officialName(versions: Version[], text: string): string {
   const newest = versions.findLast(isOfficial);
-  return newest && sameScript(newest.text, text) ? (officialNumbers(versions).get(newest.id) ?? 0) : 0;
+  return newest && sameScript(newest.text, text) ? (versionNames(versions).get(newest.id) ?? '') : '';
 }
 
-// What a send for review makes (RV-9): the next official version, or none when the script is still the newest one
-// (`still`), however that one was made, so a version published by hand and then sent is never made twice.
-export function sendVersion(versions: Version[], text: string): { n: number; still: boolean } {
-  const n = officialNumber(versions, text);
-  return n ? { n, still: true } : { n: officialNumbers(versions).size + 1, still: false };
+// What a send for review makes (RV-9): the next r version, or none when the script is still the newest official one
+// (`still`, with that one's name), however that one was made, so a version published by hand and then sent is never
+// made twice.
+export function sendVersion(versions: Version[], text: string): { name: string; still: boolean } {
+  const name = officialName(versions, text);
+  return name ? { name, still: true } : { name: nextName(versions, 'r'), still: false };
 }
 
 // Versions nothing was made from: normally one. Two means two saves at the same time.

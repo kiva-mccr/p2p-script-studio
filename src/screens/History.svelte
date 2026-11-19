@@ -2,7 +2,7 @@
   import { problem } from '../lib/problems';
   import CopyDetails from './CopyDetails.svelte';
   import { onMount } from 'svelte';
-  import { changes, holdEnds, isOfficial, isSend, listVersions, officialNumber, officialNumbers, summary, type Version } from '../lib/history';
+  import { changes, holdEnds, isOfficial, isSend, listVersions, nextName, officialName, seriesOf, summary, versionNames, type Version } from '../lib/history';
   import { threads, type Note, type Thread } from '../lib/comments';
   import { renderMath, toHtml } from '../lib/format';
   import { cellKey, placeComments, stateText } from '../lib/historycomments';
@@ -29,7 +29,7 @@
   let error = $state('');
   let open = $state<Record<number, boolean>>({}); // folded groups opened, by the index of their first version
   let publishing = $state(false);
-  let officialName = $state('');
+  let typedName = $state('');
   let nameMissing = $state(false);
   let nameInput = $state<HTMLInputElement>();
   let repliesOpen = $state<Record<string, boolean>>({}); // comments whose replies are shown, by id
@@ -70,15 +70,17 @@
     }
   }
 
-  const numbers = $derived(officialNumbers([...(versions ?? [])].reverse()));
-  const nextNumber = $derived(numbers.size + 1);
+  const names = $derived(versionNames([...(versions ?? [])].reverse())); // official versions' names (#240)
+  const nextPublished = $derived(nextName(versions ?? [], 'w'));
+  // The official versions, newest first.
+  const officials = $derived((versions ?? []).filter((v) => names.has(v.id)));
 
   // Without official versions: every version. With them: the official ones and the sends for review, and the small
   // saves between them folded into one line until opened.
   type Item = { kind: 'one'; i: number } | { kind: 'group'; first: number; list: number[]; label: string };
   const items = $derived.by((): Item[] => {
     const list = (versions ?? []).slice(0, shown);
-    if (!numbers.size) return list.map((_, i) => ({ kind: 'one', i }));
+    if (!names.size) return list.map((_, i) => ({ kind: 'one', i }));
     const out: Item[] = [];
     let group: number[] = [];
     const flush = (label: string) => {
@@ -87,48 +89,48 @@
     };
     list.forEach((v, i) => {
       if (!isOfficial(v) && !isSend(v)) return void group.push(i);
-      flush(isOfficial(v) ? `since v${numbers.get(v.id)}` : 'since sent for review');
+      flush(isOfficial(v) ? `since ${names.get(v.id)}` : 'since sent for review');
       out.push({ kind: 'one', i });
     });
-    flush('before v1');
+    flush(`before ${names.get(officials.at(-1)!.id)}`);
     return out;
   });
 
   const count = (n: number) => (n === 1 ? '1 change' : `${n} changes`);
 
-  // A send for review that made no version, because nothing had changed since the newest one (RV-9): its number.
-  function still(i: number): number {
+  // A send for review that made no version, because nothing had changed since the newest one (RV-9): its name.
+  function still(i: number): string {
     const v = versions![i];
-    return isSend(v) && !v.official ? officialNumber(versions!.slice(i + 1).reverse(), v.text) : 0;
+    return isSend(v) && !v.official ? officialName(versions!.slice(i + 1).reverse(), v.text) : '';
   }
 
   // The version a version is compared with: for an official one, the official one before it; otherwise its first
   // parent, else the one before it in time.
   function before(i: number): Version | undefined {
     const list = versions!;
-    const n = numbers.get(list[i].id);
-    if (n && n > 1) return list.find((v) => numbers.get(v.id) === n - 1);
+    const k = officials.indexOf(list[i]);
+    if (k >= 0 && officials[k + 1]) return officials[k + 1];
     const parent = list[i].parents[0];
     return (parent && list.find((v) => v.id === parent)) || list[i + 1];
   }
 
   function title(i: number): string {
     const v = versions![i];
-    const n = numbers.get(v.id);
-    if (n) return `v${n} · ${v.note}`;
-    return still(i) ? `${v.note} (still v${still(i)})` : summary(v, before(i));
+    const name = names.get(v.id);
+    if (name) return `${name} · ${v.note}`;
+    return still(i) ? `${v.note} (still ${still(i)})` : summary(v, before(i));
   }
 
   function startPublish() {
     publishing = true;
-    officialName = '';
+    typedName = '';
     nameMissing = false;
     queueMicrotask(() => nameInput?.focus());
   }
 
   async function publish(e: SubmitEvent) {
     e.preventDefault();
-    const name = officialName.trim();
+    const name = typedName.trim();
     if (!name) return void ((nameMissing = true), nameInput?.focus());
     if (!(await onPublish(name))) return;
     publishing = false;
@@ -142,7 +144,8 @@
 
   const selected = $derived(versions?.[picked]);
   const selectedChanges = $derived(versions && selected ? changes(before(picked)?.text, selected.text) : []);
-  const selectedNumber = $derived(selected ? numbers.get(selected.id) : undefined);
+  // An official version is compared with the official one before it, named.
+  const comparedWith = $derived(selected && names.has(selected.id) ? names.get(officials[officials.indexOf(selected) + 1]?.id ?? '') : undefined);
 
   // Comments in History (RV-6, board 48): each on the version whose change it led to, or on the one current when it
   // was made. A version shows those of every version since the one it is compared with (an official one gathers
@@ -204,11 +207,11 @@
 {:else if versions && selected}
   {#snippet entry(i: number)}
     {@const version = versions![i]}
-    {@const n = numbers.get(version.id)}
+    {@const n = names.get(version.id)}
     {@const c = commentCount(i)}
     <button class="entry" class:official={n} class:picked={i === picked} aria-current={i === picked ? 'true' : undefined}
       onclick={() => (picked = i)}>
-      <span class="note">{#if n}<span class="tag">v{n}</span>{version.note}{:else}{title(i)}{/if}</span>
+      <span class="note">{#if n}<span class="tag version-tag {seriesOf(n)}">{n}</span>{version.note}{:else}{title(i)}{/if}</span>
       <span class="meta">{version.kind === 'official' ? 'Published by ' : ''}{version.who} · {at(Date.parse(version.when))}{c ? ` · ${c === 1 ? '1 comment' : `${c} comments`}` : ''}</span>
       {#if version.message}<span class="message">{version.message}</span>{/if}
       {#each version.notes ?? [] as n (n.id)}<span class="message"><b>{n.by}:</b> {n.text}</span>{/each}
@@ -252,12 +255,12 @@
         <form class="publish" aria-label="Publish official version" novalidate onsubmit={publish}>
           <h2>Publish official version</h2>
           <label>Name it
-            <input bind:this={nameInput} bind:value={officialName} oninput={() => (nameMissing = false)} placeholder="Final for recording" />
+            <input bind:this={nameInput} bind:value={typedName} oninput={() => (nameMissing = false)} placeholder="Final for recording" />
           </label>
           {#if nameMissing}<p class="missing" role="alert">Give it a name first.</p>{/if}
-          <p class="meta">It becomes v{nextNumber}: the script as it is now, kept and shown in History. Everyone sees it.</p>
+          <p class="meta">It becomes {nextPublished}: the script as it is now, kept and shown in History. Everyone sees it.</p>
           <div class="actions">
-            <button class="primary" type="submit">Publish v{nextNumber}</button>
+            <button class="primary" type="submit">Publish {nextPublished}</button>
             <button class="link" type="button" onclick={() => (publishing = false)}>Cancel</button>
           </div>
         </form>
@@ -270,7 +273,7 @@
       </div>
       <p class="meta">
         {selected.kind === 'official' ? 'Published by ' : ''}{selected.who} · {at(Date.parse(selected.when))}{before(picked)
-          ? ` · changes compared with ${selectedNumber && selectedNumber > 1 ? `v${selectedNumber - 1}` : 'the version before'}`
+          ? ` · changes compared with ${comparedWith ?? 'the version before'}`
           : ''}
         {#if picked === 0}<br />This is the current version.{/if}
       </p>
@@ -339,7 +342,7 @@
   .group { display: flex; flex-direction: column; gap: 2px; padding: 6px 8px; border: 1px dashed var(--line-strong); border-radius: 8px; }
   .more { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin-top: 8px; padding: 14px 14px 0; border-top: 1px solid var(--line); }
   .fold { min-height: 32px; padding: 0 6px; border: 0; background: none; color: var(--muted); font-size: 13px; font-weight: 500; text-align: left; }
-  .tag { margin-right: 8px; padding: 2px 8px; border-radius: 999px; background: #e7f4ec; color: #1b6b3e; font-size: 12px; font-weight: 600; }
+  .tag { margin-right: 8px; }
   .entry.official { min-height: 64px; }
   .entry.official .note { font-weight: 600; }
   .publish { display: flex; flex-direction: column; gap: 10px; padding: 16px 20px; border: 1px solid var(--line); border-radius: 10px; background: #fafafa; }
