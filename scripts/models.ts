@@ -15,10 +15,11 @@ const CACHE = '.models-cache';
 const REPO = 'https://github.com/kiva-mccr/p2p-script-studio';
 
 // What each speech worker loads (speech.worker.ts, hear.worker.ts): the encoder in full, the decoder in q4 (WebGPU)
-// and q8 (WebAssembly), and every small file at the top of the model.
+// and q8 (WebAssembly), and every small file at the top of the model. Whisper's q4 decoder is 124 MB, over GitHub
+// Pages' 100 MB a file: Whisper uses q8 on WebGPU too.
 const WANTED: Record<string, RegExp> = {
   'onnx-community/moonshine-base-ONNX': /^(onnx\/(encoder_model|decoder_model_merged_q4|decoder_model_merged_quantized)\.onnx|[^/]+\.(json|txt))$/,
-  'onnx-community/whisper-base_timestamped': /^(onnx\/(encoder_model|decoder_model_merged_q4|decoder_model_merged_quantized)\.onnx|[^/]+\.(json|txt))$/,
+  'onnx-community/whisper-base_timestamped': /^(onnx\/(encoder_model|decoder_model_merged_quantized)\.onnx|[^/]+\.(json|txt))$/,
 };
 
 const sha256 = (data: Uint8Array) => createHash('sha256').update(data).digest('hex');
@@ -53,9 +54,9 @@ async function fetchAll(lock: ModelsLock, dist: string): Promise<void> {
   for (const [model, { revision, files }] of Object.entries(lock)) {
     for (const [path, { sha256: want }] of Object.entries(files)) {
       const kept = join(CACHE, revision, model, path);
-      let data = existsSync(kept) ? new Uint8Array(readFileSync(kept)) : null;
-      if (!data || sha256(data) !== want) {
-        data = await get(`${HF}/${model}/resolve/${revision}/${path}`);
+      const old = existsSync(kept) ? new Uint8Array(readFileSync(kept)) : null;
+      const data = old && sha256(old) === want ? old : await get(`${HF}/${model}/resolve/${revision}/${path}`);
+      if (data !== old) {
         if (sha256(data) !== want) throw new Error(`${model}/${path} isn't the pinned file (SHA-256 ${sha256(data)}, not ${want})`);
         mkdirSync(dirname(kept), { recursive: true });
         writeFileSync(kept, data);

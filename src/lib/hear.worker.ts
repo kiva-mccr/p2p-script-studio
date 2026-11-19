@@ -5,8 +5,9 @@ import type { AutomaticSpeechRecognitionPipeline } from '@huggingface/transforme
 import { pipeline } from './models';
 
 const MODEL = 'onnx-community/whisper-base_timestamped';
+// q8 on both (SE-5): the q4 decoder is 124 MB, over GitHub Pages' 100 MB a file, so the app can't serve it.
 const DTYPE = {
-  webgpu: { encoder_model: 'fp32', decoder_model_merged: 'q4' },
+  webgpu: { encoder_model: 'fp32', decoder_model_merged: 'q8' },
   wasm: { encoder_model: 'fp32', decoder_model_merged: 'q8' },
 };
 type Out = { text: string; chunks?: { text: string; timestamp: [number, number | null] }[] };
