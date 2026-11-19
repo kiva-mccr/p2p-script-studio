@@ -69,7 +69,7 @@
   {#if missing}<p class="bad" role="status">The sealed file isn't on this site yet. Try again after the next update.</p>{/if}
 
   <h2>Check that it's sealed</h2>
-  <p class="lead small">For IT, or anyone who'd rather not take our word for it. Each check uses a standard tool.</p>
+  <p class="lead small">For IT, or anyone who'd rather double check. Each check uses a standard tool.</p>
 
   <ol>
     <li>
