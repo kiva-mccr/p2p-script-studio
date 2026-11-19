@@ -19,7 +19,7 @@ Open it at **https://p2p-script-studio.kivamccr.xyz/** (Chrome or Edge on a desk
 install. It can reach nothing but the folder you pick: no internet, no other address (its links are copied instead of
 opened, and Feedback is copied to pass on). It never updates itself; download it again for a new version. The page
 lists five standard checks IT can run: its SHA-256 fingerprint, GitHub's signed build attestation, its security
-policy, watching its network traffic, and a malware scan. The sealed file has no example to try. For Follow my voice and
+policy, watching its network traffic, and a malware scan. The sealed file has the example too, kept inside the browser. For Follow my voice and
 cuts timed from the take, pick "The app and the speech models" and add `speech-models.zip` once in the app's Settings,
 where it's checked file by file and kept by the browser.
 

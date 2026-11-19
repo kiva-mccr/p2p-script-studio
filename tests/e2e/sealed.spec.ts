@@ -53,7 +53,7 @@ test.describe(() => {
     await expect(page.getByRole('heading', { name: 'Open your scripts folder' })).toBeVisible();
     expect(unsealed(policyOf(readFileSync(built, 'utf8')))).toEqual([]);
     expect(await page.evaluate(() => isSecureContext && 'showDirectoryPicker' in window)).toBe(true); // the folder can be picked
-    await expect(page.getByRole('button', { name: 'Open the example' })).toHaveCount(0); // no private storage for a file
+    await expect(page.getByRole('button', { name: 'Open the example' })).toBeVisible(); // kept in IndexedDB (no private storage for a file)
 
     // The ? menu: no GitHub, no download, the version marked sealed.
     await page.getByRole('button', { name: 'Help and version' }).click();
@@ -65,4 +65,42 @@ test.describe(() => {
     expect(refused.join('\n')).toMatch(/connect-src/);
     expect(elsewhere).toEqual([]);
   });
+});
+
+// The sealed file served from the test site instead of the computer: a folder can't be picked in headless tests, and the
+// example and Settings are reached without one.
+test('the sealed app keeps its example inside the browser, and its Settings take the speech models (SE-5)', async ({ page }) => {
+  await page.goto(`./${SEALED_FILE}`);
+  await page.getByRole('button', { name: 'Open the example' }).click();
+  await page.getByText('How Photosynthesis Works').click();
+  await expect(page.getByLabel('Dialogue, row 1')).toBeVisible();
+  await page.getByLabel('Dialogue, row 1').fill('Plants make food from light.');
+  await expect.poll(() => page.evaluate(async () => {
+    const opfs: string[] = [];
+    for await (const name of (await navigator.storage.getDirectory() as unknown as { keys(): AsyncIterable<string> }).keys()) opfs.push(name);
+    const db = await new Promise<IDBDatabase>((r) => (indexedDB.open('script-studio-example').onsuccess = (e) => r((e.target as IDBOpenDBRequest).result)));
+    const text = await new Promise<string>((r) => (db.transaction('files').objectStore('files').get('Example/Episode 03 - How Photosynthesis Works/script.md').onsuccess =
+      (e) => (e.target as IDBRequest<{ blob: Blob }>).result.blob.text().then(r)));
+    db.close();
+    return { opfs, saved: text.includes('Plants make food from light.') };
+  }), { timeout: 10000 }).toEqual({ opfs: [], saved: true }); // nothing in the browser's private storage, as if opened from disk
+
+  await page.reload(); // it comes back as it was left
+  await expect(page.getByLabel('Dialogue, row 1')).toHaveValue('Plants make food from light.');
+
+  await page.getByRole('button', { name: 'More' }).click();
+  await page.getByRole('button', { name: 'Settings' }).click();
+  const settings = page.getByRole('dialog', { name: 'Settings' });
+  await expect(settings.getByRole('heading', { name: 'Speech models' })).toBeVisible();
+  await expect(settings.getByText('Not added.')).toBeVisible();
+  await settings.locator('input[type="file"]').setInputFiles({ name: 'speech-models.zip', mimeType: 'application/zip', buffer: Buffer.from('not a zip') });
+  await expect(settings.getByRole('alert')).toContainText("That file can't be used: it isn't a zip.");
+  await expect(settings.getByText('Not added.')).toBeVisible();
+  await settings.getByRole('button', { name: 'Done' }).click();
+
+  // Start over and its Undo work on the browser's folder too.
+  await page.getByRole('button', { name: 'Start over' }).click();
+  await expect(page.getByLabel('Dialogue, row 1')).not.toHaveValue('Plants make food from light.');
+  await page.getByRole('button', { name: 'Undo' }).click();
+  await expect(page.getByLabel('Dialogue, row 1')).toHaveValue('Plants make food from light.');
 });

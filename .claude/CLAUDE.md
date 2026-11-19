@@ -88,8 +88,8 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
   Then security (the user, 2026-11-18, issue #267): SE-1 (Content Security Policy, done), SE-4 (headers via
   Cloudflare, done), SE-9 (integrity hashes, done); the rest (SE-2, 3, 6 to 8) are in docs/security.md.
   Then (the user, 2026-11-18, ahead of boards 82 and 83): SE-10, the sealed app to download (done), then SE-5 (speech
-  models from the app, and as the sealed file's second download, done). Asked next (2026-11-18): the example in the
-  sealed app, in a folder the person picks (decision card open).
+  models from the app, and as the sealed file's second download, done). Then the example in the sealed app,
+  kept in IndexedDB (the user's pick, 2026-11-19, done).
   Then issue #254 (EX-22, zoom in the Resolve / Premiere preview, board 79, done 2026-11-18).
   Then board 80's issues (the user, 2026-11-18), one PR each: #245, #238, #225, #207 (SB-9 to SB-12, done), #264
   (SB-13, "No picture" as an icon, done); board 81: #249 (RV-24, done), #250 (RV-25, done), #256 (AP-50, done), #253 (AP-51, word count, done), #262 (AP-52, drop files onto a row, done); then 82 and 83.
@@ -132,8 +132,8 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
 ## Known gaps (never seen for real; confirm when the user can)
 - The sealed file (SE-10) in real Chrome/Edge on Windows: only test Chromium opened it from disk. Picking a folder
   there (no picker in headless tests), whether it remembers the folder across openings, and the attestation (made only
-  in the deploy) are unseen. Its speech workers' runtime handover and Settings › Speech models (SE-5; no folder can be picked in headless tests,
-  so Settings isn't reachable there) are unseen; only the zip's reading and checks are unit-tested.
+  in the deploy) are unseen. Its speech workers with a real models zip (SE-5) are unseen; a wrong zip refused in Settings and the example in
+  IndexedDB were seen with the file served from the test site (sealed.spec.ts), not opened from disk.
 - The team now uses a Windows mapped network drive (SMB), not OneDrive. FX-2's change files, keeper and spinner with
   two real computers there are unseen (no SMB share here; others are simulated by writing change files in tests).
 - The editor's saves and the 5 s check for others' saves with real OneDrive sync delays.

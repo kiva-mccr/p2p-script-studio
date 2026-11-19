@@ -6,7 +6,9 @@
 
   function onClick(e: MouseEvent) {
     const a = (e.target as Element | null)?.closest?.('a[href]') as HTMLAnchorElement | null;
-    if (!a || !/^https?:$/.test(new URL(a.href, location.href).protocol)) return;
+    const to = a && new URL(a.href, location.href);
+    // The app's own links (#/a script) stay in the page, wherever the file is opened from.
+    if (!to || !/^https?:$/.test(to.protocol) || (to.origin === location.origin && to.pathname === location.pathname)) return;
     e.preventDefault();
     navigator.clipboard.writeText(a.href).then(
       () => (note = `Link copied: ${a.href}. The sealed app doesn't open websites; paste it into a browser if you want it.`),

@@ -15,7 +15,8 @@ models, pinned in `models.lock.json` and put beside the site by the deploy (`scr
   the model files are missing, and the stand-ins replace the workers anyway.
 - In the sealed app (SE-10) there's nothing beside the page: `pipeline` waits for the page to hand over the runtime
   (as `wasmBinary`) and the models' zip added in Settings (`lib/sealedmodels.ts`), and Transformers.js reads each file
-  through `customCache` as a slice of the zip. With no zip added, a model fails to load (the speech screens say so).
+  through `customCache` as a slice of the zip. With no zip added, `pipeline` throws "The speech models aren't added" before reaching for a file (which the
+  policy would refuse).
 - Transformers.js sets ONNX Runtime's `wasmPaths` to cdn.jsdelivr.net when it loads. Setting `wasmPaths` to `{}` makes
   the runtime use the glue built into the worker and the `.wasm` Vite emitted beside it, from this site. Keep it set
   before the first `pipeline()` call: the runtime reads it once, when it starts.

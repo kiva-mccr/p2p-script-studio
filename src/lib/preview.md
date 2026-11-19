@@ -21,3 +21,4 @@ TIFF (UTIF) or of a PDF's page 1 (pdf.js) with its page count; the first 3 lines
   One the browser can't decode gives null. Camera photos shown as themselves made scrolling crawl.
 - At most two previews are made at a time (`turn`): many rows coming near at once held up the page for a second.
 - `UTIF` has no types: the few used are declared in `src/globals.d.ts`.
+- In the sealed app pdf.js's worker is made from a blob: URL (`workerPort`): its file is a data: URL there, which the sealed policy won't run as a script (seen 2026-11-19).

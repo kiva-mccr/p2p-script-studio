@@ -23,6 +23,7 @@ type Zip = { blob: Blob; index: Record<string, [number, number]> };
 
 // The sealed app has nothing beside it: the page hands over the runtime and the speech models' zip (if added in
 // Settings) as the worker starts, and nothing is made before they arrive.
+let added = true; // the sealed app's zip
 const runtime = __SEALED__
   ? new Promise<void>((resolve) =>
       self.addEventListener('message', (e: MessageEvent<{ type: string; wasm: ArrayBuffer; models: Zip | null }>) => {
@@ -30,6 +31,7 @@ const runtime = __SEALED__
         e.stopImmediatePropagation(); // not the worker's own message
         onnx.wasm!.wasmBinary = e.data.wasm;
         const zip = e.data.models;
+        added = !!zip;
         env.useBrowserCache = false;
         env.useCustomCache = true;
         env.customCache = {
@@ -46,6 +48,8 @@ const runtime = __SEALED__
 
 export const pipeline = (async (task: string, model: string, options: object) => {
   await runtime;
+  // Without the zip there's nothing to read (and reaching for a file beside the page would be refused).
+  if (!added) throw new Error('The speech models aren\'t added: add speech-models.zip in Settings');
   place(model);
   return (make as (...a: unknown[]) => unknown)(task, model, options);
 }) as unknown as typeof make;

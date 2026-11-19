@@ -152,7 +152,10 @@ async function tifPicture(file: File): Promise<string> {
 // pdf.js (fetched only when a PDF is shown) draws page 1, twice the 120 px it is shown at so it stays sharp.
 async function pdfFirstPage(file: File): Promise<{ url: string; pages: number }> {
   const [pdfjs, worker] = await Promise.all([import('pdfjs-dist'), import('pdfjs-dist/build/pdf.worker.min.mjs?url')]);
-  pdfjs.GlobalWorkerOptions.workerSrc = worker.default;
+  // In the sealed app the worker's file is a data: URL, which its policy won't run as a script: it becomes a blob:
+  // worker instead (allowed), made once.
+  if (__SEALED__) pdfjs.GlobalWorkerOptions.workerPort ??= new Worker(URL.createObjectURL(await (await fetch(worker.default)).blob()), { type: 'module' });
+  else pdfjs.GlobalWorkerOptions.workerSrc = worker.default;
   const task = pdfjs.getDocument({ data: new Uint8Array(await file.arrayBuffer()) });
   try {
     const doc = await task.promise;
