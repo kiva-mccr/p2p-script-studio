@@ -4,6 +4,7 @@
 export type Row = {
   type: 'row';
   id: string;
+  speaker: string; // who says it (#221): a short name from the script's credits; '' is the narrator
   dialogue: string;
   onScreen: string;
   files: string[];
@@ -18,10 +19,10 @@ export type Script = {
   blocks: Block[];
 };
 
-const LABELS = { 'Dialogue:': 'dialogue', 'On screen:': 'onScreen', 'Files:': 'files', 'Timeline:': 'timeline' } as const;
+const LABELS = { 'Speaker:': 'speaker', 'Dialogue:': 'dialogue', 'On screen:': 'onScreen', 'Files:': 'files', 'Timeline:': 'timeline' } as const;
 type Field = (typeof LABELS)[keyof typeof LABELS];
-const LABEL = /^(Dialogue:|On screen:|Files:|Timeline:)[ \t]?(.*)$/;
-const ESCAPED = /^\\(Dialogue:|On screen:|Files:|Timeline:|#)/;
+const LABEL = /^(Speaker:|Dialogue:|On screen:|Files:|Timeline:)[ \t]?(.*)$/;
+const ESCAPED = /^\\(Speaker:|Dialogue:|On screen:|Files:|Timeline:|#)/;
 const ROW = /^## (?!#)/;
 const SECTION = /^# (?!#)/;
 const ID = /<!--\s*id:\s*([a-z0-9]+)\s*-->/;
@@ -50,6 +51,7 @@ export function parseScript(source: string): Script {
     else if (block.type === 'section' || field === null) block.note = value;
     else if (field === 'files') block.files = fileLines(value);
     else if (field === 'timeline') block.timeline = value.replace(/\s*\n\s*/g, ' ');
+    else if (field === 'speaker') block.speaker = value.replace(/\s+/g, ' ').trim();
     else block[field] = value;
   };
 
@@ -59,7 +61,7 @@ export function parseScript(source: string): Script {
       flush();
       field = null;
       block = ROW.test(line)
-        ? { type: 'row', id: line.match(ID)?.[1] ?? '', dialogue: '', onScreen: '', files: [], timeline: '', note: '' }
+        ? { type: 'row', id: line.match(ID)?.[1] ?? '', speaker: '', dialogue: '', onScreen: '', files: [], timeline: '', note: '' }
         : { type: 'section', title: line.slice(2).trim(), note: '' };
       script.blocks.push(block);
       continue;
@@ -92,6 +94,7 @@ export function writeScript(script: Script): string {
     if (!block.id) used.add((block.id = newId(used)));
     const row = [`## ${++n} <!-- id: ${block.id} -->`];
     if (block.note) row.push(block.note + '\n');
+    if (block.speaker) row.push(`Speaker: ${block.speaker}\n`);
     row.push(`Dialogue:\n${escape(block.dialogue)}`.trimEnd() + '\n');
     row.push(`On screen:\n${escape(block.onScreen)}`.trimEnd() + '\n');
     row.push(['Files:', ...block.files.map((file) => `- ${file}`)].join('\n'));
@@ -106,7 +109,7 @@ export function rows(script: Script): Row[] {
 }
 
 export function emptyRow(script: Script): Row {
-  return { type: 'row', id: newId(new Set(rows(script).map((row) => row.id))), dialogue: '', onScreen: '', files: [], timeline: '', note: '' };
+  return { type: 'row', id: newId(new Set(rows(script).map((row) => row.id))), speaker: '', dialogue: '', onScreen: '', files: [], timeline: '', note: '' };
 }
 
 // The paragraphs of pasted text, one per line, blank lines and spaces around them dropped (AP-13: a draft from
@@ -181,7 +184,7 @@ function fileLines(value: string): string[] {
 
 // A line in a field that would read as a label or a heading gets a backslash in front.
 function escape(text: string): string {
-  return text.replace(/^(Dialogue:|On screen:|Files:|Timeline:|#)/gm, '\\$1');
+  return text.replace(/^(Speaker:|Dialogue:|On screen:|Files:|Timeline:|#)/gm, '\\$1');
 }
 
 // Drops blank lines at both ends.

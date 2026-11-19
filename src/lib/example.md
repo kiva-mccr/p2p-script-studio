@@ -27,7 +27,7 @@ Start over and its Undo, and whether the offer on the first-time screen is folde
 - The App closes the open script and waits for its last saves before calling `startOver` or `undo` (`lib/leaving.md`).
 - Many tests list the example's files (review.spec.ts reads its `assets/` folder): adding a file to a row means
   updating the tests that expect that row's Files lines.
-- The takes are a made-up voice (espeak-ng with the MBROLA us2 voice, then Opus in webm); each JSON's `text` is the
+- The takes are a made-up voice (see the last rule); each JSON's `text` is the
   row's dialogue exactly, or the take shows Outdated. Accepting Ana's suggestion on row 2 makes its take Outdated.
 - An example made before files were added keeps its old copy until Start over.
 - The credits go into every version's front matter (`credited`), so History shows no change for them; the people's
@@ -40,3 +40,6 @@ Start over and its Undo, and whether the offer on the first-time screen is folde
   finds its text, `samsVersion` throws (`tests/unit/example.test.ts`).
 - Ana's "left" file is written relative to the moment the example is made (3 h before): the top bar names someone
   only up to 7 days back, so an old example loses it; Start over brings it back.
+- Since #221 the takes are a natural made-up voice (Kokoro 1.0, int8, made on 2026-11-19: `af_heart` for Kiva, the
+  narrator, `bf_emma` for Ana on row 4, then Opus in webm with silence trimmed). Ana speaks row 4 from Sam's version on
+  (`samsVersion`) and has `as: 'Ana'` in the credits; her take is signed Ana.

@@ -27,7 +27,7 @@ Status: a first working version. What it does today:
 
 - **First time:** type your name and choose your team's scripts folder ("Before you start" explains putting it on this
   computer, from a network drive or a synced folder such as OneDrive). The browser remembers both. New here? "Open the example" under it (or See the example in the ? menu, from any screen) opens a
-  made-up script (one file of each kind the app previews, a voice-over take on every row, a storyboard timeline with
+  made-up script (one file of each kind the app previews, a voice-over take on every row in two voices, a storyboard timeline with
   a hold and a placeholder, comments of each kind with one on hold, one resolved and one with a file, a flag, an
   equation, a plan, credits with six made-up people's contacts, a template, and a History with a send back)
   to click around in first; your changes stay in this browser, Start over puts it back as new, and the – folds the
@@ -117,6 +117,11 @@ Status: a first working version. What it does today:
   The script list's People button shows everyone, how to reach them and the scripts that credit them; someone no
   script credits can be removed there. Print, Fountain, Final Draft and Copy for Teams carry the names and blurbs,
   never the contact details; a Credits switch in the export settings leaves them out.
+- **Speakers:** a script can have more than one voice. In ⋯ › Credits, give someone a short name under "Speaks as"
+  ("Ana"); Write then shows a Speaker column, and a click on a row's speaker goes round the speakers (Narrator first).
+  Rows with no speaker are the narrator's. Review and Print show the name over the dialogue, Fountain and Final Draft
+  put each row under its speaker, and their settings list each speaker's rows and read time. The Speaker column folds
+  away like the others.
 - **Export screen:** each export opens a screen in place of the script, with the formats on the left, a preview of
   the result in the middle (it follows the settings as you change them) and the settings on the right, with Print…
   or Save. Settings are remembered on this computer. Back to the script (or Esc) returns.
@@ -126,11 +131,11 @@ Status: a first working version. What it does today:
   Pick Portrait or Landscape for the page: landscape gives the columns more room, and the print window opens already
   turned.
 - **Fountain:** saves the script as a `.fountain` file for Trelby, Highland and other screenplay programs.
-  Sections become scene headings, the dialogue is spoken by NARRATOR, the On screen column is the action, and row
+  Sections become scene headings, each row's dialogue is spoken by its speaker (NARRATOR when it has none), the On screen column is the action, and row
   numbers, notes and files are kept as Fountain notes. The title page carries the version and status. Settings: the
-  speaker's name, sections as scene headings or Fountain sections, and row numbers and files as notes or left out.
+  narrator's name, sections as scene headings or Fountain sections, and row numbers and files as notes or left out.
 - **Final Draft:** saves the script as an `.fdx` file for Final Draft, Fade In and WriterDuet, laid out the same
-  way; the row number, its note and its files are a plain line above each row. Settings: the speaker's name,
+  way; the row number, its note and its files are a plain line above each row. Settings: the narrator's name,
   sections as scene headings or plain lines, and the row numbers and files line.
 - **Resolve / Premiere:** saves the storyboard timeline as a `.zip` for DaVinci Resolve and Adobe Premiere Pro: one
   Final Cut Pro 7 XML timeline, which both import, and a media folder with copies of the pictures and videos, the

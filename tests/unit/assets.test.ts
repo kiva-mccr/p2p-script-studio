@@ -19,7 +19,7 @@ describe('assetRows', () => {
 });
 
 describe('excerpt', () => {
-  const row = (dialogue: string, onScreen = ''): Row => ({ type: 'row', id: 'a', dialogue, onScreen, files: [], timeline: '', note: '' });
+  const row = (dialogue: string, onScreen = ''): Row => ({ type: 'row', speaker: '', id: 'a', dialogue, onScreen, files: [], timeline: '', note: '' });
   it("is the row's dialogue on one line, marks taken out", () => {
     expect(excerpt(row('Inside each **cell**, *tiny* parts.\n\nThey are [green](https://x.org).'))).toBe('Inside each cell, tiny parts. They are green.');
   });

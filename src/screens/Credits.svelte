@@ -5,8 +5,8 @@
   // people kept once for the folder (lib/people.ts) and add a short blurb on what each did on this script. Contact
   // details are the folder's, so a change shows in every script. Changing the credits changes the script's front
   // matter, saved like any edit (onChange).
-  import { creditedOn, listPeople, readCredits, savePerson, writeCredits, contactLine, type Credit, type Person } from '../lib/people';
-  import { frontList, type Script } from '../lib/script';
+  import { creditedOn, listPeople, readCredits, savePerson, shortName, writeCredits, contactLine, type Credit, type Person } from '../lib/people';
+  import { frontList, rows, type Script } from '../lib/script';
   import Contact from './Contact.svelte';
 
   let { root, script = $bindable(), me, onChange, onClose }: {
@@ -58,6 +58,24 @@
   function set(next: Credit[]) {
     script.front = writeCredits(script.front, next);
     onChange();
+  }
+
+  // The short name someone speaks rows under in this script (#221). Their rows follow a new name; an empty one makes
+  // them no speaker, and their rows go back to the narrator. A name someone else has is refused, the box put back.
+  let clash = $state('');
+  function speaksAs(id: string, box: HTMLInputElement) {
+    const was = credits.find((c) => c.id === id)?.as ?? '';
+    const as = shortName(box.value);
+    clash = '';
+    if (as === was) return void (box.value = as);
+    if (as && (as.toLowerCase() === 'narrator' || credits.some((c) => c.id !== id && c.as?.toLowerCase() === as.toLowerCase()))) {
+      clash = `"${as}" is taken${as.toLowerCase() === 'narrator' ? ' by the narrator' : ' by someone else here'}: pick another short name.`;
+      box.value = was;
+      return;
+    }
+    box.value = as;
+    if (was) for (const row of rows(script)) if (row.speaker === was) row.speaker = as;
+    set(credits.map((c) => (c.id === id ? { ...c, as } : c)));
   }
 
   function blurb(id: string, role: string) {
@@ -146,6 +164,10 @@
             <input value={credit.role} placeholder="What they did, or their role" aria-label="What {credit.name} did on this script"
               oninput={(e) => blurb(credit.id, e.currentTarget.value)} onchange={() => settle(credit.id)} />
           </label>
+          <label class="blurb">Speaks as
+            <input value={credit.as ?? ''} placeholder="Doesn't speak" maxlength="24" aria-label="Short name {credit.name} speaks rows under"
+              onchange={(e) => speaksAs(credit.id, e.currentTarget)} onkeydown={(e) => e.key === 'Enter' && e.currentTarget.blur()} />
+          </label>
           <div class="buttons">
             {#if person}
               <button class="outline small" aria-expanded={editing === credit.id}
@@ -160,6 +182,9 @@
       {:else}
         <p class="empty">No credits yet.<span class="help"> Add the people who worked on this script.</span></p>
       {/each}
+
+      {#if clash}<p class="error" role="alert">{clash}</p>{/if}
+      {#if credits.length}<p class="speaks help">Speaks as: a short name for someone who says rows in this script. Write then shows a Speaker on each row; rows with none are the narrator's.</p>{/if}
 
       {#if adding}
         <div class="picker">
@@ -204,7 +229,7 @@
   .close { min-width: 44px; min-height: 44px; border: 0; border-radius: 8px; background: none; color: var(--muted); font-size: 20px; }
   .close:hover, .remove:hover { background: #f2f2f2; }
   .body { padding: 8px 20px 20px; }
-  .credit { display: grid; grid-template-columns: minmax(0, 180px) minmax(0, 1fr) auto; gap: 14px; align-items: end; padding: 12px 0;
+  .credit { display: grid; grid-template-columns: minmax(0, 180px) minmax(0, 1fr) minmax(0, 130px) auto; gap: 14px; align-items: end; padding: 12px 0;
     border-bottom: 1px solid #f0f0f0; }
   .who { min-width: 0; align-self: center; }
   .who b { display: block; font-size: 14px; font-weight: 600; }
@@ -214,6 +239,7 @@
     font: inherit; font-size: 14px; color: var(--ink); }
   .buttons { display: flex; gap: 4px; }
   .remove { min-width: 40px; min-height: 40px; border: 0; border-radius: 6px; background: none; color: var(--muted); font-size: 16px; }
+  .speaks { margin: 12px 0 0; font-size: 12px; color: var(--muted); }
   .details { padding: 12px 0; border-bottom: 1px solid #f0f0f0; }
   .empty { margin: 16px 0; font-size: 14px; color: var(--muted); }
   .add { margin-top: 16px; min-height: 44px; }

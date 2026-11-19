@@ -57,3 +57,6 @@ flag's note.
 - `lit` (SB-1): the row's block is picked on the storyboard timeline; tinted like the row being played.
 - The bubble of the row whose comment is chosen (`talking`) unselects it when clicked again (`onTalk('')`, issue #235);
   it is `aria-pressed` while chosen. A click on a quote still scrolls back to the chosen card (RV-17).
+- The Speaker button (#221, board 88) shows only when `cast` is given (Write's: the script has a speaker). A click goes
+  round '' (Narrator) then `cast`, an own Ctrl+Z step (`onChange(true)`); a name the credits no longer have shows grey.
+  The flag's note starts at grid column 4 with it (`--notes-from`), 3 without.

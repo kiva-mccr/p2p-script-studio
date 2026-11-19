@@ -2,16 +2,24 @@
   import { COLUMNS, type Folds } from '../lib/folds.svelte';
 
   // The three column headings, each with its ‹ to fold it away, or the › of a folded one (AP-17, RV-23). Placed in the
-  // screen's heading grid after its own first cells.
-  let { folds }: { folds: Folds } = $props();
+  // screen's heading grid after its own first cells. `speaker`: Write's Speaker column is shown first (#221).
+  let { folds, speaker = false }: { folds: Folds; speaker?: boolean } = $props();
 </script>
+
+{#if speaker}
+  {#if folds.has('speaker')}
+    <span><button class="unfold" aria-label="Show Speaker" title="Show Speaker" onclick={() => folds.toggle('speaker')}>›</button></span>
+  {:else}
+    <span class="heading">Speaker<button class="fold" aria-label="Fold Speaker away" title="Fold away" onclick={() => folds.toggle('speaker')}>‹</button></span>
+  {/if}
+{/if}
 
 {#each COLUMNS as col (col.key)}
   {#if folds.has(col.key)}
     <span><button class="unfold" aria-label="Show {col.name}" title="Show {col.name}" onclick={() => folds.toggle(col.key)}>›</button></span>
   {:else}
     <span class="heading">{col.name}
-      {#if folds.folded.size < COLUMNS.length - 1}
+      {#if folds.shut < COLUMNS.length - 1}
         <button class="fold" aria-label="Fold {col.name} away" title="Fold away" onclick={() => folds.toggle(col.key)}>‹</button>
       {/if}
     </span>

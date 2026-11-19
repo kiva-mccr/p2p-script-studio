@@ -8,8 +8,9 @@ import { frontValue, parseScript, setFrontValue } from './script';
 import { subdir } from './dirs';
 
 export type Person = { id: string; name: string; role: string; email: string; linkedin: string };
-// One credit on a script. `name` is kept too, so the script reads on its own (exports, a text editor).
-export type Credit = { id: string; name: string; role: string };
+// One credit on a script. `name` is kept too, so the script reads on its own (exports, a text editor). `as` (#221):
+// the short name they speak rows under in this script ("Ana"), or left out for someone who doesn't speak.
+export type Credit = { id: string; name: string; role: string; as?: string };
 type Entry = Person & { v: 1; who: string; when: string; removed?: boolean };
 
 // Everyone in the folder, by name. Files that can't be read (half-synced) are skipped.
@@ -64,7 +65,8 @@ export function readCredits(front: string | null): Credit[] {
     if (!Array.isArray(list)) return [];
     return list
       .filter((c) => c && typeof c.id === 'string' && typeof c.name === 'string')
-      .map((c) => ({ id: c.id, name: c.name, role: typeof c.role === 'string' ? c.role : '' }));
+      .map((c) => ({ id: c.id, name: c.name, role: typeof c.role === 'string' ? c.role : '',
+        ...(typeof c.as === 'string' && c.as.trim() ? { as: c.as.trim() } : {}) }));
   } catch {
     return [];
   }
@@ -72,9 +74,22 @@ export function readCredits(front: string | null): Credit[] {
 
 // The front matter with these credits: one line of JSON (which YAML reads too), or no line when there are none.
 export function writeCredits(front: string | null, credits: Credit[]): string | null {
-  if (credits.length) return setFrontValue(front, 'credits', JSON.stringify(credits.map(({ id, name, role }) => ({ id, name, role }))));
+  if (credits.length) return setFrontValue(front, 'credits', JSON.stringify(credits.map(creditData)));
   if (front === null) return null;
   return front.split('\n').filter((line) => !line.startsWith('credits:')).join('\n');
+}
+
+// What a credit keeps in the file: `as` only when it is set, so a script with no speakers reads as before.
+export const creditData = ({ id, name, role, as }: Credit): Credit => ({ id, name, role, ...(as?.trim() ? { as: as.trim() } : {}) });
+
+// The script's speakers besides the narrator (#221): the credits with a short name, in the credits' order.
+export function speakers(front: string | null): string[] {
+  return [...new Set(readCredits(front).flatMap((c) => (c.as ? [c.as] : [])))];
+}
+
+// A short name for a speaker: one line, no longer than 24 characters.
+export function shortName(text: string): string {
+  return text.replace(/\s+/g, ' ').trim().slice(0, 24).trim();
 }
 
 // Two saves at once (lib/merge.ts): the side that changed wins; when both did, theirs with your changes on top

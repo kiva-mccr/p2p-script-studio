@@ -1,5 +1,6 @@
 // The script as Fountain (EX-3, mock-up 11), the plain-text screenplay format Trelby, Highland and Fade In open.
-// By default sections become scene headings; each row's On screen is an action line and its Dialogue is spoken by NARRATOR.
+// By default sections become scene headings; each row's On screen is an action line and its Dialogue is spoken by its
+// speaker (#221), or by NARRATOR (the export screen's name) when it has none.
 // Files and row numbers are kept as [[notes]], which those apps keep but don't print.
 import type { Credit } from './people';
 import { frontList, type Script } from './script';
@@ -35,7 +36,7 @@ export function toFountain(script: Script, title: string, stand: string, date: s
     const head = [how.numbers && `[[Row ${n}]]`, block.note.trim() && `[[${oneLine(block.note)}]]`, block.onScreen.trim() && action(block.onScreen)];
     const lines = [head.filter(Boolean).join(' '), how.files && block.files.length && `[[Files: ${block.files.map(oneLine).join(', ')}]]`];
     if (lines.some(Boolean)) out.push(lines.filter(Boolean).join('\n'), '');
-    if (block.dialogue.trim()) out.push(speakerName(how.speaker), dialogue(block.dialogue), '');
+    if (block.dialogue.trim()) out.push(speakerName(block.speaker || how.speaker), dialogue(block.dialogue), '');
   }
   return out.join('\n').replace(/\n+$/, '\n');
 }

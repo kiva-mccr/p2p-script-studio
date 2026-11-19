@@ -93,7 +93,7 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
   Then issue #254 (EX-22, zoom in the Resolve / Premiere preview, board 79, done 2026-11-18).
   Then board 80's issues (the user, 2026-11-18), one PR each: #245, #238, #225, #207 (SB-9 to SB-12, done), #264
   (SB-13, "No picture" as an icon, done); board 81: #249 (RV-24, done), #250 (RV-25, done), #256 (AP-50, done), #253 (AP-51, word count, done), #262 (AP-52, drop files onto a row, done); board 82: #220 (EX-23, pictures on the video export's clips, done), #212 (EX-24, script lines in Assets, done), #233 (RV-26, tick boxes in Review's plan, done); board 83: #202 (AP-53, Feedback in the tour, done), then the rest of 83. Board 84: #242 (RV-27, a reason on a suggestion, done). Board 88: #224 (AP-55, Copy and Open on
-  contacts, done). Board 90: #304 (AP-54, paste a picture into a row, done). Board 87: #219, #239, #232 (AP-56, the ? menu everywhere, done). #230 (AP-57, how long in the status, done). Board 85: #209 (AP-58, file names over previews, done). Board 86: #255 (EX-25, numbered files folded, done), #217 (EX-26, your own frame rate and size, done), #227 (EX-27, placeholders say what's still to find, done). Board 87: #234 (EX-28, the link and a Teams preview in Share, done). Board 90: #241 (AP-59, the ring round the mic, done). Board 88: #211 (AS-2, who finds each missing shot, done). Board 85: #228 (AU-10, a sound file as a take, done). Board 86: #237 (EX-29, voice-over rows lit, waveforms, .mp3, done). Board 84: #248 (RV-28, notes from several reviewers, ticked in Write, done). Board 85: #226 (SB-15, the preview beside the tracks, big to move and resize; Review's comments follow Play, done). Board 87: #240 (AP-60, versions named r, w, ap; Approve makes one, done).
+  contacts, done). Board 90: #304 (AP-54, paste a picture into a row, done). Board 87: #219, #239, #232 (AP-56, the ? menu everywhere, done). #230 (AP-57, how long in the status, done). Board 85: #209 (AP-58, file names over previews, done). Board 86: #255 (EX-25, numbered files folded, done), #217 (EX-26, your own frame rate and size, done), #227 (EX-27, placeholders say what's still to find, done). Board 87: #234 (EX-28, the link and a Teams preview in Share, done). Board 90: #241 (AP-59, the ring round the mic, done). Board 88: #211 (AS-2, who finds each missing shot, done). Board 85: #228 (AU-10, a sound file as a take, done). Board 86: #237 (EX-29, voice-over rows lit, waveforms, .mp3, done). Board 84: #248 (RV-28, notes from several reviewers, ticked in Write, done). Board 85: #226 (SB-15, the preview beside the tracks, big to move and resize; Review's comments follow Play, done). Board 87: #240 (AP-60, versions named r, w, ap; Approve makes one, done). Board 88: #221 + #222 (AP-61, a speaker per row; the example in two natural voices, done).
   The rest (AP-8 …) waits
   for the user's next ranking; "Last" in ROADMAP.md (EX-5, CC-1) waits until everything else is done.
 - Mock-ups (one board per design, numbered): https://claude.ai/artifact/2XDZmS7J5NEPZsz91RQMiL (private to the user).
@@ -152,7 +152,7 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
 - A sound file as a take (AU-10): only made-up WAVs and an ffmpeg .mp3 tone were picked in test Chromium; a real
   .m4a (test Chromium has no AAC) and real narration files picked in Windows are unseen.
 - The voice-over .mp3 (EX-29) in real players and editors (Windows Media Player, Resolve, Premiere): only test
-  Chromium decoded it back; its lit rows were only seen with the example's espeak takes, nothing heard.
+  Chromium decoded it back; its lit rows were only seen with the example's takes, nothing heard.
 - Play the script (AU-2, AU-7, AU-9) with real takes: tests play the fake WAV takes, and nothing was heard here. Whether the
   shown time keeps up with real webm takes is unseen.
 - Notes lines on every printed page (EX-15) in real Chrome/Edge printing to paper: only Chromium's PDF was seen here.
@@ -181,7 +181,7 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
 - History at scale (HI-3) on real OneDrive with "online only" files: only a made-up 2,000-version script in test
   Chromium was timed; a first visit on a new computer still reads every file.
 - The example's tour (AP-34) in real Chrome/Edge at other window sizes: only 1280 × 800 and 1920 × 1080 test Chromium
-  were seen. Its takes are a made-up voice (espeak-ng); nothing was heard here.
+  were seen. Its takes are a made-up voice (Kokoro since AP-61); nothing was heard here, only lengths and loudness checked.
 - Tab counts (RV-21) with two real computers: others' versions and comments are only simulated by writing their
   files in tests.
 - Smooth scrolling (AP-39) with real camera photos and .mov files on a real computer: only made-up 4000 × 3000
@@ -232,4 +232,6 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
 - Write ↗ on contacts (AP-55) with a real mail app on Windows: only the mailto link was checked.
 - Notes from several reviewers (RV-28) with two real computers: others' notes are only simulated by writing their files
   in tests; two reviewers sending back at once is unseen.
+- Speakers (AP-61) with two real computers: a speaker set while someone else edits is only merged in unit tests; an
+  older app saving a script with `Speaker:` lines keeps them as a note (read, not run here).
 - Allow editing (AP-25) after Chrome really takes back access: tests fake the lost OK; how long Chrome waits is unseen.

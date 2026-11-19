@@ -241,6 +241,10 @@
                 onmouseup={(e) => picker?.look(block.id, field, e.currentTarget)}>{@html toHtml(text(block, field))}</p>
             {/snippet}
             {#snippet content()}
+              <!-- Who says the row (#221), above its dialogue; none is the narrator. -->
+              {#if field === 'dialogue' && block.speaker}<div><p class="who">{block.speaker}</p>{@render shown()}</div>{:else}{@render shown()}{/if}
+            {/snippet}
+            {#snippet shown()}
               {#if edits && was && text(was, field) !== text(block, field)}
                 <!-- Show the edits (RV-4): the old text struck through above the new, as in History. -->
                 <div class="edited"><p class="was {field}" aria-label="{name} before, row {n}">{@html toHtml(text(was, field))}</p>{@render cell()}</div>
@@ -358,6 +362,7 @@
   .add:hover { background: #f0f0f0; color: var(--ink); }
   .cell { margin: 0; line-height: 1.55; white-space: pre-wrap; }
   .dialogue { font-size: 17px; }
+  .who { margin: 0 0 2px; font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
   .on_screen { font-size: 15px; color: #3d3d3d; }
   .files { font-size: 13px; color: #3d3d3d; }
   .cell :global(a) { color: var(--accent); }

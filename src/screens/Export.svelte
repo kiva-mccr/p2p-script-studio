@@ -18,7 +18,7 @@
   import { toFdx } from '../lib/fdx';
   import { SCREENPLAY, speakerName, toFountain, type Screenplay } from '../lib/fountain';
   import { clock, countWords, speaking } from '../lib/readtime.svelte';
-  import { shownCredits } from '../lib/people';
+  import { shownCredits, speakers } from '../lib/people';
   import { COLUMNS, readHidden } from '../lib/printcolumns';
   import { keep, recall } from '../lib/remember';
   import { frontValue, rows, type Script } from '../lib/script';
@@ -248,6 +248,21 @@
     setTimeout(() => URL.revokeObjectURL(url), 10000);
   }
 
+  // Who speaks, for the export card (#221): the narrator first (rows with no speaker), then each speaker in the credits'
+  // order, then any name a row has that the credits no longer do; each with its rows and their read time.
+  const cast = $derived.by(() => {
+    const order = ['', ...speakers(script.front)];
+    const by = new Map<string, { who: string; rows: number; seconds: number }>();
+    for (const row of rows(script)) {
+      if (!by.has(row.speaker)) by.set(row.speaker, { who: row.speaker, rows: 0, seconds: 0 });
+      const c = by.get(row.speaker)!;
+      c.rows++;
+      c.seconds += (countWords(row.dialogue) / speaking.wpm) * 60;
+    }
+    const rank = (who: string) => (order.includes(who) ? order.indexOf(who) : order.length);
+    return [...by.values()].sort((a, b) => rank(a.who) - rank(b.who));
+  });
+
   function speaker(how: Screenplay, value: string) {
     how.speaker = value;
   }
@@ -267,7 +282,7 @@
         {#if notes && about.length}<p class="general">{about.join(' · ')}</p>{/if}
         {#if block.onScreen.trim()}<p class="action">{@html toHtml(block.onScreen.trim())}</p>{/if}
         {#if block.dialogue.trim()}
-          <p class="speaker">{speakerName(how.speaker)}</p>
+          <p class="speaker">{speakerName(block.speaker || how.speaker)}</p>
           <p class="dialogue">{@html toHtml(block.dialogue.trim())}</p>
         {/if}
       {/if}
@@ -378,7 +393,11 @@
         <label class="size">Text size <input type="range" min="60" max="140" step="5" bind:value={printing.scale} /> <span>{printing.scale}%</span></label>
       {:else if format === 'fountain' || format === 'fdx'}
         {@const how = format === 'fountain' ? fountain : fdx}
-        <label class="text">Speaker name <input type="text" value={how.speaker} oninput={(e) => speaker(how, e.currentTarget.value)} /></label>
+        <label class="text">{cast.length > 1 ? "Narrator's name" : 'Speaker name'} <input type="text" value={how.speaker} oninput={(e) => speaker(how, e.currentTarget.value)} /></label>
+        {#if cast.length > 1}
+          <!-- #221 (board 88): each speaker's rows and read time; rows with no speaker are the narrator's. -->
+          <ul class="cast" aria-label="Speakers">{#each cast as c (c.who)}<li><b>{c.who || `Narrator (${speakerName(how.speaker)})`}</b> {c.rows} {c.rows === 1 ? 'row' : 'rows'}, {clock(c.seconds)}</li>{/each}</ul>
+        {/if}
         <label><input type="checkbox" bind:checked={how.scenes} /> Sections as scene headings</label>
         {#if format === 'fountain'}
           <label><input type="checkbox" bind:checked={fountain.numbers} /> Row numbers as notes</label>
@@ -479,6 +498,8 @@
   .count button:disabled { color: var(--line-strong); }
   .count span { min-width: 1ch; text-align: center; color: var(--ink); }
   .kept { margin: 2px 0 0; font-size: 12px; color: var(--muted); }
+  .cast { margin: 0; padding: 0; list-style: none; font-size: 13px; line-height: 1.7; color: var(--muted); }
+  .cast b { font-weight: 600; color: var(--ink); }
   fieldset { display: flex; flex-direction: column; gap: 2px; margin: 0; padding: 0 0 10px; border: 0; border-bottom: 1px solid var(--line); }
   legend { padding: 0; margin-bottom: 4px; font-size: 12px; color: var(--muted); }
   fieldset.plain { border-bottom: 0; padding-bottom: 0; }

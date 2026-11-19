@@ -3,7 +3,7 @@ import { threads, type Note } from '../../src/lib/comments';
 import { heading, newestResolved, sortThreads, toSort } from '../../src/lib/commentsort';
 import type { Row } from '../../src/lib/script';
 
-const row = (id: string, dialogue: string, onScreen = ''): Row => ({ type: 'row', id, dialogue, onScreen, files: [] }) as unknown as Row;
+const row = (id: string, dialogue: string, onScreen = ''): Row => ({ type: 'row', speaker: '', id, dialogue, onScreen, files: [] }) as unknown as Row;
 const rows = [row('r1', 'Every leaf is a tiny kitchen.', 'A sunlit leaf.'), row('r2', 'It needs sunlight and water.')];
 const note = (id: string, kind: Note['kind'], min: string, extra: Partial<Note>): Note => ({
   v: 1, id, kind, who: 'Ana', when: `2026-11-09T14:${min}:00Z`, ...extra,

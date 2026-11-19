@@ -21,3 +21,6 @@ file per change, the newest counts) and a script's credits (a `credits:` line of
   yours on top.
 - Exports show names and blurbs only, never contact details (they may leave the team).
 - `.studio/` at the top starts with a dot, so `listScripts` never takes it for a script.
+- `as` (#221) is a credit's short name for this script: who says a row (`Speaker:` in script.md). Written only when
+  set (`creditData`), so a script with no speakers keeps its credits line as before. `speakers` lists them in the
+  credits' order; renaming one renames their rows (Credits.svelte).
