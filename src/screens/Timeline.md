@@ -38,9 +38,15 @@ offers its pictures, Sequence or Collage, + Add a picture (only for the timeline
   the blocks and the playhead. Fold / Unfold is its own button (`.fold`), the last in `.top`, so it sits at the far
   right after Wide / Upright and zoom (SB-10, #238); never put it back inside `.foldbar`. Remembered in this browser for every script (`timeline-open`, '1' open); it starts
   folded. It replaced SB-2's Unpin / Pin and the old Hide (`timeline-hidden`, `timeline-unpinned` are no longer read).
-- Open, the same strip (the `strip` snippet) sits above the tracks with `.view`, a box around the part in view
-  (SB-9, #245): `use:inView` measures `.scroll` on scroll and on resize of it and of `.tracks` (zoom changes the
-  tracks' width, not the box's). Picked blocks are `.on` there; the playhead only while playing.
+- Open, the strip (the `strip` snippet, `.strip.open`, `role="scrollbar"`) is the tracks' scroll bar, under them in
+  `.slider` with ◀ ▶ (`.step`) at its ends (SB-18, #336, board 92); `.scroll` hides the browser's own bar
+  (`scrollbar-width: none`), so Shift + wheel and trackpads still scroll it. Sections (`.mark-s`) sit above the blocks
+  (`.mark-b`); `.view` boxes the part in view (SB-9, #245): `use:inView` measures `.scroll` on scroll and on resize of
+  it and of `.tracks` (zoom changes the tracks' width, not the box's). Picked blocks are `.on` there; the playhead only
+  while playing. A press inside the box drags it from where it was held, elsewhere centres it there; letting go, ◀ ▶,
+  ← → and Home / End call `showMiddle`, which brings the row in the middle of the view into the script's view
+  (`onShow`), never while playing (Play moves the page itself). Its marks are `pointer-events: none`, so the press
+  measures against the strip.
 - The tour (SB-7) opens the drawer for its timeline step through the window's `tour-drawer` event and folds it again
   after, only if it opened it (`byTour`); not remembered. Folding or opening by hand clears `byTour`.
 - Open, the tracks and panel scroll inside `.body` (at most about half the screen), never the section: overflow on
@@ -68,8 +74,8 @@ offers its pictures, Sequence or Collage, + Add a picture (only for the timeline
   scrolls the tracks; the time is taken from the pointer clamped to the box, so the head stays at the edge. Let go:
   `player.seek` plays from there. Stopping while held drops the drag.
 - Playing, the tracks follow the playhead a page at a time, unless scrolled by hand in the last `OWN` ms: only a
-  wheel, touch or press on the box itself (its scroll bar) counts, never a scroll event (focusing the dot scrolls
-  too). `ownAt` starts at -Infinity: `performance.now()` counts from the page's load, so 0 blocked following for the
+  wheel or touch on the box, or the strip and ◀ ▶ under it (#336), count, never a scroll event (focusing the dot
+  scrolls too). `ownAt` starts at -Infinity: `performance.now()` counts from the page's load, so 0 blocked following for the
   first 5 s.
 - ✕ on the preview closes it (SB-11, #225): kept in this browser for every script (`timeline-preview`, 'closed'), so
   it stays closed when playing again, until Show preview (`.show`, in `.top`, only while playing with it closed; blue text with a picture icon, styled

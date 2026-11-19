@@ -25,7 +25,7 @@ const COLUMNS: [string, string][] = [
   ['.num', 'the row number'],
 ];
 
-const CONTROL = 'button, a, input, textarea, select, summary, [role="button"], [role="tab"], [contenteditable="true"]';
+const CONTROL = 'button, a, input, textarea, select, summary, [role="button"], [role="tab"], [role="scrollbar"], [contenteditable="true"]';
 
 /** The part a click means: the button or box it is in (not the icon's drawing inside a button), else what it hit. */
 export function partOf(target: Element): Element {

@@ -108,8 +108,8 @@
     zoomed = true;
   }
   const zoomBy = (f: number) => ((zoomed = true), (zoom = Math.min(ZOOM_MAX, Math.max(1, zoom * f))));
-  // Issue #245 (board 80): open, the strip stays above the tracks with a box around the part in view, in % of the
-  // whole; kept up to date as the tracks scroll, zoom (they change width) or the window resizes.
+  // Issue #245 (board 80): open, the strip shows a box around the part in view, in % of the whole; kept up to date as
+  // the tracks scroll, zoom (they change width) or the window resizes.
   let view = $state({ left: 0, width: 100 });
   function inView(node: HTMLElement) {
     const see = () => {
@@ -297,15 +297,15 @@
     player.seek(Math.min(Math.max(0, player.time + by), Math.max(0, total - 0.01)));
   }
   // While playing, the tracks scroll on their own to keep the playhead in view, a page at a time (#207), unless you
-  // scrolled them yourself in the last few seconds: a wheel, a touch, or a press on their scroll bar (not a scroll
+  // scrolled them yourself in the last few seconds: a wheel, a touch, or the strip under them (#336) (not a scroll
   // event, which focusing the dot or the tracks' own scrolling also send).
   let ownAt = -Infinity;
   const OWN = 5000;
   const scrollTracks = (left: number) => box && (box.scrollLeft = left);
   function tracksBox(node: HTMLElement) {
     box = node;
-    const own = (e: Event) => (e.type !== 'pointerdown' || e.target === node) && (ownAt = performance.now());
-    const kinds = ['wheel', 'touchmove', 'pointerdown'];
+    const own = () => (ownAt = performance.now());
+    const kinds = ['wheel', 'touchmove'];
     kinds.forEach((k) => node.addEventListener(k, own, { passive: true }));
     return { destroy: () => (kinds.forEach((k) => node.removeEventListener(k, own)), (box = undefined)) };
   }
@@ -318,6 +318,51 @@
       if (at < box.scrollLeft || at > box.scrollLeft + box.clientWidth - EDGE) scrollTracks(at - EDGE);
     });
   });
+  // Issue #336 (board 92): open, the strip is the tracks' scroll bar, under them, with ◀ ▶ at its ends (the browser's
+  // own bar is hidden). A press on it puts the box there (a press inside the box drags it from where it was held);
+  // letting go, or ◀ ▶, brings the row in the middle of the view into the script's view too (not while playing:
+  // Play moves the page itself).
+  const tracksId = $props.id();
+  let held: number | null = null; // where in the box it was held, in % of the whole, while dragging
+  const slideTo = (left: number) => box && ((ownAt = performance.now()), (box.scrollLeft = (left / 100) * box.scrollWidth));
+  const pointAt = (e: PointerEvent) => {
+    const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    return ((e.clientX - r.left) / r.width) * 100;
+  };
+  function press(e: PointerEvent) {
+    if (!box || e.button !== 0) return;
+    e.preventDefault();
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    const at = pointAt(e);
+    held = at >= view.left && at <= view.left + view.width ? at - view.left : view.width / 2;
+    slideTo(at - held);
+  }
+  const slideMove = (e: PointerEvent) => held !== null && slideTo(pointAt(e) - held);
+  function letGo() {
+    if (held === null) return;
+    held = null;
+    showMiddle();
+  }
+  function showMiddle() {
+    if (!box || player.started) return;
+    const t = ((box.scrollLeft + box.clientWidth / 2) / (box.scrollWidth || 1)) * total;
+    const b = laid.blocks.findLast((x) => x.start <= t) ?? laid.blocks[0];
+    if (b) onShow(b.kind === 'row' ? b.id : b.after);
+  }
+  // ◀ ▶ (and ← → on the strip) move half the view; Home and End go to the ends.
+  function step(by: number) {
+    if (!box) return;
+    ownAt = performance.now();
+    box.scrollLeft += by * box.clientWidth;
+    showMiddle();
+  }
+  function stripKey(e: KeyboardEvent) {
+    const by = { ArrowLeft: -0.5, ArrowRight: 0.5, Home: -Infinity, End: Infinity }[e.key];
+    if (by === undefined || !box) return;
+    e.preventDefault();
+    if (Math.abs(by) === Infinity) slideTo(by < 0 ? 0 : 100), showMiddle();
+    else step(by);
+  }
   let big = $state(false);
   // ✕ closes the preview (#225, board 80); it stays closed while playing, in this browser for every script, until
   // Show preview in the drawer's bar brings it back.
@@ -453,8 +498,7 @@
     {:else}
       <div class="beside">
       <div class="lanes">
-      {@render strip(true)}
-      <div class="scroll" use:fit use:inView use:tracksBox>
+      <div class="scroll" id={tracksId} use:fit use:inView use:tracksBox>
         <div class="tracks" style:width="{zoom * 100}%">
           <!-- svelte-ignore a11y_no_static_element_interactions -->
           <div class="ruler" class:grab={!!now} aria-hidden="true" data-keep onpointerdown={grab} onpointermove={move} onpointerup={drop} onpointercancel={drop}>
@@ -519,6 +563,12 @@
             {/each}
           </div>
         </div>
+      </div>
+      <!-- The tracks' scroll bar is the strip (#336, board 92), with ◀ ▶ at its ends. -->
+      <div class="slider">
+        <button class="step" aria-label="Scroll left" title="Scroll left" disabled={view.left <= 0.1} onclick={() => step(-0.5)}><svg aria-hidden="true" viewBox="0 0 10 10"><path d="M7 1.5L3 5l4 3.5z" /></svg></button>
+        {@render strip(true)}
+        <button class="step" aria-label="Scroll right" title="Scroll right" disabled={view.left + view.width >= 99.9} onclick={() => step(0.5)}><svg aria-hidden="true" viewBox="0 0 10 10"><path d="M3 1.5L7 5l-4 3.5z" /></svg></button>
       </div>
       </div>
       {#if now && previewOn && !big}{@render preview(true)}{/if}
@@ -610,14 +660,25 @@
     time={headTime} total={player.total} {upright} {docked} drawer={drawerH} end={() => section?.getBoundingClientRect().right ?? innerWidth} bind:big onClose={() => showPreview(false)} />
 {/snippet}
 
-<!-- The thin strip of the whole script: in the bar when folded; open, above the tracks with a box around the part in
-     view (#245). A picked block lights up in it, except while playing (#335); the playhead only while playing. -->
+<!-- The thin strip of the whole script: in the bar when folded; open, it is the tracks' scroll bar, under them (#336),
+     with the sections above the blocks and a box around the part in view (#245). A picked block lights up in it,
+     except while playing (#335); the playhead only while playing. -->
+{#snippet marks()}
+  {#each laid.blocks as b (b.id)}<span class="mark-b" class:on={selected === b.id && !player.started} class:now={now?.id === b.id} style:left="{pct(b.start)}%" style:width="{pct(b.seconds)}%"></span>{/each}
+  {#if now}<span class="head" style:left="{pct(headTime)}%"></span>{/if}
+{/snippet}
 {#snippet strip(open: boolean)}
-  <span class="strip" class:open aria-hidden="true">
-    {#each laid.blocks as b (b.id)}<span class:on={selected === b.id && !player.started} class:now={now?.id === b.id} style:left="{pct(b.start)}%" style:width="{pct(b.seconds)}%"></span>{/each}
-    {#if open}<span class="view" style:left="{view.left}%" style:width="{view.width}%"></span>{/if}
-    {#if now}<span class="head" style:left="{pct(headTime)}%"></span>{/if}
-  </span>
+  {#if open}
+    <span class="strip open" role="scrollbar" tabindex="0" aria-label="Scroll the timeline" aria-controls={tracksId} aria-orientation="horizontal"
+      aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(view.width >= 100 ? 0 : (view.left / (100 - view.width)) * 100)}
+      onpointerdown={press} onpointermove={slideMove} onpointerup={letGo} onpointercancel={letGo} onkeydown={stripKey}>
+      {#each laid.lanes as lane (lane.start + lane.title)}<span class="mark-s" style:left="{pct(lane.start)}%" style:width="{pct(lane.seconds)}%"></span>{/each}
+      {@render marks()}
+      <span class="view" style:left="{view.left}%" style:width="{view.width}%"></span>
+    </span>
+  {:else}
+    <span class="strip" aria-hidden="true">{@render marks()}</span>
+  {/if}
 {/snippet}
 
 <style>
@@ -632,11 +693,22 @@
   .title { font-size: 14px; font-weight: 600; }
   .strip { position: relative; flex: 1; min-width: 60px; height: 8px; }
   .strip span { position: absolute; top: 0; bottom: 0; box-sizing: border-box; border-right: 2px solid var(--ground); border-radius: 3px; background: #c9d7f2; }
-  .strip span.on { background: var(--accent); }
-  .strip span.now { background: #f2c3ad; }
-  .strip.open { display: block; height: 8px; margin: 4px 0 10px; }
-  .strip .view { top: -4px; bottom: -4px; border: 1.5px solid #6b7fa8; border-radius: 4px; background: rgba(42, 91, 215, 0.06); }
+  .strip .mark-b.on { background: var(--accent); }
+  .strip .mark-b.now { background: #f2c3ad; }
   .strip .head { top: -4px; bottom: -4px; border: 0; border-radius: 0; background: #d9480f; }
+  /* Open, the strip is the tracks' scroll bar (#336, board 92): grey section boxes above the blue line boxes, a box
+     round the part in view, ◀ ▶ at its ends. The browser's own bar is hidden; Shift + wheel and trackpads still scroll. */
+  .slider { display: flex; align-items: center; gap: 6px; margin: 8px 0 4px; }
+  .strip.open { height: 24px; cursor: pointer; touch-action: none; border-radius: 4px; }
+  .strip.open:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .strip.open span { pointer-events: none; }
+  .strip.open .mark-s { top: 3px; bottom: auto; height: 6px; background: #d4d4d4; }
+  .strip.open .mark-b { top: 12px; bottom: auto; height: 8px; }
+  .strip.open .head { top: 0; bottom: 0; }
+  .strip .view { top: 0; bottom: 0; border: 1.5px solid #6b7fa8; border-radius: 4px; background: rgba(42, 91, 215, 0.08); }
+  .step { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 22px; padding: 0; border: 1px solid var(--line-strong); border-radius: 4px; background: #fff; color: #3d3d3d; }
+  .step svg { width: 10px; height: 10px; fill: currentColor; }
+  .step:disabled { opacity: 0.4; }
   .head { position: absolute; top: 7px; bottom: 0; width: 2px; margin-left: -1px; background: #d9480f; pointer-events: none; z-index: 2; }
   /* The playhead's dot (#207): in the ruler's top band, above its times; the button round it is far bigger than the
      dot, so it's easy to catch. */
@@ -672,7 +744,7 @@
   .show svg { flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
   .fold { flex: none; min-height: 44px; padding: 0 4px; border: 0; background: none; font-size: 13px; color: var(--accent); cursor: pointer; }
   .empty { margin: 0; font-size: 13px; color: var(--muted); }
-  .scroll { overflow-x: auto; padding-top: 4px; }
+  .scroll { overflow-x: auto; padding-top: 4px; scrollbar-width: none; }
   .tracks { position: relative; min-width: 100%; }
   .ruler { position: relative; height: 32px; margin-bottom: 4px; border-bottom: 1px solid var(--line); touch-action: none; }
   .ruler.grab { cursor: pointer; }

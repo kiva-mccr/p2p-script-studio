@@ -68,7 +68,7 @@ test('a long timeline opens zoomed in to where its rows can be read; a short one
   await expect(t.getByRole('button', { name: 'Zoom out' })).toBeDisabled();
 });
 
-test('open, the strip stays above the tracks, with a box around the part in view and the picked row lit (#245)', async ({ page }) => {
+test('open, the strip shows a box around the part in view and the picked row lit (#245)', async ({ page }) => {
   await setUp(page, '#/Episode%2003', files);
   const t = timeline(page);
   const strip = t.locator('.strip.open');
@@ -88,6 +88,55 @@ test('open, the strip stays above the tracks, with a box around the part in view
   await t.getByRole('button', { name: /^Row 2 · / }).click();
   await expect(strip.locator('span.on')).toHaveCount(1);
   await expect(t.locator('.head')).toHaveCount(0);
+});
+
+// Issue #336 (board 92): open, the strip is the tracks' scroll bar, under them, with ◀ ▶; it scrolls the script too.
+test('open, the strip under the tracks scrolls them and the script, with arrows at its ends (#336)', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 640 });
+  await setUp(page, '#/Episode%2003', files);
+  const t = timeline(page);
+  const strip = t.getByRole('scrollbar', { name: 'Scroll the timeline' });
+  const scroll = t.locator('.scroll');
+  const left = () => scroll.evaluate((el) => el.scrollLeft);
+  await expect(strip).toBeVisible();
+  // Under the tracks, where the scroll bar was; the browser's own bar is hidden. Sections above the blocks.
+  expect((await strip.boundingBox())!.y).toBeGreaterThanOrEqual((await scroll.boundingBox())!.y + (await scroll.boundingBox())!.height - 1);
+  expect(await scroll.evaluate((el) => getComputedStyle(el).scrollbarWidth)).toBe('none');
+  await expect(strip.locator('.mark-s')).toHaveCount(3);
+  // Whole, there's nowhere to go.
+  await expect(t.getByRole('button', { name: 'Scroll left' })).toBeDisabled();
+  await expect(t.getByRole('button', { name: 'Scroll right' })).toBeDisabled();
+  await t.getByRole('button', { name: 'Zoom in' }).click();
+  await t.getByRole('button', { name: 'Zoom in' }).click();
+  await expect(t.getByRole('button', { name: 'Scroll right' })).toBeEnabled();
+  const row5 = page.getByLabel('Dialogue, row 5');
+  const row1 = page.getByLabel('Dialogue, row 1');
+  await expect(row5).not.toBeInViewport();
+  // A click near the end: the tracks go there, and so does the script.
+  const s = (await strip.boundingBox())!;
+  await page.mouse.click(s.x + s.width - 4, s.y + s.height / 2);
+  await expect.poll(left).toBeGreaterThan(0);
+  await expect.poll(() => scroll.evaluate((el) => el.scrollLeft + el.clientWidth >= el.scrollWidth - 1)).toBe(true);
+  await expect(row5).toBeInViewport();
+  await expect(t.getByRole('button', { name: 'Scroll right' })).toBeDisabled();
+  // Dragging the box back to the start brings row 1 back.
+  const v = (await strip.locator('.view').boundingBox())!;
+  await page.mouse.move(v.x + v.width / 2, v.y + v.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(s.x - 50, v.y + v.height / 2, { steps: 6 });
+  await page.mouse.up();
+  await expect.poll(left).toBe(0);
+  await expect(row1).toBeInViewport();
+  // ▶ moves half the view on; ◀ comes back; End on the strip goes to the end.
+  const width = await scroll.evaluate((el) => el.clientWidth);
+  await t.getByRole('button', { name: 'Scroll right' }).click();
+  await expect.poll(async () => Math.abs((await left()) - width / 2)).toBeLessThan(2);
+  await t.getByRole('button', { name: 'Scroll left' }).click();
+  await expect.poll(left).toBe(0);
+  await strip.focus();
+  await page.keyboard.press('End');
+  await expect(t.getByRole('button', { name: 'Scroll right' })).toBeDisabled();
+  await expect(row5).toBeInViewport();
 });
 
 test('a video in the timeline shows a still from it, not a chip', async ({ page }) => {
