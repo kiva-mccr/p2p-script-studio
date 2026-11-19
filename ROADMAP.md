@@ -768,6 +768,9 @@ and suggestions, keeps every version, and exports them for production.
   solid says the drop will work). A drop anywhere else is refused, so the browser never opens the file in place of
   the app (`lib/filedrag.svelte.ts`). "From other scripts…" became "Reuse a file…": this script's own files and links
   come first ("In this script", with the rows using each, added as the same line, not copied), then the other scripts.
+- [x] **AP-55** Copy and Open on contact details (issue #224, board 88 agreed by the user): each box in Contact details
+  (Credits and People) gets Copy, and Write ↗ (a new email) or Open ↗ (the LinkedIn page) in a new tab; shown only
+  once the box has something in it.
 - [x] **AP-54** Paste a picture into a row (issue #304 from a teammate, board 90 agreed by the user, 2026-11-19): click
   a row's Images & files and press Ctrl+V; a screen grab is saved into the script's `assets` folder as "pasted
   2026-11-19 06-40.png" (local time) and added to the row, as Choose a file… does (Ctrl+Z takes it back). Only
