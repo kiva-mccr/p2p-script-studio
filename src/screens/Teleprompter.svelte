@@ -1,6 +1,7 @@
 <script lang="ts">
   import { problem } from '../lib/problems';
   import CopyDetails from './CopyDetails.svelte';
+  import HelpMenu from './HelpMenu.svelte';
   import { onDestroy, onMount, tick, untrack } from 'svelte';
   import { clearMarks, plain, toHtml } from '../lib/format';
   import { addMark, follow, LEAD, move, normal, voiceAt, type Mark } from '../lib/follow';
@@ -302,6 +303,7 @@
     <label><input type="checkbox" bind:checked={cues} /> On-screen cues</label>
     <span class="left">{clock(((total - read) / speed) * 60)} left</span>
     <button class="exit" onclick={onClose}>Exit</button>
+    <HelpMenu tone="dark" />
   </div>
 </div>
 

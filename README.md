@@ -26,7 +26,7 @@ where it's checked file by file and kept by the browser.
 Status: a first working version. What it does today:
 
 - **First time:** type your name and choose your team's scripts folder ("Before you start" explains putting it on this
-  computer, from a network drive or a synced folder such as OneDrive). The browser remembers both. New here? "Open the example" under it opens a
+  computer, from a network drive or a synced folder such as OneDrive). The browser remembers both. New here? "Open the example" under it (or See the example in the ? menu, from any screen) opens a
   made-up script (one file of each kind the app previews, a voice-over take on every row, a storyboard timeline with
   a hold and a placeholder, comments of each kind with one on hold, one resolved and one with a file, a flag, an
   equation, a plan, credits with six made-up people's contacts, a template, and a History with a send back)
@@ -291,7 +291,8 @@ Status: a first working version. What it does today:
   words (buttons such as Clear or Choose a file…, labels such as Changed or commented) stay readable. The picture shows the part's row as it looks, with a chosen row's blue. No GitHub account? Copy instead copies the same text for
   Teams or an email.
 
-Needs Chrome or Edge on a desktop computer. The ? at the right end of the top bar has the link to the code on GitHub and the live version, "Version: PR #62" for
+Needs Chrome or Edge on a desktop computer. The ? at the right end of the top bar, on every screen (a touch dimmer
+in a script; at the bottom right in the Teleprompter), has Feedback…, See the example, the link to the code on GitHub and the live version, "Version: PR #62" for
 example: after a refresh it tells you whether a new version is live, hovering shows what that version added and when,
 and clicking opens it on GitHub.
 

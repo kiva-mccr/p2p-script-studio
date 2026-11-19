@@ -240,7 +240,7 @@
           </div>
         {/if}
       </span>
-      <HelpMenu />
+      <HelpMenu tone="dim" />
     </div>
   {/if}
 </header>
