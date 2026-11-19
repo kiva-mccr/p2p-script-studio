@@ -14,6 +14,9 @@
   const rate = $derived(wpm(take, dialogue));
   const part = $derived(span(take));
   const day = (ms: number) => new Date(ms).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  // Words a minute, the sound file it came from (#228), who and when.
+  const about = $derived([rate ? `${rate} wpm` : '', take.file ? `from ${take.file}` : '', take.by ? `${take.by}, ${day(take.at)}` : '']
+    .filter(Boolean).join(' · '));
 </script>
 
 <div class="take">
@@ -25,7 +28,7 @@
   {#if outdated(take, dialogue)}<span class="old" title="The line has changed since this take">Outdated{#if onCurrent}<button
     aria-label="Row {n}'s take matches the line: hide Outdated" title="The take already says this: hide Outdated"
     onclick={onCurrent}>×</button>{/if}</span>{/if}
-  <span class="about">{rate ? `${rate} wpm` : ''}{rate && take.by ? ' · ' : ''}{take.by ? `${take.by}, ${day(take.at)}` : ''}</span>
+  <span class="about">{about}</span>
   {#if onDrop}<button class="drop" aria-label="Delete the take of row {n}" title="Delete the take" onclick={onDrop}>×</button>{/if}
 </div>
 

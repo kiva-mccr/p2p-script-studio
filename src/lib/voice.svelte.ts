@@ -16,13 +16,23 @@ import { hear } from './hear';
 // it was recorded; a take from before, or with nothing heard, has none and plays whole.
 // words: each word the speech model heard, with when it starts (seconds from the recording's start), for cuts on a
 // word (SB-8); a take not heard yet has none.
-export type Take = { by: string; at: number; seconds: number; text: string; words?: [string, number][] } & Partial<Measure>;
+// file: the sound file it came from, when it was brought in rather than recorded (#228).
+export type Take = { by: string; at: number; seconds: number; text: string; words?: [string, number][]; file?: string } & Partial<Measure>;
 export type Held = { take: Take; sound: Blob }; // a take kept in memory for Undo (UX-1, UX-2)
 // fellBack: the mic picked in Settings wasn't there, so the default is recording (AU-3).
 export type Recording = { stop: () => Promise<Blob>; fellBack?: boolean };
 
 const FOLDER = 'voice';
 const CUE = 1000; // ms the ring takes to fill before the cue to read
+const MEASURE_RATE = 16000; // takes are decoded at this rate to find the speech and its loudness
+
+// A file picked as a take that the browser can't read as sound (#228).
+export class NotSound extends Error {
+  constructor(name: string) {
+    super(`${name} isn't a sound file this browser can read`);
+    this.name = 'NotSound';
+  }
+}
 
 // A recording from the microphone picked in Settings (or the default). Tests stand in for it, and are handed the
 // picked mic's id (tests/e2e/voice.spec.ts, settings.spec.ts).
@@ -139,8 +149,7 @@ export class Sound {
 // Where the speech is in a recording and how loud, or null when it can't be read or nothing is heard.
 async function measureTake(blob: Blob): Promise<Measure | null> {
   try {
-    const rate = 16000;
-    return measure(await decoder(rate)(await blob.arrayBuffer()), rate);
+    return measure(await decoder(MEASURE_RATE)(await blob.arrayBuffer()), MEASURE_RATE);
   } catch {
     return null;
   }
@@ -194,6 +203,7 @@ function readTake(text: string): Take | null {
   // SB-8: the heard words, kept only if every one is a word and a time.
   if (Array.isArray(take.words) && take.words.every((w: unknown) => Array.isArray(w) && typeof w[0] === 'string' && typeof w[1] === 'number'))
     found.words = take.words;
+  if (typeof take.file === 'string' && take.file) found.file = take.file;
   return found;
 }
 
@@ -265,8 +275,30 @@ export class VoiceOver {
     const take: Take = { by, at: Date.now(), seconds: Math.round(seconds * 10) / 10, text };
     const found = await measureTake(blob);
     if (found) Object.assign(take, found);
+    await this.#keep(dir, id, blob, take);
+  }
+
+  // A sound file used as a row's take (#228, board 85): copied in like a recording, measured for the clean-up and
+  // heard for cuts on a word the same way, with its name kept. Throws `NotSound` when it can't be decoded.
+  async useFile(dir: FileSystemDirectoryHandle, id: string, file: File, by: string, text: string) {
+    let samples: Float32Array;
+    try {
+      samples = await decoder(MEASURE_RATE)(await file.arrayBuffer());
+    } catch {
+      throw new NotSound(file.name);
+    }
+    if (!samples.length) throw new NotSound(file.name);
+    if (this.playing === id) this.stopPlaying();
+    const take: Take = { by, at: Date.now(), seconds: Math.round((samples.length / MEASURE_RATE) * 10) / 10, text, file: file.name };
+    const found = measure(samples, MEASURE_RATE);
+    if (found) Object.assign(take, found);
+    await this.#keep(dir, id, file, take);
+  }
+
+  // Writes a new take's sound and note, and tells the others.
+  async #keep(dir: FileSystemDirectoryHandle, id: string, sound: Blob, take: Take) {
     const voice = await subdir(dir, FOLDER, true);
-    await write(voice, `row-${id}.webm`, blob);
+    await write(voice, `row-${id}.webm`, sound);
     await write(voice, `row-${id}.json`, JSON.stringify(take));
     await announce(dir, 'take');
     this.takes = { ...this.takes, [id]: take };

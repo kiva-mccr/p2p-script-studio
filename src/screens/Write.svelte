@@ -16,7 +16,7 @@
   import type { Player } from '../lib/play.svelte';
   import { Folds } from '../lib/folds.svelte';
   import { chosenMic } from '../lib/mic';
-  import type { VoiceOver } from '../lib/voice.svelte';
+  import { NotSound, type VoiceOver } from '../lib/voice.svelte';
   import Find from './Find.svelte';
   import { titlePieces, type TitleMark } from '../lib/find';
   import FlagIcon from './FlagIcon.svelte';
@@ -107,14 +107,31 @@
   // A take recorded again replaces the old one when it stops; Undo writes the old one back (UX-2, board 72). Ctrl+Z
   // undoes a first take too (UX-15): it is deleted, and Ctrl+Y writes it back.
   async function stopTake(id: string) {
+    await newTake(id, () => voice.stop(dir, name, lineOf(id)));
+  }
+
+  // A take made by `make` (recorded, or a sound file), with the same Undo as above.
+  async function newTake(id: string, make: () => Promise<void>) {
     const held = await voice.hold(dir, id);
-    await voice.stop(dir, name, lineOf(id));
+    await make();
     const n = numbers.get(script.blocks.find((b) => b.type === 'row' && b.id === id)!);
     const made = voice.takes[id] && (await voice.hold(dir, id));
     if (!made) return;
     const again = () => voice.putBack(dir, id, made);
     if (held) onUndo({ what: `New take for row ${n} saved.`, label: 'Undo, keep the old take', back: () => voice.putBack(dir, id, held), again, row: id });
     else onAct({ back: () => voice.remove(dir, id), again, row: id });
+  }
+
+  // A sound file used as a row's take (#228): a recording on that row stops first, as with the mic on another row.
+  async function soundFile(id: string, file: File) {
+    try {
+      if (voice.recording) await stopTake(voice.recording);
+      await newTake(id, () => voice.useFile(dir, id, file, name, lineOf(id)));
+    } catch (e) {
+      onNotice(e instanceof NotSound
+        ? `${file.name} couldn't be read as sound. Use a .wav, .mp3, .m4a or .webm file.`
+        : problem("The take couldn't be saved in the script's folder. If the shared folder is still syncing, wait a moment and try again.", 'using a sound file as a take', e));
+    }
   }
 
   async function mic(id: string) {
@@ -465,7 +482,7 @@
         onStepFlag={(by) => stepFrom(block.id, by)} stepped={current === block.id} said={talkByRow.get(block.id) ?? []} talking={talkRow === block.id} {visit}
         came={came?.row === block.id ? came : null} start={started.get(block.id)} onPutBack={(field) => putBack(block, field)} {onChange} {onUndo} {onNotice} {onPlayFrom} {onFlag} {onTalk}
         onMove={(by) => move(i, by)} onInsert={() => insertRow(i + 1)} onRemove={() => remove(i)} onToSection={() => toSection(i)}
-        onToggleFlag={() => toggleFlag(block.id)} onMic={() => mic(block.id)} onPaste={(lines, head, tail) => pasteRows(block, lines, head, tail)} />
+        onToggleFlag={() => toggleFlag(block.id)} onMic={() => mic(block.id)} onSoundFile={(file) => soundFile(block.id, file)} onPaste={(lines, head, tail) => pasteRows(block, lines, head, tail)} />
       {@const after = readChoices(block.timeline).after}
       {#if after}
         {@const key = `${after.kind}:${block.id}`}

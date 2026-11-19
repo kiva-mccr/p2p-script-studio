@@ -8,6 +8,7 @@ listens (AU-9).
 
 ## Rules and pitfalls
 
+- `about` joins words a minute, "from <file>" for a take made from a sound file (#228) and who and when, with " · ".
 - Tests find it by its classes (`.take .about`, `.old`): keep them.
 - The delete × shows on hover of the row (`:global(.row:hover)`), so the parent's row must have the class `row`.
 - `at` (0 to 1) is the parent's choice: the script's place when Play the script is on that row, else the take's own.

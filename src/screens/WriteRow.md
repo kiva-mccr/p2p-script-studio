@@ -28,6 +28,9 @@ flag's note.
 - Recording (AU-4): the mic records from the click; while `voice.cue` (the first second) a red ring fills round it and the
   line says "Getting ready…", then ■ and "● Recording". Esc then throws the take away (the Editor's keys). The ▶ shows the
   cropped length (`span`), its title how much was cut. The take line is `Take.svelte`, shared with Review.
+- A sound file as the take (#228, AU-10): `.sound` under the mic, placed absolutely so the row is no taller, seen on
+  the row's hover or focus like the tools; it clicks a hidden file input and hands the file to Write (`onSoundFile`).
+  Hidden while recording.
 - The mic has no `title` (no hover text) in any state: it covered the line being read (user asked twice). Its
   name is only the `aria-label`. A test checks this.
 - The takes live in the Editor's `VoiceOver` (`lib/voice.svelte.ts`); a row with no id yet can't record.

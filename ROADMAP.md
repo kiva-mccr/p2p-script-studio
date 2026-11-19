@@ -597,6 +597,10 @@ and suggestions, keeps every version, and exports them for production.
   board 36 ("Looks perfect"): a row with no take shows nothing until the script plays over it; a comment on a take is
   a comment on its row (no time stamp); recording and the joined WAV stay in Write. Built so: the take line is one
   component for both tabs (`Take.svelte`); Play keeps going when switching between Write and Review.
+- [x] **AU-10** A sound file as a take (issue #228, board 85 agreed by the user): a small file button under the mic,
+  seen on the row's hover like the row tools, picks a .wav, .mp3, .m4a or .webm as the row's take. It is copied into
+  the script's takes like a recording, gets the same clean-up and cut-on-a-word timing, and its name shows on the take
+  ("from narration-row4.mp3"). Undo keeps the old take, as for a recording; a file that isn't sound says so in the page.
 
 - [x] **RV-12** Use an attached file in the script (suggested while drawing RV-11; agreed on board 49 with the
   user's two changes: every attached file, not only images, and only in Write). In Write's Comments tab, each file on

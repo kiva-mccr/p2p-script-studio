@@ -24,9 +24,10 @@
   // said: its open comments (RV-13); talking: its card is being read. visit: RV-15's marks. came: RV-12's file.
   // start: its words when the script was opened (AP-38); onPutBack puts a cell's back (Write's, for the Undo bar).
   // onMove, onInsert, onRemove, onToSection and onToggleFlag are Write's (they change the blocks round it);
-  // onMic: the mic (Write stops a take on another row first). onPaste: two or more paragraphs pasted into Dialogue (AP-13).
+  // onMic: the mic (Write stops a take on another row first). onSoundFile: a sound file picked as the take (#228).
+  // onPaste: two or more paragraphs pasted into Dialogue (AP-13).
   let { block = $bindable(), i, n, columns, folded, dir, root, folderName, voice, player, canPlay, name, lit = false, flag, flagAt, flagCount, onStepFlag, stepped, said, talking, visit, came, start,
-    onChange, onPutBack, onUndo, onNotice, onPlayFrom, onFlag, onTalk, onMove, onInsert, onRemove, onToSection, onToggleFlag, onMic, onPaste }: {
+    onChange, onPutBack, onUndo, onNotice, onPlayFrom, onFlag, onTalk, onMove, onInsert, onRemove, onToSection, onToggleFlag, onMic, onSoundFile, onPaste }: {
     block: Row; i: number; n: number | undefined; columns: string; folded: Set<string>; dir: FileSystemDirectoryHandle; root: FileSystemDirectoryHandle;
     folderName: string; voice: VoiceOver; player: Player; canPlay: boolean; name: string; lit?: boolean; flag: Flag | undefined; flagAt: number; flagCount: number;
     onStepFlag: (by: number) => void; stepped: boolean;
@@ -35,10 +36,12 @@
     onChange: (apart?: boolean) => void; onUndo: (offer: Offer) => void; onNotice: (message: string) => void; onPlayFrom: (id: string) => void;
     onFlag: (row: string, note: string | null) => Promise<boolean>; onTalk: (id: string) => void;
     onMove: (by: number) => void; onInsert: () => void; onRemove: () => void; onToSection: () => void; onToggleFlag: () => void; onMic: () => void;
+    onSoundFile: (file: File) => void;
     onPaste: (lines: string[], head: string, tail: string) => void;
   } = $props();
 
   const take = $derived(voice.takes[block.id]);
+  let picker = $state<HTMLInputElement>();
 
   // Delete the take with Undo (UX-1, board 72): its sound is read first, so Undo writes the same recording back.
   async function dropTake() {
@@ -134,6 +137,21 @@
         <svg class="ring" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="14" /></svg>{@render micIcon()}
       {:else if recording}■{:else}{@render micIcon()}{/if}
     </button>
+    {#if !recording}
+      <!-- #228 (board 85): a sound file as the take, under the mic, seen on hover like the row tools. -->
+      <button class="sound" disabled={!block.id} aria-label="Use a sound file for row {n}" title="Use a sound file"
+        onclick={() => picker?.click()}>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" /><path d="M14 3v6h6" /><path d="M10 17v-5l4-1v5" /></svg>
+      </button>
+      <input bind:this={picker} type="file" hidden accept=".wav,.mp3,.m4a,.webm,audio/*" aria-label="Sound file for row {n}"
+        onchange={(e) => {
+          const box = e.currentTarget;
+          const file = box.files?.[0];
+          box.value = '';
+          if (file) onSoundFile(file);
+        }} />
+    {/if}
   </div>
   {#if folded.has('dialogue')}{@render dot(block.dialogue !== '', 'Dialogue')}{:else}
   <div>
@@ -253,7 +271,12 @@
   .dot { text-align: center; color: #b8b8b8; }
   /* The mic sits between the number and the dialogue: grey with no take, blue with one, red while recording. */
   /* Pulled into the gap, so it reads as part of the line it records. */
-  .mic-cell { justify-self: end; transform: translateX(16px); margin-top: -3px; }
+  .mic-cell { position: relative; justify-self: end; transform: translateX(16px); margin-top: -3px; }
+  /* #228: under the mic, placed over the gap so the row is no taller; seen on hover and focus like the row tools. */
+  .sound { position: absolute; top: 30px; left: 2px; display: inline-flex; align-items: center; justify-content: center; width: 24px;
+    height: 24px; padding: 0; border: 1px solid var(--line); border-radius: 6px; background: #fff; color: var(--muted); opacity: 0; }
+  .row:hover .sound, .row:focus-within .sound { opacity: 1; }
+  .sound:hover { border-color: #c4c4c4; color: var(--ink); }
   .mic { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; padding: 0;
     border: 0; border-radius: 50%; background: none; color: #c4c4c4; font-size: 11px; }
   .mic:hover { background: #f0f0f0; color: var(--muted); }

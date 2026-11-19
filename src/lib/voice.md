@@ -43,4 +43,8 @@ id as state, with start, stop, play, current, remove and load), `readTakes` (a f
   `readTake` keeps only the fields it knows: a new field in the JSON must be read there too (`words` once wasn't, so a
   reload heard every take again).
   `rowLength` hands the heard words (aligned, `heardWords`) to the timeline, Play and the exports.
+- #228 (AU-10): `useFile` makes a take from a picked sound file: decoded (a file that won't decode throws `NotSound`),
+  measured as a recording is, and its name kept as `file` in the JSON (Take shows "from …"). Its bytes are written
+  as they are to row-<id>.webm, whatever the file was (mp3, m4a, wav): every reader decodes by content
+  (`decodeAudioData`), never by the name, so keep it that way. `seconds` is the decoded length, not timed.
 - Never tried with a real microphone here: the test browser has none.
