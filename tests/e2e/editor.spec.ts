@@ -282,8 +282,9 @@ test('Export / Share holds Copy link above the exports; menus close on Esc or a 
   await exportButton.click();
   await expect(exportButton).toHaveAttribute('aria-expanded', 'true');
   await expect(page.locator('.menu > button')).toHaveText(
-    ['Copy link', 'Copy for Teams', 'Print…', 'Fountain (.fountain)', 'Final Draft (.fdx)', 'Voice-over (.wav)', 'Resolve / Premiere (.zip)', 'Video (.mp4)']);
-  await expect(page.locator('.menu .group')).toHaveText(['Share', 'Export']);
+    ['Print…', 'Fountain (.fountain)', 'Final Draft (.fdx)', 'Voice-over (.wav)', 'Resolve / Premiere (.zip)', 'Video (.mp4)']);
+  await expect(page.locator('.menu .group')).toHaveText(['Export']);
+  await expect(page.locator('.menu .share .label')).toHaveText(['Link', 'Teams message']);
   await page.keyboard.press('Escape');
   await expect(page.locator('.menu')).toHaveCount(0);
   await exportButton.click();
@@ -294,6 +295,34 @@ test('Export / Share holds Copy link above the exports; menus close on Esc or a 
   await expect(page.getByRole('button', { name: 'Link copied' })).toBeVisible();
   expect(await page.evaluate(() => navigator.clipboard.readText())).toMatch(/#\/Episode%2003\?review$/);
   await expect(page.locator('.menu')).toHaveCount(0); // closes a moment later
+});
+
+test('Export / Share shows the link itself and the Teams message as it will look (#234)', async ({ page, context }) => {
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  await openExample(page);
+  await page.getByRole('button', { name: 'Export / Share' }).click();
+  const field = page.getByLabel('Link to this script');
+  await expect(field).toHaveValue(/#\/Episode%2003\?review$/);
+  await expect(field).toHaveAttribute('readonly', '');
+  const preview = page.getByLabel('How it looks in Teams');
+  await expect(preview.locator('a b')).toHaveText('How Photosynthesis Works');
+  await expect(preview).toContainText(/In review · \d+ rows · \d+:\d\d read aloud/);
+  await expect(preview.getByText('Open in Script Studio')).toBeVisible();
+  // A picture of the message: its links can't be followed or tabbed to from here.
+  await expect(preview).toHaveAttribute('inert', '');
+  // The preview is what Copy for Teams puts on the clipboard.
+  const shown = await preview.innerHTML();
+  await page.getByRole('button', { name: 'Copy for Teams' }).click();
+  await expect(page.getByRole('button', { name: 'Copied, paste it in Teams' })).toBeVisible();
+  const html = await page.evaluate(async () => (await (await navigator.clipboard.read())[0].getType('text/html')).text());
+  expect(shown).toContain(html.replace(/^<meta[^>]*>/, ''));
+  // The link's Copy says Copied, and copies what the field shows.
+  await expect(page.locator('.menu')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Export / Share' }).click();
+  const value = await field.inputValue();
+  await page.getByRole('button', { name: 'Copy link' }).click();
+  await expect(page.getByRole('button', { name: 'Link copied' })).toHaveText('Copied');
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(value);
 });
 
 test('a shared link opens the script on Review; the mark leaves the address, and a plain link opens Write', async ({ page }) => {
