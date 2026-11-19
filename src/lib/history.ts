@@ -7,6 +7,7 @@ import { announce } from './news';
 import { eachAtOnce } from './atonce';
 import { contents, listChapters, range, readChapter, type Contents } from './chapters';
 import { subdir } from './dirs';
+import type { SentNote } from './backnotes';
 
 type Kind = 'edit' | 'review' | 'restore' | 'merge' | 'outside' | 'restart' | 'official';
 export type Version = {
@@ -18,6 +19,7 @@ export type Version = {
   kind: Kind;
   note: string;
   message?: string; // the note with "Sent for review" (RV-8) or "Sent back to writer" (RV-13); absent when none was written
+  notes?: SentNote[]; // a send back's notes from the other reviewers (#248); absent when none
   official?: true; // a send for review that is also the next official version (RV-9); absent otherwise
   sha256: string;
   text: string;
@@ -258,7 +260,7 @@ export function sinceReview(before: Script, after: Script): { changed: Map<strin
 // Writes a new version file and returns it.
 export async function addVersion(
   dir: FileSystemDirectoryHandle,
-  entry: { parents: string[]; who: string; kind: Kind; text: string; note?: string; message?: string; official?: boolean },
+  entry: { parents: string[]; who: string; kind: Kind; text: string; note?: string; message?: string; notes?: SentNote[]; official?: boolean },
   now = new Date(),
 ): Promise<Version> {
   const version: Version = {
@@ -270,6 +272,7 @@ export async function addVersion(
     kind: entry.kind,
     note: entry.note ?? '',
     ...(entry.message ? { message: entry.message } : {}),
+    ...(entry.notes?.length ? { notes: entry.notes } : {}),
     ...(entry.official ? { official: true as const } : {}),
     sha256: await sha256(entry.text),
     text: entry.text,

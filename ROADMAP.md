@@ -807,6 +807,12 @@ and suggestions, keeps every version, and exports them for production.
   a row's Images & files and press Ctrl+V; a screen grab is saved into the script's `assets` folder as "pasted
   2026-11-19 06-40.png" (local time) and added to the row, as Choose a file… does (Ctrl+Z takes it back). Only
   pictures are taken; text still pastes into the link box. A grey "or paste a picture (Ctrl+V)" beside + Add.
+- [x] **RV-28** Notes for the writer from several reviewers (issue #248, board 84 agreed by the user): the send back's
+  note has the planning notes' formatting (bold, italic, lists, tick boxes, links). Any reviewer can "Add my note" in
+  Send back without sending; the notes added since the last Send for review gather there, and whoever sends it back
+  sends them all (in the History entry's `notes`). In Write each keeps its writer's name, and the writer ticks the tick
+  boxes (each tick a file in `.studio/notes/`). A note can be changed or deleted by its writer until it is sent.
+  Built 2026-11-19.
 - [x] **RV-27** A reason on a suggestion (issue #242, board 84 agreed by the user): "+ Add a reason" under Replace
   with opens a "Why (optional)" box. On the card the reason starts folded to one line ("› Why: …"); a click shows it
   whole. Saved as the suggestion's `text`, so Write's Comments tab and History show it too. A plain comment doesn't

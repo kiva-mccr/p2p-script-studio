@@ -3,9 +3,9 @@
   import CopyDetails from './CopyDetails.svelte';
   import { onDestroy, onMount, tick, untrack, type Snippet } from 'svelte';
   import { combinePlans, flipTick, planLines, readPlan, writePlan } from '../lib/planning';
-  import { renderMath, showLists, toHtml } from '../lib/format';
   import { keep } from '../lib/remember';
   import TextField from './TextField.svelte';
+  import NoteText from './NoteText.svelte';
 
   // The planning panel (AP-24, mock-up 23): a tab on the right edge of Write and Review opens notes, an outline and
   // the script's learning goals, kept in plan.md beside script.md. It saves on its own, like the script.
@@ -73,7 +73,6 @@
   });
   const typing = $derived(!review || editing);
   const lines = $derived(planLines(text));
-  const line = (words: string) => toHtml(showLists(words));
   async function flipEdit() {
     editing = !editing;
     await tick();
@@ -83,10 +82,6 @@
   function flip(index: number) {
     text = flipTick(text, index);
     changed();
-  }
-  function math(node: HTMLElement, _lines: unknown) {
-    renderMath(node);
-    return { update: () => renderMath(node) };
   }
 
   function changed() {
@@ -155,20 +150,7 @@
       <div class="body plan">
         {#if ready && !typing}
           {#if lines.length}
-            <div class="shown" use:math={lines}>
-              {#each lines as l, i (i)}
-                {#if l.tick !== undefined}
-                  <label class="tick" class:done={l.tick}>
-                    <input type="checkbox" checked={l.tick} onchange={() => flip(i)} />
-                    <span>{@html line(l.text)}</span>
-                  </label>
-                {:else if l.text.trim()}
-                  <p>{@html line(l.text)}</p>
-                {:else}
-                  <p class="gap"></p>
-                {/if}
-              {/each}
-            </div>
+            <NoteText text={text} onflip={flip} />
             {#if lines.some((l) => l.tick !== undefined)}<p class="help hint">Click a box to tick it. Edit to change the notes.</p>{/if}
           {:else}
             <p class="none">No planning notes yet.</p>
@@ -218,12 +200,6 @@
   .close:hover { background: #f0f0f0; }
   .body { flex: 1; overflow-y: auto; padding: 12px 20px 16px; font-size: 14px; }
   .plan :global(textarea) { min-height: 50vh; }
-  .shown p { margin: 0; line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; }
-  .shown .gap { height: 0.8em; }
-  .shown :global(a) { color: var(--accent); }
-  .tick { display: flex; align-items: flex-start; gap: 8px; min-height: 30px; line-height: 1.55; cursor: pointer; overflow-wrap: anywhere; }
-  .tick input { flex: 0 0 auto; width: 16px; height: 16px; margin: 3px 0 0; accent-color: var(--accent); }
-  .tick.done span { text-decoration: line-through; color: #6b6b6b; }
   .hint, .none { margin: 10px 0 0; font-size: 12px; color: var(--muted); }
   .none { font-size: 14px; margin: 0; }
   .foot { margin: 0; padding: 10px 20px 14px; border-top: 1px solid #f0f0f0; font-size: 12px; color: var(--muted); }

@@ -211,6 +211,7 @@
       <span class="note">{#if n}<span class="tag">v{n}</span>{version.note}{:else}{title(i)}{/if}</span>
       <span class="meta">{version.kind === 'official' ? 'Published by ' : ''}{version.who} · {at(Date.parse(version.when))}{c ? ` · ${c === 1 ? '1 comment' : `${c} comments`}` : ''}</span>
       {#if version.message}<span class="message">{version.message}</span>{/if}
+      {#each version.notes ?? [] as n (n.id)}<span class="message"><b>{n.by}:</b> {n.text}</span>{/each}
     </button>
   {/snippet}
   <div class="history">
