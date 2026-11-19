@@ -232,9 +232,13 @@
     } catch (e) {
       voice = '';
       voiceBox.checked = false; // the box was ticked by the click, and `voice` stayed ''
-      voiceError = problem((e as ListenError)?.why === 'microphone'
+      const why = (e as ListenError)?.why;
+      voiceError = problem(why === 'microphone'
         ? "The microphone isn't allowed. Allow it from the address bar, then switch Follow my voice on again."
-        : "Speech recognition couldn't be downloaded. Check the internet connection, then try again.", 'starting Follow my voice', e);
+        : why === 'download'
+          ? "Speech recognition couldn't be downloaded. Check the internet connection, then try again."
+          // Anything else (the sound couldn't be tapped): not the connection, so it isn't blamed (seen 2026-11-19).
+          : "Follow my voice couldn't start in this browser. Copy the details and send them to us.", 'starting Follow my voice', e);
     }
   }
 

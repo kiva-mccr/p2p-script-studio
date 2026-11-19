@@ -126,6 +126,8 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
   (`scripts/models.md`); a new model file the workers load must be pinned (`WANTED`) and stay under 100 MB.
 - `npm run build` also makes the sealed file (SE-10, lib/sealed.md); a worker made other than with
   `new Worker(new URL('./x.worker.ts', import.meta.url), { type: 'module' })` breaks it.
+- No AudioWorklet or other script made in the page (blob:/data:): the policy refuses it, silently in some cases
+  (lib/listen.md).
 - The built page has a Content Security Policy (SE-1, lib/csp.md). e2e specs import `test` from `./base`, which fails
   a test on any policy refusal; a feature that needs a new source adds the narrowest one in `lib/csp.ts`, with why.
 
@@ -138,8 +140,9 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
   two real computers there are unseen (no SMB share here; others are simulated by writing change files in tests).
 - The editor's saves and the 5 s check for others' saves with real OneDrive sync delays.
 - Conflicts and "… is editing" with two real computers (only simulated by writing files in tests).
-- Follow my voice (EX-8, EX-12) with real Moonshine, WebGPU and a real microphone: this container can't reach
-  Hugging Face, so only the worker asking for the model was seen; the following was tested with a fake. Whisper
+- Follow my voice (EX-8, EX-12) with real Moonshine, WebGPU and a real microphone: since SE-5 the live site's models
+  were seen loading and hearing (empty text) in headless Chromium with its made-up beep microphone, on WebAssembly;
+  real speech and WebGPU are unseen. The following itself was tested with a fake. Whisper
   worked on the user's desktop; the user is to check Moonshine's speed and accuracy (fallback: Whisper on WebGPU).
   Didn't follow on a Pixel 8 in Chrome (issue #24, shelved).
 - Fountain and Final Draft files opened in a real screenplay program: only the text and the XML were checked.
