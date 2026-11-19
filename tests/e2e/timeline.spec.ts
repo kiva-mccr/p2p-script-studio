@@ -90,6 +90,31 @@ test('open, the strip shows a box around the part in view and the picked row lit
   await expect(t.locator('.head')).toHaveCount(0);
 });
 
+// Issue #332 (board 92): a section's name and length stay at the left of the view while it's in view, and leave with its end.
+test('scrolled sideways, a section keeps its name pinned left until its end (#332)', async ({ page }) => {
+  await setUp(page, '#/Episode%2003', files);
+  const t = timeline(page);
+  const scroll = t.locator('.scroll');
+  const sec = t.getByRole('button', { name: /^Inside the leaf ·/ });
+  const name = sec.locator('.name');
+  await expect(name).toBeVisible();
+  for (let i = 0; i < 3; i++) await t.getByRole('button', { name: 'Zoom in' }).click();
+  // Scroll so the section starts left of the view: its name sits at the view's left edge, not off screen.
+  const left = async () => (await scroll.boundingBox())!.x;
+  const secBox = async () => (await sec.boundingBox())!;
+  await scroll.evaluate((el, x) => (el.scrollLeft += x), (await secBox()).x - (await left()) + 120);
+  await expect.poll(async () => (await secBox()).x).toBeLessThan((await left()) - 100);
+  await expect.poll(async () => Math.round((await name.boundingBox())!.x - (await left()))).toBe(10);
+  await expect(name).toHaveText(/Inside the leaf · \d+:\d\d/);
+  // Near its end, the name slides out with it and never runs into the next section.
+  const b = await secBox();
+  await scroll.evaluate((el, x) => (el.scrollLeft += x), b.x + b.width - (await left()) - 40);
+  await expect.poll(async () => {
+    const n = (await name.boundingBox())!, s = await secBox();
+    return n.x + n.width <= s.x + s.width - 9 && n.x < (await left()) + 10;
+  }).toBe(true);
+});
+
 // Issue #336 (board 92): open, the strip is the tracks' scroll bar, under them, with ◀ ▶; it scrolls the script too.
 test('open, the strip under the tracks scrolls them and the script, with arrows at its ends (#336)', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 640 });
