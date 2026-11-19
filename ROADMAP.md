@@ -490,6 +490,13 @@ and suggestions, keeps every version, and exports them for production.
   dragged to the tracks' left or right edge, they scroll that way; let go, it plays from there. ← and → on the dot
   jump 5 s. While playing, the tracks scroll a page at a time to keep the playhead in view, unless you scrolled them
   yourself (wheel, touch, scroll bar) in the last 5 s.
+- [x] **SB-15** The preview beside the tracks (issue #226 with #210, board 85 agreed by the user): playing with the
+  drawer open, the preview sits inside it, right of the tracks; folded, above its right end as before. ⤢ makes it big,
+  floating over the script, moved by its bar and resized by its corner (or the arrow keys on ⠿ and the corner), kept
+  in this browser (one place for wide, one for upright) and always between the top bar and the drawer. In Review the
+  same; while playing, Review's comments follow the row being played (its cards lit and brought to the top, Line
+  order, with a sort of their own while playing), and go back to the sort and place they had when it stops. Done
+  2026-11-19.
 - [x] **SB-14** The take being recorded in red (issue #251, board 84 agreed by the user): while a row is recorded,
   its take on the timeline is red and grows with the recording, pushing the rows after it right (the user's pick);
   it turns into the waveform when it stops. Done 2026-11-19. (The issue's other half, Feedback's Cover blurring the

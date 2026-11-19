@@ -2,15 +2,16 @@
   import { SORTS, SORT_KEY, type Sort } from '../lib/commentsort';
   import { keep } from '../lib/remember';
 
-  // "Sort Line · Time · Type" above the comment lists (RV-16, board 55); the choice is remembered on this computer.
-  let { sort = $bindable() }: { sort: Sort } = $props();
+  // "Sort Line · Time · Type" above the comment lists (RV-16, board 55); the choice is remembered on this computer,
+  // under `key` (Review while playing keeps its own, #210).
+  let { sort = $bindable(), key = SORT_KEY }: { sort: Sort; key?: string } = $props();
 </script>
 
 <div class="sort" role="group" aria-label="Sort comments">
   <span>Sort</span>
   <span class="tabs">
     {#each SORTS as [value, label] (value)}
-      <button type="button" aria-pressed={sort === value} onclick={() => keep(SORT_KEY, (sort = value))}>{label}</button>
+      <button type="button" aria-pressed={sort === value} onclick={() => keep(key, (sort = value))}>{label}</button>
     {/each}
   </span>
 </div>

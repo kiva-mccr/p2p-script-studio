@@ -5,6 +5,8 @@ import type { Row } from './script';
 export type Sort = 'line' | 'time' | 'type';
 export const SORTS: [Sort, string][] = [['line', 'Line'], ['time', 'Time'], ['type', 'Type']];
 export const SORT_KEY = 'comment-sort'; // remembered per computer, one choice for Review and Write
+// While playing, Review's comments have their own sort (#210, board 85): Line unless changed while playing.
+export const PLAY_SORT_KEY = 'comment-sort-playing';
 export const toSort = (value: string): Sort => (value === 'time' || value === 'type' ? value : 'line');
 
 const FIELDS: Field[] = ['dialogue', 'on_screen', 'files'];

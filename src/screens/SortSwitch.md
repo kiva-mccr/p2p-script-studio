@@ -10,3 +10,4 @@ The "Sort Line · Time · Type" switch above the comment lists (RV-16, board 55)
 - `sort` is bound; a click also keeps it (`comment-sort`), so the other screen opens with the same choice.
 - Buttons with `aria-pressed`, like the panel's Planning · Comments switch; tests find them by name in the
   "Sort comments" group.
+- `key` is where the choice is kept: `comment-sort` by default; Review while playing passes `comment-sort-playing` (#210).

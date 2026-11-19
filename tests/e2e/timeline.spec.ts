@@ -298,7 +298,8 @@ test('cut on a repeated word: the cut stays on the one picked', async ({ page })
   await expect(words.getByRole('button', { name: 'water,' }).first()).toHaveAttribute('aria-pressed', 'false');
 });
 
-test('playing: the preview sits above the drawer, follows, a hold plays in silence', async ({ page }) => {
+// #226 (board 85): with the drawer open, the preview sits in it, right of the tracks.
+test('playing: the preview sits in the open drawer beside the tracks, follows, a hold plays in silence', async ({ page }) => {
   await fakeTake(page);
   await page.addInitScript(() => localStorage.setItem('prompter-speed', '400'));
   await setUp(page, '#/Episode%2003', { ...files, 'Episode 03/script.md': script.replace('- assets/music-bed.mp3\n', '- assets/music-bed.mp3\n\nTimeline: then hold 1 s\n') });
@@ -309,14 +310,72 @@ test('playing: the preview sits above the drawer, follows, a hold plays in silen
   await expect(t.getByRole('img', { name: /^Take, / })).toBeVisible();
   await page.getByRole('button', { name: 'Play from row 2' }).click();
   await expect(t.getByRole('img', { name: /^Preview: Row 2/ })).toBeVisible();
-  const p = await page.locator('.preview').boundingBox(), top = await t.boundingBox();
-  expect(p!.y + p!.height).toBeLessThanOrEqual(top!.y);
+  const p = (await page.locator('.preview').boundingBox())!, top = (await t.boundingBox())!, tracks = (await t.locator('.scroll').boundingBox())!;
+  expect(p.y).toBeGreaterThanOrEqual(top.y);
+  expect(p.y + p.height).toBeLessThanOrEqual(top.y + top.height);
+  expect(p.x).toBeGreaterThanOrEqual(tracks.x + tracks.width);
+  await expect(page.locator('.preview.docked')).toBeVisible();
   await expect(t.getByRole('img', { name: 'Preview: Hold' })).toBeVisible({ timeout: 10000 });
   await expect(page.locator('.bar.lit')).toBeVisible();
   await t.getByRole('button', { name: 'Make the preview big' }).click();
   await expect(page.locator('.preview.big')).toBeVisible();
+  await expect(page.locator('.preview.docked')).toHaveCount(0);
   await page.keyboard.press('Escape'); // stops it (if the last rows haven't already)
   await expect(page.locator('.preview')).toHaveCount(0);
+});
+
+// #226 (board 85): big, the preview floats over the script; its bar moves it, its corner resizes it, and where it
+// was left is kept in this browser. It never runs into the drawer or under the top bar.
+test('big, the preview can be moved and resized, and is kept where it was left', async ({ page }) => {
+  await fakeTake(page);
+  await setUp(page, '#/Episode%2003', files);
+  await page.getByRole('button', { name: 'Record row 2', exact: true }).click();
+  await page.getByRole('button', { name: 'Stop recording row 2' }).click();
+  const t = timeline(page);
+  await page.getByRole('button', { name: 'Play from row 1' }).click();
+  await t.getByRole('button', { name: 'Make the preview big' }).click();
+  await page.getByRole('button', { name: 'Pause the script' }).click();
+  const preview = page.locator('.preview.big');
+  const first = (await preview.boundingBox())!;
+  // Resized by its corner, keeping its shape.
+  const corner = (await preview.getByRole('button', { name: 'Resize the preview' }).boundingBox())!;
+  await page.mouse.move(corner.x + 12, corner.y + 12);
+  await page.mouse.down();
+  await page.mouse.move(corner.x - 188, corner.y + 12, { steps: 5 });
+  await page.mouse.up();
+  const sized = (await preview.boundingBox())!;
+  expect(Math.round(first.width - sized.width)).toBe(200);
+  expect(sized.x).toBe(first.x);
+  // Moved by its bar.
+  const bar = (await preview.locator('.pbar').boundingBox())!;
+  await page.mouse.move(bar.x + 60, bar.y + bar.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(bar.x - 140, bar.y + bar.height / 2 + 60, { steps: 5 });
+  await page.mouse.up();
+  const moved = (await preview.boundingBox())!;
+  expect(Math.round(moved.x - sized.x)).toBe(-200);
+  expect(Math.round(moved.y - sized.y)).toBe(60);
+  // Dragged far down, it stops above the drawer.
+  await page.mouse.move(moved.x + 60, moved.y + 20);
+  await page.mouse.down();
+  await page.mouse.move(moved.x + 60, moved.y + 2000, { steps: 5 });
+  await page.mouse.up();
+  const low = (await preview.boundingBox())!;
+  expect(low.y + low.height).toBeLessThanOrEqual((await t.boundingBox())!.y);
+  // Kept: after a reload, played again and made big, it is where it was left.
+  const kept = JSON.parse(await page.evaluate(() => localStorage.getItem('timeline-preview-wide') ?? ''));
+  expect(kept.w).toBe(Math.round(sized.width));
+  await page.keyboard.press('Escape');
+  await page.reload();
+  await page.getByRole('button', { name: 'Play from row 1' }).click();
+  await timeline(page).getByRole('button', { name: 'Make the preview big' }).click();
+  await page.getByRole('button', { name: 'Pause the script' }).click();
+  const again = (await page.locator('.preview.big').boundingBox())!;
+  expect([Math.round(again.x), Math.round(again.y), Math.round(again.width)]).toEqual([Math.round(low.x), Math.round(low.y), Math.round(low.width)]);
+  // From the keyboard too: the grip's arrows move it.
+  await page.getByRole('button', { name: 'Move the preview' }).press('ArrowLeft');
+  await expect.poll(async () => Math.round((await page.locator('.preview.big').boundingBox())!.x)).toBe(Math.round(again.x) - 20);
+  await page.keyboard.press('Escape');
 });
 
 // #251 (board 84): while a row is recorded, its take on the timeline is red and grows, pushing the rows after it right.

@@ -4,7 +4,7 @@
   import { stepComment } from '../lib/shortcuts.svelte';
   import { grow, slideAway } from '../lib/slide';
   import { quoteGone, threads, type Field, type Note, type Thread } from '../lib/comments';
-  import { heading, newestResolved, sortThreads, toSort, SORT_KEY } from '../lib/commentsort';
+  import { heading, newestResolved, sortThreads, toSort, PLAY_SORT_KEY, SORT_KEY } from '../lib/commentsort';
   import { recall } from '../lib/remember';
   import type { Row } from '../lib/script';
   import AttachBox from './AttachBox.svelte';
@@ -21,6 +21,7 @@
     rows,
     numbers,
     active = $bindable(),
+    playing,
     onAdd,
     onApply,
   }: {
@@ -31,6 +32,7 @@
     rows: Row[]; // the script's rows, for sorting by Line and spotting quotes that are gone
     numbers: Map<string, number>; // each row's number
     active: string; // the card picked: its quote is marked brighter in the script
+    playing: string; // the row being played ('' when not playing): its cards are lit and the list follows it
     onAdd: (note: Omit<Note, 'v' | 'id' | 'when' | 'who'>, files?: File[]) => Promise<boolean>;
     onApply: (row: string, field: Field, from: string, to: string) => boolean;
   } = $props();
@@ -68,7 +70,10 @@
   );
   const open = $derived(all.filter((t) => !t.deleted && !t.resolved && !t.held));
   let sort = $state(toSort(recall(SORT_KEY))); // RV-16: Line by default, or Time or Type
-  const sorted = $derived(sortThreads(all, sort, rows));
+  // While playing (#210, board 85) the list has its own sort, Line unless changed while playing, and follows the row
+  // being played; stopped, it goes back to the sort and the place it had.
+  let playSort = $state(toSort(recall(PLAY_SORT_KEY)));
+  const sorted = $derived(sortThreads(all, playing ? playSort : sort, rows));
   const shown = $derived(sorted.filter((t) => (!t.resolved && !t.held) || recent.includes(t.comment.id) || holding.has(t.comment.id)));
   const held = $derived(sorted.filter((t) => !t.resolved && t.held && !holding.has(t.comment.id)));
   const resolved = $derived(newestResolved(all.filter((t) => t.resolved && !recent.includes(t.comment.id))));
@@ -84,6 +89,19 @@
     const row = open.find((t) => t.comment.id === id)?.comment.row;
     document.querySelector(`[data-play="${row}"]`)?.scrollIntoView({ block: 'nearest' });
   }
+
+  // The first card on the row being played, else on the next row with one, is brought to the top of the list.
+  $effect(() => {
+    const row = playing, list = shown;
+    if (!row || !aside) return;
+    const at = numbers.get(row) ?? 0;
+    const first = list.find((t) => t.comment.row === row) ?? list.find((t) => (numbers.get(t.comment.row ?? '') ?? 0) > at);
+    if (!first) return;
+    tick().then(() => {
+      const card = aside?.querySelector(`[data-id="${first.comment.id}"]`);
+      if (aside && card) aside.scrollTo({ top: card.getBoundingClientRect().top - aside.getBoundingClientRect().top + aside.scrollTop - 8 });
+    });
+  });
 
   function where(t: Thread): string {
     const n = numbers.get(t.comment.row ?? '');
@@ -141,7 +159,7 @@
 </script>
 
 <svelte:window onkeydown={stepKeys} />
-<aside aria-label="Comments" data-tour="review-cards" bind:this={aside}>
+<aside aria-label="Comments" data-tour="review-cards" class:follow={!!playing} bind:this={aside}>
   {#if target}
     <form class="card compose" aria-label="New comment" novalidate onsubmit={send} in:grow>
       <div class="who">{suggesting ? 'Suggest a change to' : 'Comment on'} row {numbers.get(target.row)}{target.quote ? ` · ${LABELS[target.field]}` : target.on === 'timeline' ? ', on the timeline' : ''}</div>
@@ -176,11 +194,14 @@
 
   <div class="open">
     <h2>Open · {open.length}</h2>
-    {#if all.length}<SortSwitch bind:sort />{/if}
+    {#if all.length}
+      {#if playing}<SortSwitch bind:sort={playSort} key={PLAY_SORT_KEY} />{:else}<SortSwitch bind:sort />{/if}
+    {/if}
   </div>
   {#each shown as t, i (t.comment.id)}
-    {#if heading(shown, i, sort)}<h3 class="kind">{heading(shown, i, sort)}</h3>{/if}
-    <div class="slot" out:slideAway>{@render card(t)}</div>
+    {@const kind = heading(shown, i, playing ? playSort : sort)}
+    {#if kind}<h3 class="kind">{kind}</h3>{/if}
+    <div class="slot" class:now={!!playing && t.comment.row === playing} out:slideAway>{@render card(t)}</div>
   {:else}
     <p class="quiet">No open comments.</p>
   {/each}
@@ -232,5 +253,8 @@
   .missing { margin: 0; font-size: 13px; color: var(--danger); }
   .quiet { margin: 0; font-size: 13px; color: var(--muted); }
   .slot { display: flex; flex-direction: column; }
+  /* Playing: the list scrolls by itself in the room above the drawer, and the playing row's cards are lit as its row. */
+  aside.follow { max-height: calc(100vh - var(--bar-h, 0px) - var(--drawer, 0px) - 32px); overflow-y: auto; }
+  .slot.now { border-radius: 10px; box-shadow: 0 0 0 3px #c9d7f2; }
   .group { display: flex; flex-direction: column; gap: inherit; }
 </style>

@@ -283,7 +283,7 @@
       onComment={(row) => start({ row, field: 'dialogue', quote: '', on: 'timeline' })} />
   </div>
 
-  <ReviewComments bind:this={comments} bind:active={() => active, pick} {dir} {notes} {ends} {me} rows={rowList} {numbers} {onAdd} {onApply} />
+  <ReviewComments bind:this={comments} bind:active={() => active, pick} playing={player.started ? player.row : ''} {dir} {notes} {ends} {me} rows={rowList} {numbers} {onAdd} {onApply} />
 </div>
 
 <!-- Rows removed since the last review (RV-4): one grey struck line each, where they were. -->
