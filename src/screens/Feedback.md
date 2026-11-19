@@ -35,3 +35,6 @@ blur the script's words, say which script), Open on GitHub, Copy instead, Cancel
   or Assets backdrop) put its ring 3 px past every edge, so none of it showed (issue #216).
 - The tour's Feedback step (AP-53, issue #202) shows the strip and an outline on a row on screen while
   `feedback.tour` is 'feedback' and the mode is off: inert, nothing is caught, so the tour's own keys and buttons work.
+- In that step the outline is the tour's part (`data-tour="feedback"`, issue #328): drawn under the tour (z-index 29)
+  so the tour's card covers it, never the other way round, and lit by the tour's hole. The strip is `data-tour-clear`:
+  the card keeps above it.

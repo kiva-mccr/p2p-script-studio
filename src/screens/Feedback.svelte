@@ -260,9 +260,10 @@
   });
 </script>
 
-{#snippet ring(r: DOMRect)}
+<!-- tour: the tour's Feedback step's outline (issue #328): under the tour's card, lit by the tour's hole. -->
+{#snippet ring(r: DOMRect, tour = false)}
   {@const b = ringBox(r, { width: document.documentElement.clientWidth, height: document.documentElement.clientHeight })}
-  <div class="ring" data-feedback-ring aria-hidden="true" style:left="{b.left}px" style:top="{b.top}px" style:width="{b.width}px" style:height="{b.height}px"></div>
+  <div class="ring" class:tour data-feedback-ring data-tour={tour ? 'feedback' : undefined} aria-hidden="true" style:left="{b.left}px" style:top="{b.top}px" style:width="{b.width}px" style:height="{b.height}px"></div>
 {/snippet}
 
 {#snippet strip()}
@@ -276,8 +277,8 @@
   {#if hover}{@render ring(hover)}{/if}
 {:else if showing}
   <!-- Shown by the tour (issue #202): inert, the tour's own card does the talking. -->
-  <div class="strip" data-tour="feedback" inert>{@render strip()}</div>
-  {#if demo}{@render ring(demo)}{/if}
+  <div class="strip" data-tour-clear inert>{@render strip()}</div>
+  {#if demo}{@render ring(demo, true)}{/if}
 {/if}
 
 {#if mode === 'open' && part}
@@ -333,6 +334,7 @@
   .strip b { color: var(--ink); font-weight: 600; }
   .strip .outline { min-height: 36px; border-color: #c9d5f2; }
   .ring { position: fixed; z-index: 59; box-sizing: border-box; border: 2px solid #e8590c; border-radius: 4px; pointer-events: none; }
+  .ring.tour { z-index: 29; }
   .panel { position: fixed; z-index: 61; width: min(440px, calc(100% - 32px)); max-height: calc(100vh - 16px); overflow: auto;
     box-sizing: border-box; display: flex; flex-direction: column; gap: 12px; padding: 16px; border: 1px solid var(--line);
     border-radius: 12px; background: var(--ground); box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1); font-size: 14px; text-align: left; }
