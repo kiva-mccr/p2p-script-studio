@@ -30,3 +30,8 @@ or Suggest a change, files through `AttachBox.svelte`), "Open · n" with the sor
 - What is typed is kept (UX-9): `said` holds the comment while suggesting, `changed` the new words while back on
   Comment. `start` (other words picked) keeps an unsent comment and its files; a suggestion starts from the new words.
   Only Cancel and a sent comment clear the draft (`close`), so never set `target = null` alone.
+- Playing (#210, with #226, board 85): `playing` is the row being played (Review passes it only while
+  `player.started`). The list sorts by `playSort` (`comment-sort-playing`, Line unless changed while playing; the
+  switch shows and keeps it meanwhile), the playing row's cards are `.slot.now`, and the first of them (else the next
+  row's) is scrolled to the top of the aside, which is its own scroll box (`.follow`) only while playing. Stopped,
+  the class goes, so the list is back where the page has it, and the sort is the remembered one again.

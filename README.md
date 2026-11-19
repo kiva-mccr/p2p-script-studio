@@ -181,7 +181,9 @@ Status: a first working version. What it does today:
   with Undo it slides into a folded "On hold" list, isn't counted as open, and comes back into the open list, marked
   "Back from hold", at the next Send for review or official version (Send for review says so); Take off hold brings
   it back sooner. Comments are listed in line order; Sort switches to newest first (Time) or to suggestions, then
-  comments on words, then comments on a whole row (Type), remembered for Review and Write alike. Resolved is always
+  comments on words, then comments on a whole row (Type), remembered for Review and Write alike. While the script plays in Review, the comments
+  follow it: the playing row's comments are lit and brought to the top of the list, in line order (a sort picked while
+  playing is kept apart, for the next time you play); when it stops, the list goes back to the sort and place it had. Resolved is always
   newest resolved first, so what you resolved last is on top. Columns fold away
   with their ‹ as in Write, but Review keeps its own (all open until you fold them here); picking a comment on a
   folded column opens it. Edit or Delete what you wrote yourself while it is still open ("edited" shows after the time; Delete
@@ -260,9 +262,12 @@ Status: a first working version. What it does today:
   moves the nearest one. With a take, the cuts fall where the words are really said: a speech model (Whisper, in the
   browser, about 150 MB downloaded once per computer) hears each take of a row cut on a word once and keeps the word
   timings with the take; until then, and for rows with no take, they are estimated. The row's panel says which.
-  While the script plays, a playhead runs along it (along the strip when folded), and a small preview above the
-  drawer's right end shows the picture of the moment, cutting from one to the next without a flicker (⤢ makes it big, ✕ closes it until you click Show preview in the drawer's bar; this browser
-  remembers it). Drag the playhead's red dot, or press anywhere on the ruler, to jump: it pauses while you hold it,
+  While the script plays, a playhead runs along it (along the strip when folded), and a small preview shows the
+  picture of the moment, cutting from one to the next without a flicker: inside the open drawer, right of the tracks,
+  or above the folded drawer's right end. ⤢ makes it big, floating over the script: drag its bar to move it and its
+  corner to resize it (or use the arrow keys on its ⠿ and its corner), and this browser keeps it where you left it,
+  always between the top bar and the drawer. ✕ closes it until you click Show preview in the drawer's bar; this browser
+  remembers it. Drag the playhead's red dot, or press anywhere on the ruler, to jump: it pauses while you hold it,
   the tracks scroll when you reach their edge, and it plays from where you let go (← and → on the dot jump 5 s). While
   playing, the tracks keep the playhead in view, unless you've just scrolled them yourself. A long timeline opens zoomed in, as far as it takes for its rows to be read; − and + zoom. Wide / Upright sets the video's
   shape for everyone (kept in the script): the preview turns upright and collages stack their pictures one above the

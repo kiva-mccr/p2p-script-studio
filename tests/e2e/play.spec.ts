@@ -191,3 +191,33 @@ test('scrolling yourself while it plays stops the page following; Back to row go
   await expect(playing(page).getByLabel('Dialogue, row 3')).toBeInViewport();
   await expect(page.getByRole('button', { name: /Back to row/ })).toHaveCount(0);
 });
+
+// #210 (with #226, board 85): playing in Review, the comments have their own sort (Line unless changed while playing)
+// and follow the row being played, its cards lit; stopped, the list goes back to the sort it had.
+test('playing in Review, the comments follow the row in Line order, then go back', async ({ page }) => {
+  const ids = [...example.matchAll(/## \d+ <!-- id: (\w+) -->/g)].map((m) => m[1]);
+  const notes: Record<string, string> = {};
+  ids.forEach((row, r) => [0, 1, 2].forEach((k) => {
+    const id = `ben${r}${k}0000`.slice(0, 8), when = `2026-11-10T09:${String(50 - r * 3 - k).padStart(2, '0')}:00Z`;
+    notes[`Episode 03/.studio/comments/${when.replace(/[-:]/g, '')}_${id}.json`] = JSON.stringify(
+      { v: 1, id, kind: 'comment', who: 'Ben', when, row, field: 'dialogue', quote: '', text: `Row ${r + 1}, note ${k + 1}: ${'a longer thought about this line, '.repeat(4)}` });
+  }));
+  await openWithTakes(page, [1], notes);
+  await page.getByRole('button', { name: /^Review/ }).click();
+  const comments = page.getByRole('complementary', { name: 'Comments' });
+  const sort = comments.getByRole('group', { name: 'Sort comments' });
+  await sort.getByRole('button', { name: 'Time' }).click();
+  await page.getByLabel('Dialogue, row 5').hover();
+  await page.getByRole('button', { name: 'Play from row 5' }).click();
+  // Line order while playing; row 5's cards lit and brought into view in the list.
+  await expect(sort.getByRole('button', { name: 'Line' })).toHaveAttribute('aria-pressed', 'true');
+  await expect(comments.locator('.slot.now')).toHaveCount(3);
+  await expect(comments.locator('.slot.now').first()).toContainText('Row 5, note 1');
+  await expect(comments.locator('.slot.now').first()).toBeInViewport();
+  await expect(comments.locator('.slot').first()).not.toBeInViewport();
+  // Stopped: Time again, nothing lit.
+  await page.keyboard.press('Escape');
+  await expect(sort.getByRole('button', { name: 'Time' })).toHaveAttribute('aria-pressed', 'true');
+  await expect(comments.locator('.slot.now')).toHaveCount(0);
+  expect(await page.evaluate(() => [localStorage.getItem('comment-sort'), localStorage.getItem('comment-sort-playing')])).toEqual(['time', null]);
+});

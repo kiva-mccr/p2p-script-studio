@@ -6,7 +6,8 @@ a waveform (a dashed "no take" bar for read time). A click picks a block: its ro
 offers its pictures, Sequence or Collage, + Add a picture (only for the timeline), + Hold or + Placeholder, and
 ▶ Play from here; a hold or placeholder gets its seconds and words, and ✕ Remove.
 
-- **Used by:** `screens/Write.svelte`, `screens/Review.svelte` (read only). **Tests:** `tests/e2e/timeline.spec.ts`.
+- **Used by:** `screens/Write.svelte`, `screens/Review.svelte` (read only). The playing preview is
+  `TimelinePreview.svelte`. **Tests:** `tests/e2e/timeline.spec.ts`.
 
 ## Rules and pitfalls
 
@@ -47,10 +48,14 @@ offers its pictures, Sequence or Collage, + Add a picture (only for the timeline
   200 ms clock from `voice.started`), so its take shows red (`.vo.rec`) and grows, and the rows after it move right.
   Its old waveform isn't shown meanwhile, and it is left out of `toHear` (no take file yet to hear).
 - Folded, pictures are not made, except while playing (for the preview); waveforms only open.
-- Playing: the panel is hidden, a playhead runs at `player.time`, and the preview (16:9, 320 px, ⤢ to 720 px) sits above the
-  drawer's right end, folded or open, so it never covers the timeline (the user's condition from SB-2), showing the picture of the moment: the sequence's shot at `player.elapsed`, a collage's all, a hold the
-  last picture before it, a placeholder its words. Step ids are block ids (`plan` is made from `layout`). The picture
-  itself is `PreviewShot.svelte`, which keeps the old shot until the next is decoded (issue #260).
+- Playing: the panel is hidden, a playhead runs at `player.time`, and the preview (`TimelinePreview.svelte`, #226,
+  board 85) shows the picture of the moment: the sequence's shot at `player.elapsed`, a collage's all, a hold the
+  last picture before it, a placeholder its words. Open, it is docked in `.body`, right of the tracks (`.beside`:
+  `.lanes` holds the strip and `.scroll`, so the strip's box matches the tracks); folded, above the drawer's right
+  end, so it never covers the timeline (the user's condition from SB-2); big (⤢), floating, wherever it was left.
+  It is rendered in one place or the other (the `preview` snippet), so moving between them remounts it; `big` stays
+  here so it survives that. Step ids are block ids (`plan` is made from `layout`). The picture itself is
+  `PreviewShot.svelte`, which keeps the old shot until the next is decoded (issue #260).
 - The playhead drags (SB-12, #207, board 80), playing or paused (`player.started`): its dot (`.grip`, a 32 × 26 button
   round a 14 px dot) sits in the ruler's top band, above its times (the user: never on them); the ruler is 32 px for it.
   A press on the dot or the ruler grabs it (pointer capture), pausing; `drag` holds the time meanwhile, and `now`,
@@ -75,10 +80,10 @@ offers its pictures, Sequence or Collage, + Add a picture (only for the timeline
 - `readOnly` (Review): no panel and no choices; a click on a block comments on its row (`onComment`; a hold or
   placeholder on the row before), saved with `on: 'timeline'`.
 - Wide / Upright (SB-3) is the script's (front matter `shape`, through `onShape`), not this browser's: the video export
-  and EX-19's collages follow it. Upright, the preview is 9:16 (180 px, ⤢ 405 px) and a collage stacks its pictures.
+  and EX-19's collages follow it. Upright, the preview is 9:16 and a collage stacks its pictures.
   Not shown in Review (read only).
-- The preview's width is also capped by `--room` (the screen's height less the top bar, `--drawer` and the preview's
-  gap and bar) times its shape: upright and ⤢ ran off the top of a short window, the drawer open, before.
+- `drawerH` (from `use:room`) is passed to the preview so the big one stays above the drawer; its first place is
+  above the drawer's right end (`end`).
 - A click on a block always brings its row into view (`onShow`), since the drawer never leaves the screen; SB-2's
   "↑ Go to the row" went with it.
 - `selected` is shared with Write's bars (`TimelineBar.svelte`): picking a hold on the timeline opens its bar's

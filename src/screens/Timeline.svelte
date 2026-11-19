@@ -12,7 +12,7 @@
   import { rowLength, type VoiceOver } from '../lib/voice.svelte';
   import { waveform, wavePath } from '../lib/waveform';
   import AfterEditor from './AfterEditor.svelte';
-  import PreviewShot from './PreviewShot.svelte';
+  import TimelinePreview from './TimelinePreview.svelte';
   import { near } from '../lib/near';
   import { makePreview, revokePreview, type Preview } from '../lib/preview';
 
@@ -126,9 +126,11 @@
   // The page keeps the drawer's height as its bottom scroll padding, so a row brought into view (a click on a block,
   // Play following the rows, the cursor) isn't left behind the drawer; and as --drawer, which lifts the corner links,
   // Undo and the messages above it.
+  let drawerH = $state(0); // the drawer's height, px: the big preview stays above it
   function room(node: HTMLElement) {
     const html = document.documentElement;
     const seen = new ResizeObserver(() => {
+      drawerH = node.offsetHeight;
       html.style.scrollPaddingBottom = `${node.offsetHeight}px`;
       html.style.setProperty('--drawer', `${node.offsetHeight}px`);
     });
@@ -242,7 +244,8 @@
   const selAfter = $derived(block && block.kind !== 'row' ? readChoices(byId.get(block.after)?.timeline ?? '').after : null);
 
   // Playing (PR 3): a playhead runs along the timeline (along the thin strip when folded) and a preview shows the
-  // picture of the moment above the drawer's right end; ⤢ makes the preview big.
+  // picture of the moment (TimelinePreview.svelte): beside the tracks open, above the drawer's right end folded, and ⤢
+  // makes it big, floating, moved and resized by hand (#226).
   let drag = $state<number | null>(null); // seconds from the top, while dragging
   // While the playhead is dragged (#207), the block and the picture under it.
   const now = $derived(!player.started ? undefined
@@ -410,20 +413,7 @@
 </script>
 
 <section class="timeline" class:folded={hidden} aria-label="Timeline" data-tour={readOnly ? 'review-timeline' : 'timeline'} bind:this={section} use:near={() => (shown = true)} use:room>
-  {#if now && previewOn}
-    <div class="preview" class:big class:upright role="img" aria-label="Preview: {showing.tag}">
-      <div class="screen">
-        <PreviewShot paths={showing.paths} {urls} {upright} />
-        {#if showing.card}<span class="pcard" class:ph={now.kind === 'placeholder'}>{showing.card}</span>{/if}
-        <span class="tag">{showing.tag}</span>
-      </div>
-      <div class="pbar">
-        <span>{clock(headTime)} / {clock(player.total)}</span>
-        <button aria-label={big ? 'Make the preview small' : 'Make the preview big'} title={big ? 'Make the preview small' : 'Make the preview big'} onclick={() => (big = !big)}>{big ? '⤡' : '⤢'}</button>
-        <button aria-label="Close the preview" title="Close the preview" onclick={() => showPreview(false)}>✕</button>
-      </div>
-    </div>
-  {/if}
+  {#if now && previewOn && (hidden || big)}{@render preview(false)}{/if}
   <div class="top">
     <!-- The whole bar folds and unfolds the drawer; folded, a thin strip of the blocks (and the playhead) shows. -->
     <button class="foldbar" aria-expanded={!hidden} onclick={() => fold(!hidden)}>
@@ -460,6 +450,8 @@
     {#if !total}
       <p class="empty help">The timeline fills in as rows get dialogue or a take.</p>
     {:else}
+      <div class="beside">
+      <div class="lanes">
       {@render strip(true)}
       <div class="scroll" use:fit use:inView use:tracksBox>
         <div class="tracks" style:width="{zoom * 100}%">
@@ -526,6 +518,9 @@
             {/each}
           </div>
         </div>
+      </div>
+      </div>
+      {#if now && previewOn && !big}{@render preview(true)}{/if}
       </div>
 
       {#if player.started || readOnly}
@@ -607,6 +602,13 @@
   {/if}
 {/snippet}
 
+<!-- The preview while playing (#226, board 85): docked in the open drawer, right of the tracks; folded, above the
+     drawer's right end; big, floating where it was left. -->
+{#snippet preview(docked: boolean)}
+  <TimelinePreview paths={showing.paths} {urls} card={showing.card} placeholder={now?.kind === 'placeholder'} tag={showing.tag}
+    time={headTime} total={player.total} {upright} {docked} drawer={drawerH} end={() => section?.getBoundingClientRect().right ?? innerWidth} bind:big onClose={() => showPreview(false)} />
+{/snippet}
+
 <!-- The thin strip of the whole script: in the bar when folded; open, above the tracks with a box around the part in
      view (#245). A picked block lights up in it; the playhead only while playing. -->
 {#snippet strip(open: boolean)}
@@ -642,21 +644,10 @@
   .grip:hover::before, .grip.held::before { transform: scale(1.2); }
   .grip.held { cursor: grabbing; }
   .blk.now { box-shadow: inset 0 0 0 2px #d9480f; }
-  /* The preview's picture is never taller than the room between the top bar and the drawer (less its 12 px gap, a
-     12 px margin and the 40 px bar under the picture), so upright and big never run off the top of the screen. */
-  .preview { --room: calc(100vh - var(--bar-h, 0px) - var(--drawer, 0px) - 64px); position: absolute; right: 16px; bottom: calc(100% + 12px); width: min(320px, calc(var(--room) * 16 / 9)); border-radius: 10px; overflow: hidden; background: #0b0b0b; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25); }
-  .preview.big { width: min(720px, calc(100vw - 64px), calc(var(--room) * 16 / 9)); }
-  .preview.upright { width: min(180px, calc(var(--room) * 9 / 16)); }
-  .preview.upright.big { width: min(405px, calc(100vw - 64px), calc(var(--room) * 9 / 16)); }
-  .upright .screen { aspect-ratio: 9 / 16; }
+  /* Open, the preview sits right of the tracks (#226); the strip and tracks take the rest. */
+  .beside { display: flex; gap: 14px; align-items: flex-start; }
+  .lanes { flex: 1 1 auto; min-width: 0; }
   .shape button { min-height: 28px; padding: 0 10px; font-size: 12px; }
-  .screen { position: relative; aspect-ratio: 16 / 9; display: flex; }
-  .pcard { position: relative; flex: 1; display: flex; align-items: center; justify-content: center; padding: 12px; color: #dadada; font-size: 13px; text-align: center; background: #222; }
-  .pcard.ph { background: repeating-linear-gradient(135deg, #2b2b2b 0 10px, #333 10px 20px); }
-  .tag { position: absolute; left: 8px; top: 8px; padding: 2px 6px; border-radius: 4px; background: rgba(0, 0, 0, 0.6); color: #fff; font-size: 11px; }
-  .pbar { display: flex; align-items: center; gap: 6px; padding: 6px 8px; color: #dadada; font-size: 12px; font-variant-numeric: tabular-nums; }
-  .pbar span { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .pbar button { min-width: 32px; height: 28px; padding: 0; line-height: 1; border: 1px solid #555; border-radius: 6px; background: none; color: #eee; font-size: 12px; }
   .words { gap: 4px; }
   .said { display: flex; flex-wrap: wrap; align-items: center; row-gap: 6px; }
   /* A cut is a line with the next picture's number before its word (board 78, option B). */
