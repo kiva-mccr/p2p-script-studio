@@ -6,7 +6,7 @@
   import { COLUMNS, widths, type Column } from '../lib/printcolumns';
   import { frontList, frontValue, readFileRef, type Script } from '../lib/script';
 
-  // The print version (EX-1, mock-up 9): only shown when printing. `version` is "v3", or "" for a draft.
+  // The print version (EX-1, mock-up 9): only shown when printing. `version` is "r3", or "" for a draft.
   // For notes during production (asked by the user): column, a blank Notes column on each row; lines, how many
   // Notes lines go at the foot of every page (EX-15, board 42; 0 = none). scale: the text size, 1 = as drawn (asked by the user). hidden: the columns that don't
   // print, in the order they were unticked (EX-16); their room goes to the others. landscape: the page turned sideways (EX-18).

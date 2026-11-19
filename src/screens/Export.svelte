@@ -37,7 +37,7 @@
   import { VIDEO, makeVideo, videoFps, videoFrame } from '../lib/video';
   import { readTakes, rowLength, type Take } from '../lib/voice.svelte';
 
-  // version: "v3", or "" for a draft (Editor's `version()`, which saved what was waiting).
+  // version: "r3", or "" for a draft (Editor's `version()`, which saved what was waiting).
   // missing: the script's files not in the folder (Editor's check), for what placeholders still need (#227).
   let { script, dir, folder, title, version, start, missing: lostFiles = new Set(), onPrint, onBack }: {
     script: Script; dir: FileSystemDirectoryHandle; folder: string; title: string; version: string; start: Format; missing?: Set<string>;
@@ -102,7 +102,7 @@
     }
   }
 
-  // The title page's line, as print and the exports always had it: "v3 · Approved", or "Draft".
+  // The title page's line, as print and the exports always had it: "ap1 · Approved", or "Draft".
   const stand = $derived.by(() => {
     const status = frontValue(script.front, 'status');
     return [version || 'Draft', status && status !== 'draft' ? status[0].toUpperCase() + status.slice(1) : ''].filter(Boolean).join(' · ');

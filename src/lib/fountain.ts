@@ -16,7 +16,7 @@ export function speakerName(name: string): string {
   return oneLine(name).toUpperCase() || SPEAKER;
 }
 
-// `stand`: the version and status for the title page, as print shows them ("v3 · Approved"). `date`: "Nov 10, 2026".
+// `stand`: the version and status for the title page, as print shows them ("ap1 · Approved"). `date`: "Nov 10, 2026".
 // `credits` (AP-31) go on the title page as an indented "Credits:" list, one "Name, blurb" a line.
 export function toFountain(script: Script, title: string, stand: string, date: string, how: Screenplay = SCREENPLAY, credits: Credit[] = []): string {
   const out: string[] = [`Title: ${oneLine(title)}`];

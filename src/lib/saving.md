@@ -44,7 +44,7 @@ back, `onEntry` says a status change's entry was written. `script`, `dir`, `stat
 - A change file over a minute older than script.md that the keeper's note doesn't list: the keeper closed between
   writing script.md and its note. Its clashes go to script.md's side without asking (see docs/studio-folder.md).
 - History is read with `recentVersions` (PF-11): starting History and each entry need only the newest version (and
-  the heads). Send for review, `version()` and `nextVersion()` read it all (`listVersions`): official numbers count
+  the heads). Send for review, `version()` and `nextVersion()` read it all (`listVersions`): official names count
   every official version.
 - History: entries are made by the keeper every 5 minutes, and by anyone on leaving, opening History, sending for
   review, restoring and publishing, each after the newest entry. `#record` waits for History to start (`#started`).
@@ -59,8 +59,9 @@ back, `onEntry` says a status change's entry was written. `script`, `dir`, `stat
 - A save leaves empty sections out of the file, on a copy: never out of `script`, or a section emptied while its
   title still has the cursor would vanish under it (AP-22; `screens/Write.svelte` removes it on blur).
 - Review status (RV-3): Send for review, Approve, Send back to writer set `status:` and save at once (after
-  `leave()`), then add a `review` History entry; a send's entry is also the next official version (`official: true`)
-  unless `sendVersion` says nothing changed since the newest (RV-9). The button names contain "Write" (Send back
+  `leave()`), then add a `review` History entry; a send's entry is also the next official version (`official: true`,
+  `series: 'r'`) unless `sendVersion` says nothing changed since the newest (RV-9); an approval's always is
+  (`series: 'ap'`, #240). Publish gives `series: 'w'`. The button names contain "Write" (Send back
   to writer), so tests pick the Write tab with `exact: true`.
 - `started` (AP-38, `lib/started.ts`): taken on opening; every place that folds someone else's change into `shared`
   calls `started.follow(before, after)`, so "Before you started" shows only this person's own changes. A new place

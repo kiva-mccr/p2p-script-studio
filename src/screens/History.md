@@ -2,7 +2,7 @@
 
 The History screen (mock-up 5): versions newest first (what changed, who, when); the picked one's changes, old
 struck through and new in green, compared with the version it was made from; Restore this version. Publish
-official version (mock-up 7): a named version, v1, v2 …; with any, the small saves between them fold into one line.
+official version (mock-up 7): a named version, w1, w2 … (#240; r for sends, ap for approvals, v for older ones); with any, the small saves between them fold into one line.
 
 - **Used by:** `screens/Editor.svelte` (the Write · History switch). **Tests:** `tests/e2e/history.spec.ts`.
 
@@ -17,10 +17,11 @@ official version (mock-up 7): a named version, v1, v2 …; with any, the small s
   PF-4: `placeComments` gets `from`, the oldest version a shown one covers, so only those get comments; it grows
   as more are shown. Pass the covered range, not just the shown 50: an official version gathers saves far below.
 - The newest version is the current one: no Restore button on it.
-- An official version is compared with the official one before it (v1 with the version it was made from).
+- An official version is compared with the official one before it, of any letter (the first with the version it was
+  made from). Names come from `versionNames`, never a count of their own here.
 - With official versions, History opens on the newest official one, not the newest save.
-- A send for review that made a version (RV-9) shows as one line, "v3 · Sent for review", without "Published by";
-  one that made none is not folded and reads "Sent for review (still v2)".
+- A send for review that made a version (RV-9) shows as one line, "r3 · Sent for review", without "Published by";
+  one that made none is not folded and reads "Sent for review (still w2)". An approval is "ap1 · Approved" (#240).
 - The Publish button sits outside the `Versions` nav, so the nav's buttons are only versions (tests count them).
 - Publishing goes through `Editor.svelte` (`onPublish`): what is waiting is saved first, then script.md as it is
   on disk is what gets published.

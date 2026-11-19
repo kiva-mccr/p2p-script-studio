@@ -6,7 +6,7 @@ import { askAccess, hasAccess } from './remember';
 import { findScript, readScript, writeScriptFile } from './folder';
 import { newId, parseScript, rows, setFrontValue, withAuthor, writeScript, type Script } from './script';
 import { fileName, isEditing, readEditing, othersEditing, whoWasHere, writeEditing, writerOf, type Editing, type Seen } from './editing';
-import { addVersion, heads, listVersions, officialNumber, OUTSIDE, recentVersions, sendVersion, sha256, type Version } from './history';
+import { addVersion, heads, listVersions, nextName, officialName, OUTSIDE, recentVersions, sendVersion, sha256, type Series, type Version } from './history';
 import { merge, type Merged, type Side } from './merge';
 import { diff, fold } from './changes';
 import { tidyHistory } from './pack';
@@ -381,7 +381,7 @@ export class Saving {
   }
 
   // An entry of its own kind, now, for the script as everyone has it.
-  async #entry(kind: 'restore' | 'official' | 'review', note: string, extra: { message?: string; notes?: SentNote[]; official?: boolean } = {}) {
+  async #entry(kind: 'restore' | 'official' | 'review', note: string, extra: { message?: string; notes?: SentNote[]; official?: boolean; series?: Series } = {}) {
     const dir = this.dir!;
     const newest = (await recentVersions(dir)).at(-1) ?? this.last;
     this.last = await addVersion(dir, { parents: newest ? [newest.id] : [], who: this.name(), kind, text: this.shared, note, ...extra });
@@ -394,7 +394,7 @@ export class Saving {
     if (!this.dir) return null;
     try {
       await this.leave();
-      return await this.#entry('official', official);
+      return await this.#entry('official', official, { series: 'w' });
     } catch (e) {
       this.notice(problem("The official version couldn't be published. If the shared folder is busy, wait a moment and try again.", 'publishing an official version', e));
       return null;
@@ -417,9 +417,10 @@ export class Saving {
     await this.save();
     if (this.status !== 'saved') return; // a clash or a failed save: shown already
     try {
-      // A send for review is also the next official version, unless nothing changed since the newest one (RV-9).
-      const official = to === 'in review' && !sendVersion(await listVersions(dir), this.shared).still;
-      await this.#entry('review', note, { message, notes, official });
+      // A send for review is also the next official version (r), unless nothing changed since the newest one (RV-9).
+      // An approval always is one (ap, #240), even when nothing changed since the send: it marks what was approved.
+      const series: Series | undefined = to === 'approved' ? 'ap' : to === 'in review' && !sendVersion(await listVersions(dir), this.shared).still ? 'r' : undefined;
+      await this.#entry('review', note, { message, notes, ...(series ? { official: true, series } : {}) });
       untrack(this.onEntry); // the new entry: the review note, or the marks start again from here
     } catch {
       // History can't be written: the status itself is saved.
@@ -571,19 +572,19 @@ export class Saving {
     this.seen = whoWasHere(this.#entries, this.name());
   }
 
-  // Saves what is waiting, then names the version the script is: "v3" while it is still that official version, ''
+  // Saves what is waiting, then names the version the script is: "r3" while it is still that official version, ''
   // for a draft. Print and the exports carry it (EX-7).
   async version(): Promise<string> {
     await this.saveWaiting();
-    const versions = this.dir ? await listVersions(this.dir).catch(() => []) : [];
-    const n = officialNumber(versions, this.shared);
-    return n ? `v${n}` : '';
+    return officialName(this.dir ? await listVersions(this.dir).catch(() => []) : [], this.shared);
   }
 
-  // What Send for review will make (RV-9), for its panel: saves what is waiting, then the next version or "still v2".
-  async nextVersion(): Promise<{ n: number; still: boolean }> {
+  // What Send for review (r) or Approve (ap) will make (RV-9, #240), for their panels: saves what is waiting, then
+  // the next version's name, or "still r2" for a send when nothing changed (an approval always makes one).
+  async nextVersion(series: 'r' | 'ap'): Promise<{ name: string; still: boolean }> {
     await this.saveWaiting();
-    return sendVersion(this.dir ? await listVersions(this.dir).catch(() => []) : [], this.shared);
+    const versions = this.dir ? await listVersions(this.dir).catch(() => []) : [];
+    return series === 'r' ? sendVersion(versions, this.shared) : { name: nextName(versions, 'ap'), still: false };
   }
 }
 

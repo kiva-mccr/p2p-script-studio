@@ -35,11 +35,13 @@ A script's history: one JSON file per version in `.studio/versions/`, and older 
 - Rows are matched by id, so a moved row is not "edited".
 - A row's `Change` carries its `row` id and `field` (as comments name it, `on_screen`), so History can put a comment
   under it (RV-6); a removed row has only `row`.
-- Official versions (kind `official`, or a send for review with `official: true`, RV-9: `isOfficial`) get their
-  number from `officialNumbers`, by the order they were made; never stored. `officialNumber` says which one the
-  script still is (printing), or 0 once anything has changed since the newest. "Changed" is `sameScript`: the
+- Official versions (kind `official`, or a send for review or approval with `official: true`, RV-9: `isOfficial`)
+  get their name from `versionNames` (#240): their `series` (r, w, ap) and its count, by the order they were made;
+  never stored. Ones with no `series` (made before #240) keep v1, v2 …, counted on their own: never give an old file
+  a series, or the names everyone has seen would move. `officialName` says which one the script still is
+  (printing), or '' once anything has changed since the newest. `nextName` is the next of a series. "Changed" is `sameScript`: the
   `status` and `authors` lines are left out, since a send, approve or a save by someone new changes them.
-- `sendVersion` decides what a send makes: the next number, or `still` the newest one when nothing changed, however
+- `sendVersion` decides what a send makes: the next r name, or `still` the newest one when nothing changed, however
   that one was made (the user's rule: never a duplicate).
 - `message` (RV-8, RV-13) is written only when there is one; `notes` (#248) only on a send back that carries other
   reviewers' notes. `reviewNote` is the newest review change, if it was a send
@@ -51,4 +53,4 @@ A script's history: one JSON file per version in `.studio/versions/`, and older 
 - `heads` are the versions nothing was made from: two mean two saves at the same time, and `ancestor` is the
   newest version both came from (what `lib/merge.ts` compares them with). A merge version has two parents.
 - `isSend` and `holdEnds` (RV-19): a send for review is a `review` entry noted "Sent for review"; holds on comments
-  end at the next send or official version.
+  end at the next send or official version, but not at an approval's (#240), as before approvals made versions.

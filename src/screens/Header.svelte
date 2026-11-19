@@ -16,6 +16,7 @@
   import Presence from './Presence.svelte';
   import type { StatusAge } from '../lib/statusage';
   import type { Snippet } from 'svelte';
+  import { seriesOf } from '../lib/history';
 
   type Mode = 'write' | 'review' | 'history' | 'assets';
   let { folder, title, ready, mode, writeCount = 0, reviewCount = 0, loose, missingCount, voiceText, voiceWpm, play, editors, seen = [], folding = '', reviewStatus, stateAge = null, heldCount = 0, status, problem = '', onAllow, onLoose, onMode, onStatus, onFind, onPrompt, onCredits, onExport, onShare, onPlay, onStop, nextVersion, backMenu }: {
@@ -33,7 +34,7 @@
     onFind: () => void; // ⋯ › Find and replace, in Write (AP-32)
     onCredits: () => void; // ⋯ › Credits (AP-31)
     onExport: (to: Format) => void; onShare: () => Promise<Shared>;
-    nextVersion: () => Promise<{ n: number; still: boolean }>; // what Send for review makes (RV-9)
+    nextVersion: (series: 'r' | 'ap') => Promise<{ name: string; still: boolean }>; // what Send for review or Approve makes (RV-9, #240)
     backMenu: Snippet<[() => void]>; // Send back's menu (#248, SendBack.svelte), given a way to close it
   } = $props();
 
@@ -53,7 +54,8 @@
   // 'back': the notes for the writer, before sending back (RV-13, #248); they see them at the top of Comments in Write.
   let menu = $state<'' | 'more' | 'export' | 'approve' | 'send' | 'back'>('');
   let sendNote = $state('');
-  let sendMakes = $state<{ n: number; still: boolean } | null>(null); // shown in the send panel once known
+  let sendMakes = $state<{ name: string; still: boolean } | null>(null); // shown in the send panel once known
+  let approveMakes = $state(''); // "ap1": what Approve makes (#240), on its button's hover and in its panel
   let sendEl = $state<HTMLElement>();
   let backEl = $state<HTMLElement>();
   let settings = $state(false); // the Settings window (AU-3), opened from ⋯
@@ -63,7 +65,10 @@
 
   // Approve at once when nothing is open; otherwise list what is (mock-up 20), and History says how much was left.
   function approve(anyway = false) {
-    if (loose.length && !anyway) return void (menu = menu === 'approve' ? '' : 'approve');
+    if (loose.length && !anyway) {
+      if (menu !== 'approve') knowApprove();
+      return void (menu = menu === 'approve' ? '' : 'approve');
+    }
     menu = '';
     onStatus('approved', loose.length ? `Approved, ${loose.length} still open` : 'Approved');
   }
@@ -76,7 +81,10 @@
     if (menu === 'send') return void (menu = '');
     menu = 'send';
     sendMakes = null;
-    sendMakes = await nextVersion().catch(() => null);
+    sendMakes = await nextVersion('r').catch(() => null);
+  }
+  async function knowApprove() {
+    approveMakes = (await nextVersion('ap').catch(() => null))?.name ?? '';
   }
   // Export / Share shows the link and a preview of the Teams message (#234): the message is made as the menu opens
   // (lib/share.ts, already escaped), and made again when copied, so the copy is never older than the click.
@@ -166,7 +174,8 @@
           {/if}
         </span>
         <span class="more" bind:this={approveEl}>
-          <button class="dark" aria-expanded={loose.length ? menu === 'approve' : undefined} onclick={() => approve()}>Approve</button>
+          <button class="dark" aria-expanded={loose.length ? menu === 'approve' : undefined} onclick={() => approve()}
+            onpointerenter={knowApprove} onfocus={knowApprove} title={approveMakes ? `It becomes ${approveMakes} in History.` : undefined}>Approve</button>
           {#if menu === 'approve'}
             <div class="menu approve-menu" role="region" aria-label="Still open">
               <p class="lead">{loose.length} {loose.length === 1 ? 'thing is' : 'things are'} still open</p>
@@ -176,6 +185,9 @@
                 {/each}
               </div>
               <p class="quiet help">You can still approve. They stay open in Review.</p>
+              {#if approveMakes}
+                <p class="makes"><span class="version-tag ap">{approveMakes}</span>It becomes {approveMakes} in History.</p>
+              {/if}
               <div class="actions">
                 <button class="outline" onclick={() => (menu = '')}>Keep reviewing</button>
                 <button class="dark" onclick={() => approve(true)}>Approve anyway</button>
@@ -191,7 +203,7 @@
               <label class="lead" for="send-note">A note for the reviewers</label>
               <textarea id="send-note" rows="4" bind:value={sendNote} {@attach (el) => el.focus()} placeholder="What should they look at? (optional)"></textarea>
               {#if sendMakes}
-                <p class="makes"><span class="tag">v{sendMakes.n}</span>{sendMakes.still ? `Still v${sendMakes.n}: nothing has changed since it.` : `It becomes v${sendMakes.n} in History.`}</p>
+                <p class="makes"><span class="version-tag {seriesOf(sendMakes.name)}">{sendMakes.name}</span>{sendMakes.still ? `Still ${sendMakes.name}: nothing has changed since it.` : `It becomes ${sendMakes.name} in History.`}</p>
               {/if}
               {#if heldCount}
                 <p class="held">{heldCount === 1 ? 'The comment on hold comes' : `The ${heldCount} comments on hold come`} back into the open list for the reviewers.</p>
@@ -337,7 +349,6 @@
   .quiet { font-size: 13px; color: var(--muted); }
   .makes { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 13px; }
   .held { margin: 0; padding: 8px 10px; border-radius: 8px; background: #fff4e5; font-size: 13px; line-height: 1.45; color: #3d3d3d; }
-  .tag { padding: 2px 8px; border-radius: 999px; background: #e7f4ec; color: #1b6b3e; font-size: 12px; font-weight: 600; }
   .loose { display: flex; flex-direction: column; gap: 2px; max-height: 280px; overflow-y: auto; }
   .loose button { display: flex; flex-direction: column; justify-content: center; min-height: 44px; padding: 4px 8px; border: 0; border-radius: 6px;
     background: none; color: var(--ink); font-size: 13px; text-align: left; }

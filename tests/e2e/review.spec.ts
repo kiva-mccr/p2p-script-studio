@@ -247,6 +247,9 @@ const ALL_FILES = Object.fromEntries(readdirSync('docs/example/Episode 03 - How 
 
 test('approve, send for review again, and send back to the writer; each is in History', async ({ page }) => {
   await openReview(page, ALL_FILES); // the example is "in review"
+  // Hovering Approve says what it makes (#240).
+  await page.getByRole('button', { name: 'Approve' }).hover();
+  await expect(page.getByRole('button', { name: 'Approve' })).toHaveAttribute('title', 'It becomes ap1 in History.');
   await page.getByRole('button', { name: 'Approve' }).click(); // nothing open: approved at once
   await expect(page.getByRole('region', { name: 'Still open' })).toHaveCount(0);
   await expect(page.getByText('Approved', { exact: true })).toBeVisible();
@@ -271,12 +274,11 @@ test('approve, send for review again, and send back to the writer; each is in Hi
   await expect.poll(() => readFile(page, SCRIPT)).toContain('status: draft\n');
   await page.getByRole('button', { name: 'History' }).click();
   const versions = page.getByRole('navigation', { name: 'Versions' }).getByRole('button');
-  // The send made v1 (RV-9): the send back folds under it, the approval before it.
-  await expect(versions.nth(1)).toContainText('v1Sent for review');
-  await versions.nth(0).click(); // 1 change since v1
+  // The approval made ap1 (#240); the send after it made none, nothing having changed (RV-9). The send back folds.
+  await expect(versions.nth(1)).toContainText('Sent for review (still ap1)');
+  await expect(versions.filter({ hasText: 'ap1Approved' })).toHaveCount(1);
+  await versions.nth(0).click(); // 1 change since sent for review
   await expect(versions.nth(1)).toContainText('Sent back to writer');
-  await versions.nth(3).click(); // the changes before v1
-  await expect(versions.nth(4)).toContainText('Approved');
 });
 
 test('a note for the reviewers with Send for review: shown at the top of Review and kept in History (RV-8)', async ({ page }) => {
@@ -336,6 +338,7 @@ test('Approve lists what is still open first, jumps to it, and never blocks (RV-
   await page.getByRole('button', { name: 'Approve' }).click();
   const panel = page.getByRole('region', { name: 'Still open' });
   await expect(panel).toContainText('2 things are still open');
+  await expect(panel).toContainText('It becomes ap1 in History.'); // #240
   await expect(panel.getByRole('button').nth(0)).toContainText('Comment · Ana · row 1Morning light?');
   await expect(panel.getByRole('button').nth(1)).toContainText('10 files missingleaf-closeup.jpg, leaf-push-in.mp4, icons-ingredients.svg');
   // A line jumps to that comment, and the panel closes.
@@ -361,7 +364,7 @@ test('Approve lists what is still open first, jumps to it, and never blocks (RV-
   await expect(page.getByText('Approved', { exact: true })).toBeVisible();
   await expect.poll(() => readFile(page, SCRIPT)).toContain('status: approved\n');
   await page.getByRole('button', { name: 'History' }).click();
-  await expect(page.getByRole('navigation', { name: 'Versions' }).getByRole('button').nth(0)).toContainText('Approved, 2 still open');
+  await expect(page.getByRole('navigation', { name: 'Versions' }).getByRole('button').nth(0)).toContainText('ap1Approved, 2 still open');
 });
 
 test('edit and delete your own comment, reply and suggestion, with Undo; never someone else’s (RV-7)', async ({ page }) => {

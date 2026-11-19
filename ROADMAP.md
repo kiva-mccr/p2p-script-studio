@@ -91,7 +91,7 @@ and suggestions, keeps every version, and exports them for production.
   with an optional note and a "Needs a source" quick note; ‹ › above the table steps through them; Review shows them
   without buttons; the list says "2 flagged"; they come first in the check before Approve. "Needs a source" clearing
   itself waits for AP-8.
-- [x] **AP-10** Official versions (asked by the user): publish a named, numbered version (v1, v2 …) from History;
+- [x] **AP-10** Official versions (asked by the user): publish a named, numbered version (v1, v2 …; w1, w2 … since AP-60) from History;
   History shows official versions and folds the small saves between them into one line until opened. Mock-up:
   board 7. Built as drawn (the user picked "Yes, as drawn", not also on Approved): a version of kind `official`
   named by the person; numbers come from publish order. History opens on the newest official version, which is
@@ -497,6 +497,13 @@ and suggestions, keeps every version, and exports them for production.
   same; while playing, Review's comments follow the row being played (its cards lit and brought to the top, Line
   order, with a sort of their own while playing), and go back to the sort and place they had when it stops. Done
   2026-11-19.
+- [x] **AP-60** Versions named by what made them (issue #240, board 87 agreed by the user): official versions are r1,
+  r2 … (sent for review), w1, w2 … (published by hand in History while writing) and ap1, ap2 … (approved), each
+  letter counted on its own; r blue, w amber, ap green. Approve now makes a version too, always (even with nothing
+  changed since the send: it marks what was approved), and its button says "It becomes ap1 in History." on hover
+  and in the still-open panel. A send with nothing changed since the newest version still makes none ("Still ap1").
+  Versions made before keep their v numbers (no `series` in their file). An approval's version doesn't end holds
+  (RV-19): they still come back at the next send. Print and the exports carry the new names. Done 2026-11-19.
 - [x] **SB-14** The take being recorded in red (issue #251, board 84 agreed by the user): while a row is recorded,
   its take on the timeline is red and grows with the recording, pushing the rows after it right (the user's pick);
   it turns into the waveform when it stops. Done 2026-11-19. (The issue's other half, Feedback's Cover blurring the
@@ -1280,6 +1287,9 @@ the team writes leaves their computers.
   conflict resolution; the repo is public. Mock-ups of the five screens (open folder, list, Write, Review,
   History) were shown before planning. The script format is one section per row with labelled fields (SF-1).
 - **Settled:** Svelte 5 + TypeScript (AP-1).
+- **Changed (the user, 2026-11-19, issue #240, board 87):** official versions are no longer one count v1, v2 … (AP-10,
+  RV-9): r for a send for review, w for one published by hand, ap for approved, each counted on its own, and Approve
+  now makes a version (AP-10 had left Approved out). Versions made before keep their v numbers (AP-60).
 - **Rejected:** accepting a whole section's (or one person's) suggestions at once (suggested 2026-11-14, turned down
   by the user): each person has to engage with each comment, one at a time. Don't suggest it again.
 - **Rejected:** a scratch read-aloud of rows without a take, in the browser's built-in voice (suggested 2026-11-14,

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import example from '../../docs/example/Episode 03 - How Photosynthesis Works/script.md?raw';
-import { ancestor, backNote, changes, describe as say, heads, holdEnds, officialNumber, officialNumbers, reviewEnd, reviewNote, sameScript, sendVersion, sinceReview, summary, type Version } from '../../src/lib/history';
+import { ancestor, backNote, changes, describe as say, heads, holdEnds, nextName, officialName, seriesOf, versionNames, reviewEnd, reviewNote, sameScript, sendVersion, sinceReview, summary, type Version } from '../../src/lib/history';
 import { parseScript } from '../../src/lib/script';
 
 const edit = (from: string, to: string) => example.replace(from, to);
@@ -42,35 +42,50 @@ describe('changes', () => {
   });
 });
 
-describe('officialNumbers', () => {
-  it('numbers official versions v1, v2 … in the order they were published', () => {
+describe('versionNames (#240)', () => {
+  it('keeps v1, v2 … for official versions made before #240, in the order they were published', () => {
     const list = [
       version(example, { id: 'a' }),
       version(example, { id: 'b', kind: 'official', note: 'First draft' }),
       version(example, { id: 'c' }),
       version(example, { id: 'd', kind: 'official', note: 'Sent to the narrator' }),
     ];
-    expect([...officialNumbers(list)]).toEqual([['b', 1], ['d', 2]]);
+    expect([...versionNames(list)]).toEqual([['b', 'v1'], ['d', 'v2']]);
+  });
+  it('names new ones r, w and ap, each counted on its own, after the old v ones', () => {
+    const list = [
+      version(example, { id: 'a', kind: 'official' }),
+      version(example, { id: 'b', kind: 'official', series: 'w' }),
+      version(example, { id: 'c', kind: 'review', official: true, series: 'r' }),
+      version(example, { id: 'd', kind: 'review', official: true, series: 'r' }),
+      version(example, { id: 'e', kind: 'review', official: true, series: 'ap' }),
+      version(example, { id: 'f', kind: 'official', series: 'w' }),
+    ];
+    expect([...versionNames(list)]).toEqual([['a', 'v1'], ['b', 'w1'], ['c', 'r1'], ['d', 'r2'], ['e', 'ap1'], ['f', 'w2']]);
+    expect(nextName(list, 'r')).toBe('r3');
+    expect(nextName(list, 'ap')).toBe('ap2');
+    expect(nextName([], 'w')).toBe('w1');
+    expect(seriesOf('ap12')).toBe('ap');
   });
 });
 
-describe('officialNumber', () => {
+describe('officialName', () => {
   it('is the newest official version, only while the script has not changed since', () => {
     const changed = edit('Slow push-in on a sunlit leaf.', 'Wide shot.');
     const list = [
-      version(changed, { id: 'a', kind: 'official' }),
-      version(example, { id: 'b', kind: 'official' }),
+      version(changed, { id: 'a', kind: 'official', series: 'w' }),
+      version(example, { id: 'b', kind: 'official', series: 'w' }),
     ];
-    expect(officialNumber(list, example)).toBe(2);
-    expect(officialNumber(list, changed)).toBe(0);
-    // A later save of the same script, or only the status changed: still v2.
-    expect(officialNumber([...list, version(example, { id: 'c' })], edit('status: in review', 'status: approved'))).toBe(2);
-    expect(officialNumber([], example)).toBe(0);
+    expect(officialName(list, example)).toBe('w2');
+    expect(officialName(list, changed)).toBe('');
+    // A later save of the same script, or only the status changed: still w2.
+    expect(officialName([...list, version(example, { id: 'c' })], edit('status: in review', 'status: approved'))).toBe('w2');
+    expect(officialName([], example)).toBe('');
   });
   it('counts a send for review that made a version (RV-9)', () => {
     const list = [version(example, { id: 'a', kind: 'official' }), version(example, { id: 'b', kind: 'review', official: true })];
-    expect([...officialNumbers(list)]).toEqual([['a', 1], ['b', 2]]);
-    expect(officialNumber(list, example)).toBe(2);
+    expect([...versionNames(list)]).toEqual([['a', 'v1'], ['b', 'v2']]);
+    expect(officialName(list, example)).toBe('v2');
   });
 });
 
@@ -86,14 +101,18 @@ describe('sameScript', () => {
 describe('sendVersion', () => {
   const changed = edit('Slow push-in on a sunlit leaf.', 'Wide shot.');
   it('is the next version after changes, the first when there is none', () => {
-    expect(sendVersion([], example)).toEqual({ n: 1, still: false });
-    expect(sendVersion([version(example, { kind: 'official' })], changed)).toEqual({ n: 2, still: false });
+    expect(sendVersion([], example)).toEqual({ name: 'r1', still: false });
+    // Old v versions and those published by hand don't count towards r (#240).
+    expect(sendVersion([version(example, { kind: 'official' }), version(example, { id: 'b', kind: 'official', series: 'w' })], changed)).toEqual({ name: 'r1', still: false });
+    expect(sendVersion([version(example, { kind: 'review', official: true, series: 'r' })], changed)).toEqual({ name: 'r2', still: false });
   });
   it('keeps the version when nothing changed, however it was made (no duplicates)', () => {
     const byHand = [version(example, { id: 'a', kind: 'official' }), version(example, { id: 'b' })];
-    expect(sendVersion(byHand, edit('status: in review', 'status: draft'))).toEqual({ n: 1, still: true });
-    const bySend = [version(example, { id: 'a', kind: 'review', official: true })];
-    expect(sendVersion(bySend, example)).toEqual({ n: 1, still: true });
+    expect(sendVersion(byHand, edit('status: in review', 'status: draft'))).toEqual({ name: 'v1', still: true });
+    const bySend = [version(example, { id: 'a', kind: 'review', official: true, series: 'r' })];
+    expect(sendVersion(bySend, example)).toEqual({ name: 'r1', still: true });
+    const approved = [...bySend, version(example, { id: 'b', kind: 'review', official: true, series: 'ap' })];
+    expect(sendVersion(approved, example)).toEqual({ name: 'ap1', still: true });
   });
 });
 
@@ -166,10 +185,11 @@ describe('since the last review (RV-4)', () => {
 
 describe('holdEnds (RV-19)', () => {
   it('lists the times of sends for review and official versions only', () => {
-    const v = (id: string, kind: Version['kind'], note: string, official?: boolean): Version => ({
-      v: 1, id, parents: [], who: 'Sam', when: `2026-11-09T14:0${id}:00Z`, kind, note, sha256: '', text: '', ...(official ? { official } : {}),
+    const v = (id: string, kind: Version['kind'], note: string, series?: 'ap'): Version => ({
+      v: 1, id, parents: [], who: 'Sam', when: `2026-11-09T14:0${id}:00Z`, kind, note, sha256: '', text: '', ...(series ? { official: true, series } : {}),
     });
+    // An approval's version (#240) is not one: holds come back at the next send, as before.
     expect(holdEnds([v('1', 'edit', ''), v('2', 'review', 'Sent for review'), v('3', 'review', 'Sent back to writer'),
-      v('4', 'official', 'v2'), v('5', 'review', 'Approved')])).toEqual(['2026-11-09T14:02:00Z', '2026-11-09T14:04:00Z']);
+      v('4', 'official', 'v2'), v('5', 'review', 'Approved', 'ap')])).toEqual(['2026-11-09T14:02:00Z', '2026-11-09T14:04:00Z']);
   });
 });

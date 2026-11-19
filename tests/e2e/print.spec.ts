@@ -103,12 +103,12 @@ test('the official version number is printed while the script is still that vers
   await page.getByRole('button', { name: 'History' }).click();
   await page.getByRole('button', { name: 'Publish official version' }).click();
   await page.getByLabel('Name it').fill('First draft');
-  await page.getByRole('button', { name: 'Publish v1' }).click();
-  await expect(page.getByRole('heading', { name: 'v1 · First draft' })).toBeVisible();
+  await page.getByRole('button', { name: 'Publish w1' }).click();
+  await expect(page.getByRole('heading', { name: 'w1 · First draft' })).toBeVisible();
   await print(page);
-  await expect(page.locator('.print-view')).toContainText('v1 · In review');
+  await expect(page.locator('.print-view')).toContainText('w1 · In review');
   await page.emulateMedia({ media: 'screen' });
-  await expect(page.getByLabel('Preview')).toContainText('v1 · In review'); // the preview says so too
+  await expect(page.getByLabel('Preview')).toContainText('w1 · In review'); // the preview says so too
 });
 
 test('columns to print: the rest widen (Dialogue first, then Notes), one always prints, remembered', async ({ page }) => {
