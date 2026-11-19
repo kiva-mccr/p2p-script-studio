@@ -71,7 +71,7 @@ Status: a first working version. What it does today:
   to give the dialogue the whole width early on); › brings it back. The browser remembers which are folded.
 - **Planning:** the Planning tab on the right edge of Write and Review opens a panel beside the script for learning
   goals, an outline and notes. Bullets, numbered lists and tick boxes (click ☐ again to tick it), plus the same
-  formatting as the cells; Enter carries a list on, and numbered lists renumber themselves when
+  formatting as the cells. In Review the plan is shown: tick its boxes with one click, or press Edit to type. Enter carries a list on, and numbered lists renumber themselves when
   lines are added, removed or moved (in Dialogue and On screen too, for a list typed as `1. `). It is kept in `plan.md` beside the script, saves on its own and
   shows others' saves, but is not part of the script: no History versions and not in any export. The browser
   remembers whether it is open.

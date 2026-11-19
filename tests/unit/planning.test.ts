@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { combinePlans } from '../../src/lib/planning';
+import { combinePlans, flipTick, planLines } from '../../src/lib/planning';
 import { changed, continueList, renumber, showLists, toggleList, unlist } from '../../src/lib/format';
 
 describe('combinePlans', () => {
@@ -85,5 +85,29 @@ describe('changed', () => {
   it('finds the smallest stretch that differs', () => {
     expect(changed('1. a\n3. b', '1. a\n2. b')).toEqual({ start: 5, old: 1, added: '2' });
     expect(changed('abc', 'abc')).toEqual({ start: 3, old: 0, added: '' });
+  });
+});
+
+describe('Review\'s tick boxes (#233)', () => {
+  const plan = 'Before filming\n- [x] Check the river shot\n- [ ] Book the drone\n\n- A bullet\n';
+
+  it('reads each line, with tick boxes and whether they are ticked', () => {
+    expect(planLines(plan)).toEqual([
+      { text: 'Before filming' },
+      { text: 'Check the river shot', tick: true },
+      { text: 'Book the drone', tick: false },
+      { text: '' },
+      { text: '- A bullet' },
+    ]);
+    expect(planLines('  \n')).toEqual([]);
+    expect(planLines('- [X] Done')).toEqual([{ text: 'Done', tick: true }]);
+  });
+
+  it('ticks and unticks one line, leaving the rest alone', () => {
+    expect(flipTick(plan, 2)).toBe(plan.replace('- [ ] Book', '- [x] Book'));
+    expect(flipTick(plan, 1)).toBe(plan.replace('- [x] Check', '- [ ] Check'));
+    expect(flipTick('- [X] Done', 0)).toBe('- [ ] Done');
+    expect(flipTick(plan, 0)).toBe(plan);
+    expect(flipTick(plan, 99)).toBe(plan);
   });
 });

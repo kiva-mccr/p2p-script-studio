@@ -8,6 +8,9 @@ In Write the same panel has a second tab, Comments (RV-13, board 37): the edge s
 when closed, and a Planning · Comments switch when open. Review keeps only Planning (its comments are beside the
 script already).
 
+In Review (`review`, RV-26, board 82) the plan is shown, not typed in: its tick boxes are real check boxes that tick
+with a click and save as typing does, and Edit (beside Close) swaps in the same `TextField`; Done goes back.
+
 - **Used by:** `Editor.svelte`. **Tests:** `tests/e2e/planning.spec.ts`, `comments.spec.ts`, `tests/unit/planning.test.ts`.
 
 ## Rules and pitfalls
@@ -25,4 +28,6 @@ script already).
   mounted when closed, so a plan being saved isn't lost by closing it or switching tab.
 - Its name (`aria-label`) and Close are the tab's: "Planning" / "Close planning", "Comments" / "Close comments".
 - The tall text box (`min-height: 50vh`) is only for the plan (`.plan`), not the Comments tab's boxes.
+- Review's shown plan starts again each time Review opens (`editing` resets when `review` turns off). Its lines come
+  from `planLines`; a tick goes through `flipTick` and `changed`, so it saves and combines like typing.
 - Its footer is `aria-live`, not `role="status"`: tests find the script's save status by that role.
