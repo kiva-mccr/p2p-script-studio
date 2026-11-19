@@ -319,6 +319,25 @@ test('playing: the preview sits above the drawer, follows, a hold plays in silen
   await expect(page.locator('.preview')).toHaveCount(0);
 });
 
+// #251 (board 84): while a row is recorded, its take on the timeline is red and grows, pushing the rows after it right.
+test('recording: the take shows red on the timeline and grows, pushing the next rows right', async ({ page }) => {
+  await fakeTake(page);
+  await setUp(page, '#/Episode%2003', files);
+  const t = timeline(page);
+  const row3 = t.getByRole('button', { name: /^Row 3 · / });
+  await expect(row3).toBeVisible();
+  await page.getByRole('button', { name: 'Record row 2', exact: true }).click();
+  const rec = t.locator('.vo.rec');
+  await expect(rec.getByRole('img', { name: /^Recording, / })).toBeVisible();
+  expect(await rec.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe('rgb(240, 68, 56)');
+  const left = async () => (await row3.boundingBox())!.x;
+  const before = await left(); // row 2 starts at nothing, then lasts as long as it has been recording
+  await expect.poll(left, { timeout: 10000 }).toBeGreaterThan(before + 20);
+  await page.getByRole('button', { name: 'Stop recording row 2' }).click();
+  await expect(t.locator('.vo.rec')).toHaveCount(0);
+  await expect(t.getByRole('img', { name: /^Take, / })).toBeVisible();
+});
+
 // #260: a cut swapped the picture for a new <img>, which the browser showed only once decoded: a flicker of black.
 // Now the old shot stays until the next one is decoded: on every frame from the first picture to the end of the
 // row, a decoded (data-ready) picture is on show. Folded, as the drawer starts, the pictures are made only once

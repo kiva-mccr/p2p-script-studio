@@ -147,10 +147,25 @@
 
   // Each row lasts its take, or its read time without one, as Play the script times it.
   const upright = $derived(shapeOf(script.front) === 'upright');
-  const laid = $derived(layout(script, rowLength(voice.takes, speaking.wpm)));
+  // #251 (board 84): the row being recorded lasts as long as it has been recording, so its take grows red on the
+  // timeline as you speak and pushes the rows after it right.
+  let recNow = $state(Date.now());
+  $effect(() => {
+    if (!voice.recording) return;
+    recNow = Date.now();
+    const tick = setInterval(() => (recNow = Date.now()), 200);
+    return () => clearInterval(tick);
+  });
+  const lengths = $derived.by(() => {
+    const base = rowLength(voice.takes, speaking.wpm), id = voice.recording;
+    if (!id) return base;
+    const seconds = Math.max(0.1, (recNow - voice.started) / 1000);
+    return (row: Row) => (row.id === id ? { seconds, take: true, words: null } : base(row));
+  });
+  const laid = $derived(layout(script, lengths));
   const total = $derived(laid.total);
   // SB-8: the takes of rows cut on a word are heard once (Write only), so their cuts fall where the words are said.
-  const toHear = $derived(laid.blocks.filter((b) => b.kind === 'row' && b.take && b.shots.length > 1 && !voice.takes[b.id]?.words
+  const toHear = $derived(laid.blocks.filter((b) => b.kind === 'row' && b.take && b.id !== voice.recording && b.shots.length > 1 && !voice.takes[b.id]?.words
     && readChoices(byId.get(b.id)?.timeline ?? '').cuts.length).map((b) => b.id).join(' '));
   $effect(() => {
     if (!readOnly && toHear) voice.hearAll(dir, toHear.split(' '));
@@ -498,8 +513,10 @@
           <div class="lane voice">
             {#each laid.blocks as b (b.id)}
               {#if b.kind === 'row'}
-                <span class="vo" class:said={b.take} style:left="{pct(b.start)}%" style:width="{pct(b.seconds)}%">
-                  {#if b.take && waves[b.id]}
+                <span class="vo" class:said={b.take} class:rec={b.id === voice.recording} style:left="{pct(b.start)}%" style:width="{pct(b.seconds)}%">
+                  {#if b.id === voice.recording}
+                    <span class="recording" role="img" aria-label="Recording, {secs(b.seconds)}"></span>
+                  {:else if b.take && waves[b.id]}
                     <svg viewBox="0 0 100 40" preserveAspectRatio="none" role="img" aria-label="Take, {secs(b.seconds)}"><path d={waves[b.id]} /></svg>
                   {:else if !b.take}
                     <span class="read">no take · read time {secs(b.seconds)}</span>
@@ -699,6 +716,8 @@
   .tip { position: absolute; left: 0; bottom: calc(100% + 8px); z-index: 6; width: 260px; padding: 8px 10px; border-radius: 8px; background: #141414; color: #f5f5f5; font-size: 12px; line-height: 1.45; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2); }
   .vo { display: flex; align-items: center; justify-content: center; border-radius: 7px; background: #fafafa; overflow: hidden; }
   .vo.said { background: #f3f6fd; }
+  .vo.rec { background: #f04438; box-shadow: inset 0 0 0 1px #b42318; }
+  .recording { width: 100%; height: 100%; }
   .vo svg { width: 100%; height: 30px; }
   .vo path { stroke: var(--accent); stroke-width: 2; vector-effect: non-scaling-stroke; fill: none; }
   .read { width: calc(100% - 12px); padding: 3px 0; border: 1px dashed #a8a8a8; border-radius: 4px; color: var(--muted); font-size: 11px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
