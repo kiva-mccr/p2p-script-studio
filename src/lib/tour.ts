@@ -5,7 +5,8 @@ import { keep, recall } from './remember';
 
 export type Tab = 'write' | 'review' | 'history' | 'assets';
 // unfold: the timeline's drawer opens for the step and folds again after it, if it was folded (Tour.svelte).
-export type Step = { target: string; title: string; text: string; unfold?: true };
+// show: the ? menu held open, or Feedback mode shown in use, for the step only (issue #202, lib/help.svelte.ts).
+export type Step = { target: string; title: string; text: string; unfold?: true; show?: 'menu' | 'feedback' };
 
 export const TABS: Record<Tab, string> = { write: 'Write', review: 'Review', history: 'History', assets: 'Assets' };
 
@@ -21,6 +22,8 @@ export const TOURS: Record<Tab, Step[]> = {
     { target: 'timeline', title: 'The storyboard timeline', text: 'The video in rough: every row\'s pictures in order, timed by its take. It folds away at the bottom of the screen: click its bar, or scroll past the bottom, to open it. Click a block to pick its pictures or cut on a word. While the script plays, a small preview shows above it.', unfold: true },
     { target: 'presence', title: 'Saved, and who was here', text: 'Every change saves as you type, beside how long the script runs. "Ana · 3 h ago" is who was here last: click it to see everyone who opened the script.' },
     { target: 'actions', title: 'Play, share and export', text: 'Play the script, copy a link, print, or export. ⋯ has Find and replace, Teleprompter, Credits and Settings, where you can change the keyboard shortcuts or hide help text like this.' },
+    { target: 'help', title: 'Tell us what you think', text: '? holds Feedback… and the app\'s version. Anything odd, missing or confusing, or an idea: we want to hear it, from everyone who uses the app.', show: 'menu' },
+    { target: 'feedback', title: 'Feedback mode', text: 'Feedback… turns the pointer into a picker: click the part it\'s about (outlined in orange), write what\'s wrong, and send it with a picture of that part, the script\'s words covered.', show: 'feedback' },
   ],
   review: [
     { target: 'review-note', title: 'The note from the writer', text: 'What Sam asked when sending it for review again. The number on the Review tab was the rows changed since it was sent back.' },

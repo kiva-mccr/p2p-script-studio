@@ -8,6 +8,7 @@
   const version: Version | null = __VERSION__; // set at build time (vite.config.ts)
 
   let open = $state(false);
+  const shown = $derived(open || feedback.tour === 'menu'); // the tour's ? step holds it open (issue #202)
   let el = $state<HTMLElement>();
   const away = (e: PointerEvent) => open && !el?.contains(e.target as Node) && (open = false);
 </script>
@@ -15,9 +16,9 @@
 <svelte:window onpointerdown={away} onkeydown={(e) => e.key === 'Escape' && (open = false)} />
 
 <span class="help-menu" bind:this={el}>
-  <button class="q" aria-label="Help and version" title="Feedback, GitHub and the version" aria-expanded={open} onclick={() => (open = !open)}>?</button>
-  {#if open}
-    <div class="list" role="menu" aria-label="Help and version">
+  <button class="q" data-tour="help" aria-label="Help and version" title="Feedback, GitHub and the version" aria-expanded={shown} onclick={() => (open = !open)}>?</button>
+  {#if shown}
+    <div class="list" role="menu" data-tour-with="help" aria-label="Help and version">
       <button role="menuitem" onclick={() => ((open = false), feedback.asked++)}>Feedback…</button>
       {#if __SEALED__}
         <hr />

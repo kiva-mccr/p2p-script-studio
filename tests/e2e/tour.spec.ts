@@ -107,6 +107,57 @@ test('the timeline step unfolds the drawer, and folds it again after', async ({ 
   await expect(bar).toHaveAttribute('aria-expanded', 'true');
 });
 
+// Issue #202: Write's tour ends by opening the ? menu, then showing Feedback mode in use (its strip, and the orange
+// outline on a row), so everyone knows it's there. Both go when the step is left, and the tour's keys keep working.
+test('the last steps open the ? menu, then show Feedback mode, and put both away after', async ({ page }) => {
+  await openExample(page);
+  const steps = TOURS.write;
+  const menuAt = steps.findIndex((s) => s.show === 'menu');
+  const menu = page.getByRole('menu', { name: 'Help and version' });
+  const strip = page.locator('[data-tour="feedback"]');
+  await expect(card(page)).toContainText('Write · 1 of');
+  for (let i = 0; i < menuAt; i++) await page.keyboard.press('ArrowRight');
+  await expect(card(page).getByRole('heading', { name: steps[menuAt].title })).toBeVisible();
+  await expect(menu.getByRole('menuitem', { name: 'Feedback…' })).toBeVisible();
+  await expect(menu).toHaveClass(/tour-on/);
+  // Keys pressed fast past the timeline's step: it woke after its drawer slid open and ringed the timeline instead.
+  await page.waitForTimeout(400);
+  await expect(page.locator('[data-tour="timeline"]')).not.toHaveClass(/tour-on/);
+  await expect(menu).toHaveClass(/tour-on/);
+  await card(page).getByRole('button', { name: 'Next' }).click();
+  await expect(card(page).getByRole('heading', { name: steps[menuAt + 1].title })).toBeVisible();
+  await expect(menu).toHaveCount(0);
+  await expect(strip).toContainText('click the part that\'s giving you trouble');
+  await expect(strip).toBeInViewport();
+  // The outline is round a row on screen, as if the pointer were over it.
+  const ring = page.locator('[data-feedback-ring]');
+  await expect(ring).toHaveCount(1);
+  await expect(ring).toBeInViewport();
+  // Nothing is caught: the tour's Back still works, and Feedback mode goes with the step.
+  await card(page).getByRole('button', { name: 'Back' }).click();
+  await expect(strip).toHaveCount(0);
+  await expect(ring).toHaveCount(0);
+  await expect(menu).toBeVisible();
+  await page.keyboard.press('ArrowRight');
+  await page.keyboard.press('ArrowRight');
+  await expect(card(page).getByRole('heading', { name: 'Your turn' })).toBeVisible();
+  await expect(strip).toHaveCount(0);
+  await expect(menu).toHaveCount(0);
+  await card(page).getByRole('button', { name: 'Start playing' }).click();
+  // Skipping on a step puts it away too.
+  await page.getByRole('button', { name: 'Take the tour' }).click();
+  await expect(card(page)).toContainText('Write · 1 of');
+  for (let i = 0; i < menuAt + 1; i++) await page.keyboard.press('ArrowRight');
+  await expect(strip).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(card(page)).toHaveCount(0);
+  await expect(strip).toHaveCount(0);
+  // The real Feedback… still starts the real mode.
+  await page.getByRole('button', { name: 'Help and version' }).click();
+  await page.getByRole('menuitem', { name: 'Feedback…' }).click();
+  await expect(page.getByRole('status').filter({ hasText: 'click the part' })).toBeVisible();
+});
+
 // Issue #208: the ring stays on its part. In a 1920 × 911 window (the user's) it is round each step's part, all of
 // it inside the window (the drawer's lower edge was drawn off screen), and it follows a part that moves without the
 // page changing size.

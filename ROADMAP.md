@@ -533,6 +533,12 @@ and suggestions, keeps every version, and exports them for production.
   before the button. The browser's own dropdown lists are drawn outside the page: pick the dropdown and name the
   option in the note. Scroll bars too (issue #252): a press on one (the timeline's) picked nothing and dragged it, since
   the browser drags a bar whatever the page says; it now picks the bar's box, and Shift drags it.
+- [x] **AP-53** Feedback easier to find (issue #202, board 83 agreed by the user with a change, 2026-11-19: no
+  separate Feedback button; the tour shows it instead). Write's tour ends with two steps: "Tell us what you think"
+  opens the ? menu with Feedback… in it, then "Feedback mode" shows the mode in use (its strip at the bottom and the
+  orange outline on a row on screen), shown only, nothing caught. Both go when the step is left (`show` on a step in
+  lib/tour.ts, `feedback.tour` in lib/help.svelte.ts). Also fixed: arrow keys pressed fast past the timeline's step
+  could ring the timeline on a later step.
 - [ ] **YT-1** The published video: link the final YouTube video and keep its title, description and thumbnail with
   the script.
 - [x] **AU-1** Recording audio for each line: record the dialogue of a row in the browser, kept beside the script
