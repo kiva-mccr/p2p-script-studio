@@ -11,6 +11,9 @@
   import SortSwitch from './SortSwitch.svelte';
   import { heading, newestResolved, sortThreads, toSort, SORT_KEY } from '../lib/commentsort';
   import { recall } from '../lib/remember';
+  import { readBackNotes, writeBackNote, type BackNote, type SentNote } from '../lib/backnotes';
+  import { flipTick } from '../lib/planning';
+  import NoteText from './NoteText.svelte';
 
   // Write's Comments tab (RV-13, board 37 idea A): the writer replies, resolves and accepts or rejects suggestions
   // beside the text. New comments are started in Review. A card takes you to its row (onShow).
@@ -21,6 +24,7 @@
     ends,
     me,
     back,
+    looks = 0,
     active = $bindable(),
     goTo = 0,
     onAdd,
@@ -33,7 +37,8 @@
     notes: Note[];
     ends: string[]; // sends for review and official versions: holds before one are over (RV-19)
     me: string;
-    back?: Version; // the send back (its note at the top), while the script is a draft again
+    back?: Version; // the send back (its notes at the top), while the script is a draft again
+    looks?: number; // the Editor's rounds that looked inside the script: the notes' ticks are read again then
     active: string; // the card being read; its quote is marked darker in Write
     goTo?: number; // bumped each time Write asks for `active` (a bubble or a quote), even the same one again (RV-17)
     onAdd: (note: Omit<Note, 'v' | 'id' | 'when' | 'who'>, files?: File[]) => Promise<boolean>;
@@ -101,15 +106,38 @@
         card.animate([{ boxShadow: '0 0 0 1px #2a5bd7, 0 0 0 10px #b9cbf5' }, {}], { duration: 700, easing: 'ease-out' });
     });
   });
+
+  // The send back's notes (#248): ticked here by the writer, each tick a new file in .studio/notes/ (lib/backnotes.ts),
+  // read again when the Editor looks inside the script. The sender's own note goes by the send back's id.
+  let ticked = $state(new Map<string, BackNote>());
+  $effect(() => {
+    void looks;
+    if (back) readBackNotes(dir).then((read) => (ticked = read)).catch(() => {});
+  });
+  const shownText = (n: SentNote) => ticked.get(n.id)?.text ?? n.text;
+  async function flip(n: SentNote, line: number) {
+    const was = ticked;
+    const text = flipTick(shownText(n), line);
+    ticked = new Map(was).set(n.id, { v: 1, ...n, who: me, when: new Date().toISOString(), text });
+    try {
+      await writeBackNote(dir, { ...n, who: me, text });
+    } catch {
+      ticked = was; // the box goes back: the folder may be busy
+    }
+  }
 </script>
 
 <svelte:window onkeydown={stepKeys} />
+{#snippet backed(n: SentNote, head: string)}
+  <div class="back" role="note" aria-label="Note from {n.by}">
+    <p><b>{n.by}</b>{head} · {ago(Date.parse(n.made))}</p>
+    {#if shownText(n).trim()}<div class="message"><NoteText text={shownText(n)} onflip={(i) => flip(n, i)} /></div>{/if}
+  </div>
+{/snippet}
 <div class="comments" bind:this={list}>
   {#if back}
-    <div class="back" role="note" aria-label="Note from {back.who}">
-      <p><b>{back.who}</b> sent it back · {ago(Date.parse(back.when))}</p>
-      {#if back.message}<p class="message">{back.message}</p>{/if}
-    </div>
+    {@render backed({ id: back.id, by: back.who, made: back.when, text: back.message ?? '' }, ' sent it back')}
+    {#each back.notes ?? [] as n (n.id)}{@render backed(n, "'s note")}{/each}
   {/if}
   {#if all.length}<div class="bar"><SortSwitch bind:sort /></div>{/if}
   {#each shown as t, i (t.comment.id)}

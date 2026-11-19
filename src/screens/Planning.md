@@ -8,7 +8,7 @@ In Write the same panel has a second tab, Comments (RV-13, board 37): the edge s
 when closed, and a Planning · Comments switch when open. Review keeps only Planning (its comments are beside the
 script already).
 
-In Review (`review`, RV-26, board 82) the plan is shown, not typed in: its tick boxes are real check boxes that tick
+In Review (`review`, RV-26, board 82) the plan is shown (`NoteText.svelte`), not typed in: its tick boxes are real check boxes that tick
 with a click and save as typing does, and Edit (beside Close) swaps in the same `TextField`; Done goes back.
 
 - **Used by:** `Editor.svelte`. **Tests:** `tests/e2e/planning.spec.ts`, `comments.spec.ts`, `tests/unit/planning.test.ts`.

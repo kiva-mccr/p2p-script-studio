@@ -16,6 +16,8 @@
   import { Saving } from '../lib/saving.svelte';
   import Assets from './Assets.svelte';
   import Comments from './Comments.svelte';
+  import SendBack from './SendBack.svelte';
+  import type { SentNote } from '../lib/backnotes';
   import Conflict from './Conflict.svelte';
   import Credits from './Credits.svelte';
   import { shownCredits } from '../lib/people';
@@ -467,9 +469,12 @@
       readCounts();
     });
   });
-  async function setStatus(to: 'draft' | 'in review' | 'approved', note: string, message = '') {
-    await file.setStatus(to, note, message);
+  async function setStatus(to: 'draft' | 'in review' | 'approved', note: string, message = '', sentNotes: SentNote[] = []) {
+    await file.setStatus(to, note, message, sentNotes);
   }
+  // Send back (#248): your note, kept while the page is open, and the round's start, after which others' notes count.
+  let backDraft = $state('');
+  const roundFrom = $derived(versions.findLast((v) => v.kind === 'review' && v.note === 'Sent for review')?.when ?? '');
 
   async function showReview() {
     const ask = ++asked;
@@ -683,10 +688,16 @@
 {#if exporting && script && dir}
   <Export {script} {dir} folder={folder.name} title={title ?? ''} version={exporting.version} start={exporting.to} missing={lostFiles} onPrint={print} onBack={() => (exporting = null)} />
 {:else}
+{#snippet backMenu(close: () => void)}
+  {#if dir}
+    <SendBack {dir} me={name} since={roundFrom} bind:text={backDraft}
+      onSend={(message, sentNotes) => (close(), (backDraft = ''), setStatus('draft', 'Sent back to writer', message, sentNotes))} />
+  {/if}
+{/snippet}
 <Header folder={folder.name} title={title ?? ''} ready={!!script} {mode} writeCount={mode === 'write' ? 0 : writeNew} reviewCount={mode === 'review' ? 0 : reviewNew} {loose} missingCount={lostFiles.size} {voiceText} voiceWpm={takesSpeed(voice.takes)} editors={file.editors} seen={file.seen} folding={file.folding} {reviewStatus} {stateAge} {heldCount} {status} problem={file.problem}
   play={canPlay ? { time: player.started ? `${clock(player.time)} / ${clock(player.total)}` : '', on: player.on } : null} onPlay={() => play()} onStop={() => player.stop()}
   onMode={switchMode}
-  onAllow={() => file.allow()} onStatus={setStatus} onLoose={showLoose} onExport={openExport} onShare={shareNow} nextVersion={() => file.nextVersion()} onFind={() => (switchMode('write'), (finding = true))} onCredits={() => (crediting = true)} onPrompt={() => (status === 'waiting' && save(), player.stop(), (promptFrom = whereAmI()), (prompting = true))} />
+  onAllow={() => file.allow()} onStatus={setStatus} onLoose={showLoose} onExport={openExport} onShare={shareNow} nextVersion={() => file.nextVersion()} {backMenu} onFind={() => (switchMode('write'), (finding = true))} onCredits={() => (crediting = true)} onPrompt={() => (status === 'waiting' && save(), player.stop(), (promptFrom = whereAmI()), (prompting = true))} />
 
 <div class="page">
 <main>
@@ -722,7 +733,7 @@
 {#if tour !== undefined && script && dir && !clash && !printing && !exporting}<Tour tab={mode} again={tour} />{/if}
 {#snippet comments()}
   {#if script && dir}
-    <Comments {dir} {script} {notes} {ends} me={name} {back} bind:active={talking} {goTo} onAdd={note} onApply={apply} onShow={showRow} onUse={useFile} />
+    <Comments {dir} {script} {notes} {ends} me={name} {back} {looks} bind:active={talking} {goTo} onAdd={note} onApply={apply} onShow={showRow} onUse={useFile} />
   {/if}
 {/snippet}
 </div>

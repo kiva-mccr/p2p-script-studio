@@ -15,6 +15,7 @@ import { Started } from './started';
 import { settle, Steps, type Act, type Place } from './steps';
 import { follow } from './news';
 import { errorText, problem } from './problems';
+import type { SentNote } from './backnotes';
 
 // How long typing waits before it is saved (the user's pick: 30 s, or at once with Ctrl+S). Tests make it shorter
 // through `save-every` in this browser's storage.
@@ -380,7 +381,7 @@ export class Saving {
   }
 
   // An entry of its own kind, now, for the script as everyone has it.
-  async #entry(kind: 'restore' | 'official' | 'review', note: string, extra: { message?: string; official?: boolean } = {}) {
+  async #entry(kind: 'restore' | 'official' | 'review', note: string, extra: { message?: string; notes?: SentNote[]; official?: boolean } = {}) {
     const dir = this.dir!;
     const newest = (await recentVersions(dir)).at(-1) ?? this.last;
     this.last = await addVersion(dir, { parents: newest ? [newest.id] : [], who: this.name(), kind, text: this.shared, note, ...extra });
@@ -401,14 +402,15 @@ export class Saving {
   }
 
   // Review status (RV-3): saved at once, with a History entry.
-  async setStatus(to: 'draft' | 'in review' | 'approved', note: string, message = '') {
+  // `notes`: a send back's notes from the other reviewers (#248).
+  async setStatus(to: 'draft' | 'in review' | 'approved', note: string, message = '', notes: SentNote[] = []) {
     const [dir, script] = [this.dir, this.script];
     if (!dir || !script) return;
     await this.leave();
-    await (this.#changingStatus = this.#changeStatus(dir, script, to, note, message));
+    await (this.#changingStatus = this.#changeStatus(dir, script, to, note, message, notes));
   }
 
-  async #changeStatus(dir: FileSystemDirectoryHandle, script: Script, to: string, note: string, message: string) {
+  async #changeStatus(dir: FileSystemDirectoryHandle, script: Script, to: string, note: string, message: string, notes: SentNote[]) {
     script.front = setFrontValue(script.front, 'status', to);
     this.steps.sync(this.#pageText(false)); // not a step: Ctrl+Z never changes the status
     this.changed();
@@ -417,7 +419,7 @@ export class Saving {
     try {
       // A send for review is also the next official version, unless nothing changed since the newest one (RV-9).
       const official = to === 'in review' && !sendVersion(await listVersions(dir), this.shared).still;
-      await this.#entry('review', note, { message, official });
+      await this.#entry('review', note, { message, notes, official });
       untrack(this.onEntry); // the new entry: the review note, or the marks start again from here
     } catch {
       // History can't be written: the status itself is saved.

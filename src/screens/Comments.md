@@ -1,8 +1,9 @@
 # `src/screens/Comments.svelte`
 
 Write's Comments tab (RV-13, board 37 idea A): the open comments and suggestions as cards (`CommentCard.svelte`) to
-reply to, resolve and accept or reject while editing, then Resolved. The send back's note sits at the top while
-the script is a draft again. New comments are started in Review only.
+reply to, resolve and accept or reject while editing, then Resolved. The send back's notes sit at the top while
+the script is a draft again: the sender's, then the other reviewers' (#248), formatted, their tick boxes tickable
+(`NoteText.svelte`; each tick is a file in `.studio/notes/`, read again at each `looks`). New comments are started in Review only.
 
 - **Used by:** `Editor.svelte`, inside the side panel (`Planning.svelte`). **Tests:** `tests/e2e/comments.spec.ts`.
 

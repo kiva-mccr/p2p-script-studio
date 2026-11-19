@@ -300,12 +300,12 @@ test('Send back to writer takes a note, kept in History and shown at the top of 
   await page.getByRole('button', { name: /^Review/ }).click();
   await page.getByRole('button', { name: 'Send back to writer' }).click();
   const region = page.getByRole('region', { name: 'Send back to writer' });
-  await expect(region.getByLabel('A note for the writer')).toBeFocused();
-  await region.getByLabel('A note for the writer').fill('Tighten row 3.');
+  await expect(region.getByLabel('Your note for the writer')).toBeFocused();
+  await region.getByLabel('Your note for the writer').fill('Tighten row 3.');
   await page.keyboard.press('Escape');
   await expect(region).toHaveCount(0);
   await page.getByRole('button', { name: 'Send back to writer' }).click();
-  await expect(region.getByLabel('A note for the writer')).toHaveValue('Tighten row 3.');
+  await expect(region.getByLabel('Your note for the writer')).toHaveValue('Tighten row 3.');
   await region.getByRole('button', { name: 'Send back to writer' }).click();
   await expect.poll(() => readFile(page, SCRIPT)).toContain('status: draft\n');
   await page.getByRole('button', { name: 'Write', exact: true }).click();

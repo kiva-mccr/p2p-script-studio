@@ -15,6 +15,7 @@ Episode 03 - How Photosynthesis Works/
     editing/    a file for each person who has the script open, a new one every 60 s
     files/      files attached to comments, one folder per comment or reply
     summary/    what the script list shows, for computers new to the folder (PF-12)
+    notes/      the reviewers' notes for the writer, and the writer's ticks on them (#248)
 ```
 
 The picked folder itself has a `.studio/` too, for what every script shares (AP-31):
@@ -80,6 +81,21 @@ work gets lost: OneDrive syncs in seconds to minutes, and a Windows network driv
 computer has open. Two people writing different new files never clash. Even typing is saved this way (`changes/`,
 below); `script.md` is written by one computer only, the keeper.
 
+## notes/: notes for the writer (#248)
+
+In Review's Send back, each reviewer can add a note without sending:
+`notes/20261119T090000123Z_ab12cd34_k2m9qa7x.json` (time, the note's id, a random id):
+
+```json
+{ "v": 1, "id": "ab12cd34", "by": "Ana", "who": "Ana", "made": "2026-11-19T09:00:00.123Z",
+  "when": "2026-11-19T09:00:00.123Z", "text": "Lovely pace. **Row 4** needs a source.\n- [ ] swap the drone shot" }
+```
+
+A change, a delete (`"removed": true`) or a tick in Write is a new file with the same `id`; the newest counts. `by`
+wrote the note, `who` this file, `made` is when the note was first added. The notes made since the newest "Sent for
+review" go with the send back, copied into its History entry (`notes`, below); the sender's own note is its `message`,
+and ticks on it use the send back's id.
+
 ## changes/: saving (FX-2)
 
 Typing is saved within **30 seconds** (or at once with Ctrl+S, on leaving, or when the tab is hidden) as a new file,
@@ -139,6 +155,7 @@ except as the `who` of what they write.
 - `text` is the whole `script.md` as it was: a full copy, not a list of changes. Simple, and any one file is
   enough to restore from. A 10-minute script is about 10 KB, so 1,000 versions are about 10 MB.
 - `parents` is the version (or versions) it was made from: empty for the first, two for a merge.
+- `notes` is only on a send back that takes other reviewers' notes (#248): `[{ "id", "by", "made", "text" }]`.
 - `message` is only there on a send for review with a note for the reviewers (RV-8), or a send back with a note for
   the writer (RV-13): what they should look at.
 - `sha256` is the text's fingerprint, used to tell whether `script.md` still matches.

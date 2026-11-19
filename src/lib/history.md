@@ -41,7 +41,8 @@ A script's history: one JSON file per version in `.studio/versions/`, and older 
   `status` and `authors` lines are left out, since a send, approve or a save by someone new changes them.
 - `sendVersion` decides what a send makes: the next number, or `still` the newest one when nothing changed, however
   that one was made (the user's rule: never a duplicate).
-- `message` (RV-8, RV-13) is written only when there is one. `reviewNote` is the newest review change, if it was a send
+- `message` (RV-8, RV-13) is written only when there is one; `notes` (#248) only on a send back that carries other
+  reviewers' notes. `reviewNote` is the newest review change, if it was a send
   with a note; sent back or approved since means none. `backNote` is the newest review change if it was a send back
   (note or not), for the top of Write's Comments tab.
 - `reviewEnd` is the newest `review` entry whose note starts "Sent back" or "Approved" (also "Approved, 2 still

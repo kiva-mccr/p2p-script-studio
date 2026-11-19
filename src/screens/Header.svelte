@@ -15,9 +15,10 @@
   import Settings from './Settings.svelte';
   import Presence from './Presence.svelte';
   import type { StatusAge } from '../lib/statusage';
+  import type { Snippet } from 'svelte';
 
   type Mode = 'write' | 'review' | 'history' | 'assets';
-  let { folder, title, ready, mode, writeCount = 0, reviewCount = 0, loose, missingCount, voiceText, voiceWpm, play, editors, seen = [], folding = '', reviewStatus, stateAge = null, heldCount = 0, status, problem = '', onAllow, onLoose, onMode, onStatus, onFind, onPrompt, onCredits, onExport, onShare, onPlay, onStop, nextVersion }: {
+  let { folder, title, ready, mode, writeCount = 0, reviewCount = 0, loose, missingCount, voiceText, voiceWpm, play, editors, seen = [], folding = '', reviewStatus, stateAge = null, heldCount = 0, status, problem = '', onAllow, onLoose, onMode, onStatus, onFind, onPrompt, onCredits, onExport, onShare, onPlay, onStop, nextVersion, backMenu }: {
     folder: string; title: string; ready: boolean; mode: Mode; writeCount?: number; reviewCount?: number; loose: Loose[]; missingCount: number; voiceText: string; voiceWpm: number; editors: string[]; reviewStatus: string;
     stateAge?: StatusAge | null; // how long it has been in that status, and who put it there (#230)
     heldCount?: number; // comments on hold (RV-19): Send for review says they come back
@@ -33,6 +34,7 @@
     onCredits: () => void; // ⋯ › Credits (AP-31)
     onExport: (to: Format) => void; onShare: () => Promise<Shared>;
     nextVersion: () => Promise<{ n: number; still: boolean }>; // what Send for review makes (RV-9)
+    backMenu: Snippet<[() => void]>; // Send back's menu (#248, SendBack.svelte), given a way to close it
   } = $props();
 
   const statusText = { saved: 'Saved', waiting: 'Editing…', saving: 'Saving…', failed: SAVE_FAILED, conflict: 'Not saved',
@@ -48,11 +50,10 @@
   // Fountain, Final Draft and later exports, each opening the export screen, EX-9) and ⋯ (Find and replace in Write, Teleprompter, Credits, Settings).
   // 'approve': what is still open, before approving (RV-5, mock-up 20). It warns and never blocks.
   // 'send': a note for the reviewers, before sending (RV-8, mock-up 26). Optional; kept while the page is open.
-  // 'back': a note for the writer, before sending back (RV-13); they see it at the top of Comments in Write.
+  // 'back': the notes for the writer, before sending back (RV-13, #248); they see them at the top of Comments in Write.
   let menu = $state<'' | 'more' | 'export' | 'approve' | 'send' | 'back'>('');
   let sendNote = $state('');
   let sendMakes = $state<{ n: number; still: boolean } | null>(null); // shown in the send panel once known
-  let backNote = $state('');
   let sendEl = $state<HTMLElement>();
   let backEl = $state<HTMLElement>();
   let settings = $state(false); // the Settings window (AU-3), opened from ⋯
@@ -76,11 +77,6 @@
     menu = 'send';
     sendMakes = null;
     sendMakes = await nextVersion().catch(() => null);
-  }
-  function sendBack() {
-    menu = '';
-    onStatus('draft', 'Sent back to writer', backNote.trim());
-    backNote = '';
   }
   // Export / Share shows the link and a preview of the Teams message (#234): the message is made as the menu opens
   // (lib/share.ts, already escaped), and made again when copied, so the copy is never older than the click.
@@ -165,13 +161,7 @@
           <button class="outline" aria-label="Send back to writer" aria-expanded={menu === 'back'} onclick={() => (menu = menu === 'back' ? '' : 'back')}>Send back</button>
           {#if menu === 'back'}
             <div class="menu approve-menu" role="region" aria-label="Send back to writer">
-              <label class="lead" for="back-note">A note for the writer</label>
-              <textarea id="back-note" rows="4" bind:value={backNote} {@attach (el) => el.focus()} placeholder="What should they fix first? (optional)"></textarea>
-              <p class="quiet help">They see it at the top of Comments in Write. It is kept in History.</p>
-              <div class="actions">
-                <button class="outline" onclick={() => (menu = '')}>Cancel</button>
-                <button class="dark" onclick={sendBack}>Send back to writer</button>
-              </div>
+              {@render backMenu(() => (menu = ''))}
             </div>
           {/if}
         </span>

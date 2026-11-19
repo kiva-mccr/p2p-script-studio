@@ -83,7 +83,7 @@ Status: a first working version. What it does today:
   comments while rewriting: reply, resolve (Undo for 5 seconds, then it slides away into Resolved), and accept or reject suggestions. Rows
   with something open show a small blue speech bubble with the count under the row number, and the quoted words are
   marked yellow; click either to open that card (click the bubble again to unselect it), and click a card to go to its row. New comments are still started
-  in Review. After a send back, Write opens on Comments with the reviewer's note at the top. A file on a comment
+  in Review. After a send back, Write opens on Comments with the reviewers' notes at the top, formatted, and the writer can tick their tick boxes. A file on a comment
   can go straight into the script: "Use in script" under it copies it into assets/ and adds it to that comment's row.
 - **History:** Write · History at the top of a script. Every few minutes of editing is kept as a version: who, when
   and what changed, word for word. Restore any version (Undo at the bottom goes back to what you had). Changes made outside the app (say, in Notepad) are noted.
@@ -189,7 +189,8 @@ Status: a first working version. What it does today:
   50 MB each; bigger things go in OneDrive as a link). They show the same previews as Images & files, with the name
   and size under them; other files a chip; clicking opens one. They are kept in the script's `.studio/files/` and never deleted. The Write and Review tabs show what's new for you: Review, once it is sent for review, the rows changed since it was last sent back; Write, once it is sent back, the comments and suggestions from the review still open. Opening a tab clears its number, and it then counts only what comes later (your own never count). Send for review (in Write), with an optional note for the
   reviewers that they see at the top of Review, then Approve or Send back to writer (with an optional note for the
-  writer, shown at the top of Comments in Write); each step (and the note)
+  writer, with bold, italic, lists and tick boxes, shown at the top of Comments in Write; each reviewer can "Add my note"
+  without sending, and whoever sends it back sends them all); each step (and the note)
   is noted in History, and the list shows the status. The top bar's status says how long it has been there ("In
   review · 2 days"); hover it for who and when. If comments, suggestions or missing files are still open,
   Approve first lists them (click one to go to it); "Approve anyway" still approves, and History notes how many were open.

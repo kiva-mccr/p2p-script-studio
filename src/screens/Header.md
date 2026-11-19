@@ -33,7 +33,8 @@ Copy for Teams, EX-10) above Export (Print…, Fountain, Final Draft, Voice-over
   focused on opening; Cancel or Esc closes it and keeps the note (`sendNote`) until sent or the page is left. Its
   region and its button are both named "Send for review": tests pick the button inside the region. Opening it asks
   `nextVersion` and then says "It becomes v3 in History." or "Still v2: …" (RV-9); the Editor makes the version.
-- Send back to writer opens the same kind of panel with a note for the writer (RV-13); it tops Write's Comments tab.
+- Send back to writer opens the same kind of panel; its content is the Editor's `backMenu` snippet (`SendBack.svelte`,
+  #248), given a way to close the menu. It tops Write's Comments tab.
   Its region and button are both named "Send back to writer": tests pick the button inside the region.
 - Send for review shows only in Write (asked by the user); Review has Send back to writer and Approve, and History
   and Assets show neither. Tests that send for review go to Write first.
