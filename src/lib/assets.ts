@@ -1,11 +1,12 @@
 // The asset list (EX-6, mock-up 12): every file, link and "still to find" note across a script's rows, once each,
 // with the rows that use it; and which files are missing from the script's folder.
 import { assetFile } from './folder';
-import { readFileRef, type FileRef, type Script } from './script';
+import { readFileRef, type FileRef, type Script, type Row as ScriptRow } from './script';
+import { clearMarks } from './format';
 import { subpath } from './dirs';
 
 export type Asset = FileRef & { line: string; rows: number[] };
-export type Row = { n: number; section: string; assets: Asset[] };
+export type Row = { n: number; section: string; assets: Asset[]; excerpt: string };
 
 // The rows in order, each with its section's name and its assets. An asset used in two rows is the same object.
 export function assetRows(script: Script): Row[] {
@@ -18,7 +19,7 @@ export function assetRows(script: Script): Row[] {
       section = block.title;
       continue;
     }
-    const row: Row = { n: ++n, section, assets: [] };
+    const row: Row = { n: ++n, section, assets: [], excerpt: excerpt(block) };
     for (const line of block.files) {
       const ref = readFileRef(line.trim());
       const key = `${ref.kind}:${ref.kind === 'words' ? ref.label.toLowerCase() : ref.target}`;
@@ -30,6 +31,17 @@ export function assetRows(script: Script): Row[] {
     rows.push(row);
   }
   return rows;
+}
+
+// A row's words as one line for Assets (#212, board 82): its dialogue, or its On screen words when it has none, with
+// the marks, list bullets and tick boxes taken out. Cut short by the page (CSS), not here.
+export function excerpt(row: ScriptRow): string {
+  const text = row.dialogue.trim() ? row.dialogue : row.onScreen;
+  return clearMarks(text)
+    .split('\n')
+    .map((line) => line.replace(/^\s*(?:[-*+]\s+(?:\[[ xX]\]\s+)?|\d+[.)]\s+)/, '').trim())
+    .filter(Boolean)
+    .join(' ');
 }
 
 // Every asset once, in the order they first appear.
