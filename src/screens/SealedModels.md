@@ -10,3 +10,4 @@ older version, and "Add speech-models.zip…", which checks the zip file by file
 - It can't link to the download (the sealed app reaches no site, and SealedLinks only copies addresses): it names the
   Download sealed page instead.
 - Errors are shown in the page, never as a dialog.
+- The first-open card (`ModelsOffer.svelte`, #327) points here: keep the heading "Speech models" or change its note.

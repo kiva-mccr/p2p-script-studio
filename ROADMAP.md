@@ -1290,6 +1290,10 @@ the team writes leaves their computers.
   build attestation. The policy no longer allows Hugging Face. Whisper uses q8 on WebGPU too (its q4 is 124 MB). The
   sealed app: Settings › Speech models takes the zip, checks it and keeps it (IndexedDB); Download sealed offers "The
   app and the speech models" with the zip's fingerprint. The live check fails if the models aren't served as pinned.
+- [x] **SE-11** The speech models offered on the sealed app's first open (issue #327, board 92 agreed by the user). Done
+  2026-11-19: a card under the top bar of Open your scripts folder (and the list), "Add the speech models?" with
+  Import the models file… and Not now, shown once on that computer (kept in IndexedDB) and only when no models are
+  kept. Its note says Settings › Speech models has them later. `screens/ModelsOffer.svelte`.
 - [ ] **SE-2**, **SE-3**, **SE-6** to **SE-8**: supply chain checks, untrusted script files, offline app, proof of
   what's running, the IT pack. The plan and decisions:
   docs/security.md.

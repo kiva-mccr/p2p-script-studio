@@ -3,9 +3,10 @@
 The sealed app's speech models (SE-5): `speech-models.zip` (the Download sealed page's second download) read in
 place, checked against `models.lock.json`, and kept in IndexedDB. `zipIndex` finds each file's bytes from the zip's
 central directory; `checkModels` hashes each pinned file; `keptModels` hands the zip to the speech workers
-(`lib/sealedruntime.ts`).
+(`lib/sealedruntime.ts`). `addModels` checks and keeps a picked zip (Settings and the first-open card);
+`shouldOfferModels` / `markModelsOffered` keep whether the card was shown (#327), under the key `offered`.
 
-- **Used by:** `screens/SealedModels.svelte`, `lib/sealedruntime.ts`. **Tests:** `tests/unit/sealedmodels.test.ts`.
+- **Used by:** `screens/SealedModels.svelte`, `screens/ModelsOffer.svelte`, `lib/sealedruntime.ts`. **Tests:** `tests/unit/sealedmodels.test.ts`.
 
 ## Rules and pitfalls
 
