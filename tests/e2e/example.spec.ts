@@ -176,3 +176,28 @@ test('the example has contacts, credits, a plan, a flag, an equation, a file on 
   await expect(aside.getByText('leaf-from-my-garden.jpg')).toBeVisible();
   await expect(aside.getByRole('button', { name: 'Resolved · 1' })).toBeVisible();
 });
+
+test('several people show wherever several can be: notes for the writer, a missing shot, who was here (#213)', async ({ page }) => {
+  await page.goto('./');
+  await page.getByRole('button', { name: 'Open the example' }).click();
+  await page.getByText('How Photosynthesis Works').click();
+  // Ana was here last; Leo the day before.
+  await page.getByRole('button', { name: 'Ana · 3 h ago' }).click();
+  await expect(page.getByRole('region', { name: 'Who has been here' }).locator('.person b')).toHaveText(['Ana', 'Leo']);
+  await page.getByRole('button', { name: 'Ana · 3 h ago' }).click();
+  // Sam sent it; Ana has added her note for the writer, waiting for whoever sends it back.
+  await page.getByRole('button', { name: /^Review/ }).click();
+  await expect(page.getByRole('note', { name: 'Note from Sam' })).toBeVisible();
+  await page.getByRole('button', { name: 'Send back to writer' }).click();
+  const back = page.getByRole('region', { name: 'Send back to writer' });
+  await expect(back.getByRole('note', { name: "Ana's note" })).toContainText('Happy with the science.');
+  await page.keyboard.press('Escape');
+  // The first send back carried Ana's message and Leo's note.
+  await page.getByRole('button', { name: 'History', exact: true }).click();
+  await expect(page.getByText('Leo: My class tried it')).toBeVisible();
+  // Two people on the park shot, one on the real leaf.
+  await page.getByRole('button', { name: /^Assets/ }).click();
+  const finds = page.getByRole('region', { name: 'Assets' }).locator('li.find');
+  await expect(finds.filter({ hasText: 'Park b-roll' }).locator('.person')).toHaveText(['Jordan×', 'Leo×']);
+  await expect(finds.filter({ hasText: 'A real leaf' }).locator('.person')).toHaveText(['Jordan×']);
+});

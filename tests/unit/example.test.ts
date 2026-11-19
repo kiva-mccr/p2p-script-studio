@@ -12,6 +12,7 @@ describe('samsVersion', () => {
     expect(text).toContain('Timeline: then hold 2 s');
     expect(text).toContain('- assets/zoom-sketch.svg (timeline)');
     expect(text).toContain('Timeline: then placeholder 3 s "Time-lapse of a seedling growing"');
+    expect(text).toContain('- A real leaf in sunlight (to film: Jordan)\n'); // one person on it (#213)
     const dialogue = (t: string) => parseScript(t).blocks.flatMap((b) => (b.type === 'row' ? [b.dialogue] : []));
     expect(dialogue(text)).toEqual(dialogue(sent));
   });

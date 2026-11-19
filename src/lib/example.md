@@ -3,7 +3,9 @@
 The example to try (AP-33): the made-up script in `docs/example/` copied into the browser's private storage as a
 folder called "Example", with its made-up files in `assets/` (one of each kind the app previews, AP-34), a
 voice-over take on every row in `voice/`, a History with a send back and a second send, comments of each kind (one
-on hold, one resolved, one with a file) and Ana's last visit (AP-47), all by made-up people. Also the folder's people
+on hold, one resolved, one with a file) and Ana's last visit (AP-47), all by made-up people. Several people wherever
+several can be (#213): Leo's note on Ana's send back, Ana's note waiting this round, two people on the park shot, Leo's
+visit before Ana's; one where only one can (one sender, Jordan alone on the real leaf). Also the folder's people
 with made-up contacts (example.org, no LinkedIn: a made-up profile could be someone real) and the script's credits,
 its plan (`plan.md` beside it in docs/example), a flag on row 5, and a template (`Template - Science explainer`). Also
 Start over and its Undo, and whether the offer on the first-time screen is folded.
@@ -43,3 +45,6 @@ Start over and its Undo, and whether the offer on the first-time screen is folde
 - Since #221 the takes are a natural made-up voice (Kokoro 1.0, int8, made on 2026-11-19: `af_heart` for Kiva, the
   narrator, `bf_emma` for Ana on row 4, then Opus in webm with silence trimmed). Ana speaks row 4 from Sam's version on
   (`samsVersion`) and has `as: 'Ana'` in the credits; her take is signed Ana.
+- Ana must stay the newest visit (the tour and tests name "Ana · 3 h ago"); Leo's is a day earlier. The park shot's
+  people are added to the text as first sent, so they are no change in Review; the real leaf is Sam's (row 1, which
+  Sam's version already changes, so Review still counts four rows).

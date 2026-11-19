@@ -4,6 +4,7 @@
 // app's own in IndexedDB (lib/memfolder.ts), never one on the computer (the user, 2026-11-19).
 
 import { addNote } from './comments';
+import { newId, writeBackNote } from './backnotes';
 import { writeEditing } from './editing';
 import { addVersion } from './history';
 import { creditData, savePerson, type Credit } from './people';
@@ -77,11 +78,11 @@ export async function startOver(): Promise<{ folder: FileSystemDirectoryHandle; 
 }
 
 // Sam's changes after Ana sent the script back (AP-47): a slower zoom in row 3, the photosynthesis equation in row 4,
-// a second speaker on row 4 (#221), and the storyboard timeline's lines (a cut on a word, a hold, a picture only for the timeline, a placeholder). docs/example keeps the text as first
+// a second speaker on row 4 (#221), the real leaf Ana asked for, to film by Jordan alone (#213), and the storyboard timeline's lines (a cut on a word, a hold, a picture only for the timeline, a placeholder). docs/example keeps the text as first
 // sent for review, which many tests read; the example opens on this one. Dialogue is unchanged, so no take is Outdated.
 export function samsVersion(text: string): string {
   const edits: [string, string][] = [
-    ['- assets/leaf-push-in.mp4\n', '- assets/leaf-push-in.mp4\n\nTimeline: cuts at "running"\n'],
+    ['- assets/leaf-push-in.mp4\n', '- assets/leaf-push-in.mp4\n- A real leaf in sunlight (to film: Jordan)\n\nTimeline: cuts at "running"\n'],
     ['- assets/music-bed.mp3\n', '- assets/music-bed.mp3\n\nTimeline: then hold 2 s\n'],
     ['Animated zoom: leaf to cell to chloroplast.', 'Slow animated zoom: leaf to cell to chloroplast, a few seconds on *each*.'],
     ['- assets/cell-micrograph.tif\n', '- assets/cell-micrograph.tif\n- assets/zoom-sketch.svg (timeline)\n'],
@@ -113,8 +114,10 @@ async function fill(folder: FileSystemDirectoryHandle, now = new Date()): Promis
   for (const [i, person] of PEOPLE.entries()) {
     people.push(await savePerson(folder, { ...person, linkedin: '' }, 'Kiva', new Date(Date.parse('2026-11-09T14:00:00Z') + i * 1000)));
   }
-  // Ana is the second voice (#221): she says row 4, under the short name "Ana", from Sam's version on.
-  const sent = credited(raw(SCRIPT, 'script.md'), people.map((p) => (p.name === 'Ana' ? { ...p, as: 'Ana' } : p)));
+  // Ana is the second voice (#221): she says row 4, under the short name "Ana", from Sam's version on. The park shot is
+  // given to two people from the start, Jordan to film it and Leo to bring the students (#213).
+  const sent = credited(raw(SCRIPT, 'script.md'), people.map((p) => (p.name === 'Ana' ? { ...p, as: 'Ana' } : p)))
+    .replace('- Park b-roll of a deep breath (to film)\n', '- Park b-roll of a deep breath (to film: Jordan, Leo)\n');
   await writePlan(dir, raw(SCRIPT, 'plan.md'));
   const draft = (text: string) => text.replace('status: in review', 'status: draft');
   const text = samsVersion(sent);
@@ -131,8 +134,12 @@ async function fill(folder: FileSystemDirectoryHandle, now = new Date()): Promis
     text: 'Could the narrator slow down here? It\'s a new word for most students.' }, at('2026-11-09T15:07:00Z'));
   const zoom = await addNote(dir, { kind: 'comment', who: 'Ana', row: 't1q7c', field: 'on_screen', quote: 'leaf to cell to chloroplast',
     text: 'This goes by too fast to follow.' }, at('2026-11-09T15:09:00Z'));
+  // Two reviewers (#213): Leo adds his note, and Ana sends it back with hers, so the writer gets both.
+  const leos = await writeBackNote(dir, { id: newId(), by: 'Leo', who: 'Leo', made: '2026-11-10T08:45:00.000Z',
+    text: 'My class tried it: **row 3** lost them. Fine after that.' }, at('2026-11-10T08:45:00Z'));
   const back = await addVersion(dir, { parents: [send.id], who: 'Ana', kind: 'review', text: draft(sent), note: 'Sent back to writer',
-    message: 'Yes, the zoom is too fast. The filmmakers also asked for a rough storyboard.' }, at('2026-11-10T09:30:00Z'));
+    message: 'Yes, the zoom is too fast. The filmmakers also asked for a rough storyboard.',
+    notes: [{ id: leos.id, by: leos.by, made: leos.made, text: leos.text }] }, at('2026-11-10T09:30:00Z'));
   const edit = await addVersion(dir, { parents: [back.id], who: 'Sam', kind: 'edit', text: draft(text) }, at('2026-11-10T15:12:00Z'));
   await addNote(dir, { kind: 'reply', who: 'Sam', about: zoom.id, text: 'Slowed down, a few seconds on each step.' }, at('2026-11-10T15:13:00Z'));
   await addNote(dir, { kind: 'resolve', who: 'Sam', about: zoom.id }, at('2026-11-10T15:13:30Z'));
@@ -144,6 +151,12 @@ async function fill(folder: FileSystemDirectoryHandle, now = new Date()): Promis
     text: 'Could we end on a quiz question?' }, at('2026-11-11T10:02:00Z'));
   await addNote(dir, { kind: 'reply', who: 'Sam', about: quiz.id, text: 'Good idea. Saving it for episode 4.' }, at('2026-11-11T10:15:00Z'));
   await addNote(dir, { kind: 'hold', who: 'Sam', about: quiz.id }, at('2026-11-11T10:16:00Z'));
+  // This round, Ana has added her note for the writer without sending it back: Send back shows it to the next reviewer.
+  await writeBackNote(dir, { id: newId(), by: 'Ana', who: 'Ana', made: '2026-11-11T11:40:00.000Z',
+    text: 'The zoom works now. Happy with the science.' }, at('2026-11-11T11:40:00Z'));
+  // Leo was here yesterday, Ana three hours ago: the top bar names Ana, and its list shows both.
+  const leoLeft = new Date(now.getTime() - 26 * 60 * 60 * 1000).toISOString();
+  await writeEditing(dir, { v: 1, who: 'Leo', since: new Date(now.getTime() - 26.5 * 60 * 60 * 1000).toISOString(), seen: leoLeft, last_written: '', left: leoLeft });
   const left = new Date(now.getTime() - 3 * 60 * 60 * 1000).toISOString();
   const came = new Date(now.getTime() - 3.5 * 60 * 60 * 1000).toISOString();
   await writeEditing(dir, { v: 1, who: 'Ana', since: came, seen: left, last_written: '', left });
