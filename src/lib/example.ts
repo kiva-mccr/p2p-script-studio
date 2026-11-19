@@ -1,11 +1,14 @@
 // The example to try (AP-33): a copy of the made-up script in docs/example/, kept in the browser's private storage
-// as a folder of its own, so every part of the app works on it and nothing reaches the shared folder.
+// as a folder of its own, so every part of the app works on it and nothing reaches the shared folder. The sealed app
+// (SE-10) has no private storage (Chrome gives a file opened from the computer none): its example is a folder of the
+// app's own in IndexedDB (lib/memfolder.ts), never one on the computer (the user, 2026-11-19).
 
 import { addNote } from './comments';
 import { writeEditing } from './editing';
 import { addVersion } from './history';
 import { savePerson, type Credit } from './people';
 import { writePlan } from './planning';
+import { memFolder } from './memfolder';
 import { keep, recall } from './remember';
 
 const SCRIPT = 'Episode 03 - How Photosynthesis Works';
@@ -42,9 +45,12 @@ export function foldExample(folded: boolean): void {
   keep(FOLDED, folded ? 'yes' : '');
 }
 
+let sealedHome: Promise<FileSystemDirectoryHandle> | null = null;
+const home = () => (__SEALED__ ? (sealedHome ??= memFolder('script-studio-example')) : navigator.storage.getDirectory());
+
 // The example folder, made the first time; later visits get it back as they left it.
 export async function openExample(): Promise<FileSystemDirectoryHandle> {
-  const root = await navigator.storage.getDirectory();
+  const root = await home();
   try {
     return await root.getDirectoryHandle(NAME);
   } catch {
@@ -54,7 +60,7 @@ export async function openExample(): Promise<FileSystemDirectoryHandle> {
 
 // Puts the example back as new. The old copy is kept until the next start over, so `undo` can bring it back.
 export async function startOver(): Promise<{ folder: FileSystemDirectoryHandle; undo: () => Promise<FileSystemDirectoryHandle> }> {
-  const root = await navigator.storage.getDirectory();
+  const root = await home();
   await root.removeEntry(BEFORE, { recursive: true }).catch(() => {});
   await copy(await root.getDirectoryHandle(NAME), await root.getDirectoryHandle(BEFORE, { create: true }));
   await removeWhenFree(root, NAME);

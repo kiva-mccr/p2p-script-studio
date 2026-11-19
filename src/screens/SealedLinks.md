@@ -9,3 +9,4 @@ a note instead of opening it, so the sealed app never opens anything outside the
 ## Rules and pitfalls
 
 - One listener on the document, capture phase, for click and middle click: links are made in many places.
+- The app's own links (`#/…`) are left alone: they look like http links when the file is served from a site (as in tests).

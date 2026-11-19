@@ -1155,7 +1155,8 @@ the team writes leaves their computers.
   Chrome or Edge, whose policy names no address (its script and stylesheet by SHA-256 only); GitHub signs a build
   attestation for it. ? › Download sealed (website only) opens a page with what to download and five checks for IT
   (Get-FileHash, `gh attestation verify`, CSP Evaluator, DevTools Network / Process Monitor / Wireshark, VirusTotal).
-  In the file: links are copied, not opened; Feedback is Copy only; no example (no private storage for a file); the ?
+  In the file: links are copied, not opened; Feedback is Copy only; the example is kept in IndexedDB (no private storage for a file; added 2026-11-19, the
+  user's pick: inside the browser, never a folder on the computer; PDF previews there run pdf.js as a blob: worker); the ?
   says "sealed". The daily live check fails if the file doesn't match its fingerprint or its policy names a site.
 - [x] **SE-5** Speech models served from the app (D2, agreed; the sealed file's second download, the user's pick,
   board 89). Done 2026-11-19: `src/lib/models.lock.json` pins Moonshine and Whisper (revision and each file's SHA-256,

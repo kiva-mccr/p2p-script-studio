@@ -12,6 +12,9 @@ Start over and its Undo, and whether the offer on the first-time screen is folde
 
 ## Rules and pitfalls
 
+- The sealed app (SE-10) has no private storage (Chrome gives a file opened from disk none): its example is a
+  folder in IndexedDB (`lib/memfolder.md`), never one on the computer (the user's pick, 2026-11-19).
+
 - The example's files are bundled at build time: a change in `docs/example/` alone is a docs-only push, which
   doesn't redeploy (it waits for the next code change). Many tests read its `script.md`: change its words with care.
 - It is made only once; later visits get it back as they left it. Start over keeps the old copy (in "Example before

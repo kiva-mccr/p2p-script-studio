@@ -105,10 +105,7 @@
             computer, then click Choose folder and pick it.</li>
         </ul>
       </details>
-      {#if __SEALED__}
-        <!-- No example in the sealed app (SE-10): it lives in the browser's private storage, which Chrome doesn't give a
-             file opened from the computer. -->
-      {:else if folded}
+      {#if folded}
         <button class="unfold" onclick={() => fold(false)}>▸ Try it with an example</button>
       {:else}
         <section class="example" aria-label="Try it with an example">
