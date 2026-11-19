@@ -490,6 +490,10 @@ and suggestions, keeps every version, and exports them for production.
   dragged to the tracks' left or right edge, they scroll that way; let go, it plays from there. ← and → on the dot
   jump 5 s. While playing, the tracks scroll a page at a time to keep the playhead in view, unless you scrolled them
   yourself (wheel, touch, scroll bar) in the last 5 s.
+- [x] **SB-14** The take being recorded in red (issue #251, board 84 agreed by the user): while a row is recorded,
+  its take on the timeline is red and grows with the recording, pushing the rows after it right (the user's pick);
+  it turns into the waveform when it stops. Done 2026-11-19. (The issue's other half, Feedback's Cover blurring the
+  timeline's words, went with #257's rule.)
 - [x] **SB-13** "No picture" as an icon (issue #264, board 80 agreed by the user, 2026-11-18, with the note that it is
   centred): a block with no picture and no On screen words shows a small picture with a line through it, centred,
   instead of the words; its hover text says "No picture".

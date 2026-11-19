@@ -240,7 +240,7 @@ Status: a first working version. What it does today:
 - **Storyboard timeline:** a drawer at the bottom of the screen in Write and Review, the script laid out in time:
   sections, then each row with its pictures (every image or video in its Files, one after another, or side by side as
   a collage; a video shows a still from its start; a row with none shows its On screen words, or else a small crossed-out
-  picture), then the voice-over as a waveform (a row with no take gets its read time). Click its bar, or Fold at its far right, to fold or
+  picture), then the voice-over as a waveform (a row with no take gets its read time; the row being recorded shows red and grows as you speak, pushing the rows after it right). Click its bar, or Fold at its far right, to fold or
   unfold it, playing or not; folded, it is one slim bar with a thin strip of the blocks; open, the strip stays above the tracks, with a box
   around the part in view and the picked row lit. It starts folded, and this
   browser remembers it for every script. Folded, scrolling down again once you're at the end of the script slides it
