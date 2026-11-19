@@ -15,6 +15,7 @@ import { parseScript, rows } from './script';
 import { readSummary, sharedPrint, writeSummary } from './summary';
 import { readTakes, takeLength } from './voice.svelte';
 import { known, subdir, subpath } from './dirs';
+import type { Voice } from './micring';
 
 export type Counts = {
   missing: number; // files in the Files column not in the folder (EX-6)
@@ -23,6 +24,7 @@ export type Counts = {
   takeSeconds: number; // the takes' length (AP-12)
   words: number; // dialogue words in rows with no take, timed at the speaking speed when shown
   dirs: string[]; // the folders the Files column points into, part of the fingerprint
+  voice?: Voice; // which rows have a take, for the ring round the mic (#241); missing in counts kept before it
 };
 export type Entry = ScriptInfo & { counts?: Counts };
 // `shared`: a summary with these counts is in the script's folder (PF-12), so none needs writing.
@@ -48,10 +50,13 @@ export async function readCounts(dir: FileSystemDirectoryHandle, me: string, sta
   const takes = await readTakes(dir);
   let takeSeconds = 0;
   let words = 0;
+  const voice: Voice = [];
   for (const row of rows(script)) {
     const take = takes[row.id];
+    const said = countWords(row.dialogue);
     if (take) takeSeconds += Math.max(0, takeLength(take));
-    else words += countWords(row.dialogue);
+    else words += said;
+    voice.push(take ? Math.max(1, said) : -said);
   }
   const notes = await listNotes(dir);
   // History only matters for a review or a send back, so an approved script's isn't read, and the rest only back
@@ -66,6 +71,7 @@ export async function readCounts(dir: FileSystemDirectoryHandle, me: string, sta
     forAll: all,
     takeSeconds,
     words,
+    voice,
     dirs: [...new Set(paths.map((p) => parts(p).slice(0, -1).join('/')))].sort(),
   };
 }
@@ -201,7 +207,7 @@ export class ScriptList {
     });
     this.ready = true;
     // Then each script's counts (only those with news, or never counted), those on screen first.
-    const due = (fresh ? folders.filter((f) => fresh.has(f.name) || !this.#kept[f.name]?.entry.counts) : folders)
+    const due = (fresh ? folders.filter((f) => fresh.has(f.name) || !this.#kept[f.name]?.entry.counts?.voice) : folders)
       .filter((f) => !done.has(f.name));
     await this.#each(due, (dir) => this.#check(dir, tried), true);
     this.#keep();
@@ -212,7 +218,7 @@ export class ScriptList {
   async #fromSummary(dir: FileSystemDirectoryHandle, base: string | null): Promise<boolean> {
     if (base === null) return false;
     const summary = await readSummary(dir);
-    if (!summary) return false;
+    if (!summary?.counts.voice) return false; // left by an app before the mic's ring (#241): read the slow way
     const dirs = await dirsPrint(dir, summary.counts.dirs);
     if (summary.print !== (await sharedPrint(base, dirs))) return false;
     const counts = { ...summary.counts, mine: pick(summary.forAll, this.#me) };
@@ -243,7 +249,7 @@ export class ScriptList {
       const base = tried.has(dir.name) ? tried.get(dir.name)! : await basePrint(dir);
       if (base === null) return this.#drop(dir.name);
       const known = kept?.entry.counts;
-      if (kept && known && kept.print === hash([this.#me, base, await dirsPrint(dir, known.dirs)].join('\n'))) {
+      if (kept && known?.voice && kept.print === hash([this.#me, base, await dirsPrint(dir, known.dirs)].join('\n'))) {
         if (this.entries[dir.name] !== kept.entry) this.#put(dir.name, kept.entry);
         // Counted before summaries were shared (PF-12): read once more below if nobody has left one yet.
         if (kept.shared) return;
@@ -258,7 +264,7 @@ export class ScriptList {
       const { path: _path, ...rest } = head;
       const shared = await writeSummary(dir, {
         print: await sharedPrint(base, dirs), head: rest, forAll, who: this.#me,
-        counts: { missing: counts.missing, flagged: counts.flagged, takeSeconds: counts.takeSeconds, words: counts.words, dirs: counts.dirs },
+        counts: { missing: counts.missing, flagged: counts.flagged, takeSeconds: counts.takeSeconds, words: counts.words, voice: counts.voice, dirs: counts.dirs },
       });
       this.#kept[dir.name] = { print: hash([this.#me, base, dirs].join('\n')), entry, shared };
       this.#put(dir.name, entry);

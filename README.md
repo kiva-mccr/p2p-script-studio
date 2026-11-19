@@ -153,8 +153,9 @@ Status: a first working version. What it does today:
   beside the save status ("Saved · 2:05"; with takes, "Saved · 0:14/2:05": recorded so far / the whole script, where
   rows with a take count their take). The speaking speed is set in
   ⋯ > Settings (150 words a minute to start, kept in this browser); once you have takes it offers their average speed.
-  The script list shows each script's length: the read time, or the recorded voice-over's length (with a mic) once
-  every row has a take.
+  The script list shows each script's length: the read time, or the recorded voice-over's length once every row has a
+  take. Beside it, once a script has a take, a mic with a ring round it fills as rows are recorded: a pale red gap for
+  each row still to record, which rows on hover, and a whole green ring when every row is done.
 - **Word count:** at the right of + Add row and + Add section in Write, the dialogue's words, live as you type.
   Equations ($…$) and the On screen and Files columns aren't counted.
 - **Teleprompter:** reads the dialogue full screen, scrolling at the speaking speed (words a minute, the same as read time). Space starts

@@ -55,7 +55,7 @@ test('the speaking speed is set in Settings, shared with the teleprompter, and k
   await expect(page.locator('.section .time')).toHaveText(['0:07', '0:11', '0:03']);
 });
 
-test('the script list shows each script’s length: read time, or recorded once every row has a take (AP-12)', async ({ page }) => {
+test('the script list shows each script’s length: read time, or recorded once every row has a take (AP-12), with the mic’s ring (#241)', async ({ page }) => {
   const files: Record<string, string> = { 'Episode 03/script.md': example, 'Episode 02/script.md': example.replace('How Photosynthesis Works', 'The Water Cycle'), 'Trailer/script.md': '' };
   ids.forEach((id) => (files[`Episode 02/voice/row-${id}.json`] = take(10, 'x')));
   files['Episode 03/voice/row-k3f9a.json'] = take(10, 'x');
@@ -65,7 +65,12 @@ test('the script list shows each script’s length: read time, or recorded once 
   await expect(length('The Water Cycle').getByRole('img', { name: 'recorded' })).toBeVisible();
   await expect(length('The Water Cycle')).toHaveAttribute('title', 'Recorded voice-over, every row');
   await expect(length('How Photosynthesis')).toHaveText('0:31'); // 10 s, then 52 words at 150
-  await expect(length('How Photosynthesis').getByRole('img')).toHaveCount(0);
+  // One row of five recorded: the ring fills its slice and leaves the rest a gap.
+  const ring = length('How Photosynthesis').getByRole('img');
+  await expect(ring).toHaveAccessibleName('1 of 5 rows recorded · missing: row 2, 3, 4, 5');
+  await expect(ring.locator('path.done')).toHaveCount(1);
+  await expect(length('The Water Cycle').locator('circle.done')).toHaveCount(1); // whole
+  await expect(length('Trailer').getByRole('img')).toHaveCount(0); // no takes, no ring
   await expect(length('How Photosynthesis')).toHaveAttribute('title', 'Read time at 150 words a minute');
   await expect(length('Trailer')).toHaveText('');
 });

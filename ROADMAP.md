@@ -783,6 +783,11 @@ and suggestions, keeps every version, and exports them for production.
   chip below; hovering or focusing the preview fades its name and × in over the preview's bottom (over the top of a
   video being played, where its controls are), so the row's height never changes. A sound's slim player and files
   with no preview keep their chip. Built 2026-11-19.
+- [x] **AP-59** A ring round the mic on the script list (issue #241, board 90 agreed by the user): once a script has
+  a take, its length shows the mic with a ring that fills clockwise from 12 o'clock, one slice per row in script order
+  sized by its words; recorded rows green, a row still to record a pale red gap of at least 8% of the ring, so one
+  short row still shows. Hover says "6 of 8 rows recorded · missing: row 3, 7". All recorded: a whole green ring.
+  Outdated takes count as recorded. Counts remembered from before are read once more (`lib/micring.ts`). Built 2026-11-19.
 - [x] **AP-56** The ? menu everywhere (issues #219, #239, #232, board 87 agreed by the user): ? is in the top bar of
   every screen, Export included, and beside Exit in the Teleprompter (dark, opening upwards); in a script, Export
   and the Teleprompter it's a touch dimmer until hovered. "See the example" opens the made-up example at its list
