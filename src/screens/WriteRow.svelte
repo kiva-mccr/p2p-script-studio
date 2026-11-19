@@ -139,7 +139,7 @@
     </button>
     {#if !recording}
       <!-- #228 (board 85): a sound file as the take, under the mic, seen on hover like the row tools. -->
-      <button class="sound" disabled={!block.id} aria-label="Use a sound file for row {n}" title="Use a sound file"
+      <button class="use-file" disabled={!block.id} aria-label="Use a sound file for row {n}" title="Use a sound file"
         onclick={() => picker?.click()}>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
           stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" /><path d="M14 3v6h6" /><path d="M10 17v-5l4-1v5" /></svg>
@@ -273,10 +273,10 @@
   /* Pulled into the gap, so it reads as part of the line it records. */
   .mic-cell { position: relative; justify-self: end; transform: translateX(16px); margin-top: -3px; }
   /* #228: under the mic, placed over the gap so the row is no taller; seen on hover and focus like the row tools. */
-  .sound { position: absolute; top: 30px; left: 2px; display: inline-flex; align-items: center; justify-content: center; width: 24px;
+  .use-file { position: absolute; top: 30px; left: 2px; display: inline-flex; align-items: center; justify-content: center; width: 24px;
     height: 24px; padding: 0; border: 1px solid var(--line); border-radius: 6px; background: #fff; color: var(--muted); opacity: 0; }
-  .row:hover .sound, .row:focus-within .sound { opacity: 1; }
-  .sound:hover { border-color: #c4c4c4; color: var(--ink); }
+  .row:hover .use-file, .row:focus-within .use-file { opacity: 1; }
+  .use-file:hover { border-color: #c4c4c4; color: var(--ink); }
   .mic { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; padding: 0;
     border: 0; border-radius: 50%; background: none; color: #c4c4c4; font-size: 11px; }
   .mic:hover { background: #f0f0f0; color: var(--muted); }
