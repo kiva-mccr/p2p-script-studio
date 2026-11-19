@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { captionAt, frameSize, itemAt, megabytes, wrap } from '../../src/lib/video';
+import { VIDEO, captionAt, frameSize, itemAt, megabytes, videoBits, videoFps, videoFrame, wrap } from '../../src/lib/video';
 import { shapeOf, withShape } from '../../src/lib/timeline';
 import type { Plan } from '../../src/lib/editxml';
 
@@ -12,9 +12,23 @@ describe('the video (SB-3)', () => {
   });
 
   it('guesses its size from its length', () => {
-    expect(megabytes(60, '1080')).toBe(20); // (2.5 + 0.128) Mbit/s for a minute
-    expect(megabytes(60, '720')).toBe(10);
-    expect(megabytes(0, '720')).toBe(1);
+    const bits = (size: '720' | '1080') => videoBits({ ...VIDEO, size }, frameSize(size, 'wide'));
+    expect(megabytes(60, bits('1080'))).toBe(20); // (2.5 + 0.128) Mbit/s for a minute
+    expect(megabytes(60, bits('720'))).toBe(10);
+    expect(megabytes(0, bits('720'))).toBe(1);
+  });
+
+  it('takes a size and rate of your own (#217), made even, over the timeline\'s shape', () => {
+    const own = { ...VIDEO, size: 'custom' as const, ownWidth: '1081', ownHeight: '1350', fps: 'custom' as const, ownFps: '23.976' };
+    expect(videoFrame(own, 'wide')).toEqual({ width: 1080, height: 1350 });
+    expect(videoFrame(own, 'upright')).toEqual({ width: 1080, height: 1350 });
+    expect(videoFrame({ ...own, ownHeight: '9' }, 'wide')).toBeNull();
+    expect(videoFrame(VIDEO, 'upright')).toEqual({ width: 1080, height: 1920 });
+    expect(videoFps(own)).toBeCloseTo(24000 / 1001, 9);
+    expect(videoFps({ ...own, ownFps: '12.5' })).toBe(12.5);
+    expect(videoFps({ ...own, ownFps: '0' })).toBeNull();
+    expect(videoFps(VIDEO)).toBe(30);
+    expect(videoBits(own, { width: 1080, height: 1350 })).toBe(1_758_000); // 1080p's rate, by pixels
   });
 
   it('finds the clip on screen at a moment, and none in a gap or after the end', () => {

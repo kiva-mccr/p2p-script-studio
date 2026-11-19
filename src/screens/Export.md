@@ -32,6 +32,8 @@ Print… or Save on the right. Back to the script, the title in the breadcrumb, 
 - Messages (no takes, takes that can't be read) are shown in the preview, not as the Editor's toasts.
 - The Credits switch (AP-31) is one setting for Print, Fountain and Final Draft (`printing.credits`, kept as
   `export-credits`), shown only when the script has credits.
+- Frame size and Frames per second for Resolve / Premiere and Video are `FrameChoices.svelte` (#217), bound to
+  `edit` and `video`; Save stays greyed while a Custom box isn't a size or rate (`editReady`, `videoReady`).
 - Resolve / Premiere (EX-19): the takes are read once (`readTakes`) for their lengths, the plan is redrawn as the
   settings change, and the media are only made on Save .zip (`editZip`). Its preview is `EditPreview.svelte`.
   Settings are kept as `export-edit`. Files that couldn't be read are named under the preview after saving.

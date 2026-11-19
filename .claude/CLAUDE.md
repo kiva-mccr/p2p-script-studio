@@ -93,7 +93,7 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
   Then issue #254 (EX-22, zoom in the Resolve / Premiere preview, board 79, done 2026-11-18).
   Then board 80's issues (the user, 2026-11-18), one PR each: #245, #238, #225, #207 (SB-9 to SB-12, done), #264
   (SB-13, "No picture" as an icon, done); board 81: #249 (RV-24, done), #250 (RV-25, done), #256 (AP-50, done), #253 (AP-51, word count, done), #262 (AP-52, drop files onto a row, done); board 82: #220 (EX-23, pictures on the video export's clips, done), #212 (EX-24, script lines in Assets, done), #233 (RV-26, tick boxes in Review's plan, done); board 83: #202 (AP-53, Feedback in the tour, done), then the rest of 83. Board 84: #242 (RV-27, a reason on a suggestion, done). Board 88: #224 (AP-55, Copy and Open on
-  contacts, done). Board 90: #304 (AP-54, paste a picture into a row, done). Board 87: #219, #239, #232 (AP-56, the ? menu everywhere, done). #230 (AP-57, how long in the status, done). Board 85: #209 (AP-58, file names over previews, done). Board 86: #255 (EX-25, numbered files folded, done).
+  contacts, done). Board 90: #304 (AP-54, paste a picture into a row, done). Board 87: #219, #239, #232 (AP-56, the ? menu everywhere, done). #230 (AP-57, how long in the status, done). Board 85: #209 (AP-58, file names over previews, done). Board 86: #255 (EX-25, numbered files folded, done), #217 (EX-26, your own frame rate and size, done).
   The rest (AP-8 …) waits
   for the user's next ranking; "Last" in ROADMAP.md (EX-5, CC-1) waits until everything else is done.
 - Mock-ups (one board per design, numbered): https://claude.ai/artifact/2XDZmS7J5NEPZsz91RQMiL (private to the user).
@@ -195,6 +195,7 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
 - Resolve / Premiere export (EX-19): the FCP7 XML was never opened in real Resolve or Premiere (neither runs here);
   only its tags, frames and the zip's files were checked. Relative media paths may need one relink; the mp4 in the
   test isn't measured (test Chromium has no H.264), so a real camera video's scale and length in the XML are unseen.
+  Your own rate and size (EX-26): an NTSC 23.976 timeline and a 1080 × 1350 sequence were only checked in the XML.
 - The news folder (PF-15) on the real network drive: notes, their clean-up and the 2-minute full look were only seen
   in test Chromium with a made-up 10 ms delay; SMB listing a folder of a few hundred notes every 5 s is unmeasured.
 - Check fast only with others (PF-16) with two real computers: others are only simulated by writing editing files.

@@ -138,3 +138,35 @@ test('Save .zip gives the XML, the media (takes as WAV, .svg as PNG, cards, the 
   expect(zip['media/leaf-closeup.jpg'].equals(readFileSync(`${dir}/assets/leaf-closeup.jpg`))).toBe(true);
   expect(zip['How Photosynthesis Works.srt'].toString('utf8')).toMatch(/^1\n00:00:00,000 --> 00:00:03,\d{3}\nEvery leaf you have ever seen is running a tiny factory\.\n/);
 });
+
+test('a frame rate and size of your own: a box beside Custom, checked in the page, written in the XML, remembered (#217)', async ({ page }) => {
+  await openExport(page);
+  const preview = page.getByRole('region', { name: 'Preview' });
+  await expect(page.getByLabel('Width')).toHaveCount(0); // only once Custom is picked
+  await page.getByRole('group', { name: 'Frame size' }).getByLabel('Custom').check();
+  await page.getByLabel('Width').fill('1080');
+  await page.getByLabel('Height').fill('1350');
+  await expect(page.getByText('4:5', { exact: true })).toBeVisible();
+  await page.getByRole('group', { name: 'Frames per second' }).getByLabel('Custom').check();
+  await page.getByLabel('Your own frame rate').fill('23.976');
+  await expect(preview.getByText('How Photosynthesis Works.zip · 1080 × 1350 · 23.976 fps')).toBeVisible();
+
+  // Out of range: said in the page, and Save waits.
+  await page.getByLabel('Your own frame rate').fill('200');
+  await expect(page.getByLabel('Your own frame rate')).toHaveAttribute('aria-invalid', 'true');
+  await expect(page.getByRole('button', { name: 'Save .zip' })).toBeDisabled();
+  await page.getByLabel('Your own frame rate').fill('12.5');
+  await expect(page.getByText('Resolve and Premiere count whole frames: written as 13 fps.')).toBeVisible();
+  await page.getByLabel('Your own frame rate').fill('23.976');
+  await expect(page.getByRole('button', { name: 'Save .zip' })).toBeEnabled();
+
+  const [download] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: 'Save .zip' }).click()]);
+  const xml = unzip(readFileSync(await download.path()))['How Photosynthesis Works.xml'].toString('utf8');
+  expect(xml).toContain('<rate><timebase>24</timebase><ntsc>TRUE</ntsc></rate><width>1080</width><height>1350</height>');
+
+  await page.reload();
+  await page.getByRole('button', { name: 'Export / Share' }).click();
+  await page.getByRole('button', { name: 'Resolve / Premiere (.zip)' }).click();
+  await expect(page.getByLabel('Width')).toHaveValue('1080');
+  await expect(page.getByLabel('Your own frame rate')).toHaveValue('23.976');
+});

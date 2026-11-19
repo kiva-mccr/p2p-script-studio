@@ -3,7 +3,7 @@
   // timeline once opened (sections, a pin per marker, V1 and any stacked tracks, A1 with the takes, C1 with captions),
   // what the .zip holds, and how to open it. Drawn from the same plan as the file.
   import { clock } from '../lib/readtime.svelte';
-  import type { EditHow, Plan, Source } from '../lib/editxml';
+  import { editFps, editFrame, type EditHow, type Plan, type Source } from '../lib/editxml';
   import { FOLD_FROM, numberRuns } from '../lib/numberruns';
 
   let { plan, how, name }: { plan: Plan; how: EditHow; name: string } = $props();
@@ -36,9 +36,12 @@
   // a click unfolds them. Kept open by the run's first name.
   const runs = $derived(numberRuns(files, ([f]) => f, ([, a], [, b]) => from(a) === from(b)));
   let unfolded = $state<Record<string, boolean>>({});
+  // The size and rate as chosen; left out of the line while a Custom box (#217) isn't one.
+  const frame = $derived(editFrame(how));
+  const fps = $derived(editFps(how));
 </script>
 
-<p class="caption">{name}.zip · {how.size.replace('x', ' × ')} · {how.fps} fps · {clock(plan.total)}</p>
+<p class="caption">{[`${name}.zip`, frame && `${frame.width} × ${frame.height}`, fps && `${fps} fps`, clock(plan.total)].filter(Boolean).join(' · ')}</p>
 {#if !plan.total}
   <p class="message" role="alert">The timeline is empty: write some dialogue or record a take first.</p>
 {:else}

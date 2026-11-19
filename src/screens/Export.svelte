@@ -25,11 +25,12 @@
   import { lineUp, readClips, wavFile, type Clip } from '../lib/voiceexport';
   import Print from './Print.svelte';
   import EditPreview from './EditPreview.svelte';
-  import { EDIT, RATES, SIZES, plan as editPlan } from '../lib/editxml';
+  import { EDIT, RATES, SIZES, editFps, editFrame, plan as editPlan } from '../lib/editxml';
+  import FrameChoices from './FrameChoices.svelte';
   import { editZip } from '../lib/editmedia';
   import { layout, shapeOf } from '../lib/timeline';
   import VideoPreview from './VideoPreview.svelte';
-  import { VIDEO, makeVideo } from '../lib/video';
+  import { VIDEO, makeVideo, videoFps, videoFrame } from '../lib/video';
   import { readTakes, rowLength, type Take } from '../lib/voice.svelte';
 
   // version: "v3", or "" for a draft (Editor's `version()`, which saved what was waiting).
@@ -174,7 +175,7 @@
   let leftOut = $state<string[]>([]);
   const EDIT_FAILED = "The .zip couldn't be made. If the shared folder is still syncing, wait a moment and try again.";
   async function saveEdit() {
-    if (!edited || making) return;
+    if (!edited || making || !editReady) return;
     making = true;
     leftOut = [];
     try {
@@ -196,13 +197,17 @@
     return layout(script, video.skip ? (row) => (takes![row.id] ? length(row) : { seconds: 0, take: false }) : length);
   });
   const videoPlan = $derived(videoLaid ? editPlan(script, videoLaid, { ...EDIT, stacked: false, markers: false, captions: video.captions }) : null);
+  const VIDEO_SIZES = [{ id: '720', name: '720p' }, { id: '1080', name: '1080p' }];
+  // Save stays greyed while a Custom box (#217) holds something that isn't a size or a rate.
+  const editReady = $derived(!!editFrame(edit) && !!editFps(edit));
+  const videoReady = $derived(!!videoFrame(video, shape) && !!videoFps(video));
   let progress = $state<number | null>(null);
   let stop = false;
   let made = $state<{ url: string; mp4: boolean } | null>(null);
   let videoMissing = $state<string[]>([]);
   const VIDEO_FAILED = "The video couldn't be made. If the shared folder is still syncing, wait a moment and try again.";
   async function saveVideo() {
-    if (!videoPlan || progress !== null) return;
+    if (!videoPlan || progress !== null || !videoReady) return;
     progress = 0;
     stop = false;
     videoMissing = [];
@@ -398,15 +403,7 @@
           <label><input type="checkbox" checked={fdx.numbers && fdx.files} onchange={(e) => (fdx.numbers = fdx.files = e.currentTarget.checked)} /> Row numbers and files</label>
         {/if}
       {:else if format === 'edit'}
-        <label class="text">Frame size
-          <select bind:value={edit.size}>{#each SIZES as s (s.id)}<option value={s.id}>{s.name}</option>{/each}</select>
-        </label>
-        <fieldset class="plain">
-          <legend>Frames per second</legend>
-          <div class="rates">
-            {#each RATES as r (r)}<label><input type="radio" name="fps" checked={edit.fps === r} onchange={() => (edit.fps = r)} /> {r}</label>{/each}
-          </div>
-        </fieldset>
+        <FrameChoices bind:how={edit} sizes={SIZES} rates={RATES} group="edit" whole />
         <fieldset class="plain">
           <legend>Collages</legend>
           <label><input type="radio" name="collage" checked={!edit.stacked} onchange={() => (edit.stacked = false)} /> One picture, side by side</label>
@@ -415,14 +412,11 @@
         <label><input type="checkbox" bind:checked={edit.markers} /> A marker on each row, with its dialogue</label>
         <label><input type="checkbox" bind:checked={edit.captions} /> Dialogue as captions (.srt)</label>
       {:else if format === 'video'}
-        <fieldset class="plain">
-          <legend>Frame size</legend>
-          <div class="rates">
-            <label><input type="radio" name="vsize" checked={video.size === '720'} onchange={() => (video.size = '720')} /> 720p</label>
-            <label><input type="radio" name="vsize" checked={video.size === '1080'} onchange={() => (video.size = '1080')} /> 1080p</label>
-          </div>
-          <p class="kept help">{shape === 'upright' ? 'Upright' : 'Wide'}, as set on the timeline at the bottom of Write.</p>
-        </fieldset>
+        <FrameChoices bind:how={video} sizes={VIDEO_SIZES} rates={RATES} group="video">
+          {#snippet underSize()}
+            {#if video.size !== 'custom'}<p class="kept help">{shape === 'upright' ? 'Upright' : 'Wide'}, as set on the timeline at the bottom of Write.</p>{/if}
+          {/snippet}
+        </FrameChoices>
         <label><input type="checkbox" bind:checked={video.captions} /> Dialogue as captions on the picture</label>
         <fieldset class="plain">
           <legend>Rows with no take</legend>
@@ -438,7 +432,7 @@
         <label><input type="checkbox" bind:checked={printing.credits} /> {format === 'print' ? 'Credits after the rows' : 'Credits on the title page'}</label>
       {/if}
       <p class="kept">Remembered on this computer for next time.</p>
-      <button class="primary" disabled={(format === 'voice' && !file) || (format === 'edit' && (!edited?.total || making)) || (format === 'video' && (!videoPlan?.total || progress !== null))} onclick={save}>{format === 'edit' && making ? 'Making the .zip…' : format === 'video' && progress !== null ? 'Making the video…' : FORMATS.find((f) => f.id === format)?.action}</button>
+      <button class="primary" disabled={(format === 'voice' && !file) || (format === 'edit' && (!edited?.total || making || !editReady)) || (format === 'video' && (!videoPlan?.total || progress !== null || !videoReady))} onclick={save}>{format === 'edit' && making ? 'Making the .zip…' : format === 'video' && progress !== null ? 'Making the video…' : FORMATS.find((f) => f.id === format)?.action}</button>
       {#if format === 'print'}
         <p class="kept help">If words can't be selected in the PDF, choose "Microsoft Print to PDF" instead of "Adobe PDF".</p>
       {/if}
@@ -509,9 +503,7 @@
   .kept { margin: 2px 0 0; font-size: 12px; color: var(--muted); }
   fieldset { display: flex; flex-direction: column; gap: 2px; margin: 0; padding: 0 0 10px; border: 0; border-bottom: 1px solid var(--line); }
   legend { padding: 0; margin-bottom: 4px; font-size: 12px; color: var(--muted); }
-  label.text select { min-height: 40px; padding: 0 8px; border: 1px solid #d6d6d6; border-radius: 6px; background: var(--ground); font: inherit; }
   fieldset.plain { border-bottom: 0; padding-bottom: 0; }
-  .rates { display: flex; flex-wrap: wrap; gap: 4px 14px; }
   .primary { min-height: 44px; font-size: 14px; }
   .primary:disabled { opacity: 0.5; cursor: default; }
 </style>

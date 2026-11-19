@@ -3,7 +3,8 @@
 The storyboard timeline as a video (SB-3, board 70): `makeVideo` draws the Resolve / Premiere plan (lib/editxml.ts,
 V1 and the captions) frame by frame on a canvas, mixes the takes (and, if asked, videos' own sound) into one mono
 track, and encodes both in the browser with WebCodecs, packed by mediabunny. `frame` draws one moment for the preview
-with the same code. Small helpers: `frameSize`, `megabytes`, `itemAt`, `captionAt`, `wrap`.
+with the same code. Small helpers: `frameSize`, `videoFrame`, `videoFps`, `videoBits`, `megabytes`, `itemAt`,
+`captionAt`, `wrap`.
 
 - **Used by:** `screens/Export.svelte`, `screens/VideoPreview.svelte`. **Tests:** `tests/unit/video.test.ts`,
   `tests/e2e/video.spec.ts`.
@@ -14,7 +15,9 @@ with the same code. Small helpers: `frameSize`, `megabytes`, `itemAt`, `captionA
   says when it fell back. Test Chromium encodes H.264 (with Opus) but can't play it: tests read the file back with
   mediabunny in Node, never in a `<video>`.
 - mediabunny is imported only when a video is made or read (`await import`), so the app doesn't carry it (~760 kB).
-- 30 fps. Stills and cards are drawn every frame (cheap); a video clip is decoded in order with `CanvasSink`
+- 30 fps unless another rate is picked (#217; NTSC rates exactly, `videoFps`); the frame is 720p or 1080p in the
+  script's shape, or a size of your own made even (H.264 needs even sides), whose bit rate is 1080p's by pixels.
+  `makeVideo` throws if either is invalid; Export greys Save first. Stills and cards are drawn every frame (cheap); a video clip is decoded in order with `CanvasSink`
   (`canvasesAtTimestamps`), held on its last frame past its end. A video it can't decode shows its first frame (via a
   `<video>`), and a file that can't be read is a grey card with its name, listed in `missing`.
 - Sound is given to the encoder a second at a time, about a second ahead of the picture, so the file interleaves.

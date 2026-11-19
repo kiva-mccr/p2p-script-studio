@@ -894,6 +894,13 @@ and suggestions, keeps every version, and exports them for production.
   preview's "In the .zip" list, three or more files that differ only by a number (card-row-1.png … card-row-4.png)
   show the first, "↓ N files" and the last; a click unfolds them, another folds them. Only the list folds; the zip
   still holds every file. Built 2026-11-19 (lib/numberruns.ts, screens/EditPreview.svelte).
+- [x] **EX-26** Your own frame rate and size (issue #217, with #218 merged in; board 86 agreed by the user): in the
+  Resolve / Premiere and the video exports, Frame size and Frames per second each end with "Custom"; picking it shows a
+  box beside it: your own rate (1 to 120, decimals allowed; 23.976, 29.97 and 59.94 written as NTSC), or width ×
+  height (16 to 8192) with its shape shown ("4:5"). A value out of range turns the box red and greys Save. Remembered
+  like the other settings. The video keeps Wide / Upright from the timeline unless a size of your own is set (made
+  even, as H.264 needs), and now has a frame rate too (30 as before). Resolve / Premiere's frame size is radio
+  buttons like the mock-up, no longer a list. Built 2026-11-19 (lib/framing.ts, screens/FrameChoices.svelte).
 - [-] **EX-17** A shoot checklist (suggested; shelved by the user, to talk through later): the asset list (EX-6) with
   shared tick boxes for each row's on-screen shots and files, for the day of filming.
 - [-] **AP-45** Dictate dialogue into a row (suggested; shelved by the user, 2026-11-14, to consider later): speak into
