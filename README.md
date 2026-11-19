@@ -255,8 +255,9 @@ Status: a first working version. What it does today:
   sections, then each row with its pictures (every image or video in its Files, one after another, or side by side as
   a collage; a video shows a still from its start; a row with none shows its On screen words, or else a small crossed-out
   picture), then the voice-over as a waveform (a row with no take gets its read time; the row being recorded shows red and grows as you speak, pushing the rows after it right). Click its bar, or Fold at its far right, to fold or
-  unfold it, playing or not; folded, it is one slim bar with a thin strip of the blocks; open, the strip stays above the tracks, with a box
-  around the part in view and the picked row lit. It starts folded, and this
+  unfold it, playing or not; folded, it is one slim bar with a thin strip of the blocks; open, the strip is the timeline's scroll bar,
+  under the tracks: grey sections above the blue rows, a box around the part in view and the picked row lit. Click it,
+  drag its box or use ◀ ▶ at its ends to scroll the timeline, and the script follows to the row in the middle. It starts folded, and this
   browser remembers it for every script. Folded, scrolling down again once you're at the end of the script slides it
   open, and scrolling up folds it again (opened with its bar, it stays open). Open, it takes at most about half the screen, and the script's last row
   always clears it. Hover a block for its dialogue; click it to bring its row into view, light it up, and pick its

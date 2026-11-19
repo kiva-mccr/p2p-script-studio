@@ -505,6 +505,10 @@ and suggestions, keeps every version, and exports them for production.
   covered; the ruler's times and the preview's clock name nobody and stay. Done 2026-11-19.
 - [x] **SB-17** Show preview looks like Fold (issue #333, board 92 agreed by the user): blue text with a small picture
   icon, no box, in the timeline's bar. Done 2026-11-19.
+- [x] **SB-18** The strip is the timeline's scroll bar (issue #336, board 92 agreed by the user): open, the strip sits
+  under the tracks where the scroll bar was, grey section boxes above the blue line boxes, with ◀ ▶ at its ends; the
+  browser's own bar is hidden (Shift + wheel and trackpads still scroll). A click or a drag of its box scrolls the
+  tracks, and letting go (or ◀ ▶) brings the row in the middle into the script's view too. Folded, as before. Done 2026-11-19.
 - [x] **AP-64** The tour's Feedback step lights the outlined row (issue #328, board 92 agreed by the user): the row with
   the orange outline is lit instead of dimmed, and the tour's card always sits on top of the outline, below or above
   the row, clear of Feedback's strip. Done 2026-11-19.
