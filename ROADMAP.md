@@ -890,6 +890,10 @@ and suggestions, keeps every version, and exports them for production.
   the folder or linked", the start of the row's dialogue (its On screen words if it has none) sits between the file and
   its row number, one grey line cut short with "…"; for a file in several rows, its first row's. Built 2026-11-19
   (`excerpt` in lib/assets.ts, screens/Assets.svelte).
+- [x] **EX-25** Numbered files folded together (issue #255, board 86 agreed by the user): in the Resolve / Premiere
+  preview's "In the .zip" list, three or more files that differ only by a number (card-row-1.png … card-row-4.png)
+  show the first, "↓ N files" and the last; a click unfolds them, another folds them. Only the list folds; the zip
+  still holds every file. Built 2026-11-19 (lib/numberruns.ts, screens/EditPreview.svelte).
 - [-] **EX-17** A shoot checklist (suggested; shelved by the user, to talk through later): the asset list (EX-6) with
   shared tick boxes for each row's on-screen shots and files, for the day of filming.
 - [-] **AP-45** Dictate dialogue into a row (suggested; shelved by the user, 2026-11-14, to consider later): speak into
