@@ -1,5 +1,6 @@
 <script lang="ts">
   import HelpMenu from './HelpMenu.svelte';
+  import ModelsOffer from './ModelsOffer.svelte';
   import { problem } from '../lib/problems';
   import CopyDetails from './CopyDetails.svelte';
   import People from './People.svelte';
@@ -125,6 +126,7 @@
   </span>
   <HelpMenu />
 </header>
+{#if __SEALED__}<ModelsOffer />{/if}
 {#if browsing}<SharedFiles root={folder} onClose={() => (browsing = false)} />{/if}
 {#if meeting}<People root={folder} me={name} onClose={() => (meeting = false)} />{/if}
 

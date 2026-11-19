@@ -20,8 +20,8 @@ install. It can reach nothing but the folder you pick: no internet, no other add
 opened, and Feedback is copied to pass on). It never updates itself; download it again for a new version. The page
 lists five standard checks IT can run: its SHA-256 fingerprint, GitHub's signed build attestation, its security
 policy, watching its network traffic, and a malware scan. The sealed file has the example too, kept inside the browser. For Follow my voice and
-cuts timed from the take, pick "The app and the speech models" and add `speech-models.zip` once in the app's Settings,
-where it's checked file by file and kept by the browser.
+cuts timed from the take, pick "The app and the speech models" and add `speech-models.zip` once: the app offers it
+on its first open, or later in its Settings. It's checked file by file and kept by the browser.
 
 Status: a first working version. What it does today:
 

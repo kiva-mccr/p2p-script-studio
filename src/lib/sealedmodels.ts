@@ -3,7 +3,7 @@
 // SHA-256 pinned in models.lock.json. The zip stores its files as they are, so each one is a slice of it: nothing is
 // unpacked or copied, and the speech workers read their slices (lib/sealedruntime.ts, lib/models.ts).
 import lock from './models.lock.json';
-import type { ModelsLock } from './modelfiles';
+import { MODELS_ZIP, type ModelsLock } from './modelfiles';
 
 export type ModelsZipIndex = Record<string, [number, number]>; // "<model>/<path>": where its data starts, and its size
 export type KeptModels = { blob: Blob; index: ModelsZipIndex };
@@ -85,3 +85,27 @@ export async function outdatedModels(): Promise<boolean> {
 
 export const keepModels = (m: KeptModels) => store('readwrite', (s) => s.put({ ...m, lock: JSON.stringify(lock) }, KEY));
 export const forgetModels = () => store('readwrite', (s) => s.delete(KEY));
+
+/** Checks a picked zip file by file and keeps it. What's wrong with it, for the page; '' when it was kept. */
+export async function addModels(file: Blob, onFile: (done: number, of: number) => void = () => {}): Promise<string> {
+  try {
+    const index = await zipIndex(file);
+    const wrong = await checkModels(file, index, undefined, onFile);
+    if (wrong.length) throw new Error(`it isn't the zip for this version (${wrong[0]}${wrong.length > 1 ? `, and ${wrong.length - 1} more` : ''})`);
+    await keepModels({ blob: file, index });
+    return '';
+  } catch (err) {
+    return `That file can't be used: ${(err as Error).message}. Download ${MODELS_ZIP} again from the Download sealed page.`;
+  }
+}
+
+// The offer on the first open (#327, board 92): shown once on this computer, kept beside the models.
+const OFFERED = 'offered';
+
+/** Whether to offer the models: never offered on this computer, and none kept (an older version's count as offered). */
+export async function shouldOfferModels(): Promise<boolean> {
+  const offered = await store<unknown>('readonly', (s) => s.get(OFFERED)).catch(() => true);
+  return !offered && !(await store<unknown>('readonly', (s) => s.get(KEY)).catch(() => true));
+}
+
+export const markModelsOffered = () => store('readwrite', (s) => s.put(true, OFFERED)).catch(() => {});

@@ -1,7 +1,7 @@
 <script lang="ts">
   // Speech models in the sealed app (SE-5, board 89): Settings' section, in the sealed build only. The zip from the
   // Download sealed page is added once, checked file by file against the pinned SHA-256, and kept by the browser.
-  import { checkModels, forgetModels, keepModels, keptModels, outdatedModels, zipIndex } from '../lib/sealedmodels';
+  import { addModels, forgetModels, keptModels, outdatedModels } from '../lib/sealedmodels';
   import { MODELS_ZIP } from '../lib/modelfiles';
 
   let status = $state<'none' | 'outdated' | 'added' | 'checking'>('none');
@@ -22,14 +22,7 @@
     if (!file) return;
     problem = '';
     status = 'checking';
-    try {
-      const index = await zipIndex(file);
-      const wrong = await checkModels(file, index, undefined, (done, of) => (progress = `Checking file ${done} of ${of}…`));
-      if (wrong.length) throw new Error(`it isn't the zip for this version (${wrong[0]}${wrong.length > 1 ? `, and ${wrong.length - 1} more` : ''})`);
-      await keepModels({ blob: file, index });
-    } catch (err) {
-      problem = `That file can't be used: ${(err as Error).message}. Download ${MODELS_ZIP} again from the Download sealed page.`;
-    }
+    problem = await addModels(file, (done, of) => (progress = `Checking file ${done} of ${of}…`));
     progress = '';
     await look();
   }

@@ -1,5 +1,6 @@
 <script lang="ts">
   import HelpMenu from './HelpMenu.svelte';
+  import ModelsOffer from './ModelsOffer.svelte';
   import { problem } from '../lib/problems';
   import CopyDetails from './CopyDetails.svelte';
   import { untrack } from 'svelte';
@@ -70,6 +71,7 @@
 </script>
 
 <header>Scripts <HelpMenu /></header>
+{#if __SEALED__}<ModelsOffer />{/if}
 <main>
   <div class="box">
     <svg aria-hidden="true" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor"

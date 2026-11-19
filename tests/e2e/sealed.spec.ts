@@ -25,6 +25,7 @@ test('Download sealed: the ? menu opens the page, with the file, its fingerprint
 
   await page.getByRole('button', { name: '← Back' }).click();
   await expect(page.getByRole('heading', { name: 'Open your scripts folder' })).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Speech models' })).toHaveCount(0); // offered in the sealed app only (#327)
 });
 
 test('Download sealed: the app and the speech models, with the models\' fingerprint and attestation (SE-5)', async ({ page }) => {
@@ -54,6 +55,7 @@ test.describe(() => {
     expect(unsealed(policyOf(readFileSync(built, 'utf8')))).toEqual([]);
     expect(await page.evaluate(() => isSecureContext && 'showDirectoryPicker' in window)).toBe(true); // the folder can be picked
     await expect(page.getByRole('button', { name: 'Open the example' })).toBeVisible(); // kept in IndexedDB (no private storage for a file)
+    await expect(page.getByRole('region', { name: 'Speech models' })).toBeVisible(); // offered on the first open (#327)
 
     // The ? menu: no GitHub, no download, the version marked sealed.
     await page.getByRole('button', { name: 'Help and version' }).click();
@@ -103,4 +105,39 @@ test('the sealed app keeps its example inside the browser, and its Settings take
   await expect(page.getByLabel('Dialogue, row 1')).not.toHaveValue('Plants make food from light.');
   await page.getByRole('button', { name: 'Undo' }).click();
   await expect(page.getByLabel('Dialogue, row 1')).toHaveValue('Plants make food from light.');
+});
+
+// The speech models offered on the sealed app's first open (#327, board 92): once, in the page, with a note on Settings.
+test('the sealed app offers the speech models once, on its first open (#327)', async ({ page }) => {
+  await page.goto(`./${SEALED_FILE}`);
+  const card = page.getByRole('region', { name: 'Speech models' });
+  await expect(card.getByText('Add the speech models?')).toBeVisible();
+  await expect(card).toContainText(`speech-models.zip, about`);
+  await expect(card.getByText("This card won't show again. You can import them later in Settings › Speech models.")).toBeVisible();
+  await card.locator('input[type="file"]').setInputFiles({ name: 'speech-models.zip', mimeType: 'application/zip', buffer: Buffer.from('not a zip') });
+  await expect(card.getByRole('alert')).toContainText("That file can't be used: it isn't a zip.");
+  await card.getByRole('button', { name: 'Not now' }).click();
+  await expect(card).toHaveCount(0);
+
+  await page.reload(); // never again on this computer
+  await expect(page.getByRole('heading', { name: 'Open your scripts folder' })).toBeVisible();
+  await page.waitForTimeout(500);
+  await expect(card).toHaveCount(0);
+});
+
+test('the sealed app doesn\'t offer the speech models when they are already added (#327)', async ({ page }) => {
+  await page.goto('./'); // the same site, so the same browser storage as the sealed file served beside it
+  await page.evaluate(() => new Promise<void>((done) => {
+    const open = indexedDB.open('script-studio-models', 1);
+    open.onupgradeneeded = () => open.result.createObjectStore('models');
+    open.onsuccess = () => {
+      const t = open.result.transaction('models', 'readwrite');
+      t.objectStore('models').put({ blob: new Blob(['zip']), index: {}, lock: '' }, 'zip');
+      t.oncomplete = () => (open.result.close(), done());
+    };
+  }));
+  await page.goto(`./${SEALED_FILE}`);
+  await expect(page.getByRole('heading', { name: 'Open your scripts folder' })).toBeVisible();
+  await page.waitForTimeout(500);
+  await expect(page.getByRole('region', { name: 'Speech models' })).toHaveCount(0);
 });
