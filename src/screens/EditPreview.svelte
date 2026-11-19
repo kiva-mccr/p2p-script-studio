@@ -4,6 +4,7 @@
   // what the .zip holds, and how to open it. Drawn from the same plan as the file.
   import { clock } from '../lib/readtime.svelte';
   import type { EditHow, Plan, Source } from '../lib/editxml';
+  import { FOLD_FROM, numberRuns } from '../lib/numberruns';
 
   let { plan, how, name }: { plan: Plan; how: EditHow; name: string } = $props();
 
@@ -27,10 +28,14 @@
     const s = plan.media.get(n);
     return s?.kind === 'card' ? `Card: ${s.text}` : n;
   };
-  // Where each file in the media folder comes from, when it isn't a plain copy.
-  const from = (s: Source) =>
-    s.kind === 'png' ? '(from .svg)' : s.kind === 'collage' ? '(made side by side)' : s.kind === 'take' ? '(from the .webm take)' : s.kind === 'last' ? '(its last frame, for a hold)' : '';
+  // Where each file in the media folder comes from, when it isn't a plain copy (`many`: said of a folded run).
+  const from = (s: Source, many = false) =>
+    s.kind === 'png' ? '(from .svg)' : s.kind === 'collage' ? '(made side by side)' : s.kind === 'take' ? `(from the .webm ${many ? 'takes' : 'take'})` : s.kind === 'last' ? (many ? '(their last frames, for holds)' : '(its last frame, for a hold)') : '';
   const files = $derived([...plan.media].sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true })));
+  // Numbered files folded together (#255, board 86): three or more that differ only by a number show first ↓ last;
+  // a click unfolds them. Kept open by the run's first name.
+  const runs = $derived(numberRuns(files, ([f]) => f, ([, a], [, b]) => from(a) === from(b)));
+  let unfolded = $state<Record<string, boolean>>({});
 </script>
 
 <p class="caption">{name}.zip · {how.size.replace('x', ' × ')} · {how.fps} fps · {clock(plan.total)}</p>
@@ -102,7 +107,25 @@
         <li>{name}.xml</li>
         {#if plan.captions.length}<li>{name}.srt</li>{/if}
         <li>media/</li>
-        {#each files as [file, source] (file)}<li class="in">{file} <span>{from(source)}</span></li>{/each}
+        {#each runs as run (run[0][0])}
+          {@const first = run[0][0]}
+          {#if run.length < FOLD_FROM}
+            {#each run as [file, source] (file)}<li class="in">{file} <span>{from(source)}</span></li>{/each}
+          {:else}
+            {@const open = !!unfolded[first]}
+            <li class="in">
+              <button class="run" aria-expanded={open} title={open ? 'Fold these files' : 'Show every file'} onclick={() => (unfolded[first] = !open)}>
+                {#if open}
+                  {#each run as [file, source] (file)}<span class="line">{file} <span>{from(source)}</span></span>{/each}
+                {:else}
+                  <span class="line">{first}</span>
+                  <span class="line more">↓ <b>{run.length} files</b></span>
+                  <span class="line">{run.at(-1)![0]} <span>{from(run[0][1], true)}</span></span>
+                {/if}
+              </button>
+            </li>
+          {/if}
+        {/each}
       </ul>
     </div>
     <div class="box">
@@ -157,6 +180,10 @@
   .list { margin: 0; padding: 0; list-style: none; font: 12.5px/1.8 ui-monospace, Menlo, monospace; color: #3d3d3d; }
   .list .in { padding-left: 2ch; }
   .list span { color: var(--muted); }
+  .run { display: block; padding: 0; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer; }
+  .run .line { display: block; color: inherit; }
+  .run .more { padding-left: 2ch; }
+  .run b { font-weight: inherit; color: #2a5bd7; }
   .box p { margin: 0 0 8px; }
   .warn { color: #8a5300; }
 </style>

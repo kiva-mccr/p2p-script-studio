@@ -18,4 +18,7 @@ files, how to open it, and the links that aren't in the zip.
 - Lanes clip what overflows (`overflow: hidden`), so pins and labels never leave the box. Marks are 2 px pins (hover:
   the marker's name and time); the Sections row comes from `plan.sections`, only when markers are on.
 - Takes alternate two solid greens (`.odd`), never stripes: the user found the banding hid where one take ends.
+- "In the .zip" folds three or more numbered files to first ↓ last (#255, `lib/numberruns.ts`), each run a button
+  with `aria-expanded`, kept open by its first name. A run only joins files with the same "(from …)" note; folded,
+  the note is said in the plural (`from(s, true)`).
 - The "Opening it" lines are help (`class="help"`); the warnings about links are not.

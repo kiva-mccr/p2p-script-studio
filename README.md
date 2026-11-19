@@ -138,7 +138,8 @@ Status: a first working version. What it does today:
   a marker on each row carries its number, section and dialogue (and any link that isn't in the zip). Settings: frame
   size, frames per second, collages as one picture or a track per picture, markers, and the dialogue as captions
   (`.srt`). The preview draws the tracks roughly as the apps show them (a band per section, a thin pin per row's
-  marker) and lists the zip's files; − and + zoom it from 1× to 16×, scrolling sideways in its box, and a clip's
+  marker) and lists the zip's files, three or more numbered ones (take-1.wav … take-5.wav) folded to first ↓ last
+  until clicked; − and + zoom it from 1× to 16×, scrolling sideways in its box, and a clip's
   name shows where it fits (hover gives it and its length).
 - **Video:** saves the storyboard timeline as a video, made in the browser, faster than playing it: each row's
   pictures (videos play, collages side by side, or stacked when upright), holds and placeholders, with the takes as

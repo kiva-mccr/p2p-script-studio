@@ -44,7 +44,16 @@ test('the preview shows the tracks, what the zip holds and how to open it; the s
   await expect(preview.locator('.clip.take')).toHaveCount(5);
   await expect(preview.getByTitle(/^row-2-collage\.png/)).toBeVisible();
   await expect(preview.locator('.list')).toContainText('row-2-collage.png (made side by side)');
-  await expect(preview.locator('.list')).toContainText('take-1.wav (from the .webm take)');
+  // The five takes fold to first ↓ last (#255); a click shows them all, another folds them again. Two cards don't fold.
+  const takes = preview.getByRole('button', { name: /^take-1\.wav/ });
+  await expect(takes).toHaveAttribute('aria-expanded', 'false');
+  await expect(takes.locator('.line')).toHaveText(['take-1.wav', '↓ 5 files', 'take-5.wav (from the .webm takes)']);
+  await takes.click();
+  await expect(takes).toHaveAttribute('aria-expanded', 'true');
+  await expect(takes.locator('.line')).toHaveText([1, 2, 3, 4, 5].map((n) => `take-${n}.wav (from the .webm take)`));
+  await takes.click();
+  await expect(takes.locator('.line')).toHaveCount(3);
+  await expect(preview.locator('.list > li')).toContainText(['card-row-3.png', 'card-row-5.png']);
   await expect(preview.getByText("Row 3's link (Chloroplast zoom animation) isn't in the zip")).toBeVisible();
   await expect(preview.getByText('Resolve: unzip, then File › Import › Timeline…')).toHaveClass(/help/);
 
