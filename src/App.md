@@ -30,3 +30,6 @@ Also the Download sealed page for `#download-sealed` (SE-10, website only), and 
 - Start over and its Undo close the example's screens first (`swapping`) and wait for their last saves (`closed()`,
   `lib/leaving.ts`) before swapping the folder: the Editor closed by the swap used to write its text into the copy
   Undo had just put back, so the edit was lost (a flaky example.spec test under load).
+- Nothing shows while the remembered folder is looked for, so the look gives up after 5 s (`check-for` in tests) and
+  the first-time screen says the folder couldn't be reached. Chrome on Fedora with the folder on a drive that wasn't
+  connected never answered, and the page stayed blank until the site's data was cleared (2026-11-19).

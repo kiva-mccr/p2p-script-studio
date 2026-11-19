@@ -34,6 +34,7 @@
   let folder = $state<FileSystemDirectoryHandle | null>(null);
   let name = $state(loadName());
   let needsOk = $state(false); // a remembered folder the browser wants permission for again
+  let unreachable = $state(''); // the remembered folder's check never answered (a drive not mounted): its name
   // The example to try (AP-33): open in place of the folder, never remembered as it. `fresh` restarts its screens.
   let tourAgain = $state(0); // the example's guided tour (AP-34): goes up when Take the tour is clicked
   let example = $state<{ folder: FileSystemDirectoryHandle; name: string; fresh: number } | null>(null);
@@ -71,14 +72,37 @@
   onMount(async () => {
     const inExample = session('');
     if (inExample) return tryExample(inExample).catch(() => leaveExample()); // a reload stays in the example
-    const remembered = name ? await loadFolder() : null;
+    // Nothing shows while this looks, so it gives up after CHECK_FOR: on a drive that isn't mounted (seen on Fedora)
+    // the browser never answered and the page stayed blank. The first-time screen then says so.
+    let remembered: FileSystemDirectoryHandle | null = null;
+    const found = await Promise.race([
+      (async () => {
+        remembered = name ? await loadFolder() : null;
+        return remembered !== null && (await hasAccess(remembered).catch(() => false));
+      })(),
+      new Promise<'late'>((resolve) => setTimeout(() => resolve('late'), checkFor())),
+    ]);
+    if (found === 'late') {
+      unreachable = (remembered as FileSystemDirectoryHandle | null)?.name ?? 'your scripts folder';
+      screen = 'setup';
+      return;
+    }
     folder = remembered;
-    if (remembered && (await hasAccess(remembered).catch(() => false))) screen = 'open';
+    if (found) screen = 'open';
     else {
       needsOk = remembered !== null;
       screen = 'setup';
     }
   });
+
+  // 5 s; tests shorten it with localStorage `check-for`.
+  function checkFor(): number {
+    try {
+      return Number(localStorage.getItem('check-for')) || 5000;
+    } catch {
+      return 5000;
+    }
+  }
 
   async function open(picked: FileSystemDirectoryHandle, typed: string) {
     // Remembered before the list shows, so a reload straight after still finds the folder.
@@ -87,6 +111,7 @@
     name = typed;
     saveName(typed);
     needsOk = false;
+    unreachable = '';
     screen = 'open';
   }
 
@@ -177,7 +202,7 @@
     </div>
   {/if}
 {:else if screen === 'setup'}
-  <Setup {name} remembered={needsOk ? folder : null} onOpen={open} onExample={tryExample} />
+  <Setup {name} remembered={needsOk ? folder : null} {unreachable} onOpen={open} onExample={tryExample} />
 {:else if screen === 'open' && folder}
   {#if route.length === 0}
     <List {folder} {name} onChangeFolder={() => (screen = 'setup')} />

@@ -237,4 +237,6 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
   older app saving a script with `Speaker:` lines keeps them as a note (read, not run here).
 - The strip as the timeline's scroll bar (SB-18) with a real mouse, trackpad or touch screen in Edge: only test
   Chromium's mouse and keys were used.
+- The 5 s give-up on the remembered folder (blank page on Fedora, 2026-11-19): the hang was only faked in tests
+  (a permission check that never answers); which call hung on Kiva's Chrome is unseen.
 - Allow editing (AP-25) after Chrome really takes back access: tests fake the lost OK; how long Chrome waits is unseen.

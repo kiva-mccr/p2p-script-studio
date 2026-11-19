@@ -69,6 +69,20 @@ test('when the browser asks again, one click reopens the folder', async ({ page 
   await expect(page.getByRole('button', { name: 'Change folder' })).toBeVisible();
 });
 
+test("a remembered folder that never answers doesn't leave the page blank", async ({ page }) => {
+  await setUp(page);
+  await expect(page.getByText('Video Scripts')).toBeVisible();
+  // A drive that isn't mounted: the browser never answers whether the folder can be used.
+  await page.addInitScript(() => {
+    localStorage.setItem('check-for', '500');
+    const proto = FileSystemHandle.prototype as unknown as Record<string, () => Promise<string>>;
+    proto.queryPermission = () => new Promise(() => {});
+  });
+  await page.reload();
+  await expect(page.getByRole('alert')).toHaveText(/Video Scripts couldn't be reached/);
+  await expect(page.getByRole('button', { name: 'Choose folder' })).toBeVisible();
+});
+
 test('change folder goes back to the first-time screen', async ({ page }) => {
   await setUp(page);
   await page.getByRole('button', { name: 'Change folder' }).click();
