@@ -10,6 +10,9 @@ voice (EX-8, `lib/listen.ts`, `lib/follow.ts`): the marker follows the words hea
 
 ## Rules and pitfalls
 
+- Follow my voice blames the connection only for a ListenError('download'); anything else says it couldn't start
+  in this browser, with details to copy (the policy refusal of 2026-11-19 was shown as a download problem).
+
 - Where it is, is a number of words read (`read`), not a scroll position: each frame adds speed × time, then
   scrolls so that word sits at the marker (interpolated inside its line). Text size, cues and mirror move the
   lines, so it is placed again after each change. Lines are measured with getBoundingClientRect (the mirror's

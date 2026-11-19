@@ -32,7 +32,18 @@ export async function listen(hooks: Hooks): Promise<Listening> {
     throw new ListenError('microphone');
   }
   const worker = new Worker(new URL('./speech.worker.ts', import.meta.url), { type: 'module' });
+
+  // The microphone's sound, a piece at a time. A ScriptProcessorNode, not an AudioWorklet: a worklet's module is a
+  // script, and the policy (SE-1, and the sealed app's) refuses one made in the page (a blob:), which broke Follow my
+  // voice on the live site. Set up before the model loads, so a refusal shows at once (tests/e2e/policy.spec.ts).
+  const source = context.createMediaStreamSource(stream);
+  const node = context.createScriptProcessor(4096, 1, 1);
+  source.connect(node);
+  node.connect(context.destination); // silent (its output stays zero), but a node only runs if it leads somewhere
   const stop = () => {
+    node.onaudioprocess = null;
+    source.disconnect();
+    node.disconnect();
     stream.getTracks().forEach((t) => t.stop());
     worker.terminate();
     context.close().catch(() => {});
@@ -55,22 +66,12 @@ export async function listen(hooks: Hooks): Promise<Listening> {
   await context.resume().catch(() => {});
   const step = context.sampleRate / RATE;
   let carry = 0; // where the next 16 kHz sample falls in the next piece of sound
-  const tap = `registerProcessor('tap', class extends AudioWorkletProcessor {
-    process([input]) { if (input[0]) this.port.postMessage(input[0].slice(0)); return true; }
-  });`;
-  const url = URL.createObjectURL(new Blob([tap], { type: 'text/javascript' }));
-  await context.audioWorklet.addModule(url);
-  URL.revokeObjectURL(url);
-  const node = new AudioWorkletNode(context, 'tap');
-  context.createMediaStreamSource(stream).connect(node);
-  node.connect(context.destination); // silent, but some browsers only run a node that leads somewhere
-
   const sound = new Float32Array(WINDOW);
   let fresh = 0; // samples since the last time something was sent
   let busy = false;
-  node.port.onmessage = ({ data: raw }: MessageEvent<Float32Array>) => {
+  node.onaudioprocess = (e) => {
     let data: Float32Array;
-    [data, carry] = resample(raw, step, carry);
+    [data, carry] = resample(e.inputBuffer.getChannelData(0), step, carry);
     sound.copyWithin(0, data.length);
     sound.set(data, WINDOW - data.length);
     fresh += data.length;

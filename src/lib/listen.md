@@ -9,6 +9,11 @@ graphics card (WebGPU) when there is one, otherwise on WebAssembly.
 
 ## Rules and pitfalls
 
+- The sound is tapped with a ScriptProcessorNode, never an AudioWorklet: a worklet's module is a script, and the
+  policy refuses one made in the page (blob:). That broke Follow my voice on the live site after SE-1 (found
+  2026-11-19; the tests stand in for `listen`, so only `tests/e2e/microphone.spec.ts`, with Chromium's made-up
+  microphone, runs this path). It's set up before the model loads, so such a refusal shows at once.
+
 - Nothing is uploaded: the model comes from Hugging Face once and the browser keeps it; sound stays in the page.
 - The microphone is asked for first, so a refusal doesn't cost a 75 MB download. Errors are `ListenError`
   ('microphone' or 'download') and the teleprompter shows a plain message for each.
