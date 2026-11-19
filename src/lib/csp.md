@@ -26,3 +26,9 @@ site. No other site at all: the speech models are served from it too (SE-5, `lib
 - Links to other sites (GitHub, a file's link) are navigations the user clicks, which the policy doesn't cover.
 - A picture linked from another site is never loaded, so it has no preview anywhere (Write, Review, Print, Files):
   its link shows instead (the user's pick, 2026-11-18). `img-src` stays this site, blob: and data:.
+- Google's CSP Evaluator (checked 2026-11-19, issue #329, its `csp_evaluator` 1.1.8 with the strict checks) finds two
+  things, both left as they are. "'self' can be problematic if you host JSONP, AngularJS or user uploaded files": the
+  site is only the app's own built files (no JSONP, no AngularJS, nobody uploads to it; scripts and their files stay
+  in the team's folder). "Consider requiring Trusted Types": would mean rewriting every `{@html}`, Svelte's own
+  templates, the workers and the speech runtime, to guard against an injected script that `script-src` (no
+  `'unsafe-inline'`) already refuses. Run it again after a change here.
