@@ -136,7 +136,8 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
 - The sealed file (SE-10) in real Chrome/Edge on Windows: only test Chromium opened it from disk. Picking a folder
   there (no picker in headless tests), whether it remembers the folder across openings, and the attestation (made only
   in the deploy) are unseen. Its speech workers with a real models zip (SE-5) are unseen; a wrong zip refused in Settings and the example in
-  IndexedDB were seen with the file served from the test site (sealed.spec.ts), not opened from disk.
+  IndexedDB were seen with the file served from the test site (sealed.spec.ts), not opened from disk. The first-open
+  offer (SE-11) was seen on a file:// open in test Chromium; whether real Chrome keeps "offered" across openings is unseen.
 - The team now uses a Windows mapped network drive (SMB), not OneDrive. FX-2's change files, keeper and spinner with
   two real computers there are unseen (no SMB share here; others are simulated by writing change files in tests).
 - The editor's saves and the 5 s check for others' saves with real OneDrive sync delays.
