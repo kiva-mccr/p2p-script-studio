@@ -1144,9 +1144,15 @@ the team writes leaves their computers.
   (Get-FileHash, `gh attestation verify`, CSP Evaluator, DevTools Network / Process Monitor / Wireshark, VirusTotal).
   In the file: links are copied, not opened; Feedback is Copy only; no example (no private storage for a file); the ?
   says "sealed". The daily live check fails if the file doesn't match its fingerprint or its policy names a site.
-  Next: the speech models as its second file (SE-5, the user's pick).
-- [ ] **SE-2**, **SE-3**, **SE-5** to **SE-8**: supply chain checks, untrusted script files, security headers (needs D1), models served
-  from the app (D2, agreed), offline app, proof of what's running, the IT pack. The plan and decisions:
+- [x] **SE-5** Speech models served from the app (D2, agreed; the sealed file's second download, the user's pick,
+  board 89). Done 2026-11-19: `src/lib/models.lock.json` pins Moonshine and Whisper (revision and each file's SHA-256,
+  printed by the "Pin the speech models" workflow); each deploy downloads them, checks every file, puts them in
+  `models/<revision>/` beside the site and in `speech-models.zip`, a release asset (over Pages' 100 MB a file), with a
+  build attestation. The policy no longer allows Hugging Face. Whisper uses q8 on WebGPU too (its q4 is 124 MB). The
+  sealed app: Settings › Speech models takes the zip, checks it and keeps it (IndexedDB); Download sealed offers "The
+  app and the speech models" with the zip's fingerprint. The live check fails if the models aren't served as pinned.
+- [ ] **SE-2**, **SE-3**, **SE-6** to **SE-8**: supply chain checks, untrusted script files, offline app, proof of
+  what's running, the IT pack. The plan and decisions:
   docs/security.md.
 
 ## Last (the user's order: these wait until everything above is done)

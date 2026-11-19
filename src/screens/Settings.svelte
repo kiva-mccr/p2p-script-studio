@@ -1,12 +1,13 @@
 <script lang="ts">
   // Settings (AU-3, mock-up 19; the mic list AU-5, board 33): a window in the page, opened from ⋯. Each kind of setting has its own small heading,
-  // so more can be added later: Screen (Hide help text, AP-43, board 64), Voice-over (the microphone and the clean-up of takes, AU-4), then Read time (the speaking speed, AP-12), then Keyboard shortcuts (AP-44, `Shortcuts.svelte`). A choice
+  // so more can be added later: Screen (Hide help text, AP-43, board 64), Voice-over (the microphone and the clean-up of takes, AU-4), then Read time (the speaking speed, AP-12), then Keyboard shortcuts (AP-44, `Shortcuts.svelte`), and in the sealed app Speech models (SE-5, `SealedModels.svelte`). A choice
   // takes effect at once. voiceWpm: the script's takes' speed together, offered as the speed (0 with no takes).
   import { cleaning, setCleaning } from '../lib/cleanup.svelte';
   import { chooseMic, chosenMic, listMics, type Mic } from '../lib/mic';
   import { setSpeed, speaking } from '../lib/readtime.svelte';
   import { helpHidden, hideHelp } from '../lib/helptext';
   import Shortcuts from './Shortcuts.svelte';
+  import SealedModels from './SealedModels.svelte';
 
   let { voiceWpm = 0, onClose }: { voiceWpm?: number; onClose: () => void } = $props();
 
@@ -135,6 +136,7 @@
           <button class="outline use" onclick={() => setSpeed(voiceWpm)}>Use {voiceWpm}</button></p>
       {/if}
       <Shortcuts />
+      {#if __SEALED__}<SealedModels />{/if}
     </div>
     <div class="foot">
       <span>Kept in this browser only.</span>

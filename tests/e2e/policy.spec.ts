@@ -4,16 +4,12 @@ import { setUp } from './folder';
 // The Content Security Policy (SE-1): the built page carries it, the browser enforces it, and nothing the example does
 // sends anything to another site.
 
-// The one other site: Hugging Face, for the speech models (the example's cuts on a word ask for Whisper's files).
-const MODELS = /^https:\/\/(huggingface\.co|[^/]+\.hf\.co)\//;
-
 test('the page carries the policy, and nothing is sent to another site', async ({ page }) => {
   const elsewhere: string[] = [];
-  await page.context().route(MODELS, (route) => route.abort()); // never downloaded in tests
   page.context().on('request', (r) => {
     const url = new URL(r.url());
     if (url.hostname === 'localhost' || ['blob:', 'data:'].includes(url.protocol)) return;
-    if (!MODELS.test(r.url()) || r.method() !== 'GET' || r.postData()) elsewhere.push(`${r.method()} ${r.url()}`);
+    elsewhere.push(`${r.method()} ${r.url()}`); // not even Hugging Face: the speech models come from the app (SE-5)
   });
   await page.goto('./');
   const policy = await page.locator('meta[http-equiv="Content-Security-Policy"]').getAttribute('content');

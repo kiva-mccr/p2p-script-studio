@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write # the speech models' zip as a release asset (SE-5): over GitHub Pages' 100 MB a file
   pages: write
   id-token: write
   attestations: write # the sealed file's signed build attestation (SE-10): gh attestation verify
@@ -29,8 +29,22 @@ jobs:
       - run: npm ci
       - run: npm run build # the website, then the sealed file (SE-10) beside it
         env: { LIVE_BUILD: '1' }
+      # The speech models (SE-5), pinned in src/lib/models.lock.json: each file's SHA-256 is checked, then they go beside
+      # the website and into one zip for the sealed app. Kept between runs, so Hugging Face is asked only for a new pin.
+      - uses: actions/cache@v4
+        with: { path: .models-cache, key: "models-${{ hashFiles('src/lib/models.lock.json') }}" }
+      - run: node --experimental-strip-types --no-warnings scripts/models.ts
+      - name: The models' zip as a release (made once for each pin)
+        env: { GH_TOKEN: '${{ github.token }}' }
+        run: |
+          tag=$(node -p "require('./dist/speech-models.json').tag")
+          gh release view "$tag" >/dev/null 2>&1 || gh release create "$tag" .models-cache/speech-models.zip \
+            --latest=false --title "Speech models ($tag)" --notes "The sealed app's speech models, pinned in src/lib/models.lock.json. Add it in the sealed app's Settings."
       - uses: actions/attest-build-provenance@v2
-        with: { subject-path: dist/script-studio-sealed.html }
+        with:
+          subject-path: |
+            dist/script-studio-sealed.html
+            .models-cache/speech-models.zip
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with: { path: dist }

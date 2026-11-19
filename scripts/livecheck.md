@@ -2,7 +2,8 @@
 
 The live check (SE-4): fetches https://p2p-script-studio.kivamccr.xyz/ as a browser would and fails if a security
 header is missing or differs from `src/lib/headers.ts`, if the page carries a script that isn't the app's, or if
-http:// doesn't redirect to https. Run by `.github/workflows/live.yml` daily, after each deploy and by hand.
+http:// doesn't redirect to https. Also the sealed file (SE-10) and the speech models (SE-5): one small file of each
+model served at its pinned revision, and the models' zip at its release. Run by `.github/workflows/live.yml` daily, after each deploy and by hand.
 
 ## Rules and pitfalls
 

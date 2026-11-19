@@ -5,7 +5,7 @@ A free, minimalist web app for writing, reviewing and producing educational vide
 - **Three columns:** dialogue, what's on screen, and images and files, one row per shot.
 - **Your files stay yours:** scripts live in your team's shared folder, not on any server.
 - **Locked down:** a Content Security Policy lets the browser run code only from this site and talk only to this
-  site and Hugging Face (to download the speech models; nothing is sent there). Links to other sites send no Referer,
+  site: even the speech models are served from it, pinned copies checked by their SHA-256. Links to other sites send no Referer,
   and a picture linked from another site isn't loaded: its link shows, with no preview. The site also sends the
   standard security headers (HTTPS only, never shown inside another site's frame), checked every day, and the
   browser checks the app's own files against a fingerprint made when they were built.
@@ -19,8 +19,9 @@ Open it at **https://p2p-script-studio.kivamccr.xyz/** (Chrome or Edge on a desk
 install. It can reach nothing but the folder you pick: no internet, no other address (its links are copied instead of
 opened, and Feedback is copied to pass on). It never updates itself; download it again for a new version. The page
 lists five standard checks IT can run: its SHA-256 fingerprint, GitHub's signed build attestation, its security
-policy, watching its network traffic, and a malware scan. The sealed file has no example to try, and no speech models
-yet (Follow my voice and cuts timed from the take).
+policy, watching its network traffic, and a malware scan. The sealed file has no example to try. For Follow my voice and
+cuts timed from the take, pick "The app and the speech models" and add `speech-models.zip` once in the app's Settings,
+where it's checked file by file and kept by the browser.
 
 Status: a first working version. What it does today:
 
@@ -292,7 +293,9 @@ and clicking opens it on GitHub.
 ## For developers
 
 `npm ci`, then `npm run dev`. Checks: `npm run check`, `npm test`, `npm run e2e`. `npm run build` makes the website in
-`dist/`, then the sealed file beside it (`vite build --mode sealed`, `src/lib/sealed.ts`). The live site's security headers
+`dist/`, then the sealed file beside it (`vite build --mode sealed`, `src/lib/sealed.ts`). The deploy also puts the
+speech models pinned in `src/lib/models.lock.json` beside the site, and their zip in a release (`scripts/models.ts`;
+a new pin: run "Pin the speech models" in Actions and commit what it prints). The live site's security headers
 (added by Cloudflare) are checked daily against `src/lib/headers.ts`: `node --experimental-strip-types scripts/livecheck.ts`.
 
 License: MIT.

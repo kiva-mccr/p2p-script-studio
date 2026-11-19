@@ -86,9 +86,10 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
   small PR at a time: UX-4 + UX-13 pointer (done), the shared Undo (UX-1, 2, 10, 11, 13, done), UX-7 (done), UX-12, 6, 8, 3 (done; UX-5 dropped for SB-4's drawer), UX-9 (done).
   Then (the user, 2026-11-16): Ctrl+Z for everything: UX-14 (the script's text, done), then UX-15 (takes, flags, done). UX-16 (Undo toast 5 s, gone when you carry on, done).
   Then security (the user, 2026-11-18, issue #267): SE-1 (Content Security Policy, done), SE-4 (headers via
-  Cloudflare, done), SE-9 (integrity hashes, done); the rest (SE-2, 3, 5 to 8) and D2 (models from the app, agreed) are in docs/security.md.
+  Cloudflare, done), SE-9 (integrity hashes, done); the rest (SE-2, 3, 6 to 8) are in docs/security.md.
   Then (the user, 2026-11-18, ahead of boards 82 and 83): SE-10, the sealed app to download (done), then SE-5 (speech
-  models from the app, and as the sealed file's second download).
+  models from the app, and as the sealed file's second download, done). Asked next (2026-11-18): the example in the
+  sealed app, in a folder the person picks (decision card open).
   Then issue #254 (EX-22, zoom in the Resolve / Premiere preview, board 79, done 2026-11-18).
   Then board 80's issues (the user, 2026-11-18), one PR each: #245, #238, #225, #207 (SB-9 to SB-12, done), #264
   (SB-13, "No picture" as an icon, done); board 81: #249 (RV-24, done), #250 (RV-25, done), #256 (AP-50, done), #253 (AP-51, word count, done), #262 (AP-52, drop files onto a row, done); then 82 and 83.
@@ -121,6 +122,8 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
   and count them with `expect.poll`, never `listFiles` + `readFile` + `JSON.parse`.
 - Flaky tests show up under load: `npx playwright test --repeat-each=6 --workers=8 --trace off` (about 5 minutes)
   before handing over anything that touches saving, History or the folder. Fix the race, never add retries.
+- The speech models come from the site (SE-5): pinned in `src/lib/models.lock.json`, fetched only by the deploy
+  (`scripts/models.md`); a new model file the workers load must be pinned (`WANTED`) and stay under 100 MB.
 - `npm run build` also makes the sealed file (SE-10, lib/sealed.md); a worker made other than with
   `new Worker(new URL('./x.worker.ts', import.meta.url), { type: 'module' })` breaks it.
 - The built page has a Content Security Policy (SE-1, lib/csp.md). e2e specs import `test` from `./base`, which fails
@@ -129,7 +132,8 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
 ## Known gaps (never seen for real; confirm when the user can)
 - The sealed file (SE-10) in real Chrome/Edge on Windows: only test Chromium opened it from disk. Picking a folder
   there (no picker in headless tests), whether it remembers the folder across openings, and the attestation (made only
-  in the deploy) are unseen. Its speech workers' runtime handover is unexercised until the models come (SE-5).
+  in the deploy) are unseen. Its speech workers' runtime handover and Settings › Speech models (SE-5; no folder can be picked in headless tests,
+  so Settings isn't reachable there) are unseen; only the zip's reading and checks are unit-tested.
 - The team now uses a Windows mapped network drive (SMB), not OneDrive. FX-2's change files, keeper and spinner with
   two real computers there are unseen (no SMB share here; others are simulated by writing change files in tests).
 - The editor's saves and the 5 s check for others' saves with real OneDrive sync delays.
@@ -183,6 +187,7 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
   real voice; the drawer (SB-4) and its preview on a small real screen are unseen.
 - Cuts timed from the take (SB-8): Whisper (`whisper-base_timestamped`) was never downloaded or run here (no Hugging
   Face); tests use a stand-in. Its word timings on a real voice, WebGPU vs WebAssembly, and the 150 MB download are unseen.
+  Since SE-5 it's q8 on WebGPU too, served from the site (the deploy's pinned copies): speed on WebGPU unseen.
 - Resolve / Premiere export (EX-19): the FCP7 XML was never opened in real Resolve or Premiere (neither runs here);
   only its tags, frames and the zip's files were checked. Relative media paths may need one relink; the mp4 in the
   test isn't measured (test Chromium has no H.264), so a real camera video's scale and length in the XML are unseen.

@@ -10,12 +10,11 @@ describe('the Content Security Policy (SE-1)', () => {
     expect(POLICY['form-action']).toEqual(["'none'"]);
   });
 
-  it('never allows inline scripts, eval or any site but Hugging Face', () => {
+  it('never allows inline scripts, eval or any other site (the speech models are served from this one, SE-5)', () => {
     const text = policy();
     expect(text).not.toContain("'unsafe-eval'");
     expect(POLICY['script-src']).not.toContain("'unsafe-inline'");
-    const sites = text.match(/https?:\/\/[^\s;]+/g);
-    expect(sites).toEqual(['https://huggingface.co', 'https://*.hf.co']);
+    expect(text).not.toMatch(/https?:/);
   });
 
   it('goes into the built page right after the charset, with no Referer', () => {
