@@ -8,4 +8,6 @@ The planning panel's file (AP-24): reads and writes `plan.md` beside script.md, 
 
 - A script with no plan.md reads as '' (only NotFoundError; any other error is thrown, so a busy OneDrive isn't
   taken for an empty plan and written over).
+- `planLines` and `flipTick` (Review's tick boxes, RV-26) know a tick box only as "- [ ] " or "- [x] " at a line's
+  start, as `format.ts` writes it; `flipTick` changes nothing on any other line.
 - `combinePlans` keeps yours and adds the lines they added; what they deleted stays. Nothing typed is lost.

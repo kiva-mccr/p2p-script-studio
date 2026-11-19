@@ -155,6 +155,32 @@
     addEventListener('blur', release);
   }
 
+  // The tour's Feedback step (issue #202) shows the mode in use: the strip, and the orange outline on a row on screen,
+  // as if the pointer were over it. Nothing is caught, so the tour's buttons keep working.
+  let demo = $state<DOMRect | null>(null);
+  const showing = $derived(feedback.tour === 'feedback' && mode === 'off');
+  $effect(() => {
+    if (!showing) return;
+    const place = () => (demo = rowOnScreen()?.getBoundingClientRect() ?? null);
+    place();
+    addEventListener('scroll', place, true);
+    addEventListener('resize', place);
+    return () => {
+      removeEventListener('scroll', place, true);
+      removeEventListener('resize', place);
+      demo = null;
+    };
+  });
+
+  // The first row wholly between the top bar and the timeline's drawer (html's scroll padding), else any row in sight.
+  function rowOnScreen(): Element | undefined {
+    const pad = getComputedStyle(document.documentElement);
+    const top = parseFloat(pad.scrollPaddingTop) || 0, bottom = innerHeight - (parseFloat(pad.scrollPaddingBottom) || 0);
+    const rows = [...document.querySelectorAll('[data-tour="row"]')];
+    const at = (el: Element) => el.getBoundingClientRect();
+    return rows.find((el) => at(el).top >= top && at(el).bottom <= bottom) ?? rows.find((el) => at(el).bottom > top && at(el).top < bottom);
+  }
+
   // The picked part keeps its outline as the page scrolls or the window changes size.
   $effect(() => {
     if (mode !== 'open') return;
@@ -236,16 +262,22 @@
 
 {#snippet ring(r: DOMRect)}
   {@const b = ringBox(r, { width: document.documentElement.clientWidth, height: document.documentElement.clientHeight })}
-  <div class="ring" aria-hidden="true" style:left="{b.left}px" style:top="{b.top}px" style:width="{b.width}px" style:height="{b.height}px"></div>
+  <div class="ring" data-feedback-ring aria-hidden="true" style:left="{b.left}px" style:top="{b.top}px" style:width="{b.width}px" style:height="{b.height}px"></div>
+{/snippet}
+
+{#snippet strip()}
+  <p><b>Feedback:</b> click the part that's giving you trouble or could be better.
+    <span class="help">Hold Shift to use the page, for example to open a menu.</span> Esc to stop.</p>
+  <button type="button" class="outline" onclick={stop}>Stop</button>
 {/snippet}
 
 {#if mode === 'picking'}
-  <div class="strip" role="status" data-feedback-ui>
-    <p><b>Feedback:</b> click the part that's giving you trouble or could be better.
-      <span class="help">Hold Shift to use the page, for example to open a menu.</span> Esc to stop.</p>
-    <button type="button" class="outline" onclick={stop}>Stop</button>
-  </div>
+  <div class="strip" role="status" data-feedback-ui>{@render strip()}</div>
   {#if hover}{@render ring(hover)}{/if}
+{:else if showing}
+  <!-- Shown by the tour (issue #202): inert, the tour's own card does the talking. -->
+  <div class="strip" data-tour="feedback" inert>{@render strip()}</div>
+  {#if demo}{@render ring(demo)}{/if}
 {/if}
 
 {#if mode === 'open' && part}

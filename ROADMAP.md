@@ -533,6 +533,12 @@ and suggestions, keeps every version, and exports them for production.
   before the button. The browser's own dropdown lists are drawn outside the page: pick the dropdown and name the
   option in the note. Scroll bars too (issue #252): a press on one (the timeline's) picked nothing and dragged it, since
   the browser drags a bar whatever the page says; it now picks the bar's box, and Shift drags it.
+- [x] **AP-53** Feedback easier to find (issue #202, board 83 agreed by the user with a change, 2026-11-19: no
+  separate Feedback button; the tour shows it instead). Write's tour ends with two steps: "Tell us what you think"
+  opens the ? menu with Feedback… in it, then "Feedback mode" shows the mode in use (its strip at the bottom and the
+  orange outline on a row on screen), shown only, nothing caught. Both go when the step is left (`show` on a step in
+  lib/tour.ts, `feedback.tour` in lib/help.svelte.ts). Also fixed: arrow keys pressed fast past the timeline's step
+  could ring the timeline on a later step.
 - [ ] **YT-1** The published video: link the final YouTube video and keep its title, description and thumbnail with
   the script.
 - [x] **AU-1** Recording audio for each line: record the dialogue of a row in the browser, kept beside the script
@@ -762,6 +768,10 @@ and suggestions, keeps every version, and exports them for production.
   solid says the drop will work). A drop anywhere else is refused, so the browser never opens the file in place of
   the app (`lib/filedrag.svelte.ts`). "From other scripts…" became "Reuse a file…": this script's own files and links
   come first ("In this script", with the rows using each, added as the same line, not copied), then the other scripts.
+- [x] **RV-26** Tick boxes you can use in Review's planning notes (issue #233, board 82 agreed by the user): in
+  Review the plan is shown, not typed in; its tick boxes tick with one click and save as typing does (a ticked line
+  struck through in grey). Edit, beside Close, opens the same text box Write has, and Done shows the plan again; it
+  starts shown each time Review opens. Write is unchanged. Built 2026-11-19 (`planLines`, `flipTick` in lib/planning.ts).
 - [x] **RV-23** Fold columns in Review too (asked by the user): the ‹ fold from AP-17 (Write only today) also works
   in Review, every column open by default.
   Built as mock-up 60: the same ‹ and › (shared `FoldHeads.svelte`, `lib/folds.svelte.ts`), a grey dot on rows with
@@ -847,6 +857,15 @@ and suggestions, keeps every version, and exports them for production.
   fit; a 1 px gap between clips; a Sections row with a named band per section, and a thin pin per row in Marks (hover:
   the row and its time), kept inside the box; takes solid green in alternating shades, no stripes. The .xml is
   unchanged. Built 2026-11-18 (screens/EditPreview.svelte, `sections` in lib/editxml.ts's plan).
+- [x] **EX-23** Pictures on the video export's clips (issue #220, board 82 agreed by the user, with the note that nothing
+  may overflow or break the layout with very many clips): each clip under the preview shows a tiny picture of itself
+  (a picture's small copy, a video's first frame, a collage's first picture, a grey card for a placeholder) with its
+  name after it while there's room; a narrow clip shows the picture alone, a sliver neither; the clips never reach
+  past their row. Built 2026-11-19 (screens/VideoPreview.svelte).
+- [x] **EX-24** A line of the script beside each file in Assets (issue #212, board 82 agreed by the user): under "In
+  the folder or linked", the start of the row's dialogue (its On screen words if it has none) sits between the file and
+  its row number, one grey line cut short with "…"; for a file in several rows, its first row's. Built 2026-11-19
+  (`excerpt` in lib/assets.ts, screens/Assets.svelte).
 - [-] **EX-17** A shoot checklist (suggested; shelved by the user, to talk through later): the asset list (EX-6) with
   shared tick boxes for each row's on-screen shots and files, for the day of filming.
 - [-] **AP-45** Dictate dialogue into a row (suggested; shelved by the user, 2026-11-14, to consider later): speak into

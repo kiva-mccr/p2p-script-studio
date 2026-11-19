@@ -33,3 +33,5 @@ blur the script's words, say which script), Open on GitHub, Copy instead, Cancel
   sent or copied. It used to be one value for the whole visit, so the last note came back (a bug the user hit).
 - The orange ring is kept inside the window (`ringBox` in lib/feedback.ts): a part as big as the window (the Settings
   or Assets backdrop) put its ring 3 px past every edge, so none of it showed (issue #216).
+- The tour's Feedback step (AP-53, issue #202) shows the strip and an outline on a row on screen while
+  `feedback.tour` is 'feedback' and the mode is off: inert, nothing is caught, so the tour's own keys and buttons work.

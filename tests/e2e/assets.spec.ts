@@ -31,6 +31,16 @@ test('the Assets tab counts what is missing and lists it first, then what to fin
   await expect(assets.locator('li.here img:visible')).toHaveCount(1); // the svg; the fake files aren't pictures, so no thumbnail is drawn
 });
 
+test('each file in the folder or linked shows the words of its row, between its name and its row number', async ({ page }) => {
+  const assets = await openAssets(page);
+  const leaf = assets.locator('li.here').filter({ hasText: 'leaf-closeup.jpg' });
+  await expect(leaf.locator('.excerpt')).toHaveText('Every leaf you have ever seen is running a tiny factory.');
+  const [name, words, rows] = await Promise.all(['.name', '.excerpt', '.rows'].map((s) => leaf.locator(s).boundingBox()));
+  expect(name!.x + name!.width).toBeLessThanOrEqual(words!.x);
+  expect(words!.x + words!.width).toBeLessThanOrEqual(rows!.x);
+  await expect(assets.locator('li.lost .excerpt, li.find .excerpt')).toHaveCount(0);
+});
+
 test('a file put in the folder stops being missing', async ({ page }) => {
   const assets = await openAssets(page);
   await expect(assets.locator('li.lost')).toHaveCount(2);

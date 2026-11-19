@@ -14,7 +14,7 @@ for (const sub of ['assets', 'voice']) {
 
 async function openVideo(page: Page, more: Record<string, string> = {}) {
   await setUp(page, '#/Episode%2003', { ...files, ...more });
-  await expect(page.getByLabel('Dialogue, row 1')).toBeVisible();
+  await expect(page.getByLabel('Dialogue, row 1', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Export / Share' }).click();
   await page.getByRole('button', { name: 'Video (.mp4)' }).click();
 }
@@ -50,6 +50,38 @@ test('the preview shows a moment of the video and its clips; the settings change
   await expect(page.getByLabel('720p')).toBeChecked();
   await expect(page.getByLabel('Left out')).toBeChecked();
   await expect(page.getByLabel('Dialogue as captions on the picture')).toBeChecked();
+});
+
+test('each clip shows a tiny picture of itself; a placeholder a grey card (#220)', async ({ page }) => {
+  await openVideo(page);
+  const clips = page.getByRole('region', { name: 'Preview' }).locator('.clip');
+  await expect(clips).toHaveCount(6);
+  // The leaf (a photo), the push-in (a video's first frame) and the collage (its first picture) get theirs.
+  for (const i of [0, 1, 2, 4]) {
+    await expect(clips.nth(i).locator('img.thumb')).toHaveJSProperty('complete', true);
+    expect(await clips.nth(i).locator('img.thumb').evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThan(0);
+  }
+  await expect(clips.nth(3).locator('.thumb.grey')).toHaveCount(1); // row 3's card: no picture of its own
+  await expect(clips.nth(2)).toHaveText('Collage');
+});
+
+test('very many clips stay inside the row and the page; narrow ones drop their picture (#220)', async ({ page }) => {
+  const many = Array.from({ length: 400 }, (_, i) => `## ${i + 1} <!-- id: m${String(i).padStart(4, '0')} -->\nDialogue:\nWord.\n\nFiles:\n- assets/leaf-closeup.jpg\n`).join('\n');
+  await openVideo(page, { 'Episode 03/script.md': `---\ntitle: Many\n---\n\n${many}` });
+  const preview = page.getByRole('region', { name: 'Preview' });
+  await expect(preview.locator('.clip')).toHaveCount(400);
+  const row = preview.locator('.clips');
+  const box = (await row.boundingBox())!;
+  for (const i of [0, 199, 399]) {
+    const clip = (await preview.locator('.clip').nth(i).boundingBox())!;
+    expect(clip.x).toBeGreaterThanOrEqual(box.x - 0.5);
+    expect(clip.x + clip.width).toBeLessThanOrEqual(box.x + box.width + 4); // at most its own border past the end, clipped
+    expect(clip.height).toBeLessThanOrEqual(box.height);
+  }
+  await expect(preview.locator('.clip img.thumb').first()).toBeAttached();
+  await expect(preview.locator('.clip img.thumb').first()).toBeHidden(); // a sliver: no room for the picture
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+  expect(await row.evaluate((el) => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
 });
 
 test('rows with no take play silent for their read time, or are left out', async ({ page }) => {

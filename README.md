@@ -32,7 +32,8 @@ Status: a first working version. What it does today:
   equation, a plan, credits with six made-up people's contacts, a template, and a History with a send back)
   to click around in first; your changes stay in this browser, Start over puts it back as new, and the – folds the
   offer to one line for good. Inside it, a short guided tour shows each tab the first time you open it, the timeline
-  included (its drawer opens for that step and folds again after): Next (or →)
+  included (its drawer opens for that step and folds again after), and Write's ends by opening the ? menu and showing
+  Feedback mode in use, so everyone knows where to send what they think: Next (or →)
   moves on, Skip tour (or Esc) stops the tours on every tab, and Take the tour in the blue strip plays it again. The strip stays at the top of the window as you scroll.
 - **The list:** every script in the folder, its status, and who last edited it and when. New script starts one; the arrow beside it starts one from a template, or makes a new template (templates sit at the bottom of the list).
   It opens fast on a network drive: your computer remembers each script's line, looks only at file names and dates,
@@ -71,7 +72,7 @@ Status: a first working version. What it does today:
   to give the dialogue the whole width early on); › brings it back. The browser remembers which are folded.
 - **Planning:** the Planning tab on the right edge of Write and Review opens a panel beside the script for learning
   goals, an outline and notes. Bullets, numbered lists and tick boxes (click ☐ again to tick it), plus the same
-  formatting as the cells; Enter carries a list on, and numbered lists renumber themselves when
+  formatting as the cells. In Review the plan is shown: tick its boxes with one click, or press Edit to type. Enter carries a list on, and numbered lists renumber themselves when
   lines are added, removed or moved (in Dialogue and On screen too, for a list typed as `1. `). It is kept in `plan.md` beside the script, saves on its own and
   shows others' saves, but is not part of the script: no History versions and not in any export. The browser
   remembers whether it is open.
@@ -141,7 +142,7 @@ Status: a first working version. What it does today:
   its sound, at the timeline's timings. MP4 where the computer can make it, else WebM (the page says so). Settings:
   720p or 1080p (wide or upright, as set on the timeline), the dialogue as captions on the picture, rows with no take
   silent for their read time or left out, and videos' own sound kept under the voice. The preview shows any moment
-  (click a clip); once made, the video plays there. Stop ends it early.
+  (click a clip; each clip has a tiny picture of itself); once made, the video plays there. Stop ends it early.
 - **Read time:** each section shows how long its dialogue takes to read aloud, and the top bar the whole script
   beside the save status ("Saved · 2:05"; with takes, "Saved · 0:14/2:05": recorded so far / the whole script, where
   rows with a take count their take). The speaking speed is set in
@@ -255,7 +256,8 @@ Status: a first working version. What it does today:
   Review shows the same timeline, read only: click a block to comment on its row ("row 2, on the timeline"). Kept in the row's `Timeline:` line in script.md.
 - **Assets:** the Assets tab lists every file, link and "still to find" note in the script once, with the rows that
   use it, with a thumbnail for pictures, PDFs and videos: what is missing from the folder first, then what is still to find or film, then the rest (or by row).
-  The tab and the script list show how many files are missing. A row number goes to that row.
+  Beside each file in the folder or linked, the start of its row's words (its dialogue, or its On screen words), so
+  you can tell what it is for. The tab and the script list show how many files are missing. A row number goes to that row.
 - **Two people:** the top of a script says who else is editing it, with a small spinner while their changes come in.
   When nobody else is, it says who was last here ("Sam · 12 min ago"), with an amber ring
   when Sam's computer went quiet without leaving (asleep, or off the drive), so their last typing may not be in yet.
