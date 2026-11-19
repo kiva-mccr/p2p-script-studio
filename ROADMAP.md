@@ -513,6 +513,10 @@ and suggestions, keeps every version, and exports them for production.
   its speaker; their export card says "Narrator's name" and lists each speaker's rows and read time; the mic's hover
   and "● Recording" name the speaker. Merges, change files, History and Ctrl+Z carry it. The example's takes are now
   a natural voice (Kokoro, made here, not a real person), with Ana as the second voice on row 4. Done 2026-11-19.
+- [x] **AP-62** More people in the example (issue #213, board 88 agreed by the user): wherever several people can be,
+  the example shows several, and where only one can, one. Leo's note goes with Ana's first send back (History); this
+  round Ana has added her note without sending, so Send back shows it under Sam's send; two people on the park shot
+  (Jordan, Leo) and one on the real leaf Ana asked for (Jordan); Leo was here the day before Ana. Done 2026-11-19.
 - [x] **SB-14** The take being recorded in red (issue #251, board 84 agreed by the user): while a row is recorded,
   its take on the timeline is red and grows with the recording, pushing the rows after it right (the user's pick);
   it turns into the waveform when it stops. Done 2026-11-19. (The issue's other half, Feedback's Cover blurring the

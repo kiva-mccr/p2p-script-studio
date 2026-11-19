@@ -26,7 +26,7 @@ where it's checked file by file and kept by the browser.
 Status: a first working version. What it does today:
 
 - **First time:** type your name and choose your team's scripts folder ("Before you start" explains putting it on this
-  computer, from a network drive or a synced folder such as OneDrive). The browser remembers both. New here? "Open the example" under it (or See the example in the ? menu, from any screen) opens a
+  computer, from a network drive or a synced folder such as OneDrive). The browser remembers both. New here? "Open the example" (a made-up script by several made-up people) under it (or See the example in the ? menu, from any screen) opens a
   made-up script (one file of each kind the app previews, a voice-over take on every row in two voices, a storyboard timeline with
   a hold and a placeholder, comments of each kind with one on hold, one resolved and one with a file, a flag, an
   equation, a plan, credits with six made-up people's contacts, a template, and a History with a send back)
