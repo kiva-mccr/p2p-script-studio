@@ -7,12 +7,13 @@ import type { ForAll } from './forme';
 import { sha256 } from './history';
 import type { ScriptInfo } from './folder';
 import { subpath } from './dirs';
+import type { Voice } from './micring';
 
 export type Summary = {
   v: 1;
   print: string; // sha256 of the fingerprint the counts were read under, your name left out
   head: Omit<ScriptInfo, 'path'>;
-  counts: { missing: number; flagged: number; takeSeconds: number; words: number; dirs: string[] };
+  counts: { missing: number; flagged: number; takeSeconds: number; words: number; voice?: Voice; dirs: string[] };
   forAll: ForAll;
   who: string;
   when: string;

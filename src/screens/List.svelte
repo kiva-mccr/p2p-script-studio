@@ -8,6 +8,7 @@
   import { waiting } from '../lib/forme';
   import { keep, recall } from '../lib/remember';
   import FlagIcon from './FlagIcon.svelte';
+  import MicRing from './MicRing.svelte';
   import { createScript, findScript } from '../lib/folder';
   import { clock, speaking } from '../lib/readtime.svelte';
   import { length, ScriptList, type Entry } from '../lib/scriptlist.svelte';
@@ -179,7 +180,7 @@
               <span class="status" data-keep><span class="dot {script.status.replace(' ', '-')}" aria-hidden="true"></span>{label[script.status] ?? script.status}</span>
             {/if}
             <span class="length" title={long ? (long.recorded ? 'Recorded voice-over, every row' : `Read time at ${speaking.wpm} words a minute`) : undefined}>
-              {long?.text ?? ''}{#if long?.recorded}<svg role="img" aria-label="recorded" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v3"></path></svg>{/if}
+              {long?.text ?? ''}{#if script.counts?.voice}<MicRing voice={script.counts.voice} />{/if}
             </span>
             <span class="when">{#if script.who}<span data-hide>{script.who}</span>{' · '}{/if}{ago(script.edited)}</span>
           </a>
@@ -215,7 +216,6 @@
   .missing { flex: none; padding: 2px 8px; border-radius: 999px; background: #fdf0ef; color: var(--danger); font-size: 12px; font-weight: 500; }
   .title { font-size: 15px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .length { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; color: #3d3d3d; font-variant-numeric: tabular-nums; }
-  .length svg { color: var(--accent); }
   .status { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: #3d3d3d; }
   .dot { width: 8px; height: 8px; border-radius: 50%; background: #b8b8b8; }
   .dot.in-review { background: #e08a1e; }

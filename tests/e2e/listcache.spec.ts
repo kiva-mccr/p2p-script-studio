@@ -116,3 +116,22 @@ test('a computer new to the folder shows counts from the summary another list le
   await expect(page.getByText('1 reply')).toBeVisible();
   await expect.poll(() => listFiles(page, 'Episode 03/.studio/summary')).toHaveLength(2);
 });
+
+test('counts remembered before the mic’s ring are read once more, so the ring shows (#241)', async ({ page }) => {
+  await setUp(page, '', { 'Episode 03/script.md': example, [`Episode 03/voice/row-${ids[0]}.json`]: JSON.stringify({ by: 'Alex', at: 1, seconds: 4, text: 'x' }) });
+  const ring = page.locator('a.row').getByRole('img', { name: /1 of 5 rows recorded/ });
+  await expect(ring).toBeVisible();
+  await checked(page);
+
+  // An older app's memory: the same counts without the rows' takes.
+  await page.evaluate(() => {
+    for (const key of Object.keys(localStorage)) {
+      if (!key.startsWith('script-list:')) continue;
+      const kept = JSON.parse(localStorage.getItem(key)!);
+      for (const one of Object.values(kept) as { entry: { counts?: { voice?: number[] } } }[]) delete one.entry.counts?.voice;
+      localStorage.setItem(key, JSON.stringify(kept));
+    }
+  });
+  await page.reload();
+  await expect(ring).toBeVisible();
+});

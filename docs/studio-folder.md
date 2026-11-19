@@ -58,7 +58,8 @@ When a computer's script list reads a script the slow way (its History and comme
 
 ```json
 { "v": 1, "print": "<sha256 of the fingerprint>", "head": { "title": "…", "status": "in review", "edited": 1763190000000,
-  "who": "Sam" }, "counts": { "missing": 0, "flagged": 1, "takeSeconds": 42, "words": 120, "dirs": ["assets"] },
+  "who": "Sam" }, "counts": { "missing": 0, "flagged": 1, "takeSeconds": 42, "words": 120, "voice": [11, -9, 0, 14],
+  "dirs": ["assets"] },
   "forAll": { "by": { "ana": { "review": false, "replies": 1, "back": false } },
               "anyone": { "review": true, "replies": 0, "back": false } },
   "who": "Sam", "when": "2026-11-15T08:15:00.123Z" }
@@ -68,7 +69,9 @@ The fingerprint is the one the list keeps (script.md's size and date, the names 
 takes' sizes and dates, the names in the folders the Files column points into), without the reader's name. A computer
 new to the folder takes the newest summary only while that fingerprint is still its files'; otherwise it reads the
 script and writes a new one. For me depends on who you are, so `forAll` holds it for each name it differs for, and
-for anyone else. The writer removes summaries over 2 minutes old. No news note: a summary changes nothing.
+for anyone else. `voice` is one number per row for the mic's ring (#241): its words when it has a take, minus them
+when it has none, 0 when it needs none; a summary without it (written before) isn't used. The writer removes
+summaries over 2 minutes old. No news note: a summary changes nothing.
 
 ## The one rule: new files, never edits
 

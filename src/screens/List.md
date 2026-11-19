@@ -3,7 +3,8 @@
 The script list (mock-up 2): every script in the folder with its status, its length (AP-12, board 21), what waits for you (RV-14) and when it was last edited, newest
 first; New script; Change folder; Files, to browse every script's files (`SharedFiles.svelte`, AS-1b).
 
-- **Used by:** `App.svelte`. **Tests:** `tests/e2e/list.spec.ts`, `listcache.spec.ts`, `assets.spec.ts`, `shared.spec.ts`.
+- **Used by:** `App.svelte`. **Tests:** `tests/e2e/list.spec.ts`, `listcache.spec.ts`, `assets.spec.ts`, `shared.spec.ts`,
+  `readtime.spec.ts` (length and the mic's ring).
 
 ## Rules and pitfalls
 
@@ -20,8 +21,9 @@ first; New script; Change folder; Files, to browse every script's files (`Shared
   The All · For me choice is `list-for-me` in localStorage.
 - "Last edited by" is not shown yet: it comes from History's files (AP-6).
 - The length is kept as the takes' seconds plus the words in rows with none (`length` in `lib/scriptlist.svelte.ts`),
-  so it follows the speaking speed without reading the script again; it matches how Play times it. It shows a mic, "recorded", only once every row
-  with dialogue or a take has a take. Two scripts with the same title can't be told apart by tests: give them others.
+  so it follows the speaking speed without reading the script again; it matches how Play times it. Beside it, once a row has a take, the mic with its ring
+  (#241, `MicRing.svelte`): the ring fills as rows get takes, a gap for each row still to record; whole and
+  labelled "recorded" once every row with dialogue or a take has one. Two scripts with the same title can't be told apart by tests: give them others.
 - Templates (AP-15, board 67): New script stays one click for a blank script; the arrow beside it opens a menu of the
   templates, then New template. Templates sort last, show "Template" as their status and are left out of For me.
   The menu closes on Escape or a click outside it. **Tests:** `tests/e2e/templates.spec.ts`.
