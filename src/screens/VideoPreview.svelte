@@ -3,6 +3,8 @@
   // (lib/video.ts `frame`), with the picture track's clips underneath to pick the moment. Once a video is made, it
   // plays here; a click on a clip goes back to the stills. While making: the progress and Stop.
   import type { Plan } from '../lib/editxml';
+  import { assetFile } from '../lib/folder';
+  import { makePreview, revokePreview } from '../lib/preview';
   import { clock } from '../lib/readtime.svelte';
   import type { Shape } from '../lib/timeline';
   import { FPS, frame, frameSize, megabytes, type VideoHow } from '../lib/video';
@@ -27,6 +29,41 @@
     if (source?.kind === 'collage') return 'Collage';
     return n;
   };
+
+  // A tiny picture on each clip (#220, board 82), so a click reads as "see this one bigger": a picture's small copy,
+  // a video's first frame (also for a hold after it), a collage's first picture. Made once per file, as Assets'
+  // thumbnails are (two at a time), and freed when the preview goes or the files change.
+  const thumbOf = (n: string): string | undefined => {
+    const source = plan.media.get(n);
+    if (source?.kind === 'copy' || source?.kind === 'png' || source?.kind === 'last') return source.path;
+    if (source?.kind === 'collage') return source.paths[0];
+  };
+  const thumbPaths = $derived([...new Set(items.map((i) => thumbOf(i.name)).filter((p) => p !== undefined))].join('\n'));
+  let thumbs = $state<Record<string, string>>({});
+  $effect(() => {
+    const list = thumbPaths ? thumbPaths.split('\n') : [];
+    let gone = false;
+    const made: string[] = [];
+    (async () => {
+      for (const path of list) {
+        const file = await assetFile(dir, path);
+        if (gone) return;
+        const preview = file && (await makePreview(file, path));
+        if (gone) return revokePreview(preview);
+        const url = preview?.kind === 'video' ? preview.still : preview?.kind === 'image' || preview?.kind === 'tif' ? preview.url : undefined;
+        if (preview?.kind === 'video') URL.revokeObjectURL(preview.url); // only the still is used
+        else if (preview && !url) revokePreview(preview);
+        if (!url) continue;
+        made.push(url);
+        thumbs = { ...thumbs, [path]: url };
+      }
+    })();
+    return () => {
+      gone = true;
+      made.forEach((u) => URL.revokeObjectURL(u));
+      thumbs = {};
+    };
+  });
 
   // Drawn small (a third of the frame) so it's quick; cards and captions scale with it.
   let canvas = $state<HTMLCanvasElement>();
@@ -59,7 +96,12 @@
     {#each items as item, i (item.start + item.name)}
       {@const source = plan.media.get(item.name)}
       <button class="clip" class:card={source?.kind === 'card'} aria-pressed={!watching && i === shown} style:left="{pct(item.start)}%" style:width="{pct(item.seconds)}%"
-        title="{clock(item.start)} to {clock(item.start + item.seconds)} · {label(item.name)}" onclick={() => pick(i)}>{label(item.name)}</button>
+        title="{clock(item.start)} to {clock(item.start + item.seconds)} · {label(item.name)}" onclick={() => pick(i)}>
+        <span class="in">
+          {#if source?.kind === 'card'}<span class="thumb grey"></span>{:else if thumbs[thumbOf(item.name) ?? '']}<img class="thumb" src={thumbs[thumbOf(item.name) ?? '']} alt="" />{/if}
+          <span class="name">{label(item.name)}</span>
+        </span>
+      </button>
     {/each}
   </div>
   <p class="help">The same pictures and timings as the storyboard timeline at the bottom of Write. Click a block to see that moment{made ? '; the video you made plays above until you do' : ''}.</p>
@@ -78,9 +120,18 @@
   .screen { width: 100%; max-width: 720px; aspect-ratio: 16 / 9; background: #000; border-radius: 6px; overflow: hidden; }
   .screen.upright { width: 240px; aspect-ratio: 9 / 16; }
   canvas, video { display: block; width: 100%; height: 100%; }
-  .clips { position: relative; width: 100%; height: 40px; }
-  .clip { position: absolute; top: 2px; bottom: 2px; box-sizing: border-box; padding: 0 4px; border: 1px solid #b9cdf5; border-radius: 4px; background: #eef3fc;
-    font-size: 11px; color: #1c3a80; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* Many clips (#220): each is a size container, so a narrow one shows its picture alone, a sliver drops it, then its padding; a clip too narrow
+     for its own border can't push past the row's ends (overflow-x: clip, which keeps focus rings above and below). */
+  .clips { position: relative; width: 100%; height: 40px; overflow-x: clip; overflow-clip-margin: 3px; }
+  .clip { position: absolute; top: 2px; bottom: 2px; box-sizing: border-box; padding: 0; min-width: 0; border: 1px solid #b9cdf5; border-radius: 4px; background: #eef3fc;
+    font-size: 11px; color: #1c3a80; text-align: left; white-space: nowrap; overflow: hidden; container-type: inline-size; }
+  .in { display: flex; align-items: center; gap: 5px; height: 100%; padding: 3px; box-sizing: border-box; }
+  .thumb { flex: 0 0 auto; width: 40px; max-width: 100%; height: 100%; border-radius: 3px; object-fit: cover; background: #dfe5ee; }
+  .thumb.grey { background: #9a9a9a; }
+  .name { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  @container (max-width: 64px) { .thumb + .name { display: none; } } /* narrow: the picture alone (its name is in the hover text) */
+  @container (max-width: 20px) { .thumb { display: none; } .thumb + .name { display: inline; } }
+  @container (max-width: 12px) { .in { padding: 0; } }
   .clip.card { border: 1px dashed #9a9a9a; background: #e9e9e9; color: #3d3d3d; }
   .clip[aria-pressed='true'] { border: 2px solid var(--accent); background: #cfddf8; }
   .help { margin: 0; width: 100%; font-size: 12px; color: var(--muted); }

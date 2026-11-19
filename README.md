@@ -141,7 +141,7 @@ Status: a first working version. What it does today:
   its sound, at the timeline's timings. MP4 where the computer can make it, else WebM (the page says so). Settings:
   720p or 1080p (wide or upright, as set on the timeline), the dialogue as captions on the picture, rows with no take
   silent for their read time or left out, and videos' own sound kept under the voice. The preview shows any moment
-  (click a clip); once made, the video plays there. Stop ends it early.
+  (click a clip; each clip has a tiny picture of itself); once made, the video plays there. Stop ends it early.
 - **Read time:** each section shows how long its dialogue takes to read aloud, and the top bar the whole script
   beside the save status ("Saved · 2:05"; with takes, "Saved · 0:14/2:05": recorded so far / the whole script, where
   rows with a take count their take). The speaking speed is set in
