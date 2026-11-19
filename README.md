@@ -221,7 +221,9 @@ Status: a first working version. What it does today:
   one). Play it back, see its length and words a minute, record again or delete it (both with Undo at the bottom:
   "Undo, keep the old take" puts back the take you had). A take says Outdated once its
   line changes; its × hides it when the take already says the edited line (words a minute then counts the new words,
-  and the next edit shows Outdated again). Takes are kept in the script's `voice/` folder, so OneDrive shares them.
+  and the next edit shows Outdated again). The small file button under the mic (on the row's hover) uses a sound file
+  instead (.wav, .mp3, .m4a or .webm): it is copied in as the row's take, cropped and timed like a recording, and its
+  take says which file it came from ("from narration.mp3"). Takes are kept in the script's `voice/` folder, so OneDrive shares them.
   The top bar shows the takes' length and the whole script's length beside the save status ("0:14/2:05").
   Export > Voice-over (.wav) joins every row's take, in row order, into one file for the edit. Its preview plays the
   file and lists the rows (click one to hear it from there); settings add half a second between takes, or silence
