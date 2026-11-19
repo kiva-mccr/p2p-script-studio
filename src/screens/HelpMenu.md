@@ -6,10 +6,12 @@ These used to float in the bottom corners, over the script and the timeline's dr
 Download sealed (SE-10); in the sealed app GitHub and the download go, and the version is plain text marked sealed.
 
 - **Used by:** `screens/Header.svelte` (a script's bar), `screens/List.svelte`, `screens/Setup.svelte`.
-  **Tests:** `tests/e2e/app.spec.ts`, `tests/e2e/feedback.spec.ts`.
+  **Tests:** `tests/e2e/app.spec.ts`, `tests/e2e/feedback.spec.ts`, `tests/e2e/tour.spec.ts`.
 
 ## Rules and pitfalls
 
 - Feedback mode itself stays in `Feedback.svelte`, mounted once by App: the menu only raises `feedback.asked`
   (`lib/help.svelte.ts`). Mounted inside a top bar, its strip and panel would vanish when the bar changes.
 - Closes on a press outside it, on Esc, and when an item is chosen.
+- The tour's ? step (AP-53) holds the menu open through `feedback.tour === 'menu'`, beside its own `open`; a click
+  away closes only `open`, so the tour keeps it shown until the step is left.

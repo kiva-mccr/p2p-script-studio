@@ -1,5 +1,6 @@
 <script lang="ts">
   import { tick, untrack } from 'svelte';
+  import { feedback } from '../lib/help.svelte';
   import { skipTours, TABS, TOURS, tourDue, tourSeen, YOUR_TURN, type Step, type Tab } from '../lib/tour';
 
   // The guided tour in the example (AP-34, board 53). tab: the open tab; again: goes up when Take the tour is clicked.
@@ -47,9 +48,11 @@
       await wait(100);
     }
     // Some parts come in a moment after the first (who was here is read from the folder): wait a little for them.
-    for (let tries = 0; tries < 20 && !list.every((step) => find(step)); tries++) await wait(50);
+    // A step that shows its own part (the ? menu's list, Feedback mode's strip) is kept: its part comes when it's shown.
+    const there = (step: Step) => !!step.show || !!find(step);
+    for (let tries = 0; tries < 20 && !list.every(there); tries++) await wait(50);
     if (which !== tab) return;
-    steps = list.filter((step) => find(step)); // a part not on the page now (a hidden note) is left out
+    steps = list.filter(there); // a part not on the page now (a hidden note) is left out
     playing = which;
     show(0);
   }
@@ -103,7 +106,10 @@
     dispatchEvent(new CustomEvent('tour-drawer', { detail: open }));
   }
 
+  let showing = 0; // the latest show(): an earlier one still waiting (the drawer sliding) stops when it wakes
+
   async function show(i: number) {
+    const mine = ++showing;
     for (const el of shown) el.classList.remove('tour-on');
     clearTimeout(glideTimer);
     glide = true;
@@ -111,6 +117,13 @@
     const opening = !!steps[i]?.unfold && !unfolded;
     drawer(!!steps[i]?.unfold);
     if (opening) await wait(200); // the drawer slides open (150 ms) before the step is measured
+    if (mine !== showing) return; // a key pressed while it slid moved on: its step's parts mustn't be ringed
+    // The ? menu held open, or Feedback mode shown in use (issue #202): drawn before the step is measured.
+    if (feedback.tour !== (steps[i]?.show ?? null)) {
+      feedback.tour = steps[i]?.show ?? null;
+      await tick();
+      if (mine !== showing) return;
+    }
     shown = parts(steps[i]);
     for (const el of shown) el.classList.add('tour-on'); // shows the parts that only show on hover, such as a row's tools
     if (shown.length) {
@@ -170,8 +183,10 @@
   }
 
   function finish() {
+    showing++;
     if (playing) tourSeen(playing);
     drawer(false);
+    feedback.tour = null;
     for (const el of shown) el.classList.remove('tour-on');
     shown = [];
     playing = null;
