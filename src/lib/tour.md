@@ -19,7 +19,10 @@ what this browser remembers: which tabs' tours were seen, and Skip tour (no tab'
   only if the tour opened it, never touching `timeline-open`. The step is measured 0.2 s later, once it has slid open.
 - A step with `show` (AP-53, issue #202) sets `feedback.tour` (lib/help.svelte.ts) for the step only: 'menu' holds
   the ? menu open (HelpMenu.svelte; the list is `data-tour-with="help"`, so the ring covers it), 'feedback' draws
-  Feedback mode's strip (`data-tour="feedback"`) and outline, inert (Feedback.svelte). Its part is drawn only once
-  shown, so such a step is never left out for a missing part at the start.
+  Feedback mode's strip and outline, inert (Feedback.svelte). Its part is drawn only once shown, so such a step is
+  never left out for a missing part at the start.
+- Feedback mode's step (issue #328, board 92) rings the orange outline itself (`data-tour="feedback"`), so the
+  outlined row is lit, not dimmed; the outline sits under the tour (z-index 29) so the card is always on top, and the
+  tour's blue ring is left off. The card stays above the strip (`data-tour-clear`), placed below or above the row.
 - `show()` waits (the drawer sliding, the menu being drawn): a newer show, or finishing, makes a waiting one stop when
   it wakes. Without that, arrow keys pressed fast past the timeline's step ringed the timeline on a later step.

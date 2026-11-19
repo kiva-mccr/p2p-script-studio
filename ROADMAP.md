@@ -505,6 +505,9 @@ and suggestions, keeps every version, and exports them for production.
   covered; the ruler's times and the preview's clock name nobody and stay. Done 2026-11-19.
 - [x] **SB-17** Show preview looks like Fold (issue #333, board 92 agreed by the user): blue text with a small picture
   icon, no box, in the timeline's bar. Done 2026-11-19.
+- [x] **AP-64** The tour's Feedback step lights the outlined row (issue #328, board 92 agreed by the user): the row with
+  the orange outline is lit instead of dimmed, and the tour's card always sits on top of the outline, below or above
+  the row, clear of Feedback's strip. Done 2026-11-19.
 - [x] **AP-60** Versions named by what made them (issue #240, board 87 agreed by the user): official versions are r1,
   r2 … (sent for review), w1, w2 … (published by hand in History while writing) and ap1, ap2 … (approved), each
   letter counted on its own; r blue, w amber, ap green. Approve now makes a version too, always (even with nothing

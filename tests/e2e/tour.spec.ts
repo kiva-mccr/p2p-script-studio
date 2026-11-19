@@ -114,7 +114,7 @@ test('the last steps open the ? menu, then show Feedback mode, and put both away
   const steps = TOURS.write;
   const menuAt = steps.findIndex((s) => s.show === 'menu');
   const menu = page.getByRole('menu', { name: 'Help and version' });
-  const strip = page.locator('[data-tour="feedback"]');
+  const strip = page.locator('[data-tour-clear]');
   await expect(card(page)).toContainText('Write · 1 of');
   for (let i = 0; i < menuAt; i++) await page.keyboard.press('ArrowRight');
   await expect(card(page).getByRole('heading', { name: steps[menuAt].title })).toBeVisible();
@@ -133,6 +133,19 @@ test('the last steps open the ? menu, then show Feedback mode, and put both away
   const ring = page.locator('[data-feedback-ring]');
   await expect(ring).toHaveCount(1);
   await expect(ring).toBeInViewport();
+  // Issue #328: the outlined row is lit (inside the tour's hole), and the card sits above or below it, never under
+  // the outline, and clear of the strip.
+  await expect(ring).toHaveAttribute('data-tour', 'feedback');
+  await page.waitForTimeout(300); // the ring and card glide to the step
+  const box = async (sel: string) => (await page.locator(sel).boundingBox())!;
+  const r = await box('[data-feedback-ring]'), hole = await box('.tour .hole'), c = await box('.tour [role="dialog"]');
+  const s = await box('[data-tour-clear]');
+  expect(hole.x).toBeLessThanOrEqual(r.x);
+  expect(hole.y).toBeLessThanOrEqual(r.y);
+  expect(hole.x + hole.width).toBeGreaterThanOrEqual(r.x + r.width);
+  expect(hole.y + hole.height).toBeGreaterThanOrEqual(r.y + r.height);
+  expect(c.y >= r.y + r.height || c.y + c.height <= r.y).toBe(true);
+  expect(c.y + c.height).toBeLessThanOrEqual(s.y);
   // Nothing is caught: the tour's Back still works, and Feedback mode goes with the step.
   await card(page).getByRole('button', { name: 'Back' }).click();
   await expect(strip).toHaveCount(0);

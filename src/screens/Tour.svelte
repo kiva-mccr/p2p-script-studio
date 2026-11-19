@@ -124,6 +124,11 @@
       await tick();
       if (mine !== showing) return;
     }
+    // Feedback mode's outline is drawn a moment after the mode is shown (it finds a row on screen first).
+    for (let tries = 0; tries < 10 && steps[i]?.show && !find(steps[i]); tries++) {
+      await wait(20);
+      if (mine !== showing) return;
+    }
     shown = parts(steps[i]);
     for (const el of shown) el.classList.add('tour-on'); // shows the parts that only show on hover, such as a row's tools
     if (shown.length) {
@@ -161,12 +166,14 @@
     const x2 = Math.min(r.right + PAD, view.clientWidth - RING), y2 = Math.min(r.bottom + PAD, view.clientHeight - RING);
     hole = { x: x1, y: y1, w: Math.max(x2 - x1, 0), h: Math.max(y2 - y1, 0) };
     const fitX = (x: number) => Math.max(EDGE, Math.min(x, innerWidth - w - EDGE));
-    const fitY = (y: number) => Math.max(EDGE, Math.min(y, innerHeight - h - EDGE));
+    // The card keeps above a part marked data-tour-clear (Feedback mode's strip at the window's foot, issue #328).
+    const floor = Math.min(innerHeight - EDGE, ...[...document.querySelectorAll('[data-tour-clear]')].map((el) => el.getBoundingClientRect().top - GAP));
+    const fitY = (y: number) => Math.max(EDGE, Math.min(y, floor - h));
     const below = r.bottom + PAD + GAP;
     const above = r.top - PAD - GAP - h;
     const right = r.right + PAD + GAP;
     const left = r.left - PAD - GAP - w;
-    if (below + h <= innerHeight - EDGE) card = { x: fitX(r.left), y: below };
+    if (below + h <= floor) card = { x: fitX(r.left), y: below };
     else if (above >= EDGE) card = { x: fitX(r.left), y: above };
     else if (right + w <= innerWidth - EDGE) card = { x: right, y: fitY(r.top) };
     else if (left >= EDGE) card = { x: left, y: fitY(r.top) };
@@ -217,7 +224,7 @@
     <!-- Catches clicks while a step shows, so a stray click doesn't lose the tour. The hole's shadow dims the rest. -->
     <div class="block" aria-hidden="true"></div>
     {#if hole}
-      <div class="hole" class:glide style:left="{hole.x}px" style:top="{hole.y}px" style:width="{hole.w}px" style:height="{hole.h}px"></div>
+      <div class="hole" class:glide class:plain={steps[at]?.show === 'feedback'} style:left="{hole.x}px" style:top="{hole.y}px" style:width="{hole.w}px" style:height="{hole.h}px"></div>
     {:else}
       <div class="dim"></div>
     {/if}
@@ -239,6 +246,8 @@
   .block { position: absolute; inset: 0; }
   .hole { position: absolute; border-radius: 10px; box-shadow: 0 0 0 3px var(--accent), 0 0 0 9999px rgba(20, 20, 20, 0.55);
     pointer-events: none; }
+  /* Feedback mode's step (issue #328): its orange outline is the only ring. */
+  .hole.plain { box-shadow: 0 0 0 9999px rgba(20, 20, 20, 0.55); }
   .hole.glide { transition: all 0.2s ease; }
   .dim { position: absolute; inset: 0; background: rgba(20, 20, 20, 0.55); }
   .card { position: absolute; box-sizing: border-box; width: min(340px, calc(100vw - 32px)); padding: 18px 18px 14px;
