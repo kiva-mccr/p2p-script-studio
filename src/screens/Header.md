@@ -20,7 +20,8 @@ Copy for Teams, EX-10) above Export (Print…, Fountain, Final Draft, Voice-over
   Teams message as it will look (#234, EX-28, board 87): opening the menu asks `onShare` for it (which saves what is
   waiting) and shows its HTML, already escaped by `lib/share.ts`, in an `inert` box so its links are a picture only.
   Copy for Teams asks again, so the copy is never older than the click. Its buttons sit in `.share` blocks, not
-  straight under `.menu`: tests that list `.menu > button` see only the exports.
+  straight under `.menu`: tests that list `.menu > button` see only the exports. The menu sets `white-space: normal`:
+  the bar's `.right > *` nowrap ran the preview's credits line out of its box (seen on the live site).
 - Copy for Teams hands the clipboard promises (`ClipboardItem`) and asks `onShare` for the text, so the click still
   counts while the Editor saves and reads History. The text itself is `lib/share.ts`.
 - A new export goes in the Export menu and in `Export.svelte`'s formats (`Format`).

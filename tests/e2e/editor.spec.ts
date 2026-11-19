@@ -310,6 +310,9 @@ test('Export / Share shows the link itself and the Teams message as it will look
   await expect(preview.getByText('Open in Script Studio')).toBeVisible();
   // A picture of the message: its links can't be followed or tabbed to from here.
   await expect(preview).toHaveAttribute('inert', '');
+  // Long lines (the credits) wrap inside the box: the bar's nowrap once ran them out of it on the live site.
+  await expect(preview).toHaveCSS('white-space', 'normal');
+  expect(await preview.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
   // The preview is what Copy for Teams puts on the clipboard.
   const shown = await preview.innerHTML();
   await page.getByRole('button', { name: 'Copy for Teams' }).click();
