@@ -703,7 +703,7 @@
     {#if showVisit && marks}{@render visitBar(marks)}{/if}
     <Review {dir} {script} {notes} {ends} {flagged} me={name} {sent} {reviewedAt} visit={reviewedAt ? null : marks} {voice} {player} {canPlay} onPlayFrom={play} onNotice={(m) => (notice = m)} onAdd={note} onApply={apply} />
   {:else if script && dir && mode === 'assets'}
-    <Assets {script} {dir} missing={lostFiles} onJump={jump} onNotice={(m) => (notice = m)} />
+    <Assets bind:script={() => script!, (s) => (file.script = s)} {dir} root={folder} missing={lostFiles} onJump={jump} onNotice={(m) => (notice = m)} onChange={changed} />
   {:else if script && dir && mode === 'history'}
     <History {dir} {notes} onRestore={restore} onPublish={(official) => file.publish(official)} onOpen={openComment} />
   {:else if script && dir}

@@ -194,7 +194,8 @@ Status: a first working version. What it does today:
   review · 2 days"); hover it for who and when. If comments, suggestions or missing files are still open,
   Approve first lists them (click one to go to it); "Approve anyway" still approves, and History notes how many were open.
   **For me:** the script list labels what waits for you: "Your review" (in review and someone else sent it), "2
-  replies" (open comments you wrote in where someone else has the last word) and "Sent back to you". The All · For
+  replies" (open comments you wrote in where someone else has the last word), "Sent back to you" and "2 to find"
+  (missing shots given to you in Assets). The All · For
   me switch above the list shows only those scripts (remembered on your computer).
   **What's changed:** once a script has been sent back or approved, Review marks the rows changed since then (a blue
   bar and "Changed" or "New"; a removed row stays as one struck-through grey line), so a reviewer rereads only those.
@@ -265,6 +266,9 @@ Status: a first working version. What it does today:
   Review shows the same timeline, read only: click a block to comment on its row ("row 2, on the timeline"). Kept in the row's `Timeline:` line in script.md.
 - **Assets:** the Assets tab lists every file, link and "still to find" note in the script once, with the rows that
   use it, with a thumbnail for pictures, PDFs and videos: what is missing from the folder first, then what is still to find or film, then the rest (or by row).
+  Each shot still to find or film can be given to one or more people: + Who picks from the folder's people (Credits)
+  or takes a name typed in, × takes someone off. Saved in the script's Files line (`(to find: Ana, Sam)`), so it
+  saves, merges and shows in History like any edit.
   Beside each file in the folder or linked, the start of its row's words (its dialogue, or its On screen words), so
   you can tell what it is for. The tab and the script list show how many files are missing. A row number goes to that row.
 - **Two people:** the top of a script says who else is editing it, with a small spinner while their changes come in.

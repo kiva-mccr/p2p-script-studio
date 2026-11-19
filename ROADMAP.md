@@ -788,6 +788,12 @@ and suggestions, keeps every version, and exports them for production.
   sized by its words; recorded rows green, a row still to record a pale red gap of at least 8% of the ring, so one
   short row still shows. Hover says "6 of 8 rows recorded · missing: row 3, 7". All recorded: a whole green ring.
   Outdated takes count as recorded. Counts remembered from before are read once more (`lib/micring.ts`). Built 2026-11-19.
+- [x] **AS-2** Who finds or films each missing shot (issue #211, board 88 agreed by the user): in Assets › Still to
+  find or film, each item shows its people as chips (× takes one off) and + Who, which picks from the folder's people
+  (Credits) or adds a name typed in; several allowed. Saved in the script's Files line, `(to find: Ana, Sam)` (or
+  `(to film: …)`), so it merges and shows in History like any edit and older apps still read a note; the same shot in
+  two rows is one item and gets the same people. The script list's For me counts them ("2 to find"). Built 2026-11-19
+  (lib/finders.ts, screens/Finders.svelte).
 - [x] **AP-56** The ? menu everywhere (issues #219, #239, #232, board 87 agreed by the user): ? is in the top bar of
   every screen, Export included, and beside Exit in the Teleprompter (dark, opening upwards); in a script, Export
   and the Teleprompter it's a touch dimmer until hovered. "See the example" opens the made-up example at its list

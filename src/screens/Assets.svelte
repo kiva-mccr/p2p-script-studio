@@ -1,15 +1,36 @@
 <script lang="ts">
   import { assetFile } from '../lib/folder';
-  import { assetList, assetRows, type Asset } from '../lib/assets';
+  import { assetKey, assetList, assetRows, type Asset } from '../lib/assets';
+  import { bare, withFinders } from '../lib/finders';
+  import { listPeople, type Person } from '../lib/people';
+  import { readFileRef } from '../lib/script';
+  import Finders from './Finders.svelte';
   import { makePreview, previewKind, revokePreview, type Preview } from '../lib/preview';
   import { keep, recall } from '../lib/remember';
   import type { Script } from '../lib/script';
 
   // The Assets tab (EX-6, mock-up 12). `missing`: the paths not in the folder, worked out by the Editor so the tab's
-  // count and this list always agree. onJump: go to a row in Write.
-  let { script, dir, missing, onJump, onNotice }: {
-    script: Script; dir: FileSystemDirectoryHandle; missing: Set<string>; onJump: (row: number) => void; onNotice: (message: string) => void;
+  // count and this list always agree. onJump: go to a row in Write. Giving a missing shot to people (#211) changes
+  // the script's Files lines and calls onChange, so it saves, merges and gets History like any edit.
+  let { script = $bindable(), dir, root, missing, onJump, onNotice, onChange }: {
+    script: Script; dir: FileSystemDirectoryHandle; root: FileSystemDirectoryHandle; missing: Set<string>; onJump: (row: number) => void;
+    onNotice: (message: string) => void; onChange: () => void;
   } = $props();
+
+  // The folder's people (Credits), read the first time + Who is clicked, not on opening the tab.
+  let people: Promise<Person[]> | null = null;
+  const folderPeople = () => (people ??= listPeople(root));
+
+  // Every row's line for this note gets the same people, so the shot is one item wherever it's used.
+  function assign(asset: Asset, names: string[]) {
+    const key = assetKey(asset);
+    for (const block of script.blocks) {
+      if (block.type !== 'row') continue;
+      const next = block.files.map((line) => (readFileRef(line.trim()).kind === 'words' && assetKey(readFileRef(line.trim())) === key ? withFinders(line.trim(), names) : line));
+      if (next.some((line, i) => line !== block.files[i])) block.files = next;
+    }
+    onChange();
+  }
 
   let byRow = $state(recall('assets-order') === 'row');
   const rows = $derived(assetRows(script));
@@ -77,7 +98,7 @@
     </span>
     <span class="name">
       {#if kind === 'find'}
-        {asset.label}
+        {bare(asset.label)}
       {:else}
         <button class="open" onclick={() => open(asset)}><span data-hide>{asset.label}</span></button>
         <span class="where">{asset.kind === 'link' ? asset.target.replace(/^https?:\/\//, '') : asset.target}</span>
@@ -86,6 +107,7 @@
     {#if kind === 'here' && words.get(asset.rows[0])}
       <span class="excerpt" title={words.get(asset.rows[0])}>{words.get(asset.rows[0])}</span>
     {/if}
+    {#if kind === 'find'}<Finders who={asset.who} what={bare(asset.label)} people={folderPeople} onSet={(names) => assign(asset, names)} />{/if}
     <span class="rows">
       {#each asset.rows as n (n)}<button class="jump" data-tour="assets-jump" onclick={() => onJump(n)}>Row {n}</button>{/each}
     </span>
@@ -113,7 +135,7 @@
             <ul>
               {#each row.assets as asset (asset.line)}
                 {#if asset.kind === 'words'}
-                  <li class="find">To find: {asset.label}</li>
+                  <li class="find">To find: {bare(asset.label)}{asset.who.length ? ` · ${asset.who.join(', ')}` : ''}</li>
                 {:else if asset.kind === 'path' && missing.has(asset.target)}
                   <li class="lost"><button class="open" onclick={() => open(asset)}><span data-hide>{asset.label}</span></button> · missing</li>
                 {:else}
@@ -133,7 +155,7 @@
       {/if}
       {#if toFind.length}
         <h2 class="find-head">Still to find or film</h2>
-        <ul>{#each toFind as asset (asset.line)}{@render item(asset, 'find')}{/each}</ul>
+        <ul>{#each toFind as asset (assetKey(asset))}{@render item(asset, 'find')}{/each}</ul>
       {/if}
       {#if here.length}
         <h2>In the folder or linked</h2>
@@ -158,7 +180,7 @@
   .lost-head { background: #fdf0ef; color: var(--danger); }
   .find-head { background: #fff7ed; color: #7a4a00; }
   ul { margin: 0; padding: 0; list-style: none; }
-  .box > ul > li { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-top: 1px solid #f0f0f0; }
+  .box > ul > li { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 10px 16px; border-top: 1px solid #f0f0f0; }
   .thumb { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 32px;
     border-radius: 4px; background: #f2f2f2; overflow: hidden; color: var(--accent); font-size: 13px; }
   .thumb img { width: 100%; height: 100%; object-fit: cover; }
