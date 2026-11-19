@@ -1,7 +1,8 @@
 # `src/lib/voiceexport.ts`
 
 The voice-over as one file (EX-11, asked by the user for their work): `readClips` (each row's take, in row order,
-decoded to mono), `lineUp` (with silence for rows with no take, EX-9), `wavFile` (one after another, as a 16-bit WAV) and `wav` (one take as a WAV).
+decoded to mono), `lineUp` (with silence for rows with no take, EX-9), `wavFile` (one after another, as a 16-bit WAV),
+`mp3File` (the same as an .mp3, made in a worker, #237, lib/mp3.md) and `wav` (one take as a WAV).
 
 - **Used by:** `screens/Export.svelte`, `lib/editmedia.ts` (`decoder`, `cleaned`, `readTake`, `wav`). **Tests:** `tests/unit/voiceexport.test.ts`,
   `tests/e2e/voice.spec.ts`.

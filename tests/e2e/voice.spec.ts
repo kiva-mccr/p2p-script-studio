@@ -171,8 +171,9 @@ test('Export > Voice-over joins the takes in row order into one WAV, and says wh
     await expect(page.getByRole('button', { name: `Record row ${row} again` })).toBeVisible();
   }
   await page.getByRole('button', { name: 'Export' }).click();
-  await page.getByRole('button', { name: 'Voice-over (.wav)' }).click();
+  await page.getByRole('button', { name: 'Voice-over (.mp3, .wav)' }).click();
   await expect(page.getByLabel('Preview')).toContainText('2 of 5 rows have a take; the other 3 are left out.');
+  await page.getByLabel('.wav (full quality, bigger)').check();
   const [file] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: 'Save .wav' }).click()]);
   expect(file.suggestedFilename()).toBe('How Photosynthesis Works voice-over.wav');
   const bytes = readFileSync(await file.path());
@@ -189,7 +190,8 @@ test('Export > Voice-over: a pause between takes, silence for rows with none, an
     await expect(page.getByRole('button', { name: `Record row ${row} again` })).toBeVisible();
   }
   await page.getByRole('button', { name: 'Export' }).click();
-  await page.getByRole('button', { name: 'Voice-over (.wav)' }).click();
+  await page.getByRole('button', { name: 'Voice-over (.mp3, .wav)' }).click();
+  await page.getByLabel('.wav (full quality, bigger)').check();
   await page.getByLabel('Half a second between takes').check();
   await expect(page.getByLabel('Preview').locator('.pause')).toHaveCount(1);
   let [file] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: 'Save .wav' }).click()]);
@@ -209,7 +211,60 @@ test('Export > Voice-over: a pause between takes, silence for rows with none, an
 test('Export > Voice-over with no takes says so and saves nothing', async ({ page }) => {
   await openExample(page);
   await page.getByRole('button', { name: 'Export' }).click();
-  await page.getByRole('button', { name: 'Voice-over (.wav)' }).click();
+  await page.getByRole('button', { name: 'Voice-over (.mp3, .wav)' }).click();
   await expect(page.getByRole('alert')).toContainText('No voice-over has been recorded yet');
-  await expect(page.getByRole('button', { name: 'Save .wav' })).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Save .mp3' })).toBeDisabled();
+});
+
+test('Export > Voice-over saves an .mp3 by default, and remembers .wav when picked (#237)', async ({ page }) => {
+  await openExample(page);
+  await page.getByRole('button', { name: 'Record row 2', exact: true }).click();
+  await page.getByRole('button', { name: 'Stop recording row 2' }).click();
+  await expect(page.getByRole('button', { name: 'Record row 2 again' })).toBeVisible();
+  await page.getByRole('button', { name: 'Export' }).click();
+  await page.getByRole('button', { name: 'Voice-over (.mp3, .wav)' }).click();
+  await expect(page.getByLabel('.mp3 (about a tenth the size)')).toBeChecked();
+  await expect(page.getByLabel('Preview')).toContainText(/voice-over\.mp3 · 48 kHz mono · 128 kbps · \d+ KB/);
+  const [file] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: 'Save .mp3' }).click()]);
+  expect(file.suggestedFilename()).toBe('How Photosynthesis Works voice-over.mp3');
+  const bytes = readFileSync(await file.path());
+  expect(bytes[0]).toBe(0xff);
+  expect(bytes[1] & 0xfe).toBe(0xfa); // MPEG-1 layer III
+  // Half a second at 128 kbps is 8,000 bytes, plus LAME's frames at the ends.
+  expect(bytes.length).toBeGreaterThan(7000);
+  expect(bytes.length).toBeLessThan(12000);
+  // It decodes as sound half a second long.
+  const seconds = await page.evaluate(async (data) => (await new OfflineAudioContext(1, 1, 48000).decodeAudioData(new Uint8Array(data).buffer)).duration, [...bytes]);
+  expect(seconds).toBeGreaterThan(0.45);
+  expect(seconds).toBeLessThan(0.6);
+  await page.getByLabel('.wav (full quality, bigger)').check();
+  await page.getByRole('button', { name: 'Back to the script' }).click();
+  await page.getByRole('button', { name: 'Export' }).click();
+  await page.getByRole('button', { name: 'Voice-over (.mp3, .wav)' }).click();
+  await expect(page.getByLabel('.wav (full quality, bigger)')).toBeChecked();
+  await expect(page.getByRole('button', { name: 'Save .wav' })).toBeEnabled();
+});
+
+test('Export > Voice-over shows each take\'s waveform and lights the row being heard (#237)', async ({ page }) => {
+  await openExample(page);
+  for (const row of [3, 1]) {
+    await page.getByRole('button', { name: `Record row ${row}`, exact: true }).click();
+    await page.getByRole('button', { name: `Stop recording row ${row}` }).click();
+    await expect(page.getByRole('button', { name: `Record row ${row} again` })).toBeVisible();
+  }
+  await page.getByRole('button', { name: 'Export' }).click();
+  await page.getByRole('button', { name: 'Voice-over (.mp3, .wav)' }).click();
+  const rows = page.getByLabel('Preview').locator('li');
+  await expect(rows).toHaveCount(5);
+  // A take's waveform is bars; a row with no take is a flat line.
+  await expect(rows.nth(0).locator('.wave path')).toHaveAttribute('d', /^M[\d.]+ [\d.]+V/);
+  await expect(rows.nth(1).locator('.wave path')).toHaveAttribute('d', 'M0 20H100');
+  await expect(page.getByLabel('Preview').locator('li.lit')).toHaveCount(0);
+  await rows.nth(2).getByRole('button').click();
+  await expect(rows.nth(2)).toHaveClass(/lit/);
+  await expect(rows.nth(2).locator('.wave .played')).toBeVisible();
+  await expect(page.getByLabel('Preview').locator('li.lit')).toHaveCount(1);
+  await rows.nth(0).getByRole('button').click();
+  await expect(rows.nth(0)).toHaveClass(/lit/);
+  await expect(rows.nth(2)).not.toHaveClass(/lit/);
 });

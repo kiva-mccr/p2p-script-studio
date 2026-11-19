@@ -3,7 +3,8 @@
 A take's waveform for the storyboard timeline (SB-1): the take decoded at 8 kHz, cropped and made louder as it plays
 (`cleaned`), then the loudest sample in each of 200 parts (`peaksOf`), drawn as an SVG path (`wavePath`).
 
-- **Used by:** `screens/Timeline.svelte`. **Tests:** `tests/unit/waveform.test.ts` (the decoding only in e2e).
+- **Used by:** `screens/Timeline.svelte`; `screens/VoicePreview.svelte` uses `peaksOf` and `wavePath` on the clips it
+  already has (no decoding). **Tests:** `tests/unit/waveform.test.ts` (the decoding only in e2e).
 
 ## Rules and pitfalls
 

@@ -22,7 +22,10 @@
   import { COLUMNS, readHidden } from '../lib/printcolumns';
   import { keep, recall } from '../lib/remember';
   import { frontValue, rows, type Script } from '../lib/script';
-  import { lineUp, readClips, wavFile, type Clip } from '../lib/voiceexport';
+  import { lineUp, mp3File, readClips, wavFile, type Clip } from '../lib/voiceexport';
+  import { KBPS } from '../lib/mp3';
+  import { sizeText } from '../lib/comments';
+  import VoicePreview from './VoicePreview.svelte';
   import Print from './Print.svelte';
   import EditPreview from './EditPreview.svelte';
   import { stillToFind } from '../lib/assets';
@@ -45,7 +48,7 @@
     { id: 'print', name: 'Print / PDF', action: 'Print…' },
     { id: 'fountain', name: 'Fountain (.fountain)', action: 'Save .fountain' },
     { id: 'fdx', name: 'Final Draft (.fdx)', action: 'Save .fdx' },
-    { id: 'voice', name: 'Voice-over (.wav)', action: 'Save .wav' },
+    { id: 'voice', name: 'Voice-over (.mp3, .wav)', action: 'Save .mp3' },
     { id: 'edit', name: 'Resolve / Premiere (.zip)', action: 'Save .zip' },
     { id: 'video', name: 'Video (.mp4)', action: 'Save video' },
   ];
@@ -61,7 +64,8 @@
     hidden: readHidden(recall('print-hide')), landscape: recall('print-page') === 'landscape', credits: recall('export-credits') !== 'off' });
   let fountain = $state<Screenplay>(load('export-fountain', SCREENPLAY));
   let fdx = $state<Screenplay>(load('export-fdx', SCREENPLAY));
-  let voiceHow = $state(load('export-voice', { gap: false, silence: false }));
+  // .mp3 by default (#237): about a tenth the size; .wav for full quality.
+  let voiceHow = $state(load('export-voice', { gap: false, silence: false, mp3: true }));
   let edit = $state(load('export-edit', EDIT));
   let video = $state(load('export-video', VIDEO));
   $effect(() => {
@@ -119,7 +123,6 @@
   let clips = $state<Clip[] | null>(null);
   let failed = $state(false);
   const VOICE_FAILED = "The voice-over couldn't be put together. If the shared folder is still syncing the takes, wait a moment and try again.";
-  let audio = $state<HTMLAudioElement>();
   $effect(() => {
     if (format !== 'voice' || clips || failed) return;
     readClips(dir, script, RATE).then((c) => (clips = c), (e) => (problem(VOICE_FAILED, 'putting the voice-over together', e), (failed = true)));
@@ -127,16 +130,6 @@
   const reads = $derived(rows(script).map((row) => (countWords(row.dialogue) / speaking.wpm) * 60));
   const lined = $derived(clips ? lineUp(clips, reads, RATE, voiceHow.silence) : []);
   const gap = $derived(voiceHow.gap ? GAP : 0);
-  // Where each lined-up row starts in the joined file, in seconds.
-  const starts = $derived.by(() => {
-    const out: number[] = [];
-    let at = 0;
-    for (const clip of lined) {
-      out.push(at);
-      at += clip.samples.length / RATE + gap;
-    }
-    return out;
-  });
   // The joined file is made a slice at a time (PF-6), again when the settings change; Save waits for it.
   let file = $state<Blob | null>(null);
   $effect(() => {
@@ -157,13 +150,22 @@
     sound = url;
     return () => URL.revokeObjectURL(url);
   });
+  // The .mp3 (#237) is encoded from the same clips in a worker; the preview plays the WAV meanwhile, and Save waits.
+  let mp3 = $state<Blob | null>(null);
+  $effect(() => {
+    const clipsNow = lined;
+    const gapNow = gap;
+    mp3 = null;
+    if (!voiceHow.mp3 || !clipsNow.length) return;
+    let stale = false;
+    mp3File(clipsNow, RATE, gapNow, () => stale).then(
+      (made) => !stale && (mp3 = made),
+      (e) => !stale && (problem(VOICE_FAILED, 'making the voice-over .mp3', e), (failed = true)),
+    );
+    return () => (stale = true);
+  });
+  const saved = $derived(voiceHow.mp3 ? mp3 : file);
   const missing = $derived(clips ? rows(script).length - clips.length : 0);
-
-  function from(i: number) {
-    if (!audio) return;
-    audio.currentTime = starts[i];
-    audio.play().catch(() => {});
-  }
 
   // Resolve / Premiere (EX-19): the storyboard timeline's layout, with each row's take length (read once) or read time,
   // as the timeline under the script times it.
@@ -237,7 +239,7 @@
     if (format === 'print') return onPrint($state.snapshot(printing));
     if (format === 'fountain') return download(`${name}.fountain`, fountainText);
     if (format === 'fdx') return download(`${name}.fdx`, toFdx(script, title, stand, date, fdx, creditsShown));
-    if (file) download(`${name} voice-over.wav`, file);
+    if (saved) download(`${name} voice-over.${voiceHow.mp3 ? 'mp3' : 'wav'}`, saved);
   }
 
   function download(fileName: string, data: string | Blob) {
@@ -329,7 +331,7 @@
         <p class="message">Reading the takes…</p>
       {/if}
     {:else}
-      <p class="caption">{name} voice-over.wav · 48 kHz mono</p>
+      <p class="caption">{name} voice-over.{voiceHow.mp3 ? `mp3 · 48 kHz mono · ${KBPS} kbps` : 'wav · 48 kHz mono'}{saved ? ` · ${sizeText(saved.size)}` : ''}</p>
       {#if failed}
         <p class="message" role="alert">{VOICE_FAILED}<CopyDetails message={VOICE_FAILED} /></p>
       {:else if !clips}
@@ -337,27 +339,7 @@
       {:else if !clips.length}
         <p class="message" role="alert">No voice-over has been recorded yet. Record a take with the mic beside a row first.</p>
       {:else}
-        <div class="voice">
-          <audio bind:this={audio} src={sound} controls></audio>
-          <ol>
-            {#each rows(script) as row, r (row.id)}
-              {@const i = lined.findIndex((c) => c.row === r + 1)}
-              {#if i > 0 && gap}<li class="pause"><span></span><span>pause</span><span></span><span>{gap}s</span></li>{/if}
-              <li>
-                <span class="num">{r + 1}</span>
-                {#if i >= 0}
-                  <button class="row" class:silent={lined[i].silent} onclick={() => from(i)}><span data-hide>{row.dialogue.trim() || '(no dialogue)'}</span></button>
-                  <span class="missing">{lined[i].silent ? 'no take yet, silence' : ''}</span>
-                  <span>{clock(lined[i].samples.length / RATE)}</span>
-                {:else}
-                  <span class="left">{row.dialogue.trim() || '(no dialogue)'}</span>
-                  <span class="missing">no take yet, left out</span>
-                  <span class="left">–</span>
-                {/if}
-              </li>
-            {/each}
-          </ol>
-        </div>
+        <VoicePreview rows={rows(script)} {lined} {gap} rate={RATE} {sound} />
         <p class="caption">{clips.length} of {rows(script).length} rows have a take{missing ? `; the other ${missing === 1 ? 'is' : `${missing} are`} ${voiceHow.silence ? 'silent for their read time' : 'left out'}` : ''}. Click a row to hear it.</p>
       {/if}
     {/if}
@@ -428,6 +410,11 @@
         <label><input type="checkbox" bind:checked={video.sound} /> Keep videos' own sound, under the voice</label>
         <label><input type="checkbox" bind:checked={video.find} /> Say what's still to find on placeholders</label>
       {:else}
+        <fieldset class="plain">
+          <legend>File type</legend>
+          <label><input type="radio" name="voicetype" checked={voiceHow.mp3} onchange={() => (voiceHow.mp3 = true)} /> .mp3 (about a tenth the size)</label>
+          <label><input type="radio" name="voicetype" checked={!voiceHow.mp3} onchange={() => (voiceHow.mp3 = false)} /> .wav (full quality, bigger)</label>
+        </fieldset>
         <label><input type="checkbox" bind:checked={voiceHow.gap} /> Half a second between takes</label>
         <label><input type="checkbox" bind:checked={voiceHow.silence} /> Silence for rows with no take</label>
       {/if}
@@ -435,7 +422,7 @@
         <label><input type="checkbox" bind:checked={printing.credits} /> {format === 'print' ? 'Credits after the rows' : 'Credits on the title page'}</label>
       {/if}
       <p class="kept">Remembered on this computer for next time.</p>
-      <button class="primary" disabled={(format === 'voice' && !file) || (format === 'edit' && (!edited?.total || making || !editReady)) || (format === 'video' && (!videoPlan?.total || progress !== null || !videoReady))} onclick={save}>{format === 'edit' && making ? 'Making the .zip…' : format === 'video' && progress !== null ? 'Making the video…' : FORMATS.find((f) => f.id === format)?.action}</button>
+      <button class="primary" disabled={(format === 'voice' && !saved) || (format === 'edit' && (!edited?.total || making || !editReady)) || (format === 'video' && (!videoPlan?.total || progress !== null || !videoReady))} onclick={save}>{format === 'edit' && making ? 'Making the .zip…' : format === 'video' && progress !== null ? 'Making the video…' : format === 'voice' ? (clips?.length && !saved ? `Making the .${voiceHow.mp3 ? 'mp3' : 'wav'}…` : `Save .${voiceHow.mp3 ? 'mp3' : 'wav'}`) : FORMATS.find((f) => f.id === format)?.action}</button>
       {#if format === 'print'}
         <p class="kept help">If words can't be selected in the PDF, choose "Microsoft Print to PDF" instead of "Adobe PDF".</p>
       {/if}
@@ -475,18 +462,6 @@
   .screenplay .general { color: var(--muted); }
   .screenplay .speaker { margin: 0 0 0 37%; }
   .screenplay .dialogue { margin: 0 12% 12px 18%; }
-  .voice { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
-  .voice audio { display: block; box-sizing: border-box; width: 100%; padding: 12px 16px; border-bottom: 1px solid var(--line); }
-  ol { margin: 0; padding: 8px 16px; list-style: none; font-size: 13px; }
-  li { display: grid; grid-template-columns: 32px minmax(0, 1fr) auto 48px; gap: 12px; align-items: center; }
-  li > :last-child { text-align: right; }
-  .num { color: var(--muted); }
-  .row { min-height: 36px; padding: 0; border: 0; background: none; text-align: left; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .row:hover { color: var(--accent); }
-  .row.silent, .left { color: #8a5300; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .left { min-height: 36px; line-height: 36px; }
-  .missing { font-size: 12px; color: #8a5300; }
-  .pause { font-size: 12px; color: #8a8a8a; min-height: 20px; }
   aside { flex: 0 1 300px; min-width: 260px; }
   .card { display: flex; flex-direction: column; gap: 10px; padding: 16px 18px; border: 1px solid var(--line); border-radius: 10px; font-size: 14px; }
   h2 { margin: 0 0 2px; font-size: 14px; font-weight: 600; }

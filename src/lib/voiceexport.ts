@@ -133,3 +133,21 @@ function pcm(samples: Float32Array): Uint8Array<ArrayBuffer> {
   }
   return bytes;
 }
+
+// The clips as an .mp3 (#237), made in a worker (lib/mp3.ts). Gives null if `stale()` turns true meanwhile (the
+// worker is stopped then).
+export function mp3File(clips: Clip[], rate: number, gap: number, stale = () => false): Promise<Blob | null> {
+  const worker = new Worker(new URL('./mp3.worker.ts', import.meta.url), { type: 'module' });
+  return new Promise<Blob | null>((resolve, reject) => {
+    const check = setInterval(() => stale() && done(null), 200);
+    const done = (blob: Blob | null, error?: unknown) => {
+      clearInterval(check);
+      worker.terminate();
+      if (error) reject(error);
+      else resolve(blob);
+    };
+    worker.onmessage = (e: MessageEvent<Blob>) => done(e.data);
+    worker.onerror = (e) => done(null, e.error ?? new Error(e.message));
+    worker.postMessage({ clips: clips.map((c) => c.samples), rate, gap });
+  });
+}

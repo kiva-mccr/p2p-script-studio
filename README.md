@@ -225,9 +225,10 @@ Status: a first working version. What it does today:
   instead (.wav, .mp3, .m4a or .webm): it is copied in as the row's take, cropped and timed like a recording, and its
   take says which file it came from ("from narration.mp3"). Takes are kept in the script's `voice/` folder, so OneDrive shares them.
   The top bar shows the takes' length and the whole script's length beside the save status ("0:14/2:05").
-  Export > Voice-over (.wav) joins every row's take, in row order, into one file for the edit. Its preview plays the
-  file and lists the rows (click one to hear it from there); settings add half a second between takes, or silence
-  for rows with no take (as long as their read time).
+  Export > Voice-over joins every row's take, in row order, into one file for the edit: an .mp3 by default (made in
+  the browser, about a tenth the size), or a .wav for full quality. Its preview plays the file and lists the rows,
+  each with its take's waveform; the row being heard lights up as it plays (click one to hear it from there).
+  Settings add half a second between takes, or silence for rows with no take (as long as their read time).
   ⋯ > Settings picks the microphone takes are recorded with (remembered in this browser). The computer's own default
   is marked "(default)" and is used until you pick another. If the picked one is unplugged, the take is recorded with
   the default microphone and the page says so.

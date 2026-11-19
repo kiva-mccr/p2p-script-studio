@@ -282,7 +282,7 @@ test('Export / Share holds Copy link above the exports; menus close on Esc or a 
   await exportButton.click();
   await expect(exportButton).toHaveAttribute('aria-expanded', 'true');
   await expect(page.locator('.menu > button')).toHaveText(
-    ['Print…', 'Fountain (.fountain)', 'Final Draft (.fdx)', 'Voice-over (.wav)', 'Resolve / Premiere (.zip)', 'Video (.mp4)']);
+    ['Print…', 'Fountain (.fountain)', 'Final Draft (.fdx)', 'Voice-over (.mp3, .wav)', 'Resolve / Premiere (.zip)', 'Video (.mp4)']);
   await expect(page.locator('.menu .group')).toHaveText(['Export']);
   await expect(page.locator('.menu .share .label')).toHaveText(['Link', 'Teams message']);
   await page.keyboard.press('Escape');

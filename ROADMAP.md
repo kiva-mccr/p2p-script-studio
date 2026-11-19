@@ -928,6 +928,12 @@ and suggestions, keeps every version, and exports them for production.
 - [x] **EX-28** The link and a Teams preview in Share (issue #234, board 87 agreed by the user): Export / Share shows
   the link itself in a read-only field with Copy, and the Teams message as it will look (lavender box, Teams' purple
   links, not clickable) with Copy for Teams under it; Print and the exports stay below. Built 2026-11-19.
+- [x] **EX-29** Voice-over rows light up, with waveforms, and .mp3 by default (issue #237, board 86 agreed by the user):
+  while Export > Voice-over plays, the row being heard is lit and scrolled into view, and its take's waveform fills in
+  as it plays; every row shows its take's waveform (a flat grey line for none). File type: .mp3 (128 kbps, the
+  default, about a tenth the size) or .wav (full quality), remembered like the other settings. The .mp3 is encoded in
+  the browser by LAME (lamejs, shipped with the app, in a worker), so nothing is sent anywhere. Built 2026-11-19
+  (lib/mp3.ts, screens/VoicePreview.svelte).
 - [-] **EX-17** A shoot checklist (suggested; shelved by the user, to talk through later): the asset list (EX-6) with
   shared tick boxes for each row's on-screen shots and files, for the day of filming.
 - [-] **AP-45** Dictate dialogue into a row (suggested; shelved by the user, 2026-11-14, to consider later): speak into
