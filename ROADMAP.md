@@ -771,6 +771,11 @@ and suggestions, keeps every version, and exports them for production.
 - [x] **AP-55** Copy and Open on contact details (issue #224, board 88 agreed by the user): each box in Contact details
   (Credits and People) gets Copy, and Write ↗ (a new email) or Open ↗ (the LinkedIn page) in a new tab; shown only
   once the box has something in it.
+- [x] **AP-56** The ? menu everywhere (issues #219, #239, #232, board 87 agreed by the user): ? is in the top bar of
+  every screen, Export included, and beside Exit in the Teleprompter (dark, opening upwards); in a script, Export
+  and the Teleprompter it's a touch dimmer until hovered. "See the example" opens the made-up example at its list
+  from any screen (left out while in it); leaving the example comes back to your own folder's list when one was
+  open. GitHub has GitHub's own mark in place of ↗.
 - [x] **AP-54** Paste a picture into a row (issue #304 from a teammate, board 90 agreed by the user, 2026-11-19): click
   a row's Images & files and press Ctrl+V; a screen grab is saved into the script's `assets` folder as "pasted
   2026-11-19 06-40.png" (local time) and added to the row, as Choose a file… does (Ctrl+Z takes it back). Only

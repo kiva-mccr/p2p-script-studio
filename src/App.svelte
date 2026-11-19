@@ -8,11 +8,12 @@
   import Setup from './screens/Setup.svelte';
   import { openExample, startOver } from './lib/example';
   import { closed } from './lib/leaving';
-  import { tick } from 'svelte';
+  import { tick, untrack } from 'svelte';
   import Feedback from './screens/Feedback.svelte';
   import { exampleBar } from './lib/examplebar.svelte';
   import DownloadSealed from './screens/DownloadSealed.svelte';
   import SealedLinks from './screens/SealedLinks.svelte';
+  import { example as exampleAsk } from './lib/help.svelte';
 
 
   let route = $state<string[]>([]);
@@ -44,6 +45,20 @@
   });
   $effect(() => {
     if (!example) exampleBar.height = 0;
+  });
+  // See the example in the ? menu (issue #239), from any screen: the open script closes (it saves as it goes) and the
+  // example opens at its list, as from the first screen; leaving it comes back to the list of your own folder.
+  $effect(() => {
+    exampleAsk.open = example !== null;
+  });
+  $effect(() => {
+    if (!exampleAsk.asked) return;
+    untrack(() => {
+      if (example) return;
+      history.replaceState(null, '', location.pathname + location.search);
+      onHash();
+      tryExample(name || 'Guest').catch(() => leaveExample());
+    });
   });
   let undoStart = $state<(() => Promise<FileSystemDirectoryHandle>) | null>(null);
   let swapping = $state(false); // the example's screens are closed while its folder is swapped (lib/leaving.md)
@@ -81,12 +96,13 @@
     session(typed);
   }
 
-  // Back to the first-time screen, at the list: the example's script names mean nothing in the real folder.
+  // Back where it was opened from, at the list: the example's script names mean nothing in the real folder. That is
+  // the first-time screen, or your folder's list when See the example (issue #239) was chosen with it open.
   function leaveExample() {
     example = null;
     undoStart = null;
     session(null);
-    screen = 'setup';
+    if (screen !== 'open') screen = 'setup';
     history.replaceState(null, '', location.pathname + location.search);
     route = [];
   }

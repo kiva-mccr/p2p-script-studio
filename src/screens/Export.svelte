@@ -9,6 +9,7 @@
 <script lang="ts">
   import { problem } from '../lib/problems';
   import CopyDetails from './CopyDetails.svelte';
+  import HelpMenu from './HelpMenu.svelte';
   // The export screen (EX-9, board 27): opened from Export / Share on one format, in place of the script. Formats
   // on the left, the real result in the middle (redrawn as settings change), the settings and Print… or Save on the
   // right. Settings are remembered in this browser; their defaults are what the exports did before.
@@ -274,6 +275,7 @@
     <span class="here">Export</span>
   </nav>
   <button class="outline" onclick={onBack}>Back to the script</button>
+  <HelpMenu tone="dim" />
 </header>
 
 <div class="export">

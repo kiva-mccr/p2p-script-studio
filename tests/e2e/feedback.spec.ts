@@ -152,8 +152,8 @@ test('holding Shift opens a menu while picking, and a part inside it can be pick
   await expect(page.getByRole('region', { name: 'Feedback' })).toHaveCount(0);
 
   // Without Shift the click picks again; the menu stays open and its link isn't followed.
-  await menu.getByRole('menuitem', { name: 'GitHub ↗' }).click();
-  await expect(page.getByRole('region', { name: 'Feedback' }).getByRole('heading')).toHaveText('Feedback on: menu item "GitHub ↗"');
+  await menu.getByRole('menuitem', { name: 'GitHub', exact: true }).click();
+  await expect(page.getByRole('region', { name: 'Feedback' }).getByRole('heading')).toHaveText('Feedback on: menu item "GitHub"');
   await expect(menu).toBeVisible();
   expect(page.context().pages()).toHaveLength(1);
 });
