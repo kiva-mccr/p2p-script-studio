@@ -768,6 +768,10 @@ and suggestions, keeps every version, and exports them for production.
   solid says the drop will work). A drop anywhere else is refused, so the browser never opens the file in place of
   the app (`lib/filedrag.svelte.ts`). "From other scripts…" became "Reuse a file…": this script's own files and links
   come first ("In this script", with the rows using each, added as the same line, not copied), then the other scripts.
+- [x] **RV-27** A reason on a suggestion (issue #242, board 84 agreed by the user): "+ Add a reason" under Replace
+  with opens a "Why (optional)" box. On the card the reason starts folded to one line ("› Why: …"); a click shows it
+  whole. Saved as the suggestion's `text`, so Write's Comments tab and History show it too. A plain comment doesn't
+  get one. Built 2026-11-19.
 - [x] **RV-26** Tick boxes you can use in Review's planning notes (issue #233, board 82 agreed by the user): in
   Review the plan is shown, not typed in; its tick boxes tick with one click and save as typing does (a ticked line
   struck through in grey). Edit, beside Close, opens the same text box Write has, and Done shows the plan again; it

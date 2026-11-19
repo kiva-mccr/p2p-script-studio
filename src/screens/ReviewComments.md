@@ -25,6 +25,8 @@ or Suggest a change, files through `AttachBox.svelte`), "Open · n" with the sor
   `active`, so Review opens a folded column) and scrolls the card and its row (`[data-play]`, Review's row) into view.
 - Sorted (RV-16): `lib/commentsort.ts`; the switch (`SortSwitch.svelte`) is beside "Open · n", sharing Write's
   remembered choice. By Type, an `h3.kind` heading starts each kind in the open list.
+- A suggestion's reason (RV-27): "+ Add a reason" opens "Why (optional)" (focused); it is sent as `text` only when
+  not blank, and Cancel or sending clears and folds it again.
 - What is typed is kept (UX-9): `said` holds the comment while suggesting, `changed` the new words while back on
   Comment. `start` (other words picked) keeps an unsent comment and its files; a suggestion starts from the new words.
   Only Cancel and a sent comment clear the draft (`close`), so never set `target = null` alone.

@@ -42,6 +42,10 @@
   let draftFiles = $state<File[]>([]);
   let draftMissing = $state('');
   let suggesting = $state(false);
+  // A suggestion's reason (#242, board 84): optional, behind "+ Add a reason", saved as the suggestion's `text`.
+  let why = $state('');
+  let whyOpen = $state(false);
+  let whyBox = $state<HTMLTextAreaElement>();
   // What is typed is kept (UX-9): the comment while you try Suggest a change and back, and the changed words while
   // you go back to Comment. Selecting other words keeps an unsent comment; only Cancel or sending clears it.
   let said = '';
@@ -97,7 +101,8 @@
   }
 
   function clear() {
-    draft = said = changed = '';
+    draft = said = changed = why = '';
+    whyOpen = false;
     draftFiles = [];
   }
 
@@ -123,7 +128,8 @@
     const { row, field, quote, on } = target;
     if (suggesting) {
       if (draft === quote) return void ((draftMissing = 'Change the text first.'), box?.focus());
-      if (await onAdd({ kind: 'suggestion', row, field, quote, replace: draft })) close();
+      const reason = why.trim();
+      if (await onAdd({ kind: 'suggestion', row, field, quote, replace: draft, ...(reason ? { text: reason } : {}) })) close();
       return;
     }
     if (!draft.trim() && !draftFiles.length) return void ((draftMissing = 'Write a comment first.'), box?.focus());
@@ -156,6 +162,11 @@
       {/snippet}
       {#if suggesting}
         {@render typing()}
+        {#if whyOpen}
+          <label class="why">Why (optional)<textarea bind:this={whyBox} bind:value={why} rows="2"></textarea></label>
+        {:else}
+          <button class="link add-why" type="button" onclick={() => ((whyOpen = true), queueMicrotask(() => whyBox?.focus()))}>+ Add a reason</button>
+        {/if}
         <div class="actions">{@render buttons()}</div>
       {:else}
         <AttachBox {dir} bind:files={draftFiles} actions={buttons}>{@render typing()}</AttachBox>
@@ -214,6 +225,8 @@
   .switch button[aria-pressed='true'] { background: #fff; color: var(--ink); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08); }
   blockquote { margin: 0; padding-left: 10px; border-left: 3px solid #e0b100; font-size: 14px; color: #3d3d3d; }
   textarea { font: inherit; font-size: 14px; padding: 8px 10px; border: 1px solid var(--line-strong); border-radius: 8px; resize: vertical; }
+  .why { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--muted); }
+  .add-why { align-self: flex-start; font-size: 13px; }
   .actions { display: flex; flex-wrap: wrap; gap: 8px; }
   .small { min-height: 40px; padding: 0 16px; font-size: 14px; }
   .missing { margin: 0; font-size: 13px; color: var(--danger); }

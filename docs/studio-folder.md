@@ -258,7 +258,7 @@ It is a warning, not a lock: anyone can still edit, and conflicts are caught as 
 - A comment made on a row's block of the storyboard timeline (SB-1, in Review) has `"on": "timeline"` and an
   empty `quote`; it is shown as "row 2, on the timeline".
 - `kind` is `comment`, `reply` (with `"about": "<id>"`), or `suggestion` (with `"replace": "…"`, the new text for
-  `quote`).
+  `quote`, and an optional `text`, the reason for it, #242).
 - What happens to it later is a new file, never an edit: `resolve`, `reopen`, `accept`, `reject` or `hold`, each
   with `"about": "<id>"`, `who` and `when`. The newest one counts.
 - `hold` (RV-19) puts it on hold; a `reopen` takes it off. A hold lasts only until the next send for review or

@@ -191,6 +191,37 @@ test('suggest a change; accepting updates the script, and Undo puts it back', as
   await expect.poll(() => readFile(page, SCRIPT)).toBe(example);
 });
 
+test('a suggestion can carry a reason, folded to one line on its card (#242)', async ({ page }) => {
+  await openReview(page);
+  await commentOn(page, 'Dialogue, row 3', 'catch');
+  const form = page.getByRole('form', { name: 'New comment' });
+  await form.getByRole('button', { name: 'Suggest a change' }).click();
+  await form.getByLabel('Replace with').fill('absorb');
+  await expect(form.getByLabel('Why (optional)')).toHaveCount(0);
+  await form.getByRole('button', { name: '+ Add a reason' }).click();
+  await expect(form.getByLabel('Why (optional)')).toBeFocused();
+  const reason = 'Plants take in light rather than grab it; "catch" made the kids picture hands. '.repeat(3).trim();
+  await form.getByLabel('Why (optional)').fill(reason);
+  await form.getByRole('button', { name: 'Add suggestion' }).click();
+  await expect(form).toHaveCount(0);
+
+  const card = page.getByRole('article', { name: 'Suggestion by Sam' });
+  const why = card.getByRole('button', { name: /^Why:/ });
+  await expect(why).toHaveAttribute('aria-expanded', 'false');
+  const line = await why.evaluate((el) => el.getBoundingClientRect().height);
+  await why.click();
+  await expect(why).toHaveAttribute('aria-expanded', 'true');
+  expect(await why.evaluate((el) => el.getBoundingClientRect().height)).toBeGreaterThan(line * 1.5);
+  await why.click();
+  await expect(why).toHaveAttribute('aria-expanded', 'false');
+
+  // Saved as the suggestion's text; one without a reason has no Why.
+  await expect.poll(async () => (await readJsonFiles(page, COMMENTS)).find((n) => n.kind === 'suggestion')?.text).toBe(reason);
+  await suggestOn(page, 'Dialogue, row 1', 'tiny factory', 'small factory');
+  await expect(page.getByRole('article', { name: 'Suggestion by Sam' })).toHaveCount(2);
+  await expect(page.getByRole('button', { name: /^Why:/ })).toHaveCount(1);
+});
+
 test('rejecting keeps the original; a suggestion whose words are replaced is resolved (RV-24)', async ({ page }) => {
   await openReview(page);
   await suggestOn(page, 'On screen, row 2', 'slide in one at a time', 'pop in, timed to each word');
