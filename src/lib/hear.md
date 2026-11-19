@@ -9,6 +9,9 @@ starts. On the graphics card (WebGPU) where there is one, otherwise on WebAssemb
 
 ## Rules and pitfalls
 
+- Whisper's decoder is q8 on WebGPU and WebAssembly (SE-5): its q4 is 124 MB, over GitHub Pages' 100 MB a file, so
+  the app can't serve it (`lib/models.md`).
+
 - Whisper, not Moonshine (Follow my voice): only Whisper gives word timings. The `_timestamped` export carries the
   cross attentions word timings need; a plain Whisper export fails with `return_timestamps: 'word'`.
 - About 150 MB, downloaded once from Hugging Face and kept by the browser; no sound leaves the computer. Only takes of

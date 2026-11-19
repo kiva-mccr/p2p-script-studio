@@ -41,10 +41,11 @@ X-Content-Type-Options (-5) are lost: about 55 at best.
    **SE-9** (asked by the user) Integrity hashes on the app's own script and stylesheet. Done 2026-11-18.
 5. **SE-5** Speech models served from the app (D2, agreed by the user 2026-11-18, built when there's room): the deploy
    downloads pinned model files from Hugging Face, checks their SHA-256 and publishes them with the app (never in
-   the repo). The policy then becomes `connect-src 'self'`.
+   the repo). The policy then becomes `connect-src 'self'`. Done 2026-11-19 (models.lock.json, scripts/models.ts; the
+   sealed app takes them as a zip in Settings).
 6. **SE-6** Offline app (PWA): replaced by SE-10 (the user, 2026-11-18: the website, or a fully sealed file; no installed app).
    **SE-10** The sealed app: one HTML file whose policy names no address, built and attested by each deploy, offered on
-   ? › Download sealed with five checks for IT. Done 2026-11-18 (the speech models as its second file come with SE-5).
+   ? › Download sealed with five checks for IT. Done 2026-11-18; the speech models as its second file came with SE-5.
 7. **SE-7** Proof of what's running (the sealed file's attestation is done with SE-10): GitHub build attestations and a published list of the live files' SHA-256.
 8. **SE-8** IT pack: `SECURITY.md`, a "For IT" page (data flow, permissions, network addresses, what the browser
    keeps, how to check it), an OWASP ASVS level 1 map, and the Edge/Chrome policies IT can set.

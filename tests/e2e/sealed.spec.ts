@@ -27,6 +27,20 @@ test('Download sealed: the ? menu opens the page, with the file, its fingerprint
   await expect(page.getByRole('heading', { name: 'Open your scripts folder' })).toBeVisible();
 });
 
+test('Download sealed: the app and the speech models, with the models\' fingerprint and attestation (SE-5)', async ({ page }) => {
+  // The deploy writes speech-models.json (scripts/models.ts); a test build has no models, so it is made up here.
+  const models = { tag: 'speech-models-b1e9b6a-608c49e', url: 'https://github.com/kiva-mccr/p2p-script-studio/releases/download/speech-models-b1e9b6a-608c49e/speech-models.zip', sha256: 'AB'.repeat(32), bytes: 330e6 };
+  await page.route(/\/speech-models\.json$/, (route) => route.fulfill({ json: models }));
+  await page.goto('./#download-sealed');
+  await expect(page.getByRole('link', { name: 'Download the speech models' })).toHaveCount(0);
+  await page.getByText('The app and the speech models').click();
+  await expect(page.getByRole('link', { name: 'Download the app' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Download the speech models' })).toHaveAttribute('href', models.url);
+  await expect(page.getByText('models 330 MB')).toBeVisible();
+  await expect(page.locator('code.hash').nth(1)).toHaveText(models.sha256);
+  await expect(page.getByText('gh attestation verify speech-models.zip')).toBeVisible();
+});
+
 test.describe(() => {
   test.use({ refusalsExpected: true }); // the reach for a website below is meant to be refused
 

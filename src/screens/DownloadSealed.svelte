@@ -2,25 +2,33 @@
   import HelpMenu from './HelpMenu.svelte';
   import { SEALED_FACTS, SEALED_FILE, type SealedFacts } from '../lib/sealedfile';
   import { REPO, versionLabel, type Version } from '../lib/version';
+  import { MODELS_ZIP, type ModelsZip } from '../lib/modelfiles';
 
   // Download sealed (SE-10, board 89): the website's page for the sealed app, reached from the ? menu (#download-sealed).
   // What to download, and the standard checks IT can run to see that the file is sealed. The file's fingerprint, size and
-  // policy come from the deploy (script-studio-sealed.json beside it).
+  // policy come from the deploy (script-studio-sealed.json beside it). The speech models' zip (SE-5) is the second
+  // download, a GitHub release asset (too big for this site); its facts are in speech-models.json beside the page.
   let { onBack }: { onBack: () => void } = $props();
 
   const version: Version | null = __VERSION__;
   let facts = $state<SealedFacts | null>(null);
   let missing = $state(false);
-  let copied = $state<'' | 'hash' | 'policy'>('');
+  let models = $state<ModelsZip | null>(null);
+  let withModels = $state(false);
+  let copied = $state<'' | 'hash' | 'models' | 'policy'>('');
 
   fetch(`./${SEALED_FACTS}`, { cache: 'no-cache' })
     .then((r) => (r.ok ? r.json() : Promise.reject()))
     .then((f: SealedFacts) => (facts = f))
     .catch(() => (missing = true));
+  fetch('./speech-models.json', { cache: 'no-cache' })
+    .then((r) => (r.ok ? r.json() : Promise.reject()))
+    .then((m: ModelsZip) => (models = m))
+    .catch(() => {});
 
   const mb = (bytes: number) => `${Math.round(bytes / 1e6)} MB`;
 
-  async function copy(what: 'hash' | 'policy', text: string) {
+  async function copy(what: 'hash' | 'models' | 'policy', text: string) {
     await navigator.clipboard.writeText(text).catch(() => {});
     copied = what;
     setTimeout(() => copied === what && (copied = ''), 2000);
@@ -40,15 +48,23 @@
 
   <fieldset>
     <legend>What to download</legend>
-    <label class="choice on">
-      <input type="radio" name="what" checked />
+    <label class="choice" class:on={!withModels}>
+      <input type="radio" name="what" checked={!withModels} onchange={() => (withModels = false)} />
       <span><b>The app</b><small>{SEALED_FILE} · everything but Follow my voice and cuts timed from the take</small></span>
     </label>
+    {#if models}
+      <label class="choice" class:on={withModels}>
+        <input type="radio" name="what" checked={withModels} onchange={() => (withModels = true)} />
+        <span><b>The app and the speech models</b><small>Two files. Add {MODELS_ZIP} once, in the app's Settings: it's
+          checked there, file by file, and kept by the browser.</small></span>
+      </label>
+    {/if}
   </fieldset>
 
   <div class="get">
     <a class="primary" href="./{SEALED_FILE}" download={SEALED_FILE}>Download the app</a>
-    <span class="meta">Version: {versionLabel(version)}{facts ? ` · ${mb(facts.bytes)}` : ''}</span>
+    {#if withModels && models}<a class="primary" href={models.url}>Download the speech models</a>{/if}
+    <span class="meta">Version: {versionLabel(version)}{facts ? ` · ${mb(facts.bytes)}` : ''}{withModels && models ? ` · models ${mb(models.bytes)}` : ''}</span>
   </div>
   {#if missing}<p class="bad" role="status">The sealed file isn't on this site yet. Try again after the next update.</p>{/if}
 
@@ -60,12 +76,17 @@
       <h3>1. It's the file we published</h3>
       <p>Its SHA-256 fingerprint: <code class="hash">{facts?.sha256 ?? '…'}</code>
         {#if facts}<button class="outline small-btn" onclick={() => copy('hash', facts!.sha256)}>{copied === 'hash' ? 'Copied' : 'Copy'}</button>{/if}</p>
+      {#if withModels && models}
+        <p>The speech models' fingerprint: <code class="hash">{models.sha256}</code>
+          <button class="outline small-btn" onclick={() => copy('models', models!.sha256)}>{copied === 'models' ? 'Copied' : 'Copy'}</button></p>
+      {/if}
       <p>In PowerShell: <code>Get-FileHash .\{SEALED_FILE}</code> ·
         <a href="https://learn.microsoft.com/powershell/module/microsoft.powershell.utility/get-filehash" target="_blank" rel="noopener">Microsoft's Get-FileHash ↗</a></p>
     </li>
     <li>
       <h3>2. It was built from the public code, by GitHub</h3>
       <p>Each update signs a build attestation (Sigstore): <code>gh attestation verify {SEALED_FILE} -R kiva-mccr/p2p-script-studio</code></p>
+      {#if withModels && models}<p>The models too: <code>gh attestation verify {MODELS_ZIP} -R kiva-mccr/p2p-script-studio</code></p>{/if}
       <p><a href="https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations/using-artifact-attestations-to-establish-provenance-for-builds" target="_blank" rel="noopener">GitHub's artifact attestations ↗</a> ·
         <a href="https://cli.github.com/manual/gh_attestation_verify" target="_blank" rel="noopener">gh attestation verify ↗</a> ·
         <a href={REPO} target="_blank" rel="noopener">The code ↗</a></p>

@@ -1,5 +1,5 @@
 // The Content Security Policy (SE-1): the browser itself refuses anything the app doesn't need, so a script can only
-// run from this site and the page can only reach this site and Hugging Face (the speech models, downloads only).
+// run from this site and the page can only reach this site (the speech models are served from it too, SE-5).
 // Added to index.html as a <meta> tag when the app is built: GitHub Pages can't send headers. A Vite plugin.
 
 import type { Plugin } from 'vite';
@@ -13,8 +13,7 @@ export const POLICY: Record<string, string[]> = {
   'img-src': ["'self'", 'blob:', 'data:'], // pictures from the script's folder are blob: URLs
   'media-src': ["'self'", 'blob:'], // takes and video clips from the folder
   'font-src': ["'self'", 'data:'], // KaTeX's fonts, one inlined in its CSS
-  'connect-src': ["'self'", 'blob:', 'data:', 'https://huggingface.co', 'https://*.hf.co'], // the models and their CDN; data: is
-  // the example's small files that Vite builds into the app
+  'connect-src': ["'self'", 'blob:', 'data:'], // data: is the example's small files that Vite builds into the app
   'worker-src': ["'self'", 'blob:'],
   'manifest-src': ["'self'"],
   'object-src': ["'none'"],

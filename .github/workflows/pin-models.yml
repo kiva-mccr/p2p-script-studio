@@ -4,8 +4,6 @@ name: Pin the speech models
 # and commit by hand. Run by hand from the Actions tab (this container can't reach Hugging Face).
 on:
   workflow_dispatch:
-  pull_request:
-    paths: [scripts/models.ts]
 
 permissions:
   contents: read
