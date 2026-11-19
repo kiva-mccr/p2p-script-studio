@@ -89,6 +89,13 @@ test('For me shows only the scripts waiting for you, with labels saying why', as
   await expect(rows).toHaveCount(4);
 });
 
+test('For me counts the missing shots given to you to find (#211)', async ({ page }) => {
+  const files = (title: string, who: string) => `---\ntitle: ${title}\n---\n\n## 1 <!-- id: aaaaa -->\nDialogue: Hi\n\nOn screen:\n\nFiles:\n- Drone shot (to find: ${who})\n- Map (to find: sam)\n`;
+  await setUp(page, '', { 'Ep 07/script.md': files('Ep 07', 'Ana, Sam'), 'Ep 08/script.md': files('Ep 08', 'Ana').replace('sam', 'Lee') });
+  await expect(page.getByRole('link', { name: /Ep 07\s*2 to find/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'For me 1' })).toBeVisible();
+});
+
 test('For me with nothing waiting says so, with a way back to all', async ({ page }) => {
   await setUp(page, '', { 'Ep 06/script.md': '---\ntitle: Ep 06\nstatus: approved\n---\n' });
   await page.getByRole('button', { name: /For me/ }).click();

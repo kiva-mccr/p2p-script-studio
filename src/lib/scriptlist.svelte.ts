@@ -2,7 +2,7 @@
 // fingerprint of its files (names and dates, no file opened), so a script is read again only when its files changed.
 // Scripts on screen are read first.
 
-import { assetList, countMissing } from './assets';
+import { assetList, countMissing, findsBy } from './assets';
 import { eachAtOnce } from './atonce';
 import { flags, listNotes } from './comments';
 import { fileIn, readScript, scriptHead, type ScriptInfo } from './folder';
@@ -63,7 +63,7 @@ export async function readCounts(dir: FileSystemDirectoryHandle, me: string, sta
   // to the newest send for review (PF-3).
   const versions = status === 'approved' ? [] : await sinceSend(dir);
   const paths = assetList(script).flatMap((a) => (a.kind === 'path' ? [a.target] : []));
-  const all = forAll(status, versions, notes);
+  const all = forAll(status, versions, notes, findsBy(script));
   return {
     missing: await countMissing(dir, script),
     flagged: flags(notes, rows(script).map((row) => row.id)).size,

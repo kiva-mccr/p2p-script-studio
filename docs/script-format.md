@@ -92,7 +92,8 @@ Each row has three fields, each starting with its label at the start of a line:
 - **Files** are a list (`- `), one per line:
   - a path inside the script's folder: `assets/leaf-closeup.jpg`
   - a link, with a name: `[Chloroplast animation](https://…)`
-  - plain words for something not found yet: `Stock shot of a forest (to find)`
+  - plain words for something not found yet: `Stock shot of a forest (to find)`, or `(to film)`; the people
+    finding or filming it may follow, comma-separated (#211, set in Assets): `Stock shot of a forest (to find: Ana, Sam)`
 - A file added only for the storyboard timeline (SB-1) ends ` (timeline)`: `- assets/icon-water.png (timeline)`.
   Files shows it minimised ("+2 for the timeline"); everything else reads it without the mark.
 - A line of text that itself starts with a label (a narrator saying "Dialogue: …") is written with a backslash in

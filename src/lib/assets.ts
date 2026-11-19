@@ -4,8 +4,10 @@ import { assetFile } from './folder';
 import { readFileRef, type FileRef, type Script, type Row as ScriptRow } from './script';
 import { clearMarks } from './format';
 import { subpath } from './dirs';
+import { bare, finders } from './finders';
 
-export type Asset = FileRef & { line: string; rows: number[] };
+// `who`: the people on a "to find" note (#211), from every row it is in.
+export type Asset = FileRef & { line: string; rows: number[]; who: string[] };
 export type Row = { n: number; section: string; assets: Asset[]; excerpt: string };
 
 // The rows in order, each with its section's name and its assets. An asset used in two rows is the same object.
@@ -22,15 +24,26 @@ export function assetRows(script: Script): Row[] {
     const row: Row = { n: ++n, section, assets: [], excerpt: excerpt(block) };
     for (const line of block.files) {
       const ref = readFileRef(line.trim());
-      const key = `${ref.kind}:${ref.kind === 'words' ? ref.label.toLowerCase() : ref.target}`;
+      const key = assetKey(ref);
       let asset = seen.get(key);
-      if (!asset) seen.set(key, (asset = { ...ref, line, rows: [] }));
+      if (!asset) seen.set(key, (asset = { ...ref, line, rows: [], who: [] }));
+      if (ref.kind === 'words') for (const name of finders(line)) if (!asset.who.some((w) => w.toLowerCase() === name.toLowerCase())) asset.who.push(name);
       if (!asset.rows.includes(n)) asset.rows.push(n);
       if (!row.assets.includes(asset)) row.assets.push(asset);
     }
     rows.push(row);
   }
   return rows;
+}
+
+// Two lines are the same asset when their path or link is, or a note's words are (ignoring case and its people).
+export const assetKey = (ref: FileRef): string => `${ref.kind}:${ref.kind === 'words' ? bare(ref.label).toLowerCase() : ref.target}`;
+
+// How many "to find" notes each person is on (#211), by name trimmed and in lower case, for "For me".
+export function findsBy(script: Script): Record<string, number> {
+  const by: Record<string, number> = {};
+  for (const asset of assetList(script)) for (const name of asset.who) by[name.trim().toLowerCase()] = (by[name.trim().toLowerCase()] ?? 0) + 1;
+  return by;
 }
 
 // A row's words as one line for Assets (#212, board 82): its dialogue, or its On screen words when it has none, with

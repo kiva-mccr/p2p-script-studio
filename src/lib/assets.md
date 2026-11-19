@@ -4,14 +4,16 @@ The asset list (EX-6, board 12): `assetRows` (each row with its section and its 
 `assetList` (each asset once, with the rows that use it), `missingFiles` (the paths not in the script's folder) and
 `countMissing` (for the script list), and `stillToFind` (a row's missing files and "to find" notes, for the
 video's placeholder cards, #227). Each row also carries its `excerpt` (#212): its dialogue, or its On screen
-words, as one line without marks or bullets.
+words, as one line without marks or bullets. A "to find" note's `who` is the people on it in any row (AS-2, #211);
+`findsBy` counts each person's notes for For me, and `assetKey` says which lines are the same asset.
 
 - **Used by:** `screens/Assets.svelte`, `screens/Editor.svelte`, `screens/List.svelte`, `screens/Export.svelte`. **Tests:**
   `tests/unit/assets.test.ts`, `tests/unit/checkreads.test.ts`, `tests/e2e/assets.spec.ts`.
 
 ## Rules and pitfalls
 
-- An asset is the same when its path or link is the same; a "to find" note when its words are, ignoring case.
+- An asset is the same when its path or link is the same; a "to find" note when its words are, ignoring case and
+  the people on it (`bare`).
 - Only paths are checked: links aren't fetched (no server, and many sites refuse it).
 - `excerpt` uses `clearMarks` (no DOM), not `plain`, so it needs no DOM and runs in unit tests.
 - It imports `folder.ts`, so `folder.ts` must never import it (a cycle); the script list counts in `List.svelte`.
