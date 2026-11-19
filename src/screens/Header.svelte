@@ -324,7 +324,7 @@
   .group.rule { margin-top: 6px; padding-top: 8px; border-top: 1px solid var(--line); }
   .failed { padding: 4px 12px; font-size: 13px; color: var(--danger); }
   /* Share (#234): the link with Copy, and the Teams message as it will look, above the exports. */
-  .share-menu { width: 360px; max-width: calc(100vw - 32px); }
+  .share-menu { width: 360px; max-width: calc(100vw - 32px); white-space: normal; } /* the bar's nowrap ran long lines out of the box */
   .share { display: flex; flex-direction: column; gap: 6px; padding: 6px 12px; }
   .share .label { font-size: 12px; font-weight: 600; color: var(--muted); }
   .share .help { font-size: 12px; color: var(--muted); }
