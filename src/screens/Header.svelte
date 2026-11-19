@@ -248,7 +248,7 @@
             <button onclick={() => ((menu = ''), onExport('print'))}>Print…</button>
             <button onclick={() => ((menu = ''), onExport('fountain'))}>Fountain (.fountain)</button>
             <button onclick={() => ((menu = ''), onExport('fdx'))}>Final Draft (.fdx)</button>
-            <button onclick={() => ((menu = ''), onExport('voice'))}>Voice-over (.wav)</button>
+            <button onclick={() => ((menu = ''), onExport('voice'))}>Voice-over (.mp3, .wav)</button>
             <button onclick={() => ((menu = ''), onExport('edit'))}>Resolve / Premiere (.zip)</button>
             <button onclick={() => ((menu = ''), onExport('video'))}>Video (.mp4)</button>
           </div>

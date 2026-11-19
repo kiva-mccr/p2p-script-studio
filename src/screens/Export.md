@@ -6,6 +6,7 @@ Print… or Save on the right. Back to the script, the title in the breadcrumb, 
 
 - **Used by:** `screens/Editor.svelte` (`openExport`, which saves what is waiting and works out the version first).
   **Tests:** `tests/e2e/export.spec.ts`, `print.spec.ts`, `editor.spec.ts`, `voice.spec.ts`, `editexport.spec.ts`.
+  Voice-over's preview is `VoicePreview.svelte`.
 
 ## Rules and pitfalls
 
@@ -20,6 +21,9 @@ Print… or Save on the right. Back to the script, the title in the breadcrumb, 
   (`lineUp`, `wavFile`), so ticking a box doesn't decode again. The file is made a slice at a time (PF-6); Save
   stays greyed until it's ready, and a newer setting drops a file still being made. Silence for a row lasts its read time at the speaking
   speed (Settings). A row in the list plays the file from where that row starts.
+- Voice-over saves an .mp3 by default (#237, `voiceHow.mp3`, kept in `export-voice`; an older saved setting without it
+  gets .mp3). The .mp3 is encoded in a worker from the same clips (`mp3File`) while the preview plays the WAV; Save
+  says "Making the .mp3…" until it's ready. The caption gives the file's size once made.
 - Esc goes back, but not from a text field (the speaker name).
 - Printing still goes through the Editor (`onPrint`): it mounts the real `Print.svelte` at the top level, which
   the print CSS needs. The preview's own Print sits inside this screen, hidden when printing.
