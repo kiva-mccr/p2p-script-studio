@@ -113,7 +113,7 @@ function turn(from: string, to: string, now: string): string | null {
   return merged.clashes.length ? null : merged.text({});
 }
 
-const FIELDS = ['dialogue', 'onScreen', 'files', 'timeline', 'note'] as const;
+const FIELDS = ['speaker', 'dialogue', 'onScreen', 'files', 'timeline', 'note'] as const;
 
 // Puts `text` into the page in place: rows and sections that stay keep their objects (so their boxes, and the cursor,
 // stay), and only what differs is set (a space typed at the end of a box, which the file doesn't keep, stays).

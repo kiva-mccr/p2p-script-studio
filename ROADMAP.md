@@ -504,6 +504,15 @@ and suggestions, keeps every version, and exports them for production.
   and in the still-open panel. A send with nothing changed since the newest version still makes none ("Still ap1").
   Versions made before keep their v numbers (no `series` in their file). An approval's version doesn't end holds
   (RV-19): they still come back at the next send. Print and the exports carry the new names. Done 2026-11-19.
+- [x] **AP-61** A speaker per row (issues #221 and #222, board 88 agreed by the user): in ⋯ › Credits, "Speaks as"
+  gives someone a short name for this script; once anyone has one, Write shows a Speaker column (it folds like the
+  others) whose button goes round the speakers, the narrator first; a row with none is the narrator's. Saved as a
+  row's `Speaker: Ana` line before Dialogue (docs/script-format.md), so older scripts load as before, all narrator,
+  and older apps keep the line as a note. A new short name follows onto the rows; one taken (or "Narrator") is
+  refused in the page. Review and Print show the name over the dialogue; Fountain and Final Draft put each row under
+  its speaker; their export card says "Narrator's name" and lists each speaker's rows and read time; the mic's hover
+  and "● Recording" name the speaker. Merges, change files, History and Ctrl+Z carry it. The example's takes are now
+  a natural voice (Kokoro, made here, not a real person), with Ana as the second voice on row 4. Done 2026-11-19.
 - [x] **SB-14** The take being recorded in red (issue #251, board 84 agreed by the user): while a row is recorded,
   its take on the timeline is red and grows with the recording, pushing the rows after it right (the user's pick);
   it turns into the waveform when it stops. Done 2026-11-19. (The issue's other half, Feedback's Cover blurring the

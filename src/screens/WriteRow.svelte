@@ -1,3 +1,8 @@
+<script lang="ts" module>
+  // Each speaker's dot, by their place in the credits; told apart by lightness as well as hue.
+  const TINTS = ['#2a5bd7', '#1e6b45', '#9b3d8f', '#a4500f', '#0f6f78', '#5b4bc4'];
+</script>
+
 <script lang="ts">
   import { problem } from '../lib/problems';
   import { clock } from '../lib/readtime.svelte';
@@ -19,16 +24,17 @@
 
   // One row of Write (mock-up 3): its number and tools, mic, the three columns, and its flag's note.
   // block: the row, edited in place (onChange). i: its index in the script's blocks (data-block); n: its number.
-  // columns: the grid's columns; folded: the columns folded away (AP-17). stepped: the flag stepped to (AP-9).
+  // columns: the grid's columns; folded: the columns folded away (AP-17). cast: the script's speakers when the Speaker
+  // column shows (#221), else null. stepped: the flag stepped to (AP-9).
   // flagAt, flagCount: where its flag is among them ("2 of 4"); onStepFlag: its ‹ › (#256), Write's.
   // said: its open comments (RV-13); talking: its card is being read. visit: RV-15's marks. came: RV-12's file.
   // start: its words when the script was opened (AP-38); onPutBack puts a cell's back (Write's, for the Undo bar).
   // onMove, onInsert, onRemove, onToSection and onToggleFlag are Write's (they change the blocks round it);
   // onMic: the mic (Write stops a take on another row first). onSoundFile: a sound file picked as the take (#228).
   // onPaste: two or more paragraphs pasted into Dialogue (AP-13).
-  let { block = $bindable(), i, n, columns, folded, dir, root, folderName, voice, player, canPlay, name, lit = false, flag, flagAt, flagCount, onStepFlag, stepped, said, talking, visit, came, start,
+  let { block = $bindable(), i, n, columns, folded, cast = null, dir, root, folderName, voice, player, canPlay, name, lit = false, flag, flagAt, flagCount, onStepFlag, stepped, said, talking, visit, came, start,
     onChange, onPutBack, onUndo, onNotice, onPlayFrom, onFlag, onTalk, onMove, onInsert, onRemove, onToSection, onToggleFlag, onMic, onSoundFile, onPaste }: {
-    block: Row; i: number; n: number | undefined; columns: string; folded: Set<string>; dir: FileSystemDirectoryHandle; root: FileSystemDirectoryHandle;
+    block: Row; i: number; n: number | undefined; columns: string; folded: Set<string>; cast?: string[] | null; dir: FileSystemDirectoryHandle; root: FileSystemDirectoryHandle;
     folderName: string; voice: VoiceOver; player: Player; canPlay: boolean; name: string; lit?: boolean; flag: Flag | undefined; flagAt: number; flagCount: number;
     onStepFlag: (by: number) => void; stepped: boolean;
     said: Thread[]; talking: boolean; visit: Marks | null; came: { row: string; line: string; from: string } | null;
@@ -41,6 +47,16 @@
   } = $props();
 
   const take = $derived(voice.takes[block.id]);
+
+  // Who says the row (#221, board 88): a click goes round the speakers, the narrator ('') first. A name no longer in the
+  // credits shows grey, and the next click starts the round again.
+  const who = $derived(block.speaker || 'Narrator');
+  const tint = $derived(!block.speaker ? '#7a7a7a' : cast?.includes(block.speaker) ? TINTS[cast.indexOf(block.speaker) % TINTS.length] : '#a3a3a3');
+  function nextSpeaker() {
+    const round = ['', ...(cast ?? [])];
+    block.speaker = round[(round.indexOf(block.speaker) + 1) % round.length];
+    onChange(true);
+  }
   let picker = $state<HTMLInputElement>();
 
   // Delete the take with Undo (UX-1, board 72): its sound is read first, so Undo writes the same recording back.
@@ -95,7 +111,7 @@
 </script>
 
 <div class="row grid" style:grid-template-columns={columns} class:here class:lit class:stepped={flag && stepped} class:talking
-  class:visited={by} class:visit-on={by && visit?.on === block.id} style:--down="{(said.length ? 34 : 0) + (by ? 58 : 0)}px"
+  class:visited={by} class:visit-on={by && visit?.on === block.id} style:--down="{(said.length ? 34 : 0) + (by ? 58 : 0)}px" style:--notes-from={cast ? 4 : 3}
   data-row={block.id} data-block={i} data-visit={by ? block.id : undefined} data-tour="row">
   <div class="num" data-keep>
     {#if canPlay}
@@ -131,7 +147,7 @@
     <button class="promote" data-tour-with="row-tools" aria-label="Turn row {n} into a section" title="Turn into a section" onclick={onToSection}>§</button>
   </div>
   <div class="mic-cell">
-    <button data-tour="take" class="mic" class:has={take} class:on={recording && !voice.cue} class:cue={recording && voice.cue} disabled={!block.id}
+    <button data-tour="take" title={block.speaker ? `${block.speaker} reads this row` : undefined} class="mic" class:has={take} class:on={recording && !voice.cue} class:cue={recording && voice.cue} disabled={!block.id}
       onclick={onMic} aria-label={recording ? `Stop recording row ${n}` : take ? `Record row ${n} again` : `Record row ${n}`}>
       {#if recording && voice.cue}
         <svg class="ring" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="14" /></svg>{@render micIcon()}
@@ -153,6 +169,16 @@
         }} />
     {/if}
   </div>
+  {#if cast}
+    {#if folded.has('speaker')}{@render dot(!!block.speaker, 'Speaker')}{:else}
+      <div>
+        <button class="speaker" title="Who says this row: click to change" aria-label="Speaker, row {n}: {who}. Click to change" onclick={nextSpeaker}
+          class:narrator={!block.speaker} class:gone={block.speaker && !cast.includes(block.speaker)}>
+          <span class="initial" aria-hidden="true" style:background={tint}>{who[0].toUpperCase()}</span><span class="name">{who}</span>
+        </button>
+      </div>
+    {/if}
+  {/if}
   {#if folded.has('dialogue')}{@render dot(block.dialogue !== '', 'Dialogue')}{:else}
   <div>
     {#if block.note}<p class="note">{block.note}</p>{/if}
@@ -163,7 +189,7 @@
     {@render started('dialogue', 'Dialogue')}
     {#if recording}
       {#if voice.cue}<p class="take" role="status">Getting ready…</p>
-      {:else}<p class="take rec" role="status">● Recording {clock((now - voice.started) / 1000)} · ■ stops</p>{/if}
+      {:else}<p class="take rec" role="status">● Recording {block.speaker ? `${block.speaker}, ` : ''}{clock((now - voice.started) / 1000)} · ■ stops</p>{/if}
     {:else if take}
       <Take {take} dialogue={block.dialogue} n={n ?? 0} {sounding} at={here ? player.at : voice.playing === block.id ? voice.at : 0}
         onPlay={play}
@@ -330,7 +356,15 @@
   .old { flex: 1 0 100%; margin: 2px 0 0 -8px; padding: 6px 8px; border-radius: 6px; background: #f5f5f5; color: var(--muted);
     font-size: 15px; line-height: 1.55; white-space: pre-wrap; }
   .old.big { font-size: 17px; }
-  .flag-note { grid-column: 3 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 10px;
+  /* Who says the row (#221): a round button, the speaker's initial in a dot; grey for the narrator. */
+  .speaker { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; min-height: 28px; margin-top: -2px; padding: 0 10px 0 4px;
+    border: 1px solid var(--line); border-radius: 999px; background: #fff; color: var(--ink); font-size: 13px; }
+  .speaker:hover { border-color: #c4c4c4; }
+  .speaker.narrator, .speaker.gone { color: var(--muted); }
+  .initial { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%;
+    color: #fff; font-size: 10px; font-weight: 600; }
+  .speaker .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .flag-note { grid-column: var(--notes-from) / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 10px;
     padding: 2px 4px 2px 12px; border-radius: 8px; background: #fff7ed; color: var(--flag); font-size: 13px; }
   .flag-note label { display: flex; flex: 1 1 280px; align-items: center; gap: 8px; min-width: 0; }
   .flag-note input { flex: 1; min-width: 0; min-height: 32px; border: 0; background: none; color: var(--ink); font: inherit; font-size: 14px; }

@@ -68,3 +68,5 @@ deleting, keys, the flag bar, find, quotes marked, removed rows, the word count 
 - Find's matches in a section title (#190) are a see-through copy of the title behind its box (`.title-marks`), with
   the matched words tinted; the copy must keep the box's font and padding or the tint drifts off the letters. A title
   longer than its box and scrolled sideways while typing can drift; Find's marks are for reading, not typing.
+- The Speaker column (#221) shows once the credits have a short name ("Speaks as") or a row still names someone, so
+  scripts with one voice look as before. It sits between the mic and Dialogue.

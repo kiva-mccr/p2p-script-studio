@@ -104,6 +104,7 @@
                 <!-- A row's note goes in the first column that prints. -->
                 {#if k === 0 && block.note}<p class="note">{block.note}</p>{/if}
                 {#if c.id === 'dialogue'}
+                  {#if block.speaker}<p class="who">{block.speaker}</p>{/if}
                   <div class="text">{@html toHtml(block.dialogue)}</div>
                 {:else if c.id === 'screen'}
                   <div class="text">{@html toHtml(block.onScreen)}</div>
@@ -162,6 +163,8 @@
   .text { white-space: pre-wrap; }
   .num { color: #5f5f5f; }
   .dialogue { font-size: 1.05em; }
+  /* Who says the row (#221), above its dialogue; none is the narrator. */
+  .who { margin: 0 0 2px; font-size: 0.8em; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
   .screen { color: #3d3d3d; }
   .files { font-size: 0.9em; }
   .files div + div { margin-top: 4px; }

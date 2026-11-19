@@ -49,7 +49,7 @@ The block between the `---` lines at the very top.
 | `title` | Shown in the list and the editor | any text |
 | `status` | Where the script is in review | `draft`, `in review`, `approved` |
 | `authors` | Who has written in it | a list of names |
-| `credits` | Who worked on it and what they did (AP-31) | one line of JSON: `[{"id": "…", "name": "Sam", "role": "Narrator"}]` |
+| `credits` | Who worked on it and what they did (AP-31), and the short name each speaker's rows go under (#221) | one line of JSON: `[{"id": "…", "name": "Ana Lima", "role": "Science reviewer", "as": "Ana"}]`; `as` only for someone who speaks |
 | `template` | A template to start new scripts from (AP-15) | `true`, or left out |
 | `shape` | The video's shape on the storyboard timeline and in the video export (SB-3) | `upright` (9:16), or left out for wide (16:9) |
 
@@ -74,10 +74,11 @@ A line starting with `## ` begins a row: one shot or beat, shown as one line of 
   is an HTML comment, so it is invisible wherever Markdown is shown. A row without one (typed by hand) gets one
   on the app's next save.
 
-Each row has three fields, each starting with its label at the start of a line:
+Each row has three fields, each starting with its label at the start of a line, and may say who speaks it:
 
 | Label | Column | Holds |
 |-------|--------|-------|
+| `Speaker:` | Speaker (shown once the script has a speaker) | optional, one line, before Dialogue; see below |
 | `Dialogue:` | Dialogue | what is said, word for word |
 | `On screen:` | On screen | what the viewer sees |
 | `Files:` | Images and files | the row's assets, one per line |
@@ -94,6 +95,10 @@ Each row has three fields, each starting with its label at the start of a line:
   - a link, with a name: `[Chloroplast animation](https://…)`
   - plain words for something not found yet: `Stock shot of a forest (to find)`, or `(to film)`; the people
     finding or filming it may follow, comma-separated (#211, set in Assets): `Stock shot of a forest (to find: Ana, Sam)`
+- **Speaker** (#221): who says the row, as the short name a credit gives them (`as` in `credits`):
+  `Speaker: Ana`. A row with no `Speaker:` line is the narrator's (the name the export screen gives the narrator), so
+  scripts from before #221 read as before, all narrator. Fountain and Final Draft put each row under its speaker's
+  name. Copies of the app from before #221 read the line as a note on the row and keep it.
 - A file added only for the storyboard timeline (SB-1) ends ` (timeline)`: `- assets/icon-water.png (timeline)`.
   Files shows it minimised ("+2 for the timeline"); everything else reads it without the mark.
 - A line of text that itself starts with a label (a narrator saying "Dialogue: …") is written with a backslash in
@@ -121,8 +126,8 @@ Files:
 Timeline: cuts at "water", then hold 2 s
 ```
 
-A part the app doesn't understand is kept as typed. A dialogue line that starts with `Timeline:` is written
-`\Timeline:`, like the other labels.
+A part the app doesn't understand is kept as typed. A dialogue line that starts with `Timeline:` (or `Speaker:`) is
+written `\Timeline:`, like the other labels.
 
 ### Anything else
 

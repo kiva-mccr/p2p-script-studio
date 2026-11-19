@@ -74,7 +74,7 @@ export async function createScript(
   if (!folderName) throw new Error(template ? 'Type a name for the template.' : 'Type a name for the script.');
   if (await exists(root, folderName)) throw new Error(`There is already a script called "${folderName}".`);
   const source = from ? parseScript(await readScript(from)) : null;
-  const empty: Block = { type: 'row', id: '', dialogue: '', onScreen: '', files: [], timeline: '', note: '' };
+  const empty: Block = { type: 'row', id: '', speaker: '', dialogue: '', onScreen: '', files: [], timeline: '', note: '' };
   const blocks = source?.blocks.length ? source.blocks.map((b) => (b.type === 'row' ? { ...b, id: '' } : b)) : [empty];
   const front = [`title: ${name.trim()}`, 'status: draft', `authors: [${author}]`, ...(template ? ['template: true'] : [])];
   const text = writeScript({ front: front.join('\n'), intro: source?.intro ?? '', blocks });

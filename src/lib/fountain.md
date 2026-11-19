@@ -19,3 +19,4 @@ The script as a Fountain screenplay (EX-3, board 11), for Trelby, Highland and o
   as its TeX.
 - Credits (AP-31) go on the title page as an indented `Credits:` value, one "Name, blurb" a line (`creditLine`,
   shared with `lib/fdx.ts` and `lib/share.ts`). Whether screenplay apps show that key is unseen.
+- A row's own speaker (#221) wins over the export screen's name, which is the narrator's.

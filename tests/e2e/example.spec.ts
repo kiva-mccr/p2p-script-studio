@@ -115,7 +115,11 @@ test('the example shows every kind of file the app previews, and a take on every
   await expect(page.getByText('Park shot list (made up)')).toBeVisible(); // text
   await expect(page.getByText('· PowerPoint')).toBeVisible(); // a kind with no preview
   // Every row has a take, read from the current words, so none is Outdated and the whole script is recorded.
-  await expect(page.getByText(/wpm · Kiva/)).toHaveCount(5);
+  // Kiva narrates; Ana is the second voice, on row 4 (#221).
+  await expect(page.getByText(/wpm · Kiva/)).toHaveCount(4);
+  await expect(page.getByText(/wpm · Ana/)).toHaveCount(1);
+  await expect(page.getByRole('button', { name: 'Speaker, row 4: Ana. Click to change' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Speaker, row 1: Narrator. Click to change' })).toBeVisible();
   await expect(page.getByText('Outdated')).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Play the script' })).toBeVisible();
 });

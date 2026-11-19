@@ -6,7 +6,7 @@
 import { addNote } from './comments';
 import { writeEditing } from './editing';
 import { addVersion } from './history';
-import { savePerson, type Credit } from './people';
+import { creditData, savePerson, type Credit } from './people';
 import { writePlan } from './planning';
 import { memFolder } from './memfolder';
 import { keep, recall } from './remember';
@@ -34,7 +34,7 @@ const PEOPLE = [
 
 // A script's text with these credits in its front matter, on one line of JSON as the app writes them.
 const credited = (text: string, credits: Credit[]) =>
-  text.replace(/^(authors: .*\n)/m, `$1credits: ${JSON.stringify(credits.map(({ id, name, role }) => ({ id, name, role })))}\n`);
+  text.replace(/^(authors: .*\n)/m, `$1credits: ${JSON.stringify(credits.map(creditData))}\n`);
 
 // Whether the offer on the first-time screen is folded to one line (remembered by this browser).
 export function exampleFolded(): boolean {
@@ -77,7 +77,7 @@ export async function startOver(): Promise<{ folder: FileSystemDirectoryHandle; 
 }
 
 // Sam's changes after Ana sent the script back (AP-47): a slower zoom in row 3, the photosynthesis equation in row 4,
-// and the storyboard timeline's lines (a cut on a word, a hold, a picture only for the timeline, a placeholder). docs/example keeps the text as first
+// a second speaker on row 4 (#221), and the storyboard timeline's lines (a cut on a word, a hold, a picture only for the timeline, a placeholder). docs/example keeps the text as first
 // sent for review, which many tests read; the example opens on this one. Dialogue is unchanged, so no take is Outdated.
 export function samsVersion(text: string): string {
   const edits: [string, string][] = [
@@ -86,6 +86,7 @@ export function samsVersion(text: string): string {
     ['Animated zoom: leaf to cell to chloroplast.', 'Slow animated zoom: leaf to cell to chloroplast, a few seconds on *each*.'],
     ['- assets/cell-micrograph.tif\n', '- assets/cell-micrograph.tif\n- assets/zoom-sketch.svg (timeline)\n'],
     ['labelled **C₆H₁₂O₆**.', 'labelled **C₆H₁₂O₆**, then the whole recipe: $6\\,\\mathrm{CO_2} + 6\\,\\mathrm{H_2O} \\rightarrow \\mathrm{C_6H_{12}O_6} + 6\\,\\mathrm{O_2}$'],
+    ['## 4 <!-- id: b6n0w -->\nDialogue:', '## 4 <!-- id: b6n0w -->\nSpeaker: Ana\n\nDialogue:'],
     ['- assets/glucose-notes.docx\n', '- assets/glucose-notes.docx\n\nTimeline: then placeholder 3 s "Time-lapse of a seedling growing"\n'],
   ];
   for (const [from, to] of edits) {
@@ -112,7 +113,8 @@ async function fill(folder: FileSystemDirectoryHandle, now = new Date()): Promis
   for (const [i, person] of PEOPLE.entries()) {
     people.push(await savePerson(folder, { ...person, linkedin: '' }, 'Kiva', new Date(Date.parse('2026-11-09T14:00:00Z') + i * 1000)));
   }
-  const sent = credited(raw(SCRIPT, 'script.md'), people);
+  // Ana is the second voice (#221): she says row 4, under the short name "Ana", from Sam's version on.
+  const sent = credited(raw(SCRIPT, 'script.md'), people.map((p) => (p.name === 'Ana' ? { ...p, as: 'Ana' } : p)));
   await writePlan(dir, raw(SCRIPT, 'plan.md'));
   const draft = (text: string) => text.replace('status: in review', 'status: draft');
   const text = samsVersion(sent);

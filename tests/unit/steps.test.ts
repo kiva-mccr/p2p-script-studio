@@ -3,7 +3,7 @@ import { parseScript, writeScript, type Row } from '../../src/lib/script';
 import { settle, Steps } from '../../src/lib/steps';
 
 const script = (...rows: [string, string][]) =>
-  writeScript({ front: 'title: T', intro: '', blocks: rows.map(([id, dialogue]) => ({ type: 'row', id, dialogue, onScreen: '', files: [], timeline: '', note: '' })) });
+  writeScript({ front: 'title: T', intro: '', blocks: rows.map(([id, dialogue]) => ({ type: 'row', speaker: '', id, dialogue, onScreen: '', files: [], timeline: '', note: '' })) });
 
 describe('Steps (Ctrl+Z and Ctrl+Y)', () => {
   afterEach(() => vi.useRealTimers());
@@ -106,7 +106,7 @@ describe('settle', () => {
   });
 
   it('keeps a section whose title changed, and points at its title', () => {
-    const text = (title: string) => writeScript({ front: null, intro: '', blocks: [{ type: 'section', title, note: '' }, { type: 'row', id: 'r1', dialogue: 'x', onScreen: '', files: [], timeline: '', note: '' }] });
+    const text = (title: string) => writeScript({ front: null, intro: '', blocks: [{ type: 'section', title, note: '' }, { type: 'row', speaker: '', id: 'r1', dialogue: 'x', onScreen: '', files: [], timeline: '', note: '' }] });
     const page = parseScript(text('Glucose basics'));
     const section = page.blocks[0];
     const place = settle(page, writeScript(page), text('Glucose'));

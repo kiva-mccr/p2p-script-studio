@@ -1,6 +1,6 @@
 // The script as Final Draft (EX-4): the .fdx XML that Final Draft, Fade In, WriterDuet and Highland open.
 // Laid out as Fountain is (EX-3): sections become scene headings, each row's On screen is action and its Dialogue
-// is spoken by NARRATOR. The row number, its note and its files go in a General paragraph above the row, since
+// is spoken by its speaker (#221), or NARRATOR. The row number, its note and its files go in a General paragraph above the row, since
 // Final Draft's own notes are pinned to character positions and easy to get wrong.
 import { creditLine, SCREENPLAY, speakerName, type Screenplay } from './fountain';
 import type { Credit } from './people';
@@ -22,7 +22,7 @@ export function toFdx(script: Script, title: string, stand: string, date: string
     const about = [how.numbers && `Row ${n}`, block.note.trim() && oneLine(block.note), how.files && block.files.length && `Files: ${block.files.map(oneLine).join(', ')}`];
     if (about.some(Boolean)) body.push(paragraph('General', runs(about.filter(Boolean).join(' · '))));
     if (block.onScreen.trim()) body.push(...paragraphs('Action', block.onScreen));
-    if (block.dialogue.trim()) body.push(paragraph('Character', runs(speakerName(how.speaker))), ...paragraphs('Dialogue', block.dialogue));
+    if (block.dialogue.trim()) body.push(paragraph('Character', runs(speakerName(block.speaker || how.speaker))), ...paragraphs('Dialogue', block.dialogue));
   }
   const authors = frontList(script.front, 'authors');
   const front = [title.trim() && oneLine(title), authors.length && 'Written by', authors.length && authors.join(', '),

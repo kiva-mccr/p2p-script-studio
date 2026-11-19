@@ -15,6 +15,7 @@
   import type { Flag, Thread } from '../lib/comments';
   import type { Player } from '../lib/play.svelte';
   import { Folds } from '../lib/folds.svelte';
+  import { speakers } from '../lib/people';
   import { chosenMic } from '../lib/mic';
   import { NotSound, type VoiceOver } from '../lib/voice.svelte';
   import Find from './Find.svelte';
@@ -59,7 +60,11 @@
 
   // Columns folded away to a thin strip (AP-17), remembered in this browser for every script, never in the script.
   const folds = new Folds('write-folded');
-  const columns = $derived(folds.grid('40px 28px', [1.25, 1, 0.8]));
+  // Who says each row (#221, board 88): the script's speakers are its credits with a short name; the column shows once
+  // there is one (or a row still names someone), and a row's button goes round them, the narrator first.
+  const cast = $derived(speakers(script.front));
+  const speakerColumn = $derived(cast.length > 0 || script.blocks.some((b) => b.type === 'row' && b.speaker));
+  const columns = $derived(folds.grid('40px 28px', [1.25, 1, 0.8], speakerColumn));
 
   // Find and replace (AP-32, board 44): Ctrl+F opens the bar; with it open, Ctrl+F from elsewhere comes back to it,
   // and from inside it gives the browser's own find.
@@ -457,7 +462,7 @@
 <div class="table" bind:this={table} onkeydown={keys} style:--find-h="{finding ? findHeight : 0}px">
   <div class="head grid" style:grid-template-columns={columns}>
     <span>#</span><span></span>
-    <FoldHeads {folds} />
+    <FoldHeads {folds} speaker={speakerColumn} />
   </div>
   {@render removedRows('')}
   {#each script.blocks as block, i (block)}
@@ -477,7 +482,7 @@
         </span>
       </div>
     {:else}
-      <WriteRow bind:block={() => block, (b) => (script.blocks[i] = b)} {i} n={numbers.get(block)} {columns} folded={folds.folded} {dir} {root} {folderName} {voice} {player} {canPlay} {name}
+      <WriteRow bind:block={() => block, (b) => (script.blocks[i] = b)} {i} n={numbers.get(block)} {columns} folded={folds.folded} cast={speakerColumn ? cast : null} {dir} {root} {folderName} {voice} {player} {canPlay} {name}
         lit={chosen === block.id} flag={flagged.get(block.id)} flagAt={flagIds.indexOf(block.id) + 1} flagCount={flagIds.length}
         onStepFlag={(by) => stepFrom(block.id, by)} stepped={current === block.id} said={talkByRow.get(block.id) ?? []} talking={talkRow === block.id} {visit}
         came={came?.row === block.id ? came : null} start={started.get(block.id)} onPutBack={(field) => putBack(block, field)} {onChange} {onUndo} {onNotice} {onPlayFrom} {onFlag} {onTalk}

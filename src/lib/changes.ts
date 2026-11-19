@@ -77,10 +77,11 @@ function side(delta: Delta, mine: Script, at: 0 | 1): Script {
 }
 
 const key = (b: Block) => (b.type === 'row' ? `r:${b.id}` : `s:${b.title}\u0000${b.note}`);
-const data = ({ dialogue, onScreen, files, timeline, note }: Row): RowData => ({ dialogue, onScreen, files: [...files], timeline, note });
-const clone = (d: RowData): RowData => ({ ...d, files: [...d.files], timeline: d.timeline ?? '' }); // change files from before SB-1 have no timeline
+const data = ({ speaker, dialogue, onScreen, files, timeline, note }: Row): RowData => ({ speaker, dialogue, onScreen, files: [...files], timeline, note });
+// Change files from before SB-1 have no timeline, and from before #221 no speaker.
+const clone = (d: RowData): RowData => ({ ...d, files: [...d.files], timeline: d.timeline ?? '', speaker: d.speaker ?? '' });
 const same = (a: Row, b: Row) =>
-  a.dialogue === b.dialogue && a.onScreen === b.onScreen && a.note === b.note && a.timeline === b.timeline && a.files.join('\n') === b.files.join('\n');
+  a.speaker === b.speaker && a.dialogue === b.dialogue && a.onScreen === b.onScreen && a.note === b.note && a.timeline === b.timeline && a.files.join('\n') === b.files.join('\n');
 
 function byId(script: Script): Map<string, Row> {
   return new Map(script.blocks.filter((b): b is Row => b.type === 'row').map((row) => [row.id, { ...row, files: [...row.files] }]));

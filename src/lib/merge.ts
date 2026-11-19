@@ -17,6 +17,7 @@ export type Merged = {
 };
 
 const FIELDS = [
+  ['speaker', 'Speaker'],
   ['dialogue', 'Dialogue'],
   ['onScreen', 'On screen'],
   ['files', 'Images & files'],

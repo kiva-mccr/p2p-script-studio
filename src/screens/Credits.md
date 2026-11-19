@@ -16,3 +16,6 @@ a usual role) or adds someone new; Contact details opens `Contact.svelte`.
 - Closing (Done, ×, Esc, a click outside) saves open contact details first; if that fails the window stays open
   with the message.
 - Two Done buttons can show (the contact details' and the window's): tests pick them inside `.contact` or `.foot`.
+- "Speaks as" (#221) is saved on leaving the box (Enter too), not on each key, since the rows that name the old short
+  name are renamed with it. A name another credit has, or "Narrator", is refused with a message and the box put back;
+  emptied, that person's rows go back to the narrator.

@@ -17,3 +17,5 @@ ending ` (timeline)` is a file only for the timeline (`timelineOnly`), and `read
   back as a label or a heading.
 - `Timeline:` is a label like the others, so a field line starting with it is escaped. Change files written before
   SB-1 have no `timeline`: `lib/changes.ts` reads it as ''.
+- `Speaker:` (#221) is a label too, one line, written before Dialogue and only when set; a row without it is the
+  narrator's (`speaker: ''`), so older scripts write back byte for byte. Older apps read the line as the row's note.

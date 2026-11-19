@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { plan, Player } from '../../src/lib/play.svelte';
 import type { Script } from '../../src/lib/script';
 
-const row = (id: string, dialogue: string) => ({ type: 'row' as const, id, dialogue, onScreen: '', files: [], timeline: '', note: '' });
+const row = (id: string, dialogue: string) => ({ type: 'row' as const, speaker: '', id, dialogue, onScreen: '', files: [], timeline: '', note: '' });
 const take = (seconds: number) => ({ by: 'Sam', at: 0, seconds, text: '' });
 const script: Script = {
   front: null, intro: '',
