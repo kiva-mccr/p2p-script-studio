@@ -163,9 +163,9 @@ test('pictures: collage, leave one out', async ({ page }) => {
 test('a file only for the timeline is minimised in Files', async ({ page }) => {
   await setUp(page, '#/Episode%2003', files);
   const cell = page.locator('[data-row="p8x2m"]');
-  await expect(cell.getByRole('button', { name: 'sun.svg', exact: true })).toHaveCount(0);
+  await expect(cell.getByRole('button', { name: 'Open sun.svg', exact: true })).toHaveCount(0);
   await cell.getByRole('button', { name: '+1 for the timeline' }).click();
-  await expect(cell.getByRole('button', { name: 'sun.svg', exact: true })).toBeVisible();
+  await expect(cell.getByRole('button', { name: 'Open sun.svg', exact: true })).toBeVisible();
 });
 
 test('holds and placeholders: added from the panel, a bar in the script, changed there, ✕ with Undo', async ({ page }) => {

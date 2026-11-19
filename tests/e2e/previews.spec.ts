@@ -127,6 +127,36 @@ test('each kind of file gets its preview in Images & files', async ({ page }) =>
   await expect(page.getByRole('button', { name: 'Play birdsong.wav' })).toBeVisible({ timeout: 5000 });
 });
 
+test('a previewed file\'s name and × fade in over its preview on hover or focus, with no chip, so the row keeps its height (#209)', async ({ page }) => {
+  await openPreviews(page);
+  const cell = page.getByRole('group', { name: 'Images and files, row 1' });
+  const open = cell.getByRole('button', { name: 'Open scan.tif' });
+  await expect(open).toBeVisible();
+  await expect(cell.locator('.chip')).toHaveCount(0);
+  const over = cell.locator('.over');
+  await expect(over).toHaveText(/scan\.tif/);
+  const opacity = () => over.evaluate((el) => getComputedStyle(el).opacity);
+  await expect.poll(opacity).toBe('0');
+  const height = await cell.evaluate((el) => el.getBoundingClientRect().height);
+
+  await open.hover();
+  await expect.poll(opacity).toBe('1');
+  expect(await cell.evaluate((el) => el.getBoundingClientRect().height)).toBe(height);
+  await page.mouse.move(0, 0);
+  await expect.poll(opacity).toBe('0');
+  await open.focus();
+  await expect.poll(opacity).toBe('1');
+
+  // A sound's slim player keeps its chip; a file with no preview too.
+  await expect(page.getByRole('group', { name: 'Images and files, row 3' }).locator('.chip')).toContainText('birdsong.wav');
+  await expect(page.getByRole('group', { name: 'Images and files, row 6' }).locator('.chip')).toContainText('end-card.pptx');
+
+  await open.hover();
+  await cell.getByRole('button', { name: 'Remove scan.tif' }).click();
+  await expect(open).toHaveCount(0);
+  await expect(cell.locator('.over')).toHaveCount(0);
+});
+
 test('the Assets tab shows thumbnails of TIFFs, PDFs and videos too', async ({ page }) => {
   await openPreviews(page);
   await page.getByRole('button', { name: /^Assets/ }).click();

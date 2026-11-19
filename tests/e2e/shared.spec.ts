@@ -33,7 +33,7 @@ test('Reuse a file lists this script\'s files first, then every other script wit
   await box.getByRole('button', { name: 'Add to row 1' }).click();
   await expect(box).toHaveCount(0);
   // This script already has a leaf.svg: the copy gets a number, and nothing is overwritten.
-  await expect(page.locator('.chip').getByRole('button', { name: 'leaf 2.svg', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Open leaf 2.svg', exact: true })).toBeVisible();
   await expect(page.getByText('Copied from The Water Cycle')).toBeVisible();
   expect(await readFile(page, 'Trailer/assets/leaf 2.svg')).toBe(SVG);
   expect(await readFile(page, 'Trailer/assets/leaf.svg')).toBe('old leaf');
@@ -46,7 +46,7 @@ test('a file of this script is reused as the same file, not copied', async ({ pa
   await expect(box.locator('.foot')).toContainText('leaf.svg is already in this script: the row uses the same file.');
   await box.getByRole('button', { name: 'Add to row 1' }).click();
   await expect(box).toHaveCount(0);
-  await expect(page.locator('.chip').getByRole('button', { name: 'leaf.svg', exact: true })).toHaveCount(2);
+  await expect(page.getByRole('button', { name: 'Open leaf.svg', exact: true })).toHaveCount(2);
   await expect(page.getByText(/Copied from/)).toHaveCount(0);
   await expect.poll(async () => (await readFile(page, 'Trailer/script.md')).match(/- assets\/leaf\.svg/g)?.length).toBe(2);
   expect(await listFiles(page, 'Trailer/assets')).toEqual(['leaf.svg']);
@@ -75,7 +75,7 @@ test('files dropped on a row are copied in; while dragging, every row is outline
   await expect(second).toHaveClass(/target/);
   await expect(second).not.toHaveClass(/over/);
   await page.evaluate(() => (window as unknown as { dropIt: () => void }).dropIt());
-  await expect(first.locator('.chip').getByRole('button', { name: 'sun.txt', exact: true })).toBeVisible();
+  await expect(first.getByRole('button', { name: 'Open sun.txt', exact: true })).toBeVisible();
   await expect(second).not.toHaveClass(/target/);
   await expect(first.getByText('Drop to add to row 1')).toHaveCount(0);
   expect(await readFile(page, 'Trailer/assets/sun.txt')).toBe('sun');
@@ -101,9 +101,7 @@ test('Ctrl+V on a row\'s Images and files pastes a screen grab in as a file; pas
   await page.mouse.click(box.x + box.width - 4, box.y + box.height / 2);
   await expect(second).toBeFocused();
   await page.keyboard.press('Control+V');
-  const chip = second.locator('.chip').getByRole('button', { name: /^pasted \d{4}-\d\d-\d\d \d\d-\d\d\.png$/ });
-  await expect(chip).toBeVisible();
-  await expect(second.locator('img')).toBeVisible(); // its preview
+  await expect(second.getByRole('button', { name: /^Open pasted \d{4}-\d\d-\d\d \d\d-\d\d\.png$/ })).toBeVisible(); // its preview
   await expect.poll(async () => (await listFiles(page, 'Trailer/assets')).filter((n) => n.endsWith('.png')).length).toBe(1);
   await expect.poll(() => readFile(page, 'Trailer/script.md')).toMatch(/## 2[^]*- assets\/pasted [\d-]+ [\d-]+\.png/);
   expect(await readFile(page, 'Trailer/script.md')).not.toMatch(/## 1[^#]*pasted/);

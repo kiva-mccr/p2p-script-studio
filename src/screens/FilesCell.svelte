@@ -180,6 +180,10 @@
 
 <svelte:window onpointerdown={away} />
 
+{#snippet remove(label: string, i: number)}
+  <button class="remove" aria-label="Remove {label}" onclick={() => { const before = [...files]; onChange(files.filter((_, j) => j !== i)); onRemoved(label, before); }}>×</button>
+{/snippet}
+
 <!-- tabindex: a click on the cell gives it the focus, so Ctrl+V lands here (#304). -->
 <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 <div class="files" class:target={fileDrag.on} class:over={hover} data-tour="files" use:near={() => (shown = true)} tabindex="0"
@@ -189,11 +193,24 @@
     {#if extras || !timelineOnly(line)}
     {@const ref = readFileRef(line)}
     {@const preview = ref.kind === 'path' ? previews[ref.target] : null}
+    {@const waiting = ref.kind === 'path' && !!previewKind(ref.target) && !tried.has(ref.target)}
+    {#if preview && preview.kind !== 'audio'}
+      <!-- #209: a file with a preview has no chip; its name and × fade in over the bottom of the preview on hover or
+           focus, so the row's height never changes. A sound's slim player keeps its chip (a name over it would hide it). -->
+      <span class="shot">
+        <Preview {preview} name={ref.label} onOpen={() => openAsset(ref.target)} onFail={() => failed(ref.target)} />
+        <span class="over">
+          <span class="name" title={ref.target} data-hide>{ref.label}</span>
+          {@render remove(ref.label, i)}
+        </span>
+      </span>
+    {:else}
     {#if preview}
       <Preview {preview} name={ref.label} onOpen={() => openAsset(ref.target)} onFail={() => failed(ref.target)} />
-    {:else if ref.kind === 'path' && previewKind(ref.target) && !tried.has(ref.target)}
+    {:else if waiting}
       <span class="stand-in {previewKind(ref.target)}" aria-hidden="true"></span>
     {/if}
+    {#if !waiting || previewKind(ref.target) === 'audio'}
     <span class="chip">
       {#if ref.kind === 'link'}
         <a href={ref.target} target="_blank" rel="noopener noreferrer" title={ref.target}>{ref.label}</a>
@@ -202,8 +219,10 @@
       {:else}
         <span class="words">{ref.label}</span>
       {/if}
-      <button class="remove" aria-label="Remove {ref.label}" onclick={() => { const before = [...files]; onChange(files.filter((_, j) => j !== i)); onRemoved(ref.label, before); }}>×</button>
+      {@render remove(ref.label, i)}
     </span>
+    {/if}
+    {/if}
     {#if copied?.line === line}<span class="copied">Copied from {copied.from}</span>
     {:else if came?.line === line}<span class="copied">From {came.from}</span>{/if}
     {/if}
@@ -258,6 +277,20 @@
   .remove { border: 0; background: none; color: var(--muted); padding: 4px 8px; font-size: 15px; opacity: 0; }
   .chip:hover .remove, .remove:focus-visible { opacity: 1; }
   .remove:hover { color: var(--danger); }
+  /* #209: the name over the preview's bottom, faded in on hover or focus; clicks on the name reach the preview. */
+  /* At least wide and tall enough for a name: a tiny picture sits in the middle. */
+  .shot { position: relative; display: flex; align-items: center; justify-content: center; width: fit-content;
+    max-width: 100%; min-width: 120px; min-height: 48px; }
+  .over { position: absolute; left: 0; right: 0; bottom: 0; display: flex; align-items: center; gap: 4px;
+    padding: 18px 2px 4px 8px; border-radius: 0 0 6px 6px; background: linear-gradient(transparent, rgba(0, 0, 0, 0.65));
+    color: #fff; font-size: 12px; line-height: 1.3; opacity: 0; transition: opacity 0.15s; pointer-events: none; }
+  .shot:hover .over, .shot:focus-within .over { opacity: 1; }
+  .over .name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .over .remove { color: #fff; opacity: 1; pointer-events: auto; }
+  .over .remove:hover { color: #ffb4ab; }
+  /* A video being played has its controls at the bottom: the name goes to the top instead. */
+  .shot:has(:global(video)) .over { top: 0; bottom: auto; padding: 4px 2px 18px 8px; border-radius: 6px 6px 0 0;
+    background: linear-gradient(rgba(0, 0, 0, 0.65), transparent); }
   .files:focus { outline: 1px solid var(--line-strong); outline-offset: 4px; }
   /* The hint never takes a second line: in a narrow column it is cut short, so rows don't grow (#304). */
   .add-line { display: flex; align-items: baseline; gap: 6px; max-width: 100%; }

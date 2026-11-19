@@ -60,7 +60,8 @@ Status: a first working version. What it does today:
   The script list's Files button shows the files of every script, to browse.
   Files show a small preview: a picture (also .tif, and a PDF's first page with its page count), a video that plays
   in place, a slim player for sound, or the first lines of a Word, text, Markdown or CSV file. Other kinds
-  (PowerPoint, zip…) show their kind and size. Click a preview or a name to open the file. Previews are small copies
+  (PowerPoint, zip…) show their kind and size. A file with a preview has no name below it: hovering the preview
+  fades its name and × in over its bottom, so the row keeps its height. Click a preview or a name to open the file. Previews are small copies
   (a video shows a still until you press ▶), made as their rows come near the screen; until then a grey box holds
   the place, so long scripts with big photos scroll smoothly. Select text for bold, italic, underline,
   strikethrough, a link, an equation (LaTeX) or Clear (the toolbar shows just above the words, or below them at the
