@@ -1,8 +1,9 @@
 <script lang="ts">
   import { problem } from '../lib/problems';
   import CopyDetails from './CopyDetails.svelte';
-  import { onDestroy, onMount, untrack, type Snippet } from 'svelte';
-  import { combinePlans, readPlan, writePlan } from '../lib/planning';
+  import { onDestroy, onMount, tick, untrack, type Snippet } from 'svelte';
+  import { combinePlans, flipTick, planLines, readPlan, writePlan } from '../lib/planning';
+  import { renderMath, showLists, toHtml } from '../lib/format';
   import { keep } from '../lib/remember';
   import TextField from './TextField.svelte';
 
@@ -10,14 +11,19 @@
   // the script's learning goals, kept in plan.md beside script.md. It saves on its own, like the script.
   // In Write the same panel has a second tab, Comments (RV-13, board 37): `comments` is its content, `count` the open ones.
   // Open or closed, and which tab, are this browser's (the Editor opens it on Comments after a send back).
+  // In Review (`review`, #233, board 82) the plan is shown, its tick boxes tick with a click, and Edit opens the text box.
   let {
     dir,
     comments,
     count = 0,
     looks = 0,
+    review = false,
     open = $bindable(),
     tab = $bindable(),
-  }: { dir: FileSystemDirectoryHandle; comments?: Snippet; count?: number; looks?: number; open: boolean; tab: 'planning' | 'comments' } = $props();
+  }: {
+    dir: FileSystemDirectoryHandle; comments?: Snippet; count?: number; looks?: number; review?: boolean;
+    open: boolean; tab: 'planning' | 'comments';
+  } = $props();
 
   const SAVE_AFTER = 1500; // ms after the last change, as the script
   const RETRY_AFTER = 6000;
@@ -59,6 +65,29 @@
   $effect(() => keep('side-tab', tab === 'comments' ? 'comments' : ''));
   const showing = $derived(comments && tab === 'comments' ? 'comments' : 'planning');
   const show = (to: 'planning' | 'comments') => ((tab = to), (open = true));
+
+  // Review shows the plan until Edit is pressed; it starts shown again each time Review opens.
+  let editing = $state(false);
+  $effect(() => {
+    if (!review) untrack(() => (editing = false));
+  });
+  const typing = $derived(!review || editing);
+  const lines = $derived(planLines(text));
+  const line = (words: string) => toHtml(showLists(words));
+  async function flipEdit() {
+    editing = !editing;
+    await tick();
+    if (editing) panel?.querySelector<HTMLTextAreaElement>('.plan textarea')?.focus();
+  }
+  // A tick saves as typing does.
+  function flip(index: number) {
+    text = flipTick(text, index);
+    changed();
+  }
+  function math(node: HTMLElement, _lines: unknown) {
+    renderMath(node);
+    return { update: () => renderMath(node) };
+  }
 
   function changed() {
     status = 'waiting';
@@ -114,6 +143,9 @@
         </div>
       {:else}
         <h2>Planning</h2>
+        {#if review && ready}
+          <button class="edit" onclick={flipEdit}>{editing ? 'Done' : 'Edit'}</button>
+        {/if}
       {/if}
       <button class="close" aria-label="Close {showing}" title="Close" onclick={() => (open = false)}>›</button>
     </div>
@@ -121,7 +153,27 @@
       <div class="body">{@render comments?.()}</div>
     {:else}
       <div class="body plan">
-        {#if ready}
+        {#if ready && !typing}
+          {#if lines.length}
+            <div class="shown" use:math={lines}>
+              {#each lines as l, i (i)}
+                {#if l.tick !== undefined}
+                  <label class="tick" class:done={l.tick}>
+                    <input type="checkbox" checked={l.tick} onchange={() => flip(i)} />
+                    <span>{@html line(l.text)}</span>
+                  </label>
+                {:else if l.text.trim()}
+                  <p>{@html line(l.text)}</p>
+                {:else}
+                  <p class="gap"></p>
+                {/if}
+              {/each}
+            </div>
+            {#if lines.some((l) => l.tick !== undefined)}<p class="help hint">Click a box to tick it. Edit to change the notes.</p>{/if}
+          {:else}
+            <p class="none">No planning notes yet.</p>
+          {/if}
+        {:else if ready}
           <TextField bind:value={text} oninput={changed} lists label="Planning notes"
             placeholder="Learning goals, an outline, notes… anything that helps you plan this video. Not part of the script." />
         {/if}
@@ -159,9 +211,20 @@
   .tabs button { min-height: 34px; padding: 0 12px; border: 0; border-radius: 6px; background: none; color: var(--muted); font-size: 13px; font-weight: 500; }
   .tabs button[aria-pressed='true'] { background: #fff; color: var(--ink); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08); }
   h2 { margin: 0 0 0 8px; font-size: 15px; font-weight: 600; }
+  .edit { margin-left: auto; margin-right: 4px; min-height: 32px; padding: 0 12px; border: 1px solid #c9c9c9; border-radius: 6px;
+    background: #fff; color: var(--ink); font-size: 13px; }
+  .edit:hover { background: #f0f3fc; color: var(--accent); }
   .close { min-width: 44px; min-height: 44px; border: 0; border-radius: 8px; background: none; color: #3d3d3d; font-size: 18px; }
   .close:hover { background: #f0f0f0; }
   .body { flex: 1; overflow-y: auto; padding: 12px 20px 16px; font-size: 14px; }
   .plan :global(textarea) { min-height: 50vh; }
+  .shown p { margin: 0; line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .shown .gap { height: 0.8em; }
+  .shown :global(a) { color: var(--accent); }
+  .tick { display: flex; align-items: flex-start; gap: 8px; min-height: 30px; line-height: 1.55; cursor: pointer; overflow-wrap: anywhere; }
+  .tick input { flex: 0 0 auto; width: 16px; height: 16px; margin: 3px 0 0; accent-color: var(--accent); }
+  .tick.done span { text-decoration: line-through; color: #6b6b6b; }
+  .hint, .none { margin: 10px 0 0; font-size: 12px; color: var(--muted); }
+  .none { font-size: 14px; margin: 0; }
   .foot { margin: 0; padding: 10px 20px 14px; border-top: 1px solid #f0f0f0; font-size: 12px; color: var(--muted); }
 </style>

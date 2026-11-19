@@ -714,7 +714,7 @@
     onDone={() => ((visit = null), (visitOn = ''))} />
 {/snippet}
 {#if script && dir && !clash && (mode === 'write' || mode === 'review')}
-  <Planning {dir} {looks} bind:open={sideOpen} bind:tab={sideTab} count={openCount} comments={mode === 'write' ? comments : undefined} />
+  <Planning {dir} {looks} review={mode === 'review'} bind:open={sideOpen} bind:tab={sideTab} count={openCount} comments={mode === 'write' ? comments : undefined} />
 {/if}
 {#if tour !== undefined && script && dir && !clash && !printing && !exporting}<Tour tab={mode} again={tour} />{/if}
 {#snippet comments()}

@@ -30,3 +30,24 @@ export function combinePlans(base: string, mine: string, theirs: string): string
   const added = theirs.split('\n').filter((line) => line.trim() && !known.has(line));
   return added.length ? mine.replace(/\n*$/, '') + '\n\n' + added.join('\n') + '\n' : mine;
 }
+
+// The plan as Review shows it (#233, board 82): one entry per line, a tick box line with its tick and its words.
+export type PlanLine = { text: string; tick?: boolean };
+const TICK = /^- \[([ xX])\] /;
+
+export function planLines(text: string): PlanLine[] {
+  if (!text.trim()) return [];
+  return text.replace(/\n+$/, '').split('\n').map((line) => {
+    const m = TICK.exec(line);
+    return m ? { text: line.slice(m[0].length), tick: m[1] !== ' ' } : { text: line };
+  });
+}
+
+// The plan with the tick box on line `index` ticked or unticked; anything else on the line is kept.
+export function flipTick(text: string, index: number): string {
+  const lines = text.split('\n');
+  const line = lines[index];
+  if (line === undefined || !TICK.test(line)) return text;
+  lines[index] = line.replace(TICK, (_, mark) => (mark === ' ' ? '- [x] ' : '- [ ] '));
+  return lines.join('\n');
+}

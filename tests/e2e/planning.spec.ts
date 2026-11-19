@@ -30,9 +30,9 @@ test('the Planning tab opens notes that save to plan.md, and stays open', async 
   await page.getByLabel('Dialogue, row 1').click();
   await expect(page.getByLabel('Planning').getByText('☐ Name the three ingredients')).toBeVisible();
 
-  // Open in Review too, and still open after a reload.
+  // Open in Review too (shown there, #233), and still open after a reload.
   await page.getByRole('button', { name: /^Review/ }).click();
-  await expect(notes).toBeVisible();
+  await expect(page.getByRole('checkbox', { name: 'Say what chloroplasts do' })).toBeVisible();
   await page.reload();
   await expect(page.getByLabel('Planning notes')).toHaveValue(/Say what chloroplasts do/);
   await page.getByRole('button', { name: 'Close planning' }).click();
@@ -61,4 +61,52 @@ test('not on History', async ({ page }) => {
   await page.getByRole('button', { name: 'History', exact: true }).click();
   await expect(page.getByLabel('Planning notes')).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Open planning' })).toHaveCount(0);
+});
+
+test('in Review the plan is shown: tick boxes tick with a click and save, and Edit opens the text box (#233)', async ({ page }) => {
+  await openExample(page, { [PLAN]: 'Before filming\n- [x] Check the river shot with **Ana**\n- [ ] Book the drone\n- A bullet\n' });
+  await page.getByRole('button', { name: /^Review/ }).click();
+  await page.getByRole('button', { name: 'Open planning' }).click();
+  const panel = page.getByRole('complementary', { name: 'Planning' });
+  await expect(page.getByLabel('Planning notes')).toHaveCount(0);
+  await expect(panel.getByText('Before filming')).toBeVisible();
+  await expect(panel.getByText('• A bullet')).toBeVisible();
+  await expect(panel.locator('strong')).toHaveText('Ana');
+  const river = panel.getByRole('checkbox', { name: 'Check the river shot with Ana' });
+  const drone = panel.getByRole('checkbox', { name: 'Book the drone' });
+  await expect(river).toBeChecked();
+  await expect(drone).not.toBeChecked();
+
+  // A click ticks it, and it saves as typing does.
+  await drone.click();
+  await river.click();
+  await expect(drone).toBeChecked();
+  await expect(river).not.toBeChecked();
+  await expect.poll(() => readFile(page, PLAN), { timeout: 10000 })
+    .toBe('Before filming\n- [ ] Check the river shot with **Ana**\n- [x] Book the drone\n- A bullet\n');
+
+  // Edit opens the same text box as Write; Done shows the plan again.
+  await panel.getByRole('button', { name: 'Edit' }).click();
+  const notes = page.getByLabel('Planning notes');
+  await expect(notes).toBeFocused();
+  await notes.press('Control+End');
+  await notes.pressSequentially('Notes');
+  await panel.getByRole('button', { name: 'Done' }).click();
+  await expect(notes).toHaveCount(0);
+  await expect(panel.getByText('Notes', { exact: true })).toBeVisible();
+  await expect.poll(() => readFile(page, PLAN), { timeout: 10000 }).toMatch(/- A bullet\nNotes$/);
+
+  // Write still types straight in, with no Edit button.
+  await page.getByRole('button', { name: /^Write/ }).click();
+  await expect(page.getByLabel('Planning notes')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Edit', exact: true })).toHaveCount(0);
+});
+
+test('an empty plan in Review says so, and Edit lets you start one', async ({ page }) => {
+  await openExample(page);
+  await page.getByRole('button', { name: /^Review/ }).click();
+  await page.getByRole('button', { name: 'Open planning' }).click();
+  await expect(page.getByText('No planning notes yet.')).toBeVisible();
+  await page.getByRole('complementary', { name: 'Planning' }).getByRole('button', { name: 'Edit' }).click();
+  await expect(page.getByLabel('Planning notes')).toBeFocused();
 });

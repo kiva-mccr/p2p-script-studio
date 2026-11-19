@@ -92,7 +92,7 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
   sealed app, in a folder the person picks (decision card open).
   Then issue #254 (EX-22, zoom in the Resolve / Premiere preview, board 79, done 2026-11-18).
   Then board 80's issues (the user, 2026-11-18), one PR each: #245, #238, #225, #207 (SB-9 to SB-12, done), #264
-  (SB-13, "No picture" as an icon, done); board 81: #249 (RV-24, done), #250 (RV-25, done), #256 (AP-50, done), #253 (AP-51, word count, done), #262 (AP-52, drop files onto a row, done); board 82: #220 (EX-23, pictures on the video export's clips, done), #212 (EX-24, script lines in Assets, done), then the rest of 82 and 83.
+  (SB-13, "No picture" as an icon, done); board 81: #249 (RV-24, done), #250 (RV-25, done), #256 (AP-50, done), #253 (AP-51, word count, done), #262 (AP-52, drop files onto a row, done); board 82: #220 (EX-23, pictures on the video export's clips, done), #212 (EX-24, script lines in Assets, done), #233 (RV-26, tick boxes in Review's plan, done), then the rest of 82 and 83.
   The rest (AP-8 …) waits
   for the user's next ranking; "Last" in ROADMAP.md (EX-5, CC-1) waits until everything else is done.
 - Mock-ups (one board per design, numbered): https://claude.ai/artifact/2XDZmS7J5NEPZsz91RQMiL (private to the user).

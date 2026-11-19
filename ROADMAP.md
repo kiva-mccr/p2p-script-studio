@@ -762,6 +762,10 @@ and suggestions, keeps every version, and exports them for production.
   solid says the drop will work). A drop anywhere else is refused, so the browser never opens the file in place of
   the app (`lib/filedrag.svelte.ts`). "From other scripts…" became "Reuse a file…": this script's own files and links
   come first ("In this script", with the rows using each, added as the same line, not copied), then the other scripts.
+- [x] **RV-26** Tick boxes you can use in Review's planning notes (issue #233, board 82 agreed by the user): in
+  Review the plan is shown, not typed in; its tick boxes tick with one click and save as typing does (a ticked line
+  struck through in grey). Edit, beside Close, opens the same text box Write has, and Done shows the plan again; it
+  starts shown each time Review opens. Write is unchanged. Built 2026-11-19 (`planLines`, `flipTick` in lib/planning.ts).
 - [x] **RV-23** Fold columns in Review too (asked by the user): the ‹ fold from AP-17 (Write only today) also works
   in Review, every column open by default.
   Built as mock-up 60: the same ‹ and › (shared `FoldHeads.svelte`, `lib/folds.svelte.ts`), a grey dot on rows with
