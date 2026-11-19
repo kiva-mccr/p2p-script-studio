@@ -771,6 +771,10 @@ and suggestions, keeps every version, and exports them for production.
 - [x] **AP-55** Copy and Open on contact details (issue #224, board 88 agreed by the user): each box in Contact details
   (Credits and People) gets Copy, and Write ↗ (a new email) or Open ↗ (the LinkedIn page) in a new tab; shown only
   once the box has something in it.
+- [x] **AP-57** How long in the status (issue #230, board 87 agreed by the user): the top bar's pill says how long
+  it has been in review or approved, "In review · 2 days", and on hover who put it there and when ("Sent for review
+  by Sam, Monday, Nov 16, 3:12 pm"), from History's newest review entry (`lib/statusage.ts`). The age goes first
+  when the window is under 1180 px; a status changed by hand in script.md shows no age. Built 2026-11-19.
 - [x] **AP-56** The ? menu everywhere (issues #219, #239, #232, board 87 agreed by the user): ? is in the top bar of
   every screen, Export included, and beside Exit in the Teleprompter (dark, opening upwards); in a script, Export
   and the Teleprompter it's a touch dimmer until hovered. "See the example" opens the made-up example at its list

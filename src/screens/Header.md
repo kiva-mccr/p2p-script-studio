@@ -45,7 +45,11 @@ Copy for Teams, EX-10) above Export (Print…, Fountain, Final Draft, Voice-over
   It covers the top of `main`, so a test must not click there to leave a text field (`play.spec.ts` blurs instead).
   Its z-index (7) is over the timeline drawer (4) and its preview: in a short window the preview reached the bar and
   took the click meant for Pause.
-- "In review" (outside Review) and "Approved" say where the script stands. UX-13 added links beside them ("Approve in
+- "In review" (outside Review) and "Approved" say where the script stands, and for how long ("· 2 days", #230,
+  `stateAge` from `lib/statusage.ts`; who and when on hover). The label is its own span, so tests' exact "In review"
+  still finds it; `.age`'s "· " is CSS. The age hides under 1180 px (a media query: a container query on the bar
+  would make it the containing block for the fixed windows inside it). The Editor reads History again after a status
+  change's entry (`onEntry` also runs `readCounts`), so a fresh "just now" shows at once. UX-13 added links beside them ("Approve in
   Review", "Send for review in Write"); the user had them taken out (2026-11-15): the state beside them says enough.
   Ctrl+F in Review goes to Write and opens Find (`findKey` in `Editor.svelte`).
 - While the browser's OK to edit the folder is lost (`status` 'locked', mock-up 18 option A), the status reads "Not

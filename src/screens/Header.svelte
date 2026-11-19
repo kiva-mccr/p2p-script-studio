@@ -14,10 +14,12 @@
   import { shareLink } from '../lib/route';
   import Settings from './Settings.svelte';
   import Presence from './Presence.svelte';
+  import type { StatusAge } from '../lib/statusage';
 
   type Mode = 'write' | 'review' | 'history' | 'assets';
-  let { folder, title, ready, mode, writeCount = 0, reviewCount = 0, loose, missingCount, voiceText, voiceWpm, play, editors, seen = [], folding = '', reviewStatus, heldCount = 0, status, problem = '', onAllow, onLoose, onMode, onStatus, onFind, onPrompt, onCredits, onExport, onShare, onPlay, onStop, nextVersion }: {
+  let { folder, title, ready, mode, writeCount = 0, reviewCount = 0, loose, missingCount, voiceText, voiceWpm, play, editors, seen = [], folding = '', reviewStatus, stateAge = null, heldCount = 0, status, problem = '', onAllow, onLoose, onMode, onStatus, onFind, onPrompt, onCredits, onExport, onShare, onPlay, onStop, nextVersion }: {
     folder: string; title: string; ready: boolean; mode: Mode; writeCount?: number; reviewCount?: number; loose: Loose[]; missingCount: number; voiceText: string; voiceWpm: number; editors: string[]; reviewStatus: string;
+    stateAge?: StatusAge | null; // how long it has been in that status, and who put it there (#230)
     heldCount?: number; // comments on hold (RV-19): Send for review says they come back
     // Play the script (AU-2): null when there is nothing to play here; time is '' until it has started.
     play: { time: string; on: boolean } | null; onPlay: () => void; onStop: () => void;
@@ -202,7 +204,7 @@
           {/if}
         </span>
       {/if}
-      {#if reviewStatus === 'approved' || (reviewStatus === 'in review' && mode !== 'review')}<span class="state" data-keep>{reviewStatus === 'approved' ? 'Approved' : 'In review'}</span>{/if}
+      {#if reviewStatus === 'approved' || (reviewStatus === 'in review' && mode !== 'review')}<span class="state" data-keep title={stateAge?.title}><span>{reviewStatus === 'approved' ? 'Approved' : 'In review'}</span>{#if stateAge}<span class="age">{stateAge.age}</span>{/if}</span>{/if}
       {#if play}
         <button class="outline play" class:started={play.time} onclick={onPlay}
           aria-label={!play.time ? 'Play the script' : play.on ? 'Pause the script' : 'Carry on playing the script'}>
@@ -274,7 +276,11 @@
   .count.bad { background: var(--danger); }
   .dark { min-height: 44px; padding: 0 16px; border: 0; border-radius: 8px; background: var(--ink); color: #fff; font-size: 14px; font-weight: 500; }
   .dark:hover { background: #333; }
-  .state { padding: 4px 10px; border-radius: 999px; background: #e7f4ec; color: #1b6b3e; font-size: 13px; font-weight: 500; }
+  .state { padding: 4px 10px; border-radius: 999px; background: #e7f4ec; color: #1b6b3e; font-size: 13px; font-weight: 500; white-space: nowrap; }
+  /* How long (#230): "· 2 days", the "· " drawn here so the text is just the time. It goes first when the bar is narrow. */
+  .age { font-weight: 400; }
+  .age::before { content: ' · '; white-space: pre; }
+  @media (max-width: 1180px) { .age { display: none; } }
   .status, .voice { flex: none; font-size: 13px; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
   .status { margin-left: 6px; }
   .voice::before { content: '· '; } /* drawn, so the length's text stays just the time */

@@ -40,6 +40,7 @@
   import { bring, watchScroll } from '../lib/followrow';
   import { floor } from '../lib/floor';
   import { Places } from '../lib/tabplace';
+  import { statusAge } from '../lib/statusage';
 
   // review: opened from a shared link, so it starts on the Review tab (RV-10). tour: in the example only, the guided
   // tour (AP-34), a count that goes up when Take the tour is clicked.
@@ -68,7 +69,7 @@
   const HERE_EVERY = 60 * 1000; // the "… is editing" file is refreshed this often (PF-18: was 30 s)
 
   // The script on disk: reading, saving, History and clashes (lib/saving.svelte.ts).
-  const file = new Saving(untrack(() => folder), () => name, (message) => (notice = message), () => readReview());
+  const file = new Saving(untrack(() => folder), () => name, (message) => (notice = message), () => (readReview(), readCounts())); // a new status entry: Review's notes, the counts and the pill's age (#230)
   const dir = $derived(file.dir);
   const script = $derived(file.script);
   const status = $derived(file.status);
@@ -443,6 +444,8 @@
   let versions = $state<Version[]>([]);
   let reviewNew = $state(0);
   const writeNew = $derived(writeCount(versions, allThreads, reviewStatus, name, seen.write));
+  // How long it has been in review or approved (#230): worked out again at each check, which brings a new `seen`.
+  const stateAge = $derived.by(() => (void file.seen, statusAge(versions, reviewStatus, Date.now())));
   function lookAt(tab: string) {
     if (tab !== 'write' && tab !== 'review') return;
     seen[tab] = stamp();
@@ -680,7 +683,7 @@
 {#if exporting && script && dir}
   <Export {script} {dir} folder={folder.name} title={title ?? ''} version={exporting.version} start={exporting.to} onPrint={print} onBack={() => (exporting = null)} />
 {:else}
-<Header folder={folder.name} title={title ?? ''} ready={!!script} {mode} writeCount={mode === 'write' ? 0 : writeNew} reviewCount={mode === 'review' ? 0 : reviewNew} {loose} missingCount={lostFiles.size} {voiceText} voiceWpm={takesSpeed(voice.takes)} editors={file.editors} seen={file.seen} folding={file.folding} {reviewStatus} {heldCount} {status} problem={file.problem}
+<Header folder={folder.name} title={title ?? ''} ready={!!script} {mode} writeCount={mode === 'write' ? 0 : writeNew} reviewCount={mode === 'review' ? 0 : reviewNew} {loose} missingCount={lostFiles.size} {voiceText} voiceWpm={takesSpeed(voice.takes)} editors={file.editors} seen={file.seen} folding={file.folding} {reviewStatus} {stateAge} {heldCount} {status} problem={file.problem}
   play={canPlay ? { time: player.started ? `${clock(player.time)} / ${clock(player.total)}` : '', on: player.on } : null} onPlay={() => play()} onStop={() => player.stop()}
   onMode={switchMode}
   onAllow={() => file.allow()} onStatus={setStatus} onLoose={showLoose} onExport={openExport} onShare={shareNow} nextVersion={() => file.nextVersion()} onFind={() => (switchMode('write'), (finding = true))} onCredits={() => (crediting = true)} onPrompt={() => (status === 'waiting' && save(), player.stop(), (promptFrom = whereAmI()), (prompting = true))} />

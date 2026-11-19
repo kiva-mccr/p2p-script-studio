@@ -185,7 +185,8 @@ Status: a first working version. What it does today:
   and size under them; other files a chip; clicking opens one. They are kept in the script's `.studio/files/` and never deleted. The Write and Review tabs show what's new for you: Review, once it is sent for review, the rows changed since it was last sent back; Write, once it is sent back, the comments and suggestions from the review still open. Opening a tab clears its number, and it then counts only what comes later (your own never count). Send for review (in Write), with an optional note for the
   reviewers that they see at the top of Review, then Approve or Send back to writer (with an optional note for the
   writer, shown at the top of Comments in Write); each step (and the note)
-  is noted in History, and the list shows the status. If comments, suggestions or missing files are still open,
+  is noted in History, and the list shows the status. The top bar's status says how long it has been there ("In
+  review · 2 days"); hover it for who and when. If comments, suggestions or missing files are still open,
   Approve first lists them (click one to go to it); "Approve anyway" still approves, and History notes how many were open.
   **For me:** the script list labels what waits for you: "Your review" (in review and someone else sent it), "2
   replies" (open comments you wrote in where someone else has the last word) and "Sent back to you". The All · For
