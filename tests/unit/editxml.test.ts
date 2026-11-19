@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { parseScript, type Row } from '../../src/lib/script';
 import { layout } from '../../src/lib/timeline';
-import { EDIT, plan, toSrt, toXml, type EditHow } from '../../src/lib/editxml';
+import { EDIT, editFps, editFrame, plan, toSrt, toXml, type EditHow } from '../../src/lib/editxml';
 
 const source = `# Intro
 
@@ -136,6 +136,27 @@ describe('toXml', () => {
   it('escapes paths with spaces', () => {
     const s = parseScript(source.replace('assets/leaf.jpg', 'assets/Leaf%20shot.jpg'));
     expect(toXml(plan(s, layout(s, (row: Row) => lengths[row.id]), EDIT), 'x', EDIT)).toContain('<pathurl>media/Leaf%2520shot.jpg</pathurl>');
+  });
+});
+
+describe('your own frame rate and size (#217)', () => {
+  it('writes the size and rate you typed', () => {
+    const how: EditHow = { ...EDIT, size: 'custom', ownWidth: '1080', ownHeight: '1350', fps: 'custom', ownFps: '23.976' };
+    expect(editFrame(how)).toEqual({ width: 1080, height: 1350 });
+    const xml = toXml(made(how), 'x', how);
+    expect(xml).toContain('<width>1080</width><height>1350</height>');
+    expect(xml).toContain('<rate><timebase>24</timebase><ntsc>TRUE</ntsc></rate>');
+  });
+
+  it('rounds a rate the XML cannot say to whole frames', () => {
+    const xml = toXml(made(), 'x', { ...EDIT, fps: 'custom', ownFps: '12.5' });
+    expect(xml).toContain('<rate><timebase>13</timebase><ntsc>FALSE</ntsc></rate>');
+  });
+
+  it('has no size or rate while a box holds something else', () => {
+    expect(editFrame({ ...EDIT, size: 'custom', ownWidth: 'wide', ownHeight: '1080' })).toBeNull();
+    expect(editFps({ ...EDIT, fps: 'custom', ownFps: '121' })).toBeNull();
+    expect(editFps(EDIT)).toBe(30);
   });
 });
 

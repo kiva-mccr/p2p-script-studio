@@ -125,6 +125,32 @@ test('Save video makes a video as long as the timeline, with sound, and plays it
   await expect(page.getByRole('region', { name: 'Preview' }).locator('video')).toBeVisible(); // the made video, ready to play
 });
 
+test('a size and rate of your own (#217): the preview takes its shape, and the video is made at them', async ({ page }) => {
+  test.setTimeout(90_000);
+  await openVideo(page);
+  const preview = page.getByRole('region', { name: 'Preview' });
+  await expect(page.getByText('Wide, as set on the timeline at the bottom of Write.')).toBeVisible();
+  await page.getByRole('group', { name: 'Frame size' }).getByLabel('Custom').check();
+  await expect(page.getByText('Wide, as set on the timeline at the bottom of Write.')).toHaveCount(0); // your own size wins
+  await page.getByLabel('Width').fill('9');
+  await expect(page.getByText('16 to 8192 pixels')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Save video' })).toBeDisabled();
+  await page.getByLabel('Width').fill('480');
+  await page.getByLabel('Height').fill('600');
+  await page.getByRole('group', { name: 'Frames per second' }).getByLabel('Custom').check();
+  await page.getByLabel('Your own frame rate').fill('12');
+  await expect(preview.getByText(/· 480 × 600 · 12 fps ·/)).toBeVisible();
+  const box = (await preview.locator('.screen').boundingBox())!;
+  expect(box.width / box.height).toBeCloseTo(0.8, 1);
+
+  const [download] = await Promise.all([page.waitForEvent('download', { timeout: 80_000 }), page.getByRole('button', { name: 'Save video' }).click()]);
+  const input = new Input({ source: new BufferSource(readFileSync(await download.path())), formats: ALL_FORMATS });
+  const picture = (await input.getPrimaryVideoTrack())!;
+  expect(picture.displayWidth).toBe(480);
+  expect(picture.displayHeight).toBe(600);
+  expect((await picture.computePacketStats()).averagePacketRate).toBeCloseTo(12, 0);
+});
+
 test('the timeline turns upright: its preview, the script and the video follow', async ({ page }) => {
   await setUp(page, '#/Episode%2003', files);
   await expect(page.getByLabel('Dialogue, row 1')).toBeVisible();

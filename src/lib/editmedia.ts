@@ -2,7 +2,7 @@
 // as PNG, cards and collages drawn, takes turned into WAV), measured for the XML, and zipped with the .xml beside them.
 
 import { assetFile } from './folder';
-import { toSrt, toXml, type EditHow, type Info, type Plan, type Source } from './editxml';
+import { editFrame, toSrt, toXml, type EditHow, type Info, type Plan, type Source } from './editxml';
 import { cleaned, decoder, readTake, wav } from './voiceexport';
 import { zip, type ZipEntry } from './zip';
 import { eachAtOnce } from './atonce';
@@ -12,7 +12,7 @@ const RATE = 48000;
 
 // Makes the zip. `missing` lists the files that couldn't be read: the editor sees those clips offline.
 export async function editZip(dir: FileSystemDirectoryHandle, p: Plan, title: string, name: string, how: EditHow): Promise<{ zip: Blob; missing: string[] }> {
-  const [width, height] = how.size.split('x').map(Number);
+  const { width, height } = editFrame(how) ?? { width: 1920, height: 1080 };
   const entries: ZipEntry[] = [];
   const info: Record<string, Info> = {};
   const missing: string[] = [];

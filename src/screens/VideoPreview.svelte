@@ -7,14 +7,23 @@
   import { makePreview, revokePreview } from '../lib/preview';
   import { clock } from '../lib/readtime.svelte';
   import type { Shape } from '../lib/timeline';
-  import { FPS, frame, frameSize, megabytes, type VideoHow } from '../lib/video';
+  import { frame, megabytes, videoBits, videoFps, videoFrame, type VideoHow } from '../lib/video';
 
   let { plan, dir, shape, how, name, made, progress, onStop }: {
     plan: Plan; dir: FileSystemDirectoryHandle; shape: Shape; how: VideoHow; name: string;
     made: { url: string; mp4: boolean } | null; progress: number | null; onStop: () => void;
   } = $props();
 
-  const size = $derived(frameSize(how.size, shape));
+  // The frame as chosen (the last good one while a Custom box, #217, holds something that isn't a size or rate).
+  let size = $state({ width: 1920, height: 1080 });
+  let fps = $state(30);
+  $effect.pre(() => {
+    const s = videoFrame(how, shape);
+    if (s) size = s;
+    const f = videoFps(how);
+    if (f) fps = f;
+  });
+  const fpsName = $derived(String(Math.round(fps * 1000) / 1000));
   const items = $derived(plan.video[0] ?? []);
   let at = $state(0); // the clip shown
   let watching = $state(true); // the made video, rather than the stills
@@ -82,9 +91,9 @@
   }
 </script>
 
-<p class="caption">{name}.{made && !made.mp4 ? 'webm' : 'mp4'} · {size.width} × {size.height} · {FPS} fps · {clock(plan.total)} · about {megabytes(plan.total, how.size)} MB</p>
+<p class="caption">{name}.{made && !made.mp4 ? 'webm' : 'mp4'} · {size.width} × {size.height} · {fpsName} fps · {clock(plan.total)} · about {megabytes(plan.total, videoBits(how, size))} MB</p>
 <div class="box">
-  <div class="screen" class:upright={shape === 'upright'}>
+  <div class="screen" style:aspect-ratio="{size.width} / {size.height}" style:width="min(100%, 720px, {Math.round((427 * size.width) / size.height)}px)">
     {#if made && watching}
       <!-- svelte-ignore a11y_media_has_caption (the captions, if any, are in the picture) -->
       <video src={made.url} controls></video>
@@ -117,8 +126,7 @@
 <style>
   .caption { margin: 0 0 8px; font-size: 13px; color: var(--muted); }
   .box { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 16px; border: 1px solid var(--line); border-radius: 10px; }
-  .screen { width: 100%; max-width: 720px; aspect-ratio: 16 / 9; background: #000; border-radius: 6px; overflow: hidden; }
-  .screen.upright { width: 240px; aspect-ratio: 9 / 16; }
+  .screen { background: #000; border-radius: 6px; overflow: hidden; } /* sized by the frame's shape: at most 720 wide, 427 high */
   canvas, video { display: block; width: 100%; height: 100%; }
   /* Many clips (#220): each is a size container, so a narrow one shows its picture alone, a sliver drops it, then its padding; a clip too narrow
      for its own border can't push past the row's ends (overflow-x: clip, which keeps focus rings above and below). */

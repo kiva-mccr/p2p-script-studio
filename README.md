@@ -136,7 +136,7 @@ Status: a first working version. What it does today:
   takes as WAV, .svg pictures as PNG, grey cards for placeholders and rows with no pictures, and each collage drawn
   as one picture. V1 has the pictures, A1 the takes, with the timeline's timings (holds keep the picture longer), and
   a marker on each row carries its number, section and dialogue (and any link that isn't in the zip). Settings: frame
-  size, frames per second, collages as one picture or a track per picture, markers, and the dialogue as captions
+  size and frames per second (each with Custom, for your own: width × height, or any rate from 1 to 120), collages as one picture or a track per picture, markers, and the dialogue as captions
   (`.srt`). The preview draws the tracks roughly as the apps show them (a band per section, a thin pin per row's
   marker) and lists the zip's files, three or more numbered ones (take-1.wav … take-5.wav) folded to first ↓ last
   until clicked; − and + zoom it from 1× to 16×, scrolling sideways in its box, and a clip's
@@ -144,7 +144,8 @@ Status: a first working version. What it does today:
 - **Video:** saves the storyboard timeline as a video, made in the browser, faster than playing it: each row's
   pictures (videos play, collages side by side, or stacked when upright), holds and placeholders, with the takes as
   its sound, at the timeline's timings. MP4 where the computer can make it, else WebM (the page says so). Settings:
-  720p or 1080p (wide or upright, as set on the timeline), the dialogue as captions on the picture, rows with no take
+  720p or 1080p (wide or upright, as set on the timeline) or a size of your own, 24, 25, 29.97 or 30 frames a second
+  or a rate of your own, the dialogue as captions on the picture, rows with no take
   silent for their read time or left out, and videos' own sound kept under the voice. The preview shows any moment
   (click a clip; each clip has a tiny picture of itself); once made, the video plays there. Stop ends it early.
 - **Read time:** each section shows how long its dialogue takes to read aloud, and the top bar the whole script

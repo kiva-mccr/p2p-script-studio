@@ -5,18 +5,32 @@
 import { clearMarks } from './format';
 import { readFileRef, rows, type Script } from './script';
 import type { Lane, TimeBlock } from './timeline';
+import { OWN, frameRate, readFps, readSide, type Own } from './framing';
 
 export type FrameSize = '1920x1080' | '3840x2160' | '1080x1920';
 export type Fps = '24' | '25' | '29.97' | '30';
-// The export's settings: frame size and rate, collages as one picture or one track per picture, markers, captions.
-export type EditHow = { size: FrameSize; fps: Fps; stacked: boolean; markers: boolean; captions: boolean };
-export const EDIT: EditHow = { size: '1920x1080', fps: '30', stacked: false, markers: true, captions: false };
+// The export's settings: frame size and rate (or "custom", your own, #217), collages as one picture or one track per
+// picture, markers, captions.
+export type EditHow = { size: FrameSize | 'custom'; fps: Fps | 'custom'; stacked: boolean; markers: boolean; captions: boolean } & Own;
+export const EDIT: EditHow = { size: '1920x1080', fps: '30', stacked: false, markers: true, captions: false, ...OWN };
 export const SIZES: { id: FrameSize; name: string }[] = [
   { id: '1920x1080', name: '1920 × 1080 (HD)' },
   { id: '3840x2160', name: '3840 × 2160 (4K)' },
   { id: '1080x1920', name: '1080 × 1920 (upright)' },
 ];
 export const RATES: Fps[] = ['24', '25', '29.97', '30'];
+
+// The frame's size and rate as chosen, or null while a Custom box holds something that isn't one.
+export function editFrame(how: EditHow): { width: number; height: number } | null {
+  if (how.size !== 'custom') {
+    const [width, height] = how.size.split('x').map(Number);
+    return { width, height };
+  }
+  const width = readSide(how.ownWidth);
+  const height = readSide(how.ownHeight);
+  return width && height ? { width, height } : null;
+}
+export const editFps = (how: EditHow): number | null => (how.fps === 'custom' ? readFps(how.ownFps) : Number(how.fps));
 
 // Where a file in the zip's media folder comes from.
 export type Source =
@@ -133,10 +147,8 @@ export type Info = { width?: number; height?: number; seconds?: number };
 // Final Cut Pro 7 XML ("xmeml"), which Resolve (File › Import › Timeline) and Premiere (File › Import) both open.
 // Paths are relative to the .xml, in its media folder.
 export function toXml(p: Plan, title: string, how: EditHow, info: Record<string, Info> = {}): string {
-  const [width, height] = how.size.split('x').map(Number);
-  const ntsc = how.fps === '29.97';
-  const timebase = ntsc ? 30 : Number(how.fps);
-  const perSecond = ntsc ? 30000 / 1001 : timebase;
+  const { width, height } = editFrame(how) ?? { width: 1920, height: 1080 };
+  const { timebase, ntsc, perSecond } = frameRate(editFps(how) ?? 30);
   const f = (seconds: number) => Math.round(seconds * perSecond);
   const rate = `<rate><timebase>${timebase}</timebase><ntsc>${ntsc ? 'TRUE' : 'FALSE'}</ntsc></rate>`;
   const written = new Set<string>();

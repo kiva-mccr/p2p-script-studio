@@ -3,7 +3,8 @@
 // mediabunny). MP4 (H.264) where the computer can make it, else WebM. `frame` draws one moment for the preview,
 // with the same code as the file.
 
-import type { Plan, Source, Item } from './editxml';
+import type { Fps, Plan, Source, Item } from './editxml';
+import { OWN, frameRate, readFps, readSide, type Own } from './framing';
 import { assetFile } from './folder';
 import { card, collage, fit, free, loadImage, picture, type Drawable } from './editmedia';
 import { cleaned, decoder, readTake } from './voiceexport';
@@ -11,10 +12,10 @@ import { subdir } from './dirs';
 import type { Shape } from './timeline';
 
 export type VideoSize = '720' | '1080';
-// The video's settings: its size (its shape comes from the script), captions, rows with no take, videos' own sound.
-export type VideoHow = { size: VideoSize; captions: boolean; skip: boolean; sound: boolean };
-export const VIDEO: VideoHow = { size: '1080', captions: false, skip: false, sound: false };
-export const FPS = 30;
+// The video's settings: its size (its shape comes from the script, unless a size of your own is set, #217) and frame
+// rate (30 unless chosen), captions, rows with no take, videos' own sound.
+export type VideoHow = { size: VideoSize | 'custom'; fps: Fps | 'custom'; captions: boolean; skip: boolean; sound: boolean } & Own;
+export const VIDEO: VideoHow = { size: '1080', fps: '30', captions: false, skip: false, sound: false, ...OWN };
 const RATE = 48000;
 const AUDIO_BITS = 128_000;
 
@@ -23,9 +24,25 @@ export function frameSize(size: VideoSize, shape: Shape): { width: number; heigh
   const short = size === '720' ? 720 : 1080;
   return shape === 'upright' ? { width: short, height: long } : { width: long, height: short };
 }
-// Bits a second for the picture: stills and slow cuts need little.
-export const videoBits = (size: VideoSize) => (size === '720' ? 1_200_000 : 2_500_000);
-export const megabytes = (seconds: number, size: VideoSize) => Math.max(1, Math.round((seconds * (videoBits(size) + AUDIO_BITS)) / 8 / 1e6));
+// The video's frame: 720p or 1080p in the script's shape, or your own size, made even (H.264 needs even sides); null
+// while a Custom box holds something that isn't a size.
+export function videoFrame(how: VideoHow, shape: Shape): { width: number; height: number } | null {
+  if (how.size !== 'custom') return frameSize(how.size, shape);
+  const width = readSide(how.ownWidth);
+  const height = readSide(how.ownHeight);
+  return width && height ? { width: width - (width % 2), height: height - (height % 2) } : null;
+}
+// Frames a second, exactly (29.97 is 30000/1001), or null while the Custom box isn't a rate.
+export function videoFps(how: VideoHow): number | null {
+  const fps = how.fps === 'custom' ? readFps(how.ownFps) : Number(how.fps);
+  return fps === null ? null : frameRate(fps).exact;
+}
+// Bits a second for the picture: stills and slow cuts need little. Your own size gets 1080p's, by its pixels.
+export function videoBits(how: VideoHow, frame: { width: number; height: number }): number {
+  if (how.size !== 'custom') return how.size === '720' ? 1_200_000 : 2_500_000;
+  return Math.max(300_000, Math.round((2_500_000 * frame.width * frame.height) / (1920 * 1080) / 1000) * 1000);
+}
+export const megabytes = (seconds: number, bits: number) => Math.max(1, Math.round((seconds * (bits + AUDIO_BITS)) / 8 / 1e6));
 
 const isVideo = (path: string) => /\.(mp4|webm|mov|m4v)$/i.test(path);
 
@@ -59,7 +76,7 @@ type Ready =
   | { kind: 'video'; next: (local: number) => Promise<CanvasImageSource | null>; done: () => void };
 
 // Reads a clip's media from the folder. A file that can't be read is a card with its name (and named in `missing`).
-async function ready(dir: FileSystemDirectoryHandle, source: Source, item: Item, playing: boolean, missing: Set<string>): Promise<Ready> {
+async function ready(dir: FileSystemDirectoryHandle, source: Source, item: Item, playing: boolean, missing: Set<string>, fps = 30): Promise<Ready> {
   const lost = (path: string): Ready => (missing.add(path), { kind: 'card', text: path.split('/').at(-1) || path });
   const one = async (path: string, last = false) => {
     const file = await assetFile(dir, path).catch(() => null);
@@ -85,7 +102,7 @@ async function ready(dir: FileSystemDirectoryHandle, source: Source, item: Item,
     case 'copy': {
       if (source.video && playing) {
         const file = await assetFile(dir, source.path).catch(() => null);
-        const video = file ? await playVideo(file, item).catch(() => null) : null;
+        const video = file ? await playVideo(file, item, fps).catch(() => null) : null;
         if (video) return video;
       }
       const pic = await one(source.path);
@@ -97,7 +114,7 @@ async function ready(dir: FileSystemDirectoryHandle, source: Source, item: Item,
 }
 
 // A video's frames in order, decoded as the clip plays; past its end it stays on its last frame.
-async function playVideo(file: File, item: Item): Promise<Ready> {
+async function playVideo(file: File, item: Item, fps: number): Promise<Ready> {
   const { Input, BlobSource, ALL_FORMATS, CanvasSink } = await import('mediabunny');
   const input = new Input({ source: new BlobSource(file), formats: ALL_FORMATS });
   const track = await input.getPrimaryVideoTrack();
@@ -107,9 +124,9 @@ async function playVideo(file: File, item: Item): Promise<Ready> {
   }
   const end = Math.max(0, (await track.computeDuration()) - 0.001);
   const sink = new CanvasSink(track, { poolSize: 2 });
-  const count = Math.ceil(item.seconds * FPS);
+  const count = Math.ceil(item.seconds * fps);
   const times = function* () {
-    for (let f = 0; f < count; f++) yield Math.min(f / FPS, end);
+    for (let f = 0; f < count; f++) yield Math.min(f / fps, end);
   };
   const frames = sink.canvasesAtTimestamps(times());
   let last: CanvasImageSource | null = null;
@@ -204,9 +221,8 @@ async function mix(dir: FileSystemDirectoryHandle, p: Plan, sound: boolean): Pro
 }
 
 // The format this computer can make: MP4 (H.264, with AAC or Opus) first, else WebM (VP9 or VP8, Opus).
-async function pickFormat(width: number, height: number, size: VideoSize) {
+async function pickFormat(width: number, height: number, bitrate: number) {
   const m = await import('mediabunny');
-  const bitrate = videoBits(size);
   const audioOk = async (codecs: ('aac' | 'opus')[]) => m.getFirstEncodableAudioCodec(codecs, { numberOfChannels: 1, sampleRate: RATE, bitrate: AUDIO_BITS });
   if (await m.canEncodeVideo('avc', { width, height, bitrate })) {
     const audio = await audioOk(['aac', 'opus']);
@@ -224,23 +240,27 @@ export type Made = { video: Blob; mp4: boolean; missing: string[] };
 export async function makeVideo(dir: FileSystemDirectoryHandle, p: Plan, how: VideoHow, shape: Shape,
   progress: (done: number) => void, stopped: () => boolean): Promise<Made | null> {
   const m = await import('mediabunny');
-  const { width, height } = frameSize(how.size, shape);
-  const kind = await pickFormat(width, height, how.size);
+  const size = videoFrame(how, shape);
+  const fps = videoFps(how);
+  if (!size || !fps) throw new Error('The frame size or rate is not one the video can be made at.');
+  const { width, height } = size;
+  const bitrate = videoBits(how, size);
+  const kind = await pickFormat(width, height, bitrate);
   if (!kind) throw new Error("This browser can't make a video (no WebCodecs encoder for MP4 or WebM).");
   const canvas = document.createElement('canvas');
   canvas.width = width;
   canvas.height = height;
   const g = canvas.getContext('2d', { alpha: false })!;
   const output = new m.Output({ format: kind.format, target: new m.BufferTarget() });
-  const picture = new m.CanvasSource(canvas, { codec: kind.video, bitrate: videoBits(how.size), keyFrameInterval: 2 });
+  const picture = new m.CanvasSource(canvas, { codec: kind.video, bitrate, keyFrameInterval: 2 });
   const sound = new m.AudioBufferSource({ codec: kind.audio, bitrate: AUDIO_BITS });
-  output.addVideoTrack(picture, { frameRate: FPS });
+  output.addVideoTrack(picture, { frameRate: fps });
   output.addAudioTrack(sound);
   const missing = new Set<string>();
   const items = p.video[0] ?? [];
   const samples = await mix(dir, p, how.sound);
   await output.start();
-  const frames = Math.max(1, Math.round(p.total * FPS));
+  const frames = Math.max(1, Math.round(p.total * fps));
   let current = -1;
   let look: Ready | null = null;
   const letGo = () => {
@@ -255,16 +275,16 @@ export async function makeVideo(dir: FileSystemDirectoryHandle, p: Plan, how: Vi
         await output.cancel();
         return null;
       }
-      const t = f / FPS;
+      const t = f / fps;
       const i = itemAt(items, t);
       if (i !== current) {
         letGo();
         current = i;
-        if (i >= 0) look = await ready(dir, p.media.get(items[i].name)!, items[i], true, missing);
+        if (i >= 0) look = await ready(dir, p.media.get(items[i].name)!, items[i], true, missing, fps);
       }
       const shot = look?.kind === 'video' ? await look.next(t - items[i].start) : null;
       paint(g, width, height, look, shot, captionAt(p, t));
-      await picture.add(t, 1 / FPS);
+      await picture.add(t, 1 / fps);
       while (sent < Math.min(p.total, t + 1)) {
         const from = Math.round(sent * RATE);
         const to = Math.min(samples.length, from + RATE);
