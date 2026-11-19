@@ -92,7 +92,8 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
   kept in IndexedDB (the user's pick, 2026-11-19, done).
   Then issue #254 (EX-22, zoom in the Resolve / Premiere preview, board 79, done 2026-11-18).
   Then board 80's issues (the user, 2026-11-18), one PR each: #245, #238, #225, #207 (SB-9 to SB-12, done), #264
-  (SB-13, "No picture" as an icon, done); board 81: #249 (RV-24, done), #250 (RV-25, done), #256 (AP-50, done), #253 (AP-51, word count, done), #262 (AP-52, drop files onto a row, done); board 82: #220 (EX-23, pictures on the video export's clips, done), #212 (EX-24, script lines in Assets, done), #233 (RV-26, tick boxes in Review's plan, done); board 83: #202 (AP-53, Feedback in the tour, done), then the rest of 83. Board 84: #242 (RV-27, a reason on a suggestion, done).
+  (SB-13, "No picture" as an icon, done); board 81: #249 (RV-24, done), #250 (RV-25, done), #256 (AP-50, done), #253 (AP-51, word count, done), #262 (AP-52, drop files onto a row, done); board 82: #220 (EX-23, pictures on the video export's clips, done), #212 (EX-24, script lines in Assets, done), #233 (RV-26, tick boxes in Review's plan, done); board 83: #202 (AP-53, Feedback in the tour, done), then the rest of 83. Board 84: #242 (RV-27, a reason on a suggestion, done). Board 90: #304 (AP-54,
+  paste a picture into a row, done).
   The rest (AP-8 …) waits
   for the user's next ranking; "Last" in ROADMAP.md (EX-5, CC-1) waits until everything else is done.
 - Mock-ups (one board per design, numbered): https://claude.ai/artifact/2XDZmS7J5NEPZsz91RQMiL (private to the user).
@@ -221,4 +222,6 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
   were seen; notes written while someone else's app reads comments are unseen.
 - Dropping files onto a row (AP-52) from real Explorer: tests send made-up drag events; a real drag's outlines and
   dropping a folder or an Outlook attachment are unseen.
+- Pasting a picture into a row (AP-54) from real Snipping Tool or Print Screen in Edge: tests put a PNG on test
+  Chromium's clipboard and press a real Ctrl+V.
 - Allow editing (AP-25) after Chrome really takes back access: tests fake the lost OK; how long Chrome waits is unseen.

@@ -768,6 +768,10 @@ and suggestions, keeps every version, and exports them for production.
   solid says the drop will work). A drop anywhere else is refused, so the browser never opens the file in place of
   the app (`lib/filedrag.svelte.ts`). "From other scripts…" became "Reuse a file…": this script's own files and links
   come first ("In this script", with the rows using each, added as the same line, not copied), then the other scripts.
+- [x] **AP-54** Paste a picture into a row (issue #304 from a teammate, board 90 agreed by the user, 2026-11-19): click
+  a row's Images & files and press Ctrl+V; a screen grab is saved into the script's `assets` folder as "pasted
+  2026-11-19 06-40.png" (local time) and added to the row, as Choose a file… does (Ctrl+Z takes it back). Only
+  pictures are taken; text still pastes into the link box. A grey "or paste a picture (Ctrl+V)" beside + Add.
 - [x] **RV-27** A reason on a suggestion (issue #242, board 84 agreed by the user): "+ Add a reason" under Replace
   with opens a "Why (optional)" box. On the card the reason starts folded to one line ("› Why: …"); a click shows it
   whole. Saved as the suggestion's `text`, so Write's Comments tab and History show it too. A plain comment doesn't

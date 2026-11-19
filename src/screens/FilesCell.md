@@ -2,8 +2,8 @@
 
 A row's "Images & files" column: a chip for each line (a file in the script's folder opens in a new tab, a link
 opens its page, plain words are shown in italics), × to remove, and + Add (choose a file, paste a link, or
-describe something still to find, or reuse a file from this or another script: `SharedFiles.svelte`, AS-1, #262), or
-files dropped from Explorer onto the cell (#262). Files in the folder show a preview above their chip (`Preview.svelte`, AP-19:
+describe something still to find, or reuse a file from this or another script: `SharedFiles.svelte`, AS-1, #262),
+files dropped from Explorer onto the cell (#262), or a picture pasted with Ctrl+V (#304). Files in the folder show a preview above their chip (`Preview.svelte`, AP-19:
 picture, PDF page 1, video, sound, first lines of text or Word); linked images show a thumbnail. Files with no
 preview get their kind and size on the chip.
 
@@ -29,4 +29,7 @@ preview get their kind and size on the chip.
 - Drops (#262, `lib/filedrag.svelte.ts`): while files are over the page every cell has a dashed outline; the one under
   the pointer turns solid with "Drop to add to row N" (the user's note: solid says the drop will work). Dropped files
   go through `addFiles`, like Choose a file…. `dragleave` into a child of the cell (a preview) keeps it solid.
+- Paste (#304): the cell has `tabindex="0"`, so a click on it (not on + Add) gives it the focus and Ctrl+V lands
+  there; a paste anywhere inside (the link box too) bubbles to the cell. Only `image/` files are taken, renamed by
+  `lib/pasted.ts` (a grab is always image.png); with none, the paste is left alone, so text still fills the link box.
 - A picture linked from another site is never shown (SE-1, the user's pick): only its link. See lib/csp.md.

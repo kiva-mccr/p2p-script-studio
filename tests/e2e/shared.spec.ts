@@ -82,6 +82,40 @@ test('files dropped on a row are copied in; while dragging, every row is outline
   await expect.poll(() => readFile(page, 'Trailer/script.md')).toContain('- assets/sun.txt');
 });
 
+test('Ctrl+V on a row\'s Images and files pastes a screen grab in as a file; pasted text is left alone (#304)', async ({ page, context }) => {
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  const two = `## 1 <!-- id: aaaaa -->\nDialogue:\nHello.\n\nOn screen:\n\nFiles:\n\n## 2 <!-- id: bbbbb -->\nDialogue:\nBye.\n\nOn screen:\n\nFiles:\n`;
+  await setUp(page, '#/Trailer', { 'Trailer/script.md': `---\ntitle: Trailer\n---\n\n${two}` });
+  const second = page.getByRole('group', { name: 'Images and files, row 2' });
+  await page.getByLabel('Dialogue, row 2').hover();
+  await expect(second.getByText('or paste a picture (Ctrl+V)')).toBeVisible();
+  // A screen grab on the clipboard, as Windows' Snipping Tool leaves it: a PNG with no name.
+  await page.evaluate(async () => {
+    const canvas = Object.assign(document.createElement('canvas'), { width: 40, height: 20 });
+    canvas.getContext('2d')!.fillRect(0, 0, 40, 20);
+    const png = await new Promise<Blob>((done) => canvas.toBlob((b) => done(b!), 'image/png'));
+    await navigator.clipboard.write([new ClipboardItem({ 'image/png': png })]);
+  });
+  // A click on the cell (not on + Add) gives it the focus, and a real Ctrl+V lands there.
+  const box = (await second.boundingBox())!;
+  await page.mouse.click(box.x + box.width - 4, box.y + box.height / 2);
+  await expect(second).toBeFocused();
+  await page.keyboard.press('Control+V');
+  const chip = second.locator('.chip').getByRole('button', { name: /^pasted \d{4}-\d\d-\d\d \d\d-\d\d\.png$/ });
+  await expect(chip).toBeVisible();
+  await expect(second.locator('img')).toBeVisible(); // its preview
+  await expect.poll(async () => (await listFiles(page, 'Trailer/assets')).filter((n) => n.endsWith('.png')).length).toBe(1);
+  await expect.poll(() => readFile(page, 'Trailer/script.md')).toMatch(/## 2[^]*- assets\/pasted [\d-]+ [\d-]+\.png/);
+  expect(await readFile(page, 'Trailer/script.md')).not.toMatch(/## 1[^#]*pasted/);
+  // Text on the clipboard still pastes into the link box as before.
+  await page.evaluate(() => navigator.clipboard.writeText('https://example.com/grab'));
+  await page.getByLabel('Dialogue, row 1').hover();
+  await page.getByRole('button', { name: '+ Add', exact: true }).first().click();
+  await page.keyboard.press('Control+V');
+  await expect(page.getByLabel('Link or description')).toHaveValue('https://example.com/grab');
+  expect((await listFiles(page, 'Trailer/assets')).length).toBe(1);
+});
+
 test('a link is added as the same link, and Find narrows by name', async ({ page }) => {
   const box = await openBrowser(page);
   await box.getByLabel('Find').fill('rain');
