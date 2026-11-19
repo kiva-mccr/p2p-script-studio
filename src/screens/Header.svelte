@@ -44,7 +44,7 @@
   const bad = $derived(status === 'failed' || status === 'conflict' || status === 'locked');
   // What was just copied, said in the menu for a moment before it closes.
   let copied = $state<'' | 'link' | 'teams' | 'failed'>('');
-  // Two menus, to keep the bar short (asked by the user): Export / Share (Copy link and Copy for Teams, then Print,
+  // Two menus, to keep the bar short (asked by the user): Export / Share (the link and the Teams message with their Copy buttons, #234, then Print,
   // Fountain, Final Draft and later exports, each opening the export screen, EX-9) and ⋯ (Find and replace in Write, Teleprompter, Credits, Settings).
   // 'approve': what is still open, before approving (RV-5, mock-up 20). It warns and never blocks.
   // 'send': a note for the reviewers, before sending (RV-8, mock-up 26). Optional; kept while the page is open.
@@ -82,8 +82,18 @@
     onStatus('draft', 'Sent back to writer', backNote.trim());
     backNote = '';
   }
+  // Export / Share shows the link and a preview of the Teams message (#234): the message is made as the menu opens
+  // (lib/share.ts, already escaped), and made again when copied, so the copy is never older than the click.
+  const link = $derived(menu === 'export' ? shareLink(location.href) : '');
+  let preview = $state<Shared | null>(null);
+  function openShare() {
+    if (menu === 'export') return void (menu = '');
+    menu = 'export';
+    preview = null;
+    onShare().then((s) => (preview = s), () => {});
+  }
   async function copyLink() {
-    await copy('link', () => navigator.clipboard.writeText(shareLink(location.href)));
+    await copy('link', () => navigator.clipboard.writeText(link));
   }
 
   // Copy for Teams (EX-10): the message as formatted text, and as plain text for apps that don't take formatting.
@@ -213,13 +223,26 @@
         {#if play.time}<button class="outline stop" aria-label="Stop playing" title="Stop" onclick={onStop}>■</button>{/if}
       {/if}
       <span class="more" bind:this={exportEl}>
-        <button class="outline" aria-expanded={menu === 'export'}
-          onclick={() => (menu = menu === 'export' ? '' : 'export')}>Export / Share</button>
+        <button class="outline" aria-expanded={menu === 'export'} onclick={openShare}>Export / Share</button>
         {#if menu === 'export'}
-          <div class="menu">
-            <span class="group">Share</span>
-            <button onclick={copyLink}>{copied === 'link' ? 'Link copied' : 'Copy link'}</button>
-            <button onclick={copyTeams}>{copied === 'teams' ? 'Copied, paste it in Teams' : 'Copy for Teams'}</button>
+          <div class="menu share-menu">
+            <!-- The link itself and the Teams message as it will look (#234, board 87), each with its Copy. -->
+            <div class="share">
+              <span class="label">Link</span>
+              <div class="link-row">
+                <input readonly value={link} aria-label="Link to this script" onfocus={(e) => e.currentTarget.select()} />
+                <button class="outline small" aria-label={copied === 'link' ? 'Link copied' : 'Copy link'} onclick={copyLink}>{copied === 'link' ? 'Copied' : 'Copy'}</button>
+              </div>
+              <span class="help">Opens this script on Review, for anyone who has the shared folder.</span>
+            </div>
+            <div class="share">
+              <span class="label">Teams message</span>
+              <!-- inert: its links are only a picture of the message, not to be followed or tabbed to here. -->
+              <div class="teams" aria-label="How it looks in Teams" inert>
+                {#if preview}{@html preview.html}{:else}<p class="waiting">…</p>{/if}
+              </div>
+              <button class="outline small teams-copy" onclick={copyTeams}>{copied === 'teams' ? 'Copied, paste it in Teams' : 'Copy for Teams'}</button>
+            </div>
             {#if copied === 'failed'}<span class="failed" role="alert">Couldn't copy. Try again.</span>{/if}
             <span class="group rule">Export</span>
             <button onclick={() => ((menu = ''), onExport('print'))}>Print…</button>
@@ -300,6 +323,22 @@
   .group { margin: 4px 12px 2px; font-size: 12px; color: var(--muted); }
   .group.rule { margin-top: 6px; padding-top: 8px; border-top: 1px solid var(--line); }
   .failed { padding: 4px 12px; font-size: 13px; color: var(--danger); }
+  /* Share (#234): the link with Copy, and the Teams message as it will look, above the exports. */
+  .share-menu { width: 360px; max-width: calc(100vw - 32px); }
+  .share { display: flex; flex-direction: column; gap: 6px; padding: 6px 12px; }
+  .share .label { font-size: 12px; font-weight: 600; color: var(--muted); }
+  .share .help { font-size: 12px; color: var(--muted); }
+  .link-row { display: flex; gap: 6px; }
+  .link-row input { flex: 1; min-width: 0; min-height: 32px; padding: 0 8px; border: 1px solid var(--line); border-radius: 6px;
+    background: #fafafa; font: 12px ui-monospace, Menlo, monospace; color: #3d3d3d; }
+  .small { min-height: 32px; padding: 0 10px; font-size: 13px; }
+  .teams-copy { align-self: flex-start; }
+  /* A small picture of the message in Teams: its lavender and its purple links. */
+  .teams { padding: 10px; border: 1px solid #e1dff5; border-radius: 6px; background: #f5f5fc; font-size: 13px; line-height: 1.5;
+    overflow-wrap: anywhere; }
+  .teams :global(p) { margin: 0; }
+  .teams :global(a) { color: #4f52b2; }
+  .teams .waiting { color: var(--muted); }
   .approve-menu { width: 380px; gap: 12px; padding: 16px; white-space: normal; }
   .approve-menu p { margin: 0; }
   .lead { font-weight: 600; }

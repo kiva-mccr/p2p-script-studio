@@ -906,6 +906,9 @@ and suggestions, keeps every version, and exports them for production.
   still has to find or film: its "to find" notes and its files missing from the folder, as in Assets. On by default;
   "Say what's still to find on placeholders" turns it off, remembered like the other settings. The Resolve / Premiere
   cards are as before. Built 2026-11-19 (lib/assets.ts `stillToFind`, lib/editmedia.ts `card`).
+- [x] **EX-28** The link and a Teams preview in Share (issue #234, board 87 agreed by the user): Export / Share shows
+  the link itself in a read-only field with Copy, and the Teams message as it will look (lavender box, Teams' purple
+  links, not clickable) with Copy for Teams under it; Print and the exports stay below. Built 2026-11-19.
 - [-] **EX-17** A shoot checklist (suggested; shelved by the user, to talk through later): the asset list (EX-6) with
   shared tick boxes for each row's on-screen shots and files, for the day of filming.
 - [-] **AP-45** Dictate dialogue into a row (suggested; shelved by the user, 2026-11-14, to consider later): speak into

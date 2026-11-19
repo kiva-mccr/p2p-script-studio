@@ -105,7 +105,7 @@ Status: a first working version. What it does today:
   page first doesn't lose it.
 - **The top bar** of a script stays at the top of the window as you scroll.
   Each tab keeps where you were: going to Review and back to Write lands where you left Write.
-- **Export / Share** at the top right of a script holds Copy link and Copy for Teams, then Print, Fountain, Final Draft,
+- **Export / Share** at the top right of a script shows the link and a preview of the Teams message, each with Copy, then Print, Fountain, Final Draft,
   Voice-over and Resolve / Premiere; **the ⋯ menu** holds Find and replace (in Write), Teleprompter, Credits and Settings. Settings > Hide
   help text (off to start, kept in this browser) takes away the grey lines that explain how things work, for people
   who know the app.
@@ -165,7 +165,7 @@ Status: a first working version. What it does today:
   downloads about 100 MB, and no sound leaves the computer). It moves smoothly at your pace and doesn't skip ahead on look-alike
   sentences. Its scroll bar moves through the script. Words
   grey out once said.
-- **Links:** Copy link gives a link straight to the script, for anyone with the same folder; it opens on Review. Copy for Teams copies a
+- **Links:** Export / Share shows the link and the Teams message as it will look, each with its Copy. Copy link gives a link straight to the script, for anyone with the same folder; it opens on Review. Copy for Teams copies a
   short message to paste into a Teams chat: the title as a link (which also opens on Review), status, version, rows, read-aloud time, who edited
   last, open comments and voice-over progress. It is a snapshot of when you copied it, and doesn't update.
 - **Review:** Write · Review · History. Select any text and press the small Comment button above it to comment or suggest a
