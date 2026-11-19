@@ -84,3 +84,12 @@ async function fileNames(dir: FileSystemDirectoryHandle, path: string[]): Promis
 export async function countMissing(dir: FileSystemDirectoryHandle, script: Script): Promise<number> {
   return (await missingFiles(dir, assetList(script))).size;
 }
+
+// What a row still has to find or film (#227, board 86): its files missing from the folder (by name) and its "to find"
+// notes, in the Files column's order. For the video's placeholder cards.
+export function stillToFind(row: ScriptRow, missing: Set<string>): string[] {
+  return row.files
+    .map(readFileRef)
+    .filter((f) => f.kind === 'words' || (f.kind === 'path' && missing.has(f.target)))
+    .map((f) => f.label);
+}

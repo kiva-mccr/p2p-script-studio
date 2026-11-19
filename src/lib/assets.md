@@ -2,10 +2,11 @@
 
 The asset list (EX-6, board 12): `assetRows` (each row with its section and its files, links and notes),
 `assetList` (each asset once, with the rows that use it), `missingFiles` (the paths not in the script's folder) and
-`countMissing` (for the script list). Each row also carries its `excerpt` (#212): its dialogue, or its On screen
+`countMissing` (for the script list), and `stillToFind` (a row's missing files and "to find" notes, for the
+video's placeholder cards, #227). Each row also carries its `excerpt` (#212): its dialogue, or its On screen
 words, as one line without marks or bullets.
 
-- **Used by:** `screens/Assets.svelte`, `screens/Editor.svelte`, `screens/List.svelte`. **Tests:**
+- **Used by:** `screens/Assets.svelte`, `screens/Editor.svelte`, `screens/List.svelte`, `screens/Export.svelte`. **Tests:**
   `tests/unit/assets.test.ts`, `tests/unit/checkreads.test.ts`, `tests/e2e/assets.spec.ts`.
 
 ## Rules and pitfalls

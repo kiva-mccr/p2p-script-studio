@@ -23,4 +23,6 @@ chosen, your own (#217) included, or null while a Custom box isn't one.
   so a typed 23.976 is timebase 24 NTSC and 12.5 is rounded to 13.
 - A picture whose size is known and isn't the frame's gets a Basic Motion scale to fit; made PNGs (cards, collages,
   .svg) are drawn at the frame's size and need none. A video or take shorter than its turn ends early (a gap).
+- A card's `find` (#227) comes only when `plan` is given `toFind` (the video export); Resolve / Premiere's cards have
+  none. A card with nothing to find has no `find` key, so its file name and dedupe are as before.
 - Media names are the files' own names, made unique ("leaf-2.jpg") when two paths share one.

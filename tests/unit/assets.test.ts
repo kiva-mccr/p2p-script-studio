@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import example from '../../docs/example/Episode 03 - How Photosynthesis Works/script.md?raw';
-import { assetList, assetRows, excerpt } from '../../src/lib/assets';
+import { assetList, assetRows, excerpt, stillToFind } from '../../src/lib/assets';
 import { parseScript, type Row } from '../../src/lib/script';
 
 describe('assetRows', () => {
@@ -32,5 +32,13 @@ describe('excerpt', () => {
   });
   it('gives each row of the example its excerpt', () => {
     expect(assetRows(parseScript(example))[0].excerpt).toBe('Every leaf you have ever seen is running a tiny factory.');
+  });
+});
+
+describe('stillToFind', () => {
+  it("lists a row's missing files by name and its notes, in the Files order, but not its files that are there or its links (#227)", () => {
+    const row = { files: ['assets/river-drone.mp4', '[Map](https://example.com/map)', 'a map of the river (to find)', 'assets/leaf.jpg'] } as Row;
+    expect(stillToFind(row, new Set(['assets/river-drone.mp4']))).toEqual(['river-drone.mp4', 'a map of the river (to find)']);
+    expect(stillToFind(row, new Set())).toEqual(['a map of the river (to find)']);
   });
 });

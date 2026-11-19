@@ -41,3 +41,5 @@ Print… or Save on the right. Back to the script, the title in the breadcrumb, 
   with no take at 0 s when they're left out. Its shape is the script's (`shapeOf`), its other settings are kept as
   `export-video`. Save video makes it (`makeVideo`), downloads it, and hands it to the preview to play; Stop asks
   `makeVideo` to cancel between frames. Its preview is `VideoPreview.svelte`.
+  Its cards list what their row still has to find (#227, `video.find`, on by default) from `missing`, the Editor's
+  check of the folder (`lostFiles`), so a file is listed as missing only once that check has run.

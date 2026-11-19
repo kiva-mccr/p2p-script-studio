@@ -18,4 +18,5 @@ hold, turns takes into WAV, measures them for the XML, and zips the .xml (and .s
 - Object URLs are freed after use (images once loaded, videos once drawn or measured).
 - `collage` stacks the pictures one above the other in an upright frame (SB-3), side by side in a wide one. The
   drawing helpers (`fit`, `card`, `collage`, `picture`) are shared with the video export (lib/video.ts).
-- Cards use the page's font at 1/16 of the frame's short side, at most eight lines.
+- Cards use the page's font at 1/16 of the frame's short side, at most eight lines; what's still to find (#227)
+  under them in grey at 0.6 of that, at most four lines, the whole block centred.

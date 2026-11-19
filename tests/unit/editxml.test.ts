@@ -66,6 +66,15 @@ describe('plan', () => {
     expect(p.media.get('card-row-3.png')).toEqual({ kind: 'card', text: 'A deep breath in the park.' });
   });
 
+  it("lists what a placeholder's row and a row with no pictures still have to find, when asked (#227)", () => {
+    const toFind = (row: Row) => (row.id === 'bbbbb' ? ['river-drone.mp4', 'a map of the river'] : row.id === 'ccccc' ? ['Park b-roll'] : []);
+    const p = plan(script, laid, EDIT, toFind);
+    expect(p.media.get('card-placeholder-2.png')).toEqual({ kind: 'card', text: 'Drone shot', find: ['river-drone.mp4', 'a map of the river'] });
+    expect(p.media.get('card-row-3.png')).toEqual({ kind: 'card', text: 'A deep breath in the park.', find: ['Park b-roll'] });
+    // Nothing to find: the card is as before.
+    expect(plan(script, laid, EDIT, () => []).media.get('card-row-3.png')).toEqual({ kind: 'card', text: 'A deep breath in the park.' });
+  });
+
   it('puts only the takes on A1, and a row with no take leaves a gap there', () => {
     expect(made().audio).toEqual([{ name: 'take-1.wav', start: 0, seconds: 4 }, { name: 'take-3.wav', start: 14, seconds: 2 }]);
   });
