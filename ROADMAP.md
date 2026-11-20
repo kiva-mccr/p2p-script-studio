@@ -1312,8 +1312,12 @@ the team writes leaves their computers.
   links (only http(s) now); an `.html` or `.svg` from the folder opened as a page at the app's address (now only
   pictures, PDFs, text, video and sound open in a tab, with a fixed type, `lib/openfile.ts`; the rest downloads);
   Copy for Teams left the status and version unescaped.
-- [ ] **SE-6** to **SE-8**: offline app, proof of what's running, the IT pack. The plan and decisions:
-  docs/security.md.
+- [x] **SE-7** Proof of what's running (no mock-up: a file and a docs page, nothing in the app). Done 2026-11-20: each
+  deploy writes `sha256sums.txt` (every published file's SHA-256, `scripts/hashes.ts`) and signs it with a build
+  attestation beside the sealed file's; the live check downloads every file but the models and compares, and the
+  models' lines against their pins. How to check (bash, PowerShell, `gh attestation verify`): docs/security.md. A build
+  of main matched all 88 live files byte for byte, so IT can rebuild it too.
+- [ ] **SE-6** and **SE-8**: offline app (replaced by SE-10), the IT pack. The plan and decisions: docs/security.md.
 
 ## Last (the user's order: these wait until everything above is done)
 

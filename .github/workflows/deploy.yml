@@ -10,7 +10,7 @@ permissions:
   contents: write # the speech models' zip as a release asset (SE-5): over GitHub Pages' 100 MB a file
   pages: write
   id-token: write
-  attestations: write # the sealed file's signed build attestation (SE-10): gh attestation verify
+  attestations: write # signed build attestations (SE-10, SE-7): the sealed file, the models' zip, the live files' list
 
 concurrency:
   group: pages
@@ -41,11 +41,14 @@ jobs:
           tag=$(node -p "require('./dist/speech-models.json').tag")
           gh release view "$tag" >/dev/null 2>&1 || gh release create "$tag" .models-cache/speech-models.zip \
             --latest=false --title "Speech models ($tag)" --notes "The sealed app's speech models, pinned in src/lib/models.lock.json. Add it in the sealed app's Settings."
+      # The SHA-256 of every file published (SE-7), signed below with the rest: anyone can check what the site serves.
+      - run: node --experimental-strip-types --no-warnings scripts/hashes.ts
       - uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2.4.0
         with:
           subject-path: |
             dist/script-studio-sealed.html
             .models-cache/speech-models.zip
+            dist/sha256sums.txt
       - uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5.0.0
       - uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4.0.0
         with: { path: dist }

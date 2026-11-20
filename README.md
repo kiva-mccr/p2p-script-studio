@@ -26,6 +26,10 @@ policy, watching its network traffic, and a malware scan. The sealed file has th
 cuts timed from the take, pick "The app and the speech models" and add `speech-models.zip` once: the app offers it
 on its first open, or later in its Settings. It's checked file by file and kept by the browser.
 
+**What's running:** each update publishes `sha256sums.txt`, the SHA-256 of every file the site serves, signed by
+GitHub's build attestation, and a daily check compares the live files against it. How to check it yourself:
+[docs/security.md](docs/security.md#se-7-checking-what-the-site-serves).
+
 Status: a first working version. What it does today:
 
 - **First time:** type your name and choose your team's scripts folder ("Before you start" explains putting it on this
