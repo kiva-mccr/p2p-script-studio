@@ -1333,6 +1333,10 @@ the team writes leaves their computers.
   working days, fix times), `docs/asvs.md` (all 70 ASVS 5.0 level 1 requirements). A unit test fails when the code
   keeps something in the browser the page doesn't list, or docs/for-it.md drifts.
 - [ ] **SE-6**: offline app, replaced by SE-10.
+- [ ] **SE-12** transformers.js 4 (the speech models' library; Dependabot's #353 offered 3.8.1 → 4.3.2). The user chose
+  to stay on 3 for now (2026-11-20): tests only use stand-ins for the real models, so an upgrade needs Follow my voice,
+  cuts timed from the take and the example's voices checked with the real models, and the pins (SE-5) redone if the
+  model files change. Dependabot skips its major versions until then.
 
 ## Last (the user's order: these wait until everything above is done)
 

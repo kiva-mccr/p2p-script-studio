@@ -68,7 +68,8 @@ X-Content-Type-Options (-5) are lost: about 55 at best.
   (the `^{}` line, when there is one, is the commit).
 - **Dependabot** (`.github/dependabot.yml`): routine updates once a month, one grouped pull request for npm and one for
   Actions, only for versions out a week. `@playwright/test` (pinned to the test container's Chromium) and TypeScript 7
-  (not supported by svelte-check yet) are left out.
+  (not supported by svelte-check yet) are left out, and so are major versions of transformers.js (wait for SE-12, checked
+  with the real speech models) and of `@types/node` (it follows the Node 22 that Tests and the deploy run).
 - **npm audit** in Tests checks only what ships to browsers (`--omit=dev`). A new advisory fails every pull request:
   update the package, or, when it never reaches the browser (like sharp, transformers.js's Node-only image library),
   pin a fixed version under `overrides` in package.json.
