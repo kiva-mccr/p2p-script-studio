@@ -134,28 +134,60 @@ test('Esc stops picking, and the page works as before', async ({ page }) => {
   await expect(page.getByRole('region', { name: 'Feedback' })).toHaveCount(0);
 });
 
-// AP-49: holding Shift lets clicks through to the page, to open a menu and then pick a part inside it.
-test('holding Shift opens a menu while picking, and a part inside it can be picked', async ({ page }) => {
+// Issue #354 (board 94): Use the page pauses picking, so a menu can be opened and a part inside it picked. It replaced
+// holding Shift (AP-49), which took Shift+click (a new tab) away from links.
+test('Use the page pauses picking to open a menu, and Pick goes back to pick a part inside it', async ({ page }) => {
   await openScript(page);
   await startFeedback(page);
-  await expect(page.getByRole('status').filter({ hasText: 'Hold Shift to use the page' })).toBeVisible();
+  const picking = page.getByRole('status').filter({ hasText: 'U uses the page' });
+  const paused = page.getByRole('status').filter({ hasText: 'Feedback paused' });
+  await expect(picking).toBeVisible();
+  await picking.getByRole('button', { name: 'Use the page' }).click();
+  await expect(paused).toBeVisible();
+  await expect(picking).toHaveCount(0);
+  expect(await page.evaluate(() => document.documentElement.classList.contains('feedback-picking'))).toBe(false);
 
-  // Shift is let go before the mouse button: the press began with Shift, so the click still goes through.
-  const q = await page.getByRole('button', { name: 'Help and version' }).boundingBox();
-  await page.mouse.move(q!.x + q!.width / 2, q!.y + q!.height / 2);
-  await page.keyboard.down('Shift');
-  await page.mouse.down();
-  await page.keyboard.up('Shift');
-  await page.mouse.up();
+  await page.getByRole('button', { name: 'Help and version' }).click();
   const menu = page.getByRole('menu', { name: 'Help and version' });
   await expect(menu).toBeVisible();
   await expect(page.getByRole('region', { name: 'Feedback' })).toHaveCount(0);
 
-  // Without Shift the click picks again; the menu stays open and its link isn't followed.
+  // Pick on the strip goes back to picking and the menu stays open; its link isn't followed.
+  await paused.getByRole('button', { name: 'Pick' }).click();
+  await expect(picking).toBeVisible();
+  await expect(menu).toBeVisible();
   await menu.getByRole('menuitem', { name: 'GitHub', exact: true }).click();
   await expect(page.getByRole('region', { name: 'Feedback' }).getByRole('heading')).toHaveText('Feedback on: menu item "GitHub"');
   await expect(menu).toBeVisible();
   expect(page.context().pages()).toHaveLength(1);
+});
+
+test('U switches between picking and using the page, but types a u in a box', async ({ page }) => {
+  await openScript(page);
+  await startFeedback(page);
+  const picking = page.getByRole('status').filter({ hasText: 'U uses the page' });
+  const paused = page.getByRole('status').filter({ hasText: 'Feedback paused' });
+  await page.keyboard.press('u');
+  await expect(paused).toBeVisible();
+
+  // Paused, a click is the page's: the box gets the cursor, and a u typed there is a u.
+  const box = page.getByLabel('Dialogue, row 1');
+  await box.click();
+  await expect(box).toBeFocused();
+  await page.keyboard.press('End');
+  await page.keyboard.type('u');
+  await expect(box).toHaveValue(/u$/);
+  await expect(paused).toBeVisible();
+
+  // Out of the box, U picks again; a click then only picks.
+  await page.getByRole('button', { name: 'Help and version' }).focus();
+  await page.keyboard.press('u');
+  await expect(picking).toBeVisible();
+  await page.getByLabel('Dialogue, row 2').click();
+  await expect(page.getByRole('region', { name: 'Feedback' })).toBeVisible();
+  await expect(page.getByLabel('Dialogue, row 2')).not.toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('region', { name: 'Feedback' })).toHaveCount(0);
 });
 
 test('the picture covers names and the script in solid grey, but not "In review" or "Saved"', async ({ page }) => {
@@ -365,7 +397,9 @@ test('Cover leaves the app\'s own words on buttons in a row, but covers file nam
   const row = page.locator('[data-row]').first();
   await page.getByRole('button', { name: 'Flag row 1' }).click();
   await startFeedback(page);
-  await row.getByRole('button', { name: '+ Add' }).click({ modifiers: ['Shift'] }); // opening ? closes the add menu (#263)
+  await page.keyboard.press('u'); // opening ? closes the add menu (#263)
+  await row.getByRole('button', { name: '+ Add' }).click();
+  await page.getByRole('button', { name: 'Pick', exact: true }).click(); // U would type in the add menu's box
   await expect(row.getByRole('button', { name: 'Choose a file…' })).toBeVisible();
   const clear = row.getByRole('button', { name: 'Clear', exact: true });
   await clear.click();
@@ -395,10 +429,10 @@ test('Cover leaves "commented" on a comment card, but covers who wrote it (issue
 test("a part as big as the window keeps its outline on screen (issue #216)", async ({ page }) => {
   await openScript(page);
   await startFeedback(page);
-  await page.keyboard.down('Shift');
+  await page.keyboard.press('u');
   await page.getByRole('button', { name: 'More' }).click();
   await page.getByRole('button', { name: 'Settings' }).click();
-  await page.keyboard.up('Shift');
+  await page.keyboard.press('u');
   await expect(page.getByRole('dialog', { name: 'Settings' })).toBeVisible();
 
   // The Settings backdrop fills the window: its outline used to sit just past every edge.
