@@ -14,6 +14,7 @@ jumps to a section when clicked; the data-flow drawing (inline SVG, one for each
 - The drawings' boxes are drawn after the arrows that touch them, white-filled: an arrowhead under a box vanishes
   (the website's arrow did, first time round).
 - In the sealed file its links are copied rather than opened (`SealedLinks.svelte`), like every other link there.
-- Printing hides the header and the contents list.
+- Printing hides the header, the contents list and everything else on `#app`'s top level but the page. It printed blank
+  pages once (#365): Print.svelte's print rule hid it, because every screen's styles share one stylesheet.
 - Tables lay out by their headings: two columns, three with a narrow last one, or the ASVS table (a `Status` second
   heading) with a narrow middle one. The first live version gave Status the wide column.

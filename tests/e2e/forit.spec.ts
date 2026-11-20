@@ -50,3 +50,16 @@ test("For IT in the sealed app: its own copy, with no address and the sealed fil
   await expect(page.getByRole('heading', { name: "1. It's the file we published" })).toBeVisible();
   await expect(page.getByText(/ · sealed · this page changes with the code/)).toBeVisible();
 });
+
+test('For IT prints its text, without the header or the contents (#365)', async ({ page }) => {
+  await page.goto('./#for-it');
+  await expect(page.getByRole('heading', { name: 'For IT', level: 2 })).toBeVisible();
+  await page.emulateMedia({ media: 'print' });
+  // Print.svelte's rule for the script's print view once hid this page too, so its PDF was blank.
+  await expect(page.getByRole('heading', { name: 'For IT', level: 2 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Browser policies IT can set' })).toBeVisible();
+  await expect(page.getByRole('navigation', { name: 'On this page' })).toBeHidden();
+  await expect(page.getByRole('button', { name: 'Print or save as PDF' })).toBeHidden();
+  const pdf = await page.pdf();
+  expect(pdf.length).toBeGreaterThan(20_000); // the blank one was under 1 kB
+});
