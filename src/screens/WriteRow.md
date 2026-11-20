@@ -60,3 +60,5 @@ flag's note.
 - The Speaker button (#221, board 88) shows only when `cast` is given (Write's: the script has a speaker). A click goes
   round '' (Narrator) then `cast`, an own Ctrl+Z step (`onChange(true)`); a name the credits no longer have shows grey.
   The flag's note starts at grid column 4 with it (`--notes-from`), 3 without.
+- Folded (#361, board 95 B), the Speaker column keeps a row's coloured initial only, no outline: the same button (same
+  name, a click to the next speaker), the name in its title. A narrator row is empty. The initial keeps `data-hide`.

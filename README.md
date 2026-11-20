@@ -134,7 +134,7 @@ Status: a first working version. What it does today:
   ("Ana"); Write then shows a Speaker column, and a click on a row's speaker goes round the speakers (Narrator first).
   Rows with no speaker are the narrator's. Review and Print show the name over the dialogue, Fountain and Final Draft
   put each row under its speaker, and their settings list each speaker's rows and read time. The Speaker column folds
-  away like the others.
+  away like the others, keeping each row's coloured initial (a click still changes it, hover shows the name).
 - **Export screen:** each export opens a screen in place of the script, with the formats on the left, a preview of
   the result in the middle (it follows the settings as you change them) and the settings on the right, with Print…
   or Save. Settings are remembered on this computer. Back to the script (or Esc) returns.

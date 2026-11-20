@@ -518,6 +518,9 @@ and suggestions, keeps every version, and exports them for production.
 - [x] **AP-64** The tour's Feedback step lights the outlined row (issue #328, board 92 agreed by the user): the row with
   the orange outline is lit instead of dimmed, and the tour's card always sits on top of the outline, below or above
   the row, clear of Feedback's strip. Done 2026-11-19.
+- [x] **AP-67** The folded Speaker column shows only the dot (issue #361, board 95 option B agreed by the user,
+  2026-11-20): folded, it stays 28 px and a row with a speaker keeps its coloured initial, no outline and no name; a
+  click still goes to the next speaker and hovering shows the name. Narrator rows are empty. Done 2026-11-20.
 - [x] **AP-66** Feedback's Use the page toggle (issue #354, board 94 agreed by the user, 2026-11-20): holding Shift to
   use the page (AP-49) took Shift+click (a new tab) away from links. A Use the page button beside Stop, and U, pause
   picking: the strip turns grey, the crosshair goes and the page works as usual; Pick (or U) goes back. U is a letter
