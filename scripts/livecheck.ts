@@ -1,11 +1,13 @@
 // The live check (SE-4): fetches the live site and fails if a security header is missing or different from
 // src/lib/headers.ts, or if the page has a script that isn't the app's. Also the sealed file (SE-10): it must match the
-// fingerprint the Download sealed page shows, and its policy must name no site. And the speech models (SE-5). Run daily and after each deploy by
+// fingerprint the Download sealed page shows, and its policy must name no site. And the speech models (SE-5), and every
+// file against sha256sums.txt (SE-7). Run daily and after each deploy by
 // .github/workflows/live.yml; locally: node --experimental-strip-types scripts/livecheck.ts
 import { createHash } from 'node:crypto';
 import { HEADERS, headerProblems, SITE, strangerScripts, unhashed } from '../src/lib/headers.ts';
 import { policyOf, SEALED_FACTS, SEALED_FILE, unsealed, type SealedFacts } from '../src/lib/sealedfile.ts';
 import { modelsTag, type ModelsLock, type ModelsZip } from '../src/lib/modelfiles.ts';
+import { fetched, HASHES_FILE, modelProblems, readHashList } from '../src/lib/livehashes.ts';
 import lockFile from '../src/lib/models.lock.json' with { type: 'json' };
 
 // A browser's User-Agent: some proxies only add their scripts for browsers.
@@ -48,6 +50,23 @@ for (const [model, { revision, files }] of Object.entries(lock)) {
   if (hash !== sha256) problems.push(`${model}/${path} isn't served as pinned (${got.status})`);
 }
 
+// The live files' fingerprints (SE-7): each file served must match sha256sums.txt (a proxy rewriting a file shows here);
+// the models' entries must match their pins.
+const listRes = await fetch(SITE + HASHES_FILE);
+let listed = 0;
+if (!listRes.ok) problems.push(`${HASHES_FILE} is missing (${listRes.status})`);
+else {
+  const files = readHashList(await listRes.text());
+  listed = Object.keys(files).length;
+  if (!files['index.html']) problems.push(`${HASHES_FILE} doesn't list index.html`);
+  problems.push(...modelProblems(files, lock).map((p) => `${HASHES_FILE}: ${p}`));
+  for (const path of fetched(files)) {
+    const got = await fetch(SITE + path, { headers: { 'user-agent': UA } });
+    const hash = got.ok ? createHash('sha256').update(new Uint8Array(await got.arrayBuffer())).digest('hex') : '';
+    if (hash !== files[path]) problems.push(`${path} isn't served as listed in ${HASHES_FILE} (${got.status})`);
+  }
+}
+
 const http = await fetch(SITE.replace('https:', 'http:'), { redirect: 'manual' });
 if (http.status !== 301 || http.headers.get('location') !== SITE) problems.push(`http:// answered ${http.status}, not a redirect to https`);
 
@@ -55,4 +74,4 @@ if (problems.length) {
   console.error(`The live site doesn't match src/lib/headers.ts:\n- ${problems.join('\n- ')}`);
   process.exit(1);
 }
-console.log(`${SITE}: all ${Object.keys(HEADERS).length} security headers as expected, no stranger scripts; the sealed file matches its fingerprint and names no site; the speech models are served as pinned.`);
+console.log(`${SITE}: all ${Object.keys(HEADERS).length} security headers as expected, no stranger scripts; the sealed file matches its fingerprint and names no site; the speech models are served as pinned; all ${listed} files match ${HASHES_FILE}.`);

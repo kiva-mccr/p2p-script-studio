@@ -53,7 +53,8 @@ X-Content-Type-Options (-5) are lost: about 55 at best.
 6. **SE-6** Offline app (PWA): replaced by SE-10 (the user, 2026-11-18: the website, or a fully sealed file; no installed app).
    **SE-10** The sealed app: one HTML file whose policy names no address, built and attested by each deploy, offered on
    ? › Download sealed with five checks for IT. Done 2026-11-18; the speech models as its second file came with SE-5.
-7. **SE-7** Proof of what's running (the sealed file's attestation is done with SE-10): GitHub build attestations and a published list of the live files' SHA-256.
+7. **SE-7** Proof of what's running (the sealed file's attestation is done with SE-10): GitHub build attestations and a
+   published list of the live files' SHA-256. Done 2026-11-20 (see below).
 8. **SE-8** IT pack: `SECURITY.md`, a "For IT" page (data flow, permissions, network addresses, what the browser
    keeps, how to check it), an OWASP ASVS level 1 map, and the Edge/Chrome policies IT can set.
 
@@ -78,6 +79,46 @@ X-Content-Type-Options (-5) are lost: about 55 at best.
 - **Repo settings** (only the owner can change them), Settings › Advanced Security (or Code security): Dependabot
   alerts, Dependabot security updates, Secret scanning with Push protection, and CodeQL's
   Default setup, all on.
+
+## SE-7: checking what the site serves
+
+Each deploy writes `sha256sums.txt` beside the website: the SHA-256 of every file it publishes (the page, its scripts,
+styles and fonts, the sealed file, the speech models), in the format `sha256sum -c` reads. The same deploy signs it
+with a build attestation (Sigstore), as it does the sealed file and the models' zip, so the list is proof that GitHub
+built those exact files from this repo's code. The live check (`scripts/livecheck.ts`, daily and after each deploy)
+downloads every file but the models and fails if one differs, which would also catch Cloudflare changing a file on the
+way; the models' lines must match their pins (`src/lib/models.lock.json`).
+
+The build is reproducible: on 2026-11-20 a build of main in a fresh container matched all 88 live files byte for byte.
+So IT can also rebuild it themselves (`npm ci`, `LIVE_BUILD=1 npm run build`, then `cd dist && sha256sum -c` against
+the live list, models aside, as those come from the deploy).
+
+To check, with [GitHub's CLI](https://cli.github.com/) (any computer):
+
+```sh
+site=https://p2p-script-studio.kivamccr.xyz
+curl -sO $site/sha256sums.txt
+gh attestation verify sha256sums.txt -R kiva-mccr/p2p-script-studio   # signed by this repo's deploy
+grep -v ' models/' sha256sums.txt | while read -r sum path; do
+  [ "$(curl -s "$site/$path" | sha256sum | cut -d' ' -f1)" = "$sum" ] && echo "OK  $path" || echo "DIFFERENT  $path"
+done
+```
+
+Or in Windows PowerShell (after `gh attestation verify` as above):
+
+```powershell
+$site = 'https://p2p-script-studio.kivamccr.xyz'
+Invoke-WebRequest "$site/sha256sums.txt" -OutFile sha256sums.txt
+Get-Content sha256sums.txt | Where-Object { $_ -notmatch '  models/' } | ForEach-Object {
+  $sum, $path = $_ -split '  ', 2
+  Invoke-WebRequest "$site/$path" -OutFile check.tmp
+  if ((Get-FileHash check.tmp).Hash -eq $sum) { "OK  $path" } else { "DIFFERENT  $path" }
+}
+Remove-Item check.tmp
+```
+
+A browser only ever runs these files: the page's policy (SE-1) allows scripts from the site alone, and the page names
+its own script and stylesheet with integrity hashes (SE-9), so a changed file is refused rather than run.
 
 ## Decisions
 
