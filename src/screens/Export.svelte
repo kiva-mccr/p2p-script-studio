@@ -87,10 +87,12 @@
     lineCount = Math.min(8, Math.max(2, count));
     printing.lines = on ? lineCount : 0;
   }
-  // The preview's page is drawn at the printed width (a Letter page less Print's margins, in CSS px) and shrunk to fit.
-  let pageWidth = $state(0);
-  const sheetWidth = $derived(printing.landscape ? 965 : 725);
-  const fit = $derived(pageWidth ? Math.min(1, (pageWidth - 64) / sheetWidth) : 1);
+  // The preview is one Letter page in CSS px, with Print's margins (14, 12 and 16 mm), so the columns wrap as on paper,
+  // shrunk to fit the box's width and 75% of the window's height, but never under 60% (#356).
+  let boxWidth = $state(0);
+  let windowHeight = $state(800);
+  const paper = $derived(printing.landscape ? { w: 1056, h: 816 } : { w: 816, h: 1056 });
+  const fit = $derived(boxWidth ? Math.min(1, (boxWidth - 2) / paper.w, Math.max(0.6, (windowHeight * 0.75) / paper.h)) : 1);
   function showColumn(id: Column, on: boolean) {
     printing.hidden = on ? printing.hidden.filter((c) => c !== id) : [...printing.hidden, id];
   }
@@ -268,7 +270,7 @@
   }
 </script>
 
-<svelte:window onkeydown={(e) => e.key === 'Escape' && !(e.target as HTMLElement).closest?.('input') && onBack()} />
+<svelte:window bind:innerHeight={windowHeight} onkeydown={(e) => e.key === 'Escape' && !(e.target as HTMLElement).closest?.('input') && onBack()} />
 
 {#snippet look(how: Screenplay, notes: boolean)}
   <!-- Roughly how a screenplay app shows the file. Fountain's [[notes]] and sections are hidden there; Final Draft
@@ -313,10 +315,12 @@
   <section class="preview" aria-label="Preview">
     {#if format === 'print'}
       <p class="caption">As it will print, {printing.landscape ? 'landscape' : 'portrait'}{printing.lines ? ', with the Notes lines at the foot of every page' : ''}. Print… opens the browser's print window, where "Save as PDF" makes the PDF.</p>
-      <div class="page" class:landscape={printing.landscape} bind:clientWidth={pageWidth}>
-        <!-- Drawn at the printed width and shrunk to fit, so the columns look as they will on paper. -->
-        <div style:width="{sheetWidth}px" style:zoom={fit}>
-          <Print {script} {dir} {title} {version} column={printing.column} lines={printing.lines} scale={printing.scale / 100} hidden={printing.hidden} landscape={printing.landscape} credits={creditsShown} onScreen />
+      <div bind:clientWidth={boxWidth}>
+        <!-- A page drawn at the paper's size and shrunk to fit: the rows scroll in what the Notes lines leave of it. -->
+        <div class="page" style:width="{paper.w * fit}px" style:height="{paper.h * fit}px">
+          <div class="paper" style:width="{paper.w}px" style:height="{paper.h}px" style:zoom={fit}>
+            <Print {script} {dir} {title} {version} column={printing.column} lines={printing.lines} scale={printing.scale / 100} hidden={printing.hidden} landscape={printing.landscape} credits={creditsShown} onScreen />
+          </div>
         </div>
       </div>
     {:else if format === 'fountain'}
@@ -468,8 +472,8 @@
   .preview > * + .caption { margin-top: 8px; }
   .preview .message.left-out { margin-top: 16px; }
   .message { margin: 0; padding: 16px; border: 1px solid var(--line); border-radius: 10px; font-size: 14px; }
-  .page { box-sizing: border-box; max-width: 790px; max-height: 75vh; overflow: auto; padding: 32px; background: #fff; border: 1px solid var(--line); box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08); }
-  .page.landscape { max-width: 1030px; aspect-ratio: 11 / 8.5; }
+  .page { box-sizing: content-box; overflow: hidden; background: #fff; border: 1px solid var(--line); box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08); }
+  .paper { box-sizing: border-box; padding: 53px 45px 60px; } /* Print's margins: 14, 12 and 16 mm */
   .pair { display: flex; flex-wrap: wrap; gap: 16px; }
   .pair > :global(*) { flex: 1 1 280px; min-width: 0; }
   .file { box-sizing: border-box; margin: 0; max-height: 75vh; overflow: auto; padding: 16px 18px; border: 1px solid var(--line); border-radius: 10px;

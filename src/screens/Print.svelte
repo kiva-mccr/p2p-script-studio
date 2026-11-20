@@ -77,66 +77,68 @@
 </script>
 
 
-<div class="sheet" class:print-view={!onScreen} bind:this={page} style:font-size="{10 * scale}pt">
-  <div class="top">
-    <div>
-      <h1 data-hide>{title}</h1>
-      {#if authors}<p data-hide>{authors}</p>{/if}
+<div class="sheet" class:print-view={!onScreen} class:on-screen={onScreen} bind:this={page} style:font-size="{10 * scale}pt" style:--lines={lines}>
+  <div class="rows" class:room={lines && !onScreen}>
+    <div class="top">
+      <div>
+        <h1 data-hide>{title}</h1>
+        {#if authors}<p data-hide>{authors}</p>{/if}
+      </div>
+      <p class="stand">{stand}<br />{today}</p>
     </div>
-    <p class="stand">{stand}<br />{today}</p>
+    {#if script.intro}<p class="note" data-hide>{script.intro}</p>{/if}
+    <table>
+      <thead><tr>
+        <th style:width="{width.num}%">#</th>
+        {#each cols as c (c.id)}<th style:width="{width[c.id]}%">{c.name}</th>{/each}
+        {#if column}<th style:width="{width.notes}%">Notes</th>{/if}
+      </tr></thead>
+      <tbody>
+        {#each script.blocks as block, i (block)}
+          {#if block.type === 'section'}
+            <tr class="section"><td colspan={cols.length + (column ? 2 : 1)} data-hide>{block.title}</td></tr>
+          {:else}
+            <tr>
+              <td class="num">{numbers[i]}</td>
+              {#each cols as c, k (c.id)}
+                <td class={c.id}>
+                  <!-- A row's note goes in the first column that prints. -->
+                  {#if k === 0 && block.note}<p class="note" data-hide>{block.note}</p>{/if}
+                  {#if c.id === 'dialogue'}
+                    {#if block.speaker}<p class="who" data-hide>{block.speaker}</p>{/if}
+                    <div class="text" data-hide>{@html toHtml(block.dialogue)}</div>
+                  {:else if c.id === 'screen'}
+                    <div class="text" data-hide>{@html toHtml(block.onScreen)}</div>
+                  {:else}
+                    {#each block.files as line, j (j + line)}
+                      {@const ref = readFileRef(line)}
+                      {@const src = preview(line)}
+                      <div class:words={ref.kind === 'words'}>
+                        {#if src}<img {src} alt="" />{/if}
+                        {#if ref.kind === 'words'}{'To find: '}{/if}<span data-hide>{ref.label}</span>
+                        {#if ref.kind === 'link' && ref.label !== ref.target}<span class="target" data-hide>{ref.target}</span>{/if}
+                      </div>
+                    {/each}
+                  {/if}
+                </td>
+              {/each}
+              {#if column}<td class="blank"></td>{/if}
+            </tr>
+          {/if}
+        {/each}
+      </tbody>
+    </table>
+    {#if credits.length}
+      <section class="credits">
+        <h2>Credits</h2>
+        {#each credits as credit (credit.id)}<p><span data-hide>{credit.name}</span><span class="role" data-hide>{credit.role}</span></p>{/each}
+      </section>
+    {/if}
   </div>
-  {#if script.intro}<p class="note" data-hide>{script.intro}</p>{/if}
-  <table>
-    <thead><tr>
-      <th style:width="{width.num}%">#</th>
-      {#each cols as c (c.id)}<th style:width="{width[c.id]}%">{c.name}</th>{/each}
-      {#if column}<th style:width="{width.notes}%">Notes</th>{/if}
-    </tr></thead>
-    <tbody>
-      {#each script.blocks as block, i (block)}
-        {#if block.type === 'section'}
-          <tr class="section"><td colspan={cols.length + (column ? 2 : 1)} data-hide>{block.title}</td></tr>
-        {:else}
-          <tr>
-            <td class="num">{numbers[i]}</td>
-            {#each cols as c, k (c.id)}
-              <td class={c.id}>
-                <!-- A row's note goes in the first column that prints. -->
-                {#if k === 0 && block.note}<p class="note" data-hide>{block.note}</p>{/if}
-                {#if c.id === 'dialogue'}
-                  {#if block.speaker}<p class="who" data-hide>{block.speaker}</p>{/if}
-                  <div class="text" data-hide>{@html toHtml(block.dialogue)}</div>
-                {:else if c.id === 'screen'}
-                  <div class="text" data-hide>{@html toHtml(block.onScreen)}</div>
-                {:else}
-                  {#each block.files as line, j (j + line)}
-                    {@const ref = readFileRef(line)}
-                    {@const src = preview(line)}
-                    <div class:words={ref.kind === 'words'}>
-                      {#if src}<img {src} alt="" />{/if}
-                      {#if ref.kind === 'words'}{'To find: '}{/if}<span data-hide>{ref.label}</span>
-                      {#if ref.kind === 'link' && ref.label !== ref.target}<span class="target" data-hide>{ref.target}</span>{/if}
-                    </div>
-                  {/each}
-                {/if}
-              </td>
-            {/each}
-            {#if column}<td class="blank"></td>{/if}
-          </tr>
-        {/if}
-      {/each}
-    </tbody>
-    {#if lines && !onScreen}<tfoot><tr><td class="room" colspan={cols.length + (column ? 2 : 1)} style:--lines={lines}></td></tr></tfoot>{/if}
-  </table>
-  {#if credits.length}
-    <section class="credits">
-      <h2>Credits</h2>
-      {#each credits as credit (credit.id)}<p><span data-hide>{credit.name}</span><span class="role" data-hide>{credit.role}</span></p>{/each}
-    </section>
-  {/if}
   {#if lines}
-    <!-- Printed, it is fixed to the foot of every page; the table's <tfoot> keeps that much room free on each one. -->
-    <section class="lines" style:--lines={lines}>
+    <!-- Printed, it is fixed to the foot of every page, and the rows' cloned padding (.room) keeps that much room free
+         on each one. On screen it sits at the foot of the preview's page, under the rows. -->
+    <section class="lines">
       <h2>Notes</h2>
       {#each { length: lines }, i (i)}<div class="line"></div>{/each}
     </section>
@@ -173,12 +175,16 @@
   .target { display: block; }
   .note { margin: 0 0 4px; font-size: 0.9em; white-space: pre-wrap; }
   .section td { padding-top: 14px; font-size: 1.1em; font-weight: 600; border-bottom: 1px solid #cfcfcf; }
-  /* The Notes lines: on screen once under the rows; printed, at the foot of every page, above the footer. Their
-     height is fixed, and .room (the table's footer, which repeats on every page) is just as tall. */
-  .lines, .room { box-sizing: border-box; height: calc(var(--lines) * 8mm + 2.4em); }
-  .lines { padding-top: 0.6em; }
+  /* The Notes lines: printed, at the foot of every page, above the footer; on screen, at the foot of the preview's
+     page. Their height is fixed, and printed, .room (the rows' bottom padding, cloned onto every page) is just as tall.
+     A repeated <tfoot> did this before #356, but Chrome stops repeating one taller than a quarter of the page. */
+  .lines { box-sizing: border-box; height: calc(var(--lines) * 8mm + 2.4em); padding-top: 0.6em; }
   @media print { .print-view .lines { position: fixed; left: 0; right: 0; bottom: 0; background: #fff; } }
-  .room { padding: 0; border: 0; }
+  .room { padding-bottom: calc(var(--lines) * 8mm + 2.4em); box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+  /* The preview is one page: the rows scroll in what the lines leave of it (#356). */
+  .on-screen { display: flex; flex-direction: column; height: 100%; }
+  .on-screen .rows { flex: 1 1 0; min-height: 0; overflow: auto; }
+  .on-screen .lines { flex: none; }
   h2 { margin: 0; font-size: 1.1em; line-height: 1.6; font-weight: 600; }
   .line { height: 8mm; border-bottom: 1px solid #cfcfcf; }
   .sheet :global(a) { color: inherit; }

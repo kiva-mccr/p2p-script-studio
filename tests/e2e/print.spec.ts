@@ -66,13 +66,16 @@ test('room for notes (a column on each row, lines on every page) and the text si
   await expect(sheet.getByRole('heading', { name: 'Notes' })).toBeVisible();
   await expect(sheet.locator('.line')).toHaveCount(5); // 4 to start, one more asked for
   await expect(sheet).toHaveCSS('font-size', '10.6667px'); // 8pt: 80% of 10pt
-  // The lines are fixed to the foot of every page, and the table's footer (repeated on every page) keeps room for them.
+  // The lines are fixed to the foot of every page, and the rows' bottom padding, cloned onto every page, keeps room for
+  // them (#356: a repeated <tfoot> did, but Chrome stops repeating one taller than a quarter of the page).
   const lines = sheet.locator('.lines');
   await expect(lines).toHaveCSS('position', 'fixed');
   await expect(lines).toHaveCSS('bottom', '0px');
-  const room = sheet.locator('tfoot td.room');
-  await expect(room).toHaveAttribute('colspan', '5');
-  expect(Math.round((await room.boundingBox())!.height)).toBe(Math.round((await lines.boundingBox())!.height));
+  await expect(sheet.locator('tfoot')).toHaveCount(0);
+  const rows = sheet.locator('.rows.room');
+  await expect(rows).toHaveCSS('box-decoration-break', 'clone');
+  const padding = await rows.evaluate((el) => parseFloat(getComputedStyle(el).paddingBottom));
+  expect(Math.round(padding)).toBe(Math.round((await lines.boundingBox())!.height));
   await page.emulateMedia({ media: 'screen' });
   await page.evaluate(() => window.dispatchEvent(new Event('afterprint')));
   await page.getByRole('button', { name: 'Back to the script' }).click();
@@ -154,7 +157,7 @@ test('landscape or portrait: the preview turns, the print window opens turned, r
   await page.getByLabel('Landscape').check();
   await expect(page.getByLabel('Preview')).toContainText('As it will print, landscape');
   // Drawn wider, then shrunk to fit: each column gets a bigger share of the page than the text needs.
-  expect(await sheet.evaluate((el) => (el.parentElement as HTMLElement).style.width)).toBe('965px');
+  expect(await sheet.evaluate((el) => (el.parentElement as HTMLElement).style.width)).toBe('1056px'); // 11 in
   expect(await sheet.evaluate((el) => el.getBoundingClientRect().width)).toBeGreaterThan(tall * 0.9);
 
   await page.getByLabel('Settings').getByRole('button', { name: 'Print…' }).click();
@@ -169,6 +172,32 @@ test('landscape or portrait: the preview turns, the print window opens turned, r
   await page.getByLabel('Settings').getByRole('button', { name: 'Print…' }).click();
   await expect.poll(() => page.evaluate(() => (window as unknown as { printed: number }).printed)).toBe(2);
   expect(await pageRule()).toContain('size: portrait');
+});
+
+test("the preview is one page at the paper's shape, and the Notes lines take room from it (#356)", async ({ page }) => {
+  await openExample(page);
+  await openPrint(page);
+  const preview = page.getByLabel('Preview');
+  const paper = preview.locator('.page');
+  const ratio = async () => { const box = (await paper.boundingBox())!; return box.width / box.height; };
+  for (const [turn, shape] of [['Portrait', 8.5 / 11], ['Landscape', 11 / 8.5]] as const) {
+    await page.getByLabel(turn).check();
+    await page.getByLabel('Notes lines on every page').uncheck();
+    expect(await ratio()).toBeCloseTo(shape, 2);
+    const height = (await paper.boundingBox())!.height;
+    await page.getByLabel('Notes lines on every page').check();
+    while (await page.getByRole('button', { name: 'More lines' }).isEnabled()) await page.getByRole('button', { name: 'More lines' }).click();
+    await expect(preview.locator('.line')).toHaveCount(8);
+    // Same page; the lines sit at its foot, and the rows scroll in what's left above them (landscape is too short for all five).
+    expect(await ratio()).toBeCloseTo(shape, 2);
+    expect((await paper.boundingBox())!.height).toBeCloseTo(height, 0);
+    const sheet = (await paper.boundingBox())!;
+    const lines = (await preview.locator('.lines').boundingBox())!;
+    const rows = (await preview.locator('.rows').boundingBox())!;
+    expect(lines.y + lines.height).toBeLessThanOrEqual(sheet.y + sheet.height);
+    expect(rows.y + rows.height).toBeLessThanOrEqual(lines.y + 1);
+    if (turn === 'Landscape') expect(await preview.locator('.rows').evaluate((el) => el.scrollHeight > el.clientHeight)).toBe(true);
+  }
 });
 
 test('a help line under Print… names the PDF printer to use when words cannot be selected (EX-21)', async ({ page }) => {
