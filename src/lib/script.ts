@@ -166,9 +166,10 @@ export const markTimelineOnly = (line: string): string => (timelineOnly(line) ? 
 
 export function readFileRef(line: string): FileRef {
   line = line.replace(TIMELINE_ONLY, '');
-  const link = line.match(/^\[([^\]]*)\]\((\S+)\)$/);
+  // Only web addresses are links (SE-3): javascript:, data: and the like stay words, never a link that runs.
+  const link = line.match(/^\[([^\]]*)\]\((https?:\/\/\S+)\)$/i);
   if (link) return { kind: 'link', label: link[1] || link[2], target: link[2] };
-  if (/^https?:\/\//.test(line)) return { kind: 'link', label: line, target: line };
+  if (/^https?:\/\//i.test(line)) return { kind: 'link', label: line, target: line };
   if (/^[^\s]+\.[A-Za-z0-9]{1,5}$/.test(line) || line.startsWith('assets/')) {
     return { kind: 'path', label: line.split('/').at(-1)!, target: line };
   }

@@ -18,3 +18,5 @@ listed, a file or link opens in a new tab, and a script's name opens that script
 - A file or link of this script itself is added as the same line, never copied (no "Copied from"). Its list is read
   from script.md as saved, so a link added in the last few seconds may not be in it yet; its assets/ files always are.
 - A picture linked from another site is never shown (SE-1, the user's pick): only its link. See lib/csp.md.
+- A file opens through `openFile` (lib/openfile.md, SE-3), never its own blob: tab: an `.html` or `.svg` from the
+  folder would run as a page of the app. Links are only http(s) (`readFileRef`).

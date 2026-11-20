@@ -90,26 +90,61 @@ async function open(page: Page) {
   await expect(page.getByLabel('Dialogue, row 2')).toBeVisible();
 }
 
-test('A hostile script.md shows as text in Write, Review, History, Print, Export and the teleprompter', async ({ page }) => {
+test('A hostile script.md shows as text in Write, Review, History, Share, Print, Export and the teleprompter', async ({ page }) => {
   await open(page);
   await expect(page.getByLabel('Dialogue, row 1')).toHaveValue(/<script>window.pwned=1<\/script>/);
-  expect(await planted(page)).toEqual([]);
+  await expect(page.getByText('[click](javascript:window.pwned=1)', { exact: true }).first()).toBeVisible(); // words, not a link
+  expect(await planted(page), 'Write').toEqual([]);
+
+  await page.getByRole('button', { name: 'Export / Share' }).click();
+  await expect(page.getByLabel('How it looks in Teams')).toContainText('Sneaky <img src=x');
+  expect(await planted(page), 'Share').toEqual([]);
+  await page.keyboard.press('Escape');
+
   for (const tab of ['Review', 'History']) {
-    await page.getByRole('tab', { name: new RegExp(`^${tab}`) }).click();
-    await page.waitForTimeout(500);
+    await page.getByRole('button', { name: new RegExp(`^${tab}`) }).click();
+    await expect(page.getByText(IMG).first()).toBeVisible();
     expect(await planted(page), tab).toEqual([]);
   }
+  await page.getByRole('button', { name: /^Write/ }).click();
+
+  for (const item of ['Print…', 'Fountain (.fountain)', 'Final Draft (.fdx)', 'Resolve / Premiere (.zip)']) {
+    await page.getByRole('button', { name: 'Export / Share' }).click();
+    await page.getByRole('button', { name: item }).click();
+    await expect(page.getByLabel('Preview')).toContainText('<img src=x');
+    expect(await planted(page), item).toEqual([]);
+    await page.getByRole('button', { name: 'Back to the script' }).click();
+  }
+
+  await page.getByRole('button', { name: 'More' }).click();
+  await page.getByRole('button', { name: 'Teleprompter' }).click();
+  await expect(page.getByRole('dialog', { name: 'Teleprompter' })).toContainText('<script>window.pwned=1</script>');
+  expect(await planted(page), 'Teleprompter').toEqual([]);
 });
 
-test('A file opened from the files column never runs as a page of the app', async ({ page, context }) => {
+test('A page or SVG in the script folder downloads instead of opening as a page of the app', async ({ page, context }) => {
   await open(page);
-  const popups: Page[] = [];
-  context.on('page', (p) => popups.push(p));
-  page.on('download', () => {});
-  await page.getByRole('button', { name: 'Open evil.svg' }).click();
-  await page.getByRole('button', { name: /^evil\.html/ }).click();
-  await page.getByRole('link', { name: 'click' }).last().click({ modifiers: [] }).catch(() => {});
-  await page.waitForTimeout(1500);
-  for (const p of popups) console.log('popup', p.url(), await p.evaluate(() => [location.origin, (window as any).pwned, document.contentType]).catch((e) => String(e)));
+  const tabs: Page[] = [];
+  context.on('page', (p) => tabs.push(p));
+  for (const [button, name] of [[{ name: 'Open evil.svg' }, 'evil.svg'], [{ name: /^evil\.html/ }, 'evil.html']] as const) {
+    const download = page.waitForEvent('download');
+    await page.getByRole('button', button).click();
+    expect((await download).suggestedFilename()).toBe(name);
+  }
+  expect(tabs).toEqual([]);
   expect(await planted(page)).toEqual([]);
+});
+
+test('A picture still opens in a tab, as a picture whatever is inside it', async ({ page, context }) => {
+  await setUp(page, '#/Sneaky', {
+    'Sneaky/script.md': SCRIPT.replace('- assets/evil.svg', '- assets/fake.png'),
+    'Sneaky/assets/fake.png': EVIL_HTML, // a page renamed .png
+  });
+  await expect(page.getByLabel('Dialogue, row 2')).toBeVisible();
+  const tab = context.waitForEvent('page');
+  await page.getByRole('button', { name: /^fake\.png/ }).click();
+  const opened = await tab;
+  await opened.waitForLoadState();
+  expect(await opened.evaluate(() => document.contentType)).toBe('image/png');
+  expect(await opened.evaluate(() => (window as unknown as { pwned?: number }).pwned)).toBeUndefined();
 });

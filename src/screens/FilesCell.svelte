@@ -3,6 +3,7 @@
   import Preview from './Preview.svelte';
   import SharedFiles from './SharedFiles.svelte';
   import { addAsset, assetFile } from '../lib/folder';
+  import { openFile } from '../lib/openfile';
   import { kindName, makePreview, previewKind, revokePreview, type Preview as Made } from '../lib/preview';
   import { sizeText } from '../lib/comments';
   import { readFileRef, timelineOnly } from '../lib/script';
@@ -108,9 +109,7 @@
       onNotice(`${path} isn't in the script's folder. If someone just added it, the shared folder may still be syncing.`);
       return;
     }
-    const url = URL.createObjectURL(file);
-    window.open(url, '_blank', 'noopener');
-    setTimeout(() => URL.revokeObjectURL(url), 60000);
+    openFile(file, path);
   }
 
   function picked() {

@@ -1,12 +1,11 @@
 <script lang="ts" module>
   export const IMAGE = /\.(png|jpe?g|gif|webp|svg|avif|bmp)$/i;
-  // What the browser shows itself; anything else (Word, zip…) downloads under its own name.
-  const VIEWABLE = /\.(png|jpe?g|gif|webp|svg|avif|bmp|pdf|txt|mp4|webm|mov|mp3|wav|m4a)$/i;
 </script>
 
 <script lang="ts">
   import { sizeText, type Attachment } from '../lib/comments';
   import { assetFile, isCopyOf } from '../lib/folder';
+  import { openFile } from '../lib/openfile';
   import { makePreview, revokePreview, type Preview as Made } from '../lib/preview';
   import Preview from './Preview.svelte';
 
@@ -74,10 +73,7 @@
     const file = await assetFile(dir, item.path);
     if (!file) return void (problem = `${item.name} isn't here yet. If it was just added, the shared folder may still be syncing.`);
     problem = '';
-    const url = URL.createObjectURL(file);
-    if (VIEWABLE.test(item.name)) window.open(url, '_blank', 'noopener');
-    else Object.assign(document.createElement('a'), { href: url, download: item.name }).click();
-    setTimeout(() => URL.revokeObjectURL(url), 60000);
+    openFile(file, item.name);
   }
 </script>
 

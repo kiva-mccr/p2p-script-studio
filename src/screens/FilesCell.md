@@ -39,3 +39,5 @@ preview's bottom on hover or focus (#209, AP-58).
   While a previewable file is still untried only its stand-in shows (no chip), so the row doesn't shrink when the
   preview comes. Tests find a previewed file by its preview ("Open name"), not `.chip`.
 - A picture linked from another site is never shown (SE-1, the user's pick): only its link. See lib/csp.md.
+- A file opens through `openFile` (lib/openfile.md, SE-3), never its own blob: tab: an `.html` or `.svg` from the
+  folder would run as a page of the app. Links are only http(s) (`readFileRef`).

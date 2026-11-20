@@ -8,6 +8,7 @@
   // Without onAdd it only browses (the script list's Files, AS-1b): every script, a file opens, a script's name opens it.
   import { IMAGE } from './Attached.svelte';
   import { assetFile } from '../lib/folder';
+  import { openFile } from '../lib/openfile';
   import { routeHash } from '../lib/route';
   import { copyShared, scriptFiles, sharedFiles, type SharedFile, type SharedScript } from '../lib/shared';
 
@@ -85,9 +86,7 @@
     if (f.kind === 'link') return void window.open(f.target, '_blank', 'noopener');
     const file = await assetFile(await folderOf(g), f.target).catch(() => null);
     if (!file) return void (failed = problem("That file couldn't be opened. If the shared folder is still syncing, wait a moment and try again.", 'opening a file from another script'));
-    const url = URL.createObjectURL(file);
-    window.open(url, '_blank', 'noopener');
-    setTimeout(() => URL.revokeObjectURL(url), 60000);
+    openFile(file, f.target);
   }
 
   async function add() {

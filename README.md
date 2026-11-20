@@ -10,6 +10,8 @@ A free, minimalist web app for writing, reviewing and producing educational vide
   standard security headers (HTTPS only, never shown inside another site's frame), checked every day, and the
   browser checks the app's own files against a fingerprint made when they were built. The code is scanned by CodeQL,
   its libraries are checked for known vulnerabilities on every change, and the build tools are pinned to exact versions.
+  Script files are treated as untrusted: tests try to sneak a script in through every part of one, and a page or SVG
+  from the folder downloads rather than opening inside the app.
 - **Every version kept:** see who changed what, and restore any earlier version.
 - **Review:** comments and suggestions that writers accept or reject.
 - **Production:** print, teleprompter, Fountain, Final Draft and subtitle exports, plus captions for YouTube.

@@ -11,8 +11,8 @@ has "Use in script" under it, or "In row N" once it is in the comment's row.
 
 ## Rules and pitfalls
 
-- Files the browser can show (images, PDF, text, audio, video) open in a new tab; others (Word, zip) download under
-  their own name, since a blob tab would show nothing useful.
+- Files open through `lib/openfile.ts` (SE-3): pictures, PDF, text, audio and video in a new tab; others (Word, zip,
+  and pages or SVG, which would run as the app) download under their own name.
 - A file not there yet (still syncing) shows a plain message under the files, and no preview until it arrives.
 - "In row" is worked out from the row's Files lines, never stored: a line with the copy's name (`isCopyOf`) and the
   attachment's size. So an older file of the same name already in assets/ doesn't count, and taking the line off the

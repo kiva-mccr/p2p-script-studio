@@ -11,6 +11,8 @@ ending ` (timeline)` is a file only for the timeline (`timelineOnly`), and `read
 ## Rules and pitfalls
 
 - Never drop text: anything the format does not describe is kept as a note and written back as it was.
+- `readFileRef`: only `http(s)://` is a link. A `[x](javascript:…)`, `data:` or `vbscript:` line is words (SE-3); it
+  once became a live link in Images & files and Assets.
 - Rows are renumbered on every write; ids never change. Give missing ids when a script is loaded, not when it is
   written, or a row that has not been saved yet gets a new id on each save.
 - A line inside a field that starts with a label or `#` is written with a backslash in front, or it would read
