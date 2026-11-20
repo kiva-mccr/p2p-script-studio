@@ -16,4 +16,6 @@ links when it is pasted) and as plain text (Notepad, a text message): the title 
 - Read-aloud time is the Dialogue's words at `SPEED` (150 a minute), the speed read time (AP-12) starts from.
 - Everything put in the HTML is escaped: titles and names are typed by people. Export / Share shows this HTML as it
   is (`{@html}`), so the escaping is what keeps it safe there too.
+  The status and version were once left out of it: a `status:` of `<img onerror=…>` reached the preview and the
+  copied message (found by SE-3's tests, tests/unit/untrusted.test.ts).
 - The credits (AP-31) are one line, "Credits: Kiva, Writer · Sam, Narrator": names and blurbs, never contact details.

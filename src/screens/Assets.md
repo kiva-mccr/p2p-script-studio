@@ -20,3 +20,5 @@ that row in Write; a name opens the file or link. Each item still to find or fil
 - Under "In the folder or linked" each file shows its first row's words (#212, `excerpt`), between its name and its
   row numbers; the name is capped at 40% so the words get room. They aren't in a control, so feedback mode covers them.
 - A picture linked from another site is never shown (SE-1, the user's pick): only its link. See lib/csp.md.
+- A file opens through `openFile` (lib/openfile.md, SE-3), never its own blob: tab: an `.html` or `.svg` from the
+  folder would run as a page of the app. Links are only http(s) (`readFileRef`).

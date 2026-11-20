@@ -39,7 +39,7 @@ export function share(facts: Facts, script: Script, now = Date.now()): Shared {
   const link = escape(facts.link);
   const html = [
     `<a href="${link}"><b>${escape(title)}</b></a>`,
-    [`<b>${status}</b>`, ...facts1].join(' · '),
+    [`<b>${escape(status)}</b>`, ...facts1.map(escape)].join(' · '), // all from the script's files (SE-3)
     ...(facts2.length ? [escape(facts2.join(' · '))] : []),
     ...(credits ? [escape(`Credits: ${credits}`)] : []),
     `<a href="${link}">Open in Script Studio</a>`,

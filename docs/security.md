@@ -34,6 +34,12 @@ X-Content-Type-Options (-5) are lost: about 55 at best.
    Its audit found KaTeX (updated to 0.19.1) and sharp (Node only, never shipped to browsers; overridden to 0.35.5).
 3. **SE-3** Untrusted script files: review every place script text becomes HTML (formatting, links, equations,
    previews); tests that try to sneak in a script, a `javascript:` link or an `onerror` attribute (OWASP ASVS V5).
+   Done 2026-11-20. Every place reviewed: formatting (`toHtml` escapes all it doesn't make, links only http(s)),
+   equations (KaTeX with `trust` off: `\href`, `\includegraphics`, `\html…` show as red text), the planning
+   panel, History, Print, the teleprompter, Copy for Teams, the Fountain, Final Draft and FCP7 XML exports, links
+   in Images & files, and opening a file from the folder. Fixed: `javascript:`/`data:`/`vbscript:` links in Images &
+   files, `.html`/`.svg`/`.xml` files opening as pages at the app's own address (a blob: tab has the app's origin;
+   they now download), and the unescaped status and version in Copy for Teams.
 4. **SE-4** Security headers. Done 2026-11-18, through Cloudflare (D1); COEP waits for SE-5: HSTS, `frame-ancestors 'none'`, nosniff, Referrer-Policy, a
    Permissions-Policy allowing only the microphone, the policy as a header, COOP/COEP (lets the speech models use
    every core). A daily GitHub check fetches the live site and fails if a header is missing; the expected list is in

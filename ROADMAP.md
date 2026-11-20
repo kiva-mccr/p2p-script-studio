@@ -1305,8 +1305,14 @@ the team writes leaves their computers.
   code and the workflows) and OpenSSF Scorecard (`scorecard.yml`); `npm audit --omit=dev` in Tests. To pass it:
   KaTeX 0.19.1, and sharp (Node only, pulled in by transformers.js, never shipped) overridden to 0.35.5. Dependabot
   alerts and security updates, secret scanning and push protection are repo settings (docs/security.md).
-- [ ] **SE-3**, **SE-6** to **SE-8**: untrusted script files, untrusted script files, offline app, proof of
-  what's running, the IT pack. The plan and decisions:
+- [x] **SE-3** Untrusted script files (no mock-up: nothing visible). Done 2026-11-20: `tests/unit/untrusted.test.ts`
+  and `tests/e2e/untrusted.spec.ts` put scripts, `javascript:` links and `onerror` attributes in every part of a
+  script folder and look for them in Write, Review, History, Share, Print, the exports and the teleprompter. They
+  found three gaps, each stopped only by the policy (SE-1), now fixed: Images & files made `javascript:`/`data:`
+  links (only http(s) now); an `.html` or `.svg` from the folder opened as a page at the app's address (now only
+  pictures, PDFs, text, video and sound open in a tab, with a fixed type, `lib/openfile.ts`; the rest downloads);
+  Copy for Teams left the status and version unescaped.
+- [ ] **SE-6** to **SE-8**: offline app, proof of what's running, the IT pack. The plan and decisions:
   docs/security.md.
 
 ## Last (the user's order: these wait until everything above is done)

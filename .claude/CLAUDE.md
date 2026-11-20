@@ -86,7 +86,7 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
   small PR at a time: UX-4 + UX-13 pointer (done), the shared Undo (UX-1, 2, 10, 11, 13, done), UX-7 (done), UX-12, 6, 8, 3 (done; UX-5 dropped for SB-4's drawer), UX-9 (done).
   Then (the user, 2026-11-16): Ctrl+Z for everything: UX-14 (the script's text, done), then UX-15 (takes, flags, done). UX-16 (Undo toast 5 s, gone when you carry on, done).
   Then security (the user, 2026-11-18, issue #267): SE-1 (Content Security Policy, done), SE-4 (headers via
-  Cloudflare, done), SE-9 (integrity hashes, done); then (the user, 2026-11-20, in order): SE-2 (supply chain, done), SE-3, SE-7, SE-8
+  Cloudflare, done), SE-9 (integrity hashes, done); then (the user, 2026-11-20, in order): SE-2 (supply chain, done), SE-3 (untrusted script files, done), SE-7, SE-8
   (docs/security.md).
   Then (the user, 2026-11-18, ahead of boards 82 and 83): SE-10, the sealed app to download (done), then SE-5 (speech
   models from the app, and as the sealed file's second download, done). Then the example in the sealed app,
@@ -135,6 +135,9 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
 - Feedback's Cover is an allow-list (AP-65, lib/feedback.md): text showing the script's words, a comment, a file's name
   or a person's name goes in `data-hide`, else it shows in the picture; `cover.spec.ts` sweeps every screen. A new
   screen or panel gets a step there.
+- Script files are untrusted (SE-3): script text reaches HTML only through `toHtml` (or another escaper); links only
+  http(s); a folder file opens through `openFile` (lib/openfile.md), never a blob: tab of its own type.
+  `untrusted.spec.ts` / `untrusted.test.ts` hold the attacks: a new place script text is shown gets a line there.
 - The built page has a Content Security Policy (SE-1, lib/csp.md). e2e specs import `test` from `./base`, which fails
   a test on any policy refusal; a feature that needs a new source adds the narrowest one in `lib/csp.ts`, with why.
 

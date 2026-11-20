@@ -1,5 +1,6 @@
 <script lang="ts">
   import { assetFile } from '../lib/folder';
+  import { openFile } from '../lib/openfile';
   import { assetKey, assetList, assetRows, type Asset } from '../lib/assets';
   import { bare, withFinders } from '../lib/finders';
   import { listPeople, type Person } from '../lib/people';
@@ -75,9 +76,7 @@
     if (asset.kind === 'link') return void window.open(asset.target, '_blank', 'noopener');
     const file = await assetFile(dir, asset.target);
     if (!file) return onNotice(`${asset.target} isn't in the script's folder. If someone just added it, the shared folder may still be syncing.`);
-    const url = URL.createObjectURL(file);
-    window.open(url, '_blank', 'noopener');
-    setTimeout(() => URL.revokeObjectURL(url), 60000);
+    openFile(file, asset.target);
   }
 
   // A video's thumbnail is its still (AP-39), never a player.
