@@ -11,18 +11,20 @@
   let {
     name: savedName,
     remembered = null,
+    unreachable = '',
     onOpen,
     onExample,
   }: {
     name: string;
     remembered?: FileSystemDirectoryHandle | null;
+    unreachable?: string; // the remembered folder's name when the browser never answered about it (App.md)
     onOpen: (folder: FileSystemDirectoryHandle, name: string) => void;
     onExample: (name: string) => Promise<void>; // the example to try (AP-33), as `name`, or "Guest" when it is empty
   } = $props();
 
   // Starting values only: the screen is made fresh each time it is shown.
   let name = $state(untrack(() => savedName));
-  let error = $state('');
+  let error = $state(untrack(() => (unreachable ? `${unreachable} couldn't be reached. Is its drive connected? Choose it again, or another folder.` : '')));
   let reopening = $state(untrack(() => remembered !== null));
   const supported = canOpenFolders();
   let nameInput = $state<HTMLInputElement>();

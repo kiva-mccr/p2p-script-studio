@@ -136,16 +136,18 @@ test('the last steps open the ? menu, then show Feedback mode, and put both away
   // Issue #328: the outlined row is lit (inside the tour's hole), and the card sits above or below it, never under
   // the outline, and clear of the strip.
   await expect(ring).toHaveAttribute('data-tour', 'feedback');
-  await page.waitForTimeout(300); // the ring and card glide to the step
+  // The ring and card glide to the step: measured until they settle (a fixed 300 ms wait measured mid-glide on a
+  // loaded CI runner).
   const box = async (sel: string) => (await page.locator(sel).boundingBox())!;
-  const r = await box('[data-feedback-ring]'), hole = await box('.tour .hole'), c = await box('.tour [role="dialog"]');
-  const s = await box('[data-tour-clear]');
-  expect(hole.x).toBeLessThanOrEqual(r.x);
-  expect(hole.y).toBeLessThanOrEqual(r.y);
-  expect(hole.x + hole.width).toBeGreaterThanOrEqual(r.x + r.width);
-  expect(hole.y + hole.height).toBeGreaterThanOrEqual(r.y + r.height);
-  expect(c.y >= r.y + r.height || c.y + c.height <= r.y).toBe(true);
-  expect(c.y + c.height).toBeLessThanOrEqual(s.y);
+  await expect.poll(async () => {
+    const r = await box('[data-feedback-ring]'), hole = await box('.tour .hole'), c = await box('.tour [role="dialog"]');
+    const s = await box('[data-tour-clear]');
+    return {
+      ringInHole: hole.x <= r.x && hole.y <= r.y && hole.x + hole.width >= r.x + r.width && hole.y + hole.height >= r.y + r.height,
+      cardClearOfRing: c.y >= r.y + r.height || c.y + c.height <= r.y,
+      cardAboveStrip: c.y + c.height <= s.y,
+    };
+  }).toEqual({ ringInHole: true, cardClearOfRing: true, cardAboveStrip: true });
   // Nothing is caught: the tour's Back still works, and Feedback mode goes with the step.
   await card(page).getByRole('button', { name: 'Back' }).click();
   await expect(strip).toHaveCount(0);
