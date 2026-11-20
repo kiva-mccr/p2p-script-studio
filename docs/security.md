@@ -37,7 +37,8 @@ X-Content-Type-Options (-5) are lost: about 55 at best.
 4. **SE-4** Security headers. Done 2026-11-18, through Cloudflare (D1); COEP waits for SE-5: HSTS, `frame-ancestors 'none'`, nosniff, Referrer-Policy, a
    Permissions-Policy allowing only the microphone, the policy as a header, COOP/COEP (lets the speech models use
    every core). A daily GitHub check fetches the live site and fails if a header is missing; the expected list is in
-   the repo.
+   the repo. It also checks that GitHub Pages' `Access-Control-Allow-Origin: *` stays removed (the one Medium
+   finding in the user's ZAP scan, 2026-11-20; the same Cloudflare rule removes it).
    **SE-9** (asked by the user) Integrity hashes on the app's own script and stylesheet. Done 2026-11-18.
 5. **SE-5** Speech models served from the app (D2, agreed by the user 2026-11-18, built when there's room): the deploy
    downloads pinned model files from Hugging Face, checks their SHA-256 and publishes them with the app (never in
