@@ -518,6 +518,10 @@ and suggestions, keeps every version, and exports them for production.
 - [x] **AP-64** The tour's Feedback step lights the outlined row (issue #328, board 92 agreed by the user): the row with
   the orange outline is lit instead of dimmed, and the tour's card always sits on top of the outline, below or above
   the row, clear of Feedback's strip. Done 2026-11-19.
+- [x] **AP-66** Feedback's Use the page toggle (issue #354, board 94 agreed by the user, 2026-11-20): holding Shift to
+  use the page (AP-49) took Shift+click (a new tab) away from links. A Use the page button beside Stop, and U, pause
+  picking: the strip turns grey, the crosshair goes and the page works as usual; Pick (or U) goes back. U is a letter
+  in a text box. Feedback starts in picking each time. Done 2026-11-20.
 - [x] **AP-65** Feedback's Cover rewritten as an allow-list (the user, 2026-11-20: spot fixes weren't working): it covers
   only what is marked as the script's or a person's (its words, comments and notes, file names, titles, names and
   roles), typed text and pictures; everything the app itself says shows. A test opens every screen, panel and menu of
@@ -590,6 +594,7 @@ and suggestions, keeps every version, and exports them for production.
   before the button. The browser's own dropdown lists are drawn outside the page: pick the dropdown and name the
   option in the note. Scroll bars too (issue #252): a press on one (the timeline's) picked nothing and dragged it, since
   the browser drags a bar whatever the page says; it now picks the bar's box, and Shift drags it.
+  Shift replaced by the Use the page toggle (AP-66, #354).
 - [x] **AP-53** Feedback easier to find (issue #202, board 83 agreed by the user with a change, 2026-11-19: no
   separate Feedback button; the tour shows it instead). Write's tour ends with two steps: "Tell us what you think"
   opens the ? menu with Feedback… in it, then "Feedback mode" shows the mode in use (its strip at the bottom and the

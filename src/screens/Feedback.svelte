@@ -8,7 +8,7 @@
   // Feedback mode (AP-48, board 71): Feedback… in the ? menu of the top bar (SB-5), click the part that's the trouble, write a
   // note, and open GitHub's new issue page filled in (the picture is copied to paste in). Nothing is sent by the app.
 
-  let mode = $state<'off' | 'picking' | 'open'>('off');
+  let mode = $state<'off' | 'picking' | 'paused' | 'open'>('off');
   let hover = $state<DOMRect | null>(null);
   let picked: Element | null = null;
   let rect = $state<DOMRect | null>(null);
@@ -69,24 +69,25 @@
     shots = { covered: null, plain: null };
   }
 
-  // While picking, the page's own clicks and keys are held back: the click only says which part. Holding Shift lets
-  // them through (AP-49), to open a menu or a dropdown; letting go picks again, and the menu stays open.
-  let through = $state(false);
+  // While picking, the page's own clicks and keys are held back: the click only says which part. Use the page (or U)
+  // pauses it (issue #354, board 94): the page works as usual, Shift+click included, until Pick (or U) again. It
+  // replaced holding Shift (AP-49), which took Shift+click away from links.
+  const typing = (t: EventTarget | null) =>
+    t instanceof HTMLElement && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName));
+  const isU = (e: KeyboardEvent) => e.code === 'KeyU' && !e.ctrlKey && !e.metaKey && !e.altKey && !typing(e.target);
+
+  function pause() {
+    mode = mode === 'picking' ? 'paused' : 'picking';
+    hover = null;
+  }
+
   $effect(() => {
     if (mode !== 'picking') return;
-    let passing = false; // a press made with Shift held: its release and click go through too, even if Shift is let go
-    const shift = (e: KeyboardEvent | PointerEvent | MouseEvent) => {
-      through = e.shiftKey;
-      if (through) hover = null;
-    };
     const move = (e: PointerEvent) => {
-      shift(e);
-      hover = !through && e.target instanceof Element && !ours(e.target) ? partOf(e.target).getBoundingClientRect() : null;
+      hover = e.target instanceof Element && !ours(e.target) ? partOf(e.target).getBoundingClientRect() : null;
     };
     const hold = (e: Event) => {
       if (ours(e.target)) return;
-      if (e.type === 'pointerdown' || e.type === 'mousedown') passing = (e as MouseEvent).shiftKey;
-      if (passing || (e as MouseEvent).shiftKey) return;
       e.preventDefault();
       e.stopImmediatePropagation();
       const m = e as MouseEvent;
@@ -97,45 +98,40 @@
     };
     const click = (e: MouseEvent) => {
       if (ours(e.target)) return;
-      if (passing || e.shiftKey) return void (passing = false);
       hold(e);
       if (e.target instanceof Element) pick(partOf(e.target));
     };
-    const key = (e: KeyboardEvent) => {
-      shift(e);
-      if (e.key !== 'Escape') return;
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      stop();
-    };
-    const lost = () => (through = false);
     const held = ['pointerdown', 'mousedown', 'pointerup', 'mouseup', 'dblclick', 'auxclick', 'contextmenu'];
     addEventListener('pointermove', move, true);
     held.forEach((t) => addEventListener(t, hold, true));
     addEventListener('click', click, true);
-    addEventListener('keydown', key, true);
-    addEventListener('keyup', shift, true);
-    addEventListener('blur', lost);
     document.documentElement.classList.add('feedback-picking');
     return () => {
       removeEventListener('pointermove', move, true);
       held.forEach((t) => removeEventListener(t, hold, true));
       removeEventListener('click', click, true);
-      removeEventListener('keydown', key, true);
-      removeEventListener('keyup', shift, true);
-      removeEventListener('blur', lost);
       document.documentElement.classList.remove('feedback-picking');
-      through = false;
     };
   });
+
+  // Esc stops and U switches, while picking or paused; every other key is the page's.
   $effect(() => {
-    document.documentElement.classList.toggle('feedback-through', through);
+    if (mode !== 'picking' && mode !== 'paused') return;
+    const key = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape' && !isU(e)) return;
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      if (e.key === 'Escape') stop();
+      else if (!e.repeat) pause();
+    };
+    addEventListener('keydown', key, true);
+    return () => removeEventListener('keydown', key, true);
   });
 
   // A press on a scroll bar (the timeline's, issue #252) drags it whatever preventDefault says, and no click follows:
   // it picks at once, and the bar is put back where it was until the button is let go. Scroll events come a frame
   // late, so the last of a drag can land after the release: it is put back once more and watched a little longer,
-  // until the next press (which may be a drag with Shift).
+  // until the next press.
   function keepScroll(el: Element) {
     const left = el.scrollLeft, top = el.scrollTop;
     const back = () => el.scrollTo(left, top);
@@ -266,15 +262,26 @@
   <div class="ring" class:tour data-feedback-ring data-tour={tour ? 'feedback' : undefined} aria-hidden="true" style:left="{b.left}px" style:top="{b.top}px" style:width="{b.width}px" style:height="{b.height}px"></div>
 {/snippet}
 
-{#snippet strip()}
-  <p><b>Feedback:</b> click the part that's giving you trouble or could be better.
-    <span class="help">Hold Shift to use the page, for example to open a menu.</span> Esc to stop.</p>
+{#snippet strip(paused = false)}
+  {#if paused}
+    <p><b>Feedback paused:</b> the page works as usual. <span class="help">U or Pick goes back to picking.</span> Esc to stop.</p>
+    <button type="button" class="primary" onclick={pause}>Pick</button>
+  {:else}
+    <p><b>Feedback:</b> click the part that's giving you trouble or could be better.
+      <span class="help">U uses the page, for example to open a menu.</span> Esc to stop.</p>
+    <button type="button" class="outline use" onclick={pause}>Use the page</button>
+  {/if}
   <button type="button" class="outline" onclick={stop}>Stop</button>
 {/snippet}
 
 {#if mode === 'picking'}
   <div class="strip" role="status" data-feedback-ui>{@render strip()}</div>
   {#if hover}{@render ring(hover)}{/if}
+{:else if mode === 'paused'}
+  <!-- The page's menus close on a press anywhere (on window): a press on the strip stops there, so one opened while
+       paused stays open to be picked. -->
+  <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+  <div class="strip paused" role="status" data-feedback-ui onpointerdown={(e) => e.stopPropagation()}>{@render strip(true)}</div>
 {:else if showing}
   <!-- Shown by the tour (issue #202): inert, the tour's own card does the talking. -->
   <div class="strip" data-tour-clear inert>{@render strip()}</div>
@@ -326,13 +333,17 @@
 {/if}
 
 <style>
-  :global(html.feedback-picking:not(.feedback-through)), :global(html.feedback-picking:not(.feedback-through) *) { cursor: crosshair !important; }
+  :global(html.feedback-picking), :global(html.feedback-picking *) { cursor: crosshair !important; }
   .strip { position: fixed; z-index: 60; left: 50%; bottom: 40px; transform: translateX(-50%); width: min(720px, calc(100% - 32px));
     box-sizing: border-box; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 16px; padding: 6px 16px;
     border: 1px solid #c9d5f2; border-radius: 10px; background: #eef2fb; font-size: 14px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08); }
   .strip p { flex: 1 1 320px; margin: 0; color: #3d3d3d; }
   .strip b { color: var(--ink); font-weight: 600; }
-  .strip .outline { min-height: 36px; border-color: #c9d5f2; }
+  .strip button { min-height: 36px; }
+  .strip .outline { border-color: #c9d5f2; }
+  .strip .use { color: var(--accent); }
+  .strip.paused { border-color: #d6d6d6; background: #fafafa; }
+  .strip.paused .outline { border-color: #d6d6d6; }
   .ring { position: fixed; z-index: 59; box-sizing: border-box; border: 2px solid #e8590c; border-radius: 4px; pointer-events: none; }
   .ring.tour { z-index: 29; }
   .panel { position: fixed; z-index: 61; width: min(440px, calc(100% - 32px)); max-height: calc(100vh - 16px); overflow: auto;

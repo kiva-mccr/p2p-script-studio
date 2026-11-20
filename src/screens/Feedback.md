@@ -14,13 +14,15 @@ blur the script's words, say which script), Open on GitHub, Copy instead, Cancel
 - While picking, clicks, presses and keys are caught on `window` in the capture phase, before the page's own
   handlers, so the click only picks (no recording starts, no box gets the cursor). Anything inside
   `data-feedback-ui` works as normal. Esc stops.
-- Holding Shift lets everything through (AP-49), to open a menu or dropdown; the outline hides and the cursor is
-  normal (`feedback-through` on `<html>`). A press begun with Shift lets its release and click through even if Shift
-  is let go first, else the click picked the button that opens the menu. Menus stay open after because their
-  close-on-click-away listens on `window` without capture, which the picking's capture listener stops.
+- Use the page (or U) pauses picking (issue #354, board 94): nothing is caught but Esc and U, the strip is grey
+  (`paused`) and there's no crosshair. It replaced holding Shift (AP-49), which took Shift+click (a new tab) from links.
+  U is only taken outside a text box, so a "u" can be typed. Menus opened while paused stay open for picking: U is a
+  key (menus close on a press away or Esc), and a press on the strip stops there (`stopPropagation`), else Pick's press
+  reached the menus' close-on-press listener on `window`. Once picking, the capture listeners stop that listener.
 - A scroll bar (the timeline's, issue #252) is dragged by the browser whatever `preventDefault` says, and no click
   follows a press on it: so a press on one (`onScrollbar` in lib/feedback.ts) picks at once, and the box is scrolled
-  back to where it was until the button is let go (`keepScroll`). The page's own scroll bar still scrolls.
+  back to where it was until the button is let go (`keepScroll`). The page's own scroll bar still scrolls. Paused, a
+  bar drags as usual.
 - Open on GitHub copies the picture first, then opens the issue page: Chrome lets a page open a tab a few seconds
   after a click, so the await is fine, but the other way round the clipboard fails once the new tab has the focus.
 - The panel is placed by its measured size (`placePanel` in lib/feedback.ts): below the part, else above, else
