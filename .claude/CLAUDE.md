@@ -86,7 +86,8 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
   small PR at a time: UX-4 + UX-13 pointer (done), the shared Undo (UX-1, 2, 10, 11, 13, done), UX-7 (done), UX-12, 6, 8, 3 (done; UX-5 dropped for SB-4's drawer), UX-9 (done).
   Then (the user, 2026-11-16): Ctrl+Z for everything: UX-14 (the script's text, done), then UX-15 (takes, flags, done). UX-16 (Undo toast 5 s, gone when you carry on, done).
   Then security (the user, 2026-11-18, issue #267): SE-1 (Content Security Policy, done), SE-4 (headers via
-  Cloudflare, done), SE-9 (integrity hashes, done); the rest (SE-2, 3, 6 to 8) are in docs/security.md.
+  Cloudflare, done), SE-9 (integrity hashes, done); then (the user, 2026-11-20, in order): SE-2 (supply chain, done), SE-3, SE-7, SE-8
+  (docs/security.md).
   Then (the user, 2026-11-18, ahead of boards 82 and 83): SE-10, the sealed app to download (done), then SE-5 (speech
   models from the app, and as the sealed file's second download, done). Then the example in the sealed app,
   kept in IndexedDB (the user's pick, 2026-11-19, done).
@@ -129,6 +130,8 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
   `new Worker(new URL('./x.worker.ts', import.meta.url), { type: 'module' })` breaks it.
 - No AudioWorklet or other script made in the page (blob:/data:): the policy refuses it, silently in some cases
   (lib/listen.md).
+- Actions are pinned to commit hashes (SE-2; `tests/unit/supplychain.test.ts`), and Tests runs `npm audit --omit=dev`:
+  a new advisory fails every PR (fix: update, or `overrides` for a Node-only package; docs/security.md).
 - The built page has a Content Security Policy (SE-1, lib/csp.md). e2e specs import `test` from `./base`, which fails
   a test on any policy refusal; a feature that needs a new source adds the narrowest one in `lib/csp.ts`, with why.
 

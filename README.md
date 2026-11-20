@@ -8,7 +8,8 @@ A free, minimalist web app for writing, reviewing and producing educational vide
   site: even the speech models are served from it, pinned copies checked by their SHA-256. Links to other sites send no Referer,
   and a picture linked from another site isn't loaded: its link shows, with no preview. The site also sends the
   standard security headers (HTTPS only, never shown inside another site's frame), checked every day, and the
-  browser checks the app's own files against a fingerprint made when they were built.
+  browser checks the app's own files against a fingerprint made when they were built. The code is scanned by CodeQL,
+  its libraries are checked for known vulnerabilities on every change, and the build tools are pinned to exact versions.
 - **Every version kept:** see who changed what, and restore any earlier version.
 - **Review:** comments and suggestions that writers accept or reject.
 - **Production:** print, teleprompter, Fountain, Final Draft and subtitle exports, plus captions for YouTube.
@@ -330,5 +331,7 @@ and clicking opens it on GitHub.
 speech models pinned in `src/lib/models.lock.json` beside the site, and their zip in a release (`scripts/models.ts`;
 a new pin: run "Pin the speech models" in Actions and commit what it prints). The live site's security headers
 (added by Cloudflare) are checked daily against `src/lib/headers.ts`: `node --experimental-strip-types scripts/livecheck.ts`.
+Supply chain (SE-2, docs/security.md): Actions are pinned to commit hashes (a test checks), Dependabot proposes updates
+monthly, CodeQL and OpenSSF Scorecard run in Actions, and Tests fails on `npm audit --omit=dev`.
 
 License: MIT.

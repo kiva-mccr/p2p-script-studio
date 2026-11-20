@@ -1,0 +1,24 @@
+# SE-2: Dependabot. Security updates come as soon as an advisory is out (turned on in Settings); these are the routine
+# ones, once a month, one grouped pull request per kind, and only for versions out a week (a bad release is usually
+# pulled by then). Notes: docs/security.md (SE-2).
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule: { interval: monthly }
+    cooldown: { default-days: 7 }
+    open-pull-requests-limit: 3
+    groups:
+      npm: { patterns: ['*'] }
+    ignore:
+      # Pinned to match the test container's Chromium (CLAUDE.md).
+      - dependency-name: '@playwright/test'
+      # svelte-check doesn't support TypeScript 7 yet (CLAUDE.md).
+      - dependency-name: typescript
+        update-types: ['version-update:semver-major']
+  - package-ecosystem: github-actions
+    directory: /
+    schedule: { interval: monthly }
+    cooldown: { default-days: 7 }
+    groups:
+      actions: { patterns: ['*'] }
