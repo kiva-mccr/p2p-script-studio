@@ -1296,7 +1296,7 @@ the team writes leaves their computers.
   kept. Its note says Settings › Speech models has them later. `screens/ModelsOffer.svelte`.
 - [x] **SE-2** Supply chain checks (no mock-up: nothing visible). Done 2026-11-20: every Action pinned to a commit
   hash (version as a comment, checkouts keep no token, each workflow names its permissions; a unit test holds it);
-  `.github/dependabot.yml` (npm and Actions, monthly, grouped, a week's cooldown); CodeQL (`codeql.yml`, the app's
+  `.github/dependabot.yml` (npm and Actions, monthly, grouped, a week's cooldown); CodeQL (GitHub's Default setup, the app's
   code and the workflows) and OpenSSF Scorecard (`scorecard.yml`); `npm audit --omit=dev` in Tests. To pass it:
   KaTeX 0.19.1, and sharp (Node only, pulled in by transformers.js, never shipped) overridden to 0.35.5. Dependabot
   alerts and security updates, secret scanning and push protection are repo settings (docs/security.md).

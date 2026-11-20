@@ -63,12 +63,14 @@ X-Content-Type-Options (-5) are lost: about 55 at best.
 - **npm audit** in Tests checks only what ships to browsers (`--omit=dev`). A new advisory fails every pull request:
   update the package, or, when it never reaches the browser (like sharp, transformers.js's Node-only image library),
   pin a fixed version under `overrides` in package.json.
-- **CodeQL** (`codeql.yml`) scans the app's TypeScript and the workflows on pull requests, pushes to main and weekly.
+- **CodeQL** is GitHub's "Default setup" (Settings › Advanced Security), which already scans the app's TypeScript and
+  the workflows on pull requests and pushes. A `codeql.yml` workflow was tried and removed (2026-11-20): GitHub refuses
+  a workflow's results while Default setup is on, and Default setup needs nothing kept in the repo.
   **Scorecard** (`scorecard.yml`) rates the repo's habits weekly and after pushes; both report under Security › Code
   scanning, and Scorecard's results are public at scorecard.dev.
 - **Repo settings** (only the owner can change them), Settings › Advanced Security (or Code security): Dependabot
-  alerts, Dependabot security updates, Secret scanning with Push protection, all on. CodeQL's "Default setup" must stay
-  off: the workflow is the advanced setup, and GitHub refuses results from both.
+  alerts, Dependabot security updates, Secret scanning with Push protection, and CodeQL's
+  Default setup, all on.
 
 ## Decisions
 
