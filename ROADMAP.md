@@ -1262,7 +1262,7 @@ the team writes leaves their computers.
   reach only this site and Hugging Face (model downloads). No Referer on links out. Found while doing it: the speech
   models' runtime (ONNX Runtime's code and WebAssembly) was loaded from cdn.jsdelivr.net when a model started; it now
   comes from the app's own files (`lib/models.ts`). Every e2e test now fails if the page breaks the policy.
-- [x] **SE-4** Security headers (D1: Cloudflare's free plan in front of GitHub Pages, the user's pick, 2026-11-18).
+- [x] **SE-4** Security headers (D1: Cloudflare's free plan in front of GitHub Pages, the user's pick, 2026-11-18). The rule also removes GitHub Pages' `Access-Control-Allow-Origin: *` (ZAP scan, 2026-11-20).
   Done 2026-11-18: the domain's DNS moved from Hostinger to Cloudflare (every record kept; only the app's subdomain
   goes through Cloudflare, the Hostinger site and email are DNS only). One response header rule adds the policy with
   `frame-ancestors 'none'`, HSTS (this subdomain only), nosniff, X-Frame-Options, no-referrer, a Permissions-Policy

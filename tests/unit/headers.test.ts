@@ -16,6 +16,12 @@ describe('the live security headers (SE-4)', () => {
     expect(headerProblems(got)).toEqual(['x-frame-options is missing', 'referrer-policy is "origin", expected "no-referrer"']);
   });
 
+  it('names a header that must be absent, such as GitHub Pages\' open Access-Control-Allow-Origin', () => {
+    const got = new Headers(HEADERS);
+    got.set('access-control-allow-origin', '*');
+    expect(headerProblems(got)).toEqual(['access-control-allow-origin is sent ("*"), it shouldn\'t be']);
+  });
+
   it("finds a script that isn't the app's own, such as an analytics beacon", () => {
     const ours = '<script type="module" crossorigin src="./assets/index-Cika5Cja.js"></script>';
     expect(strangerScripts(`<head>${ours}</head>`)).toEqual([]);

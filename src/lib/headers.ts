@@ -19,13 +19,18 @@ export const HEADERS: Record<string, string> = {
   'cross-origin-resource-policy': 'same-origin',
 };
 
+// Headers the site must not send. GitHub Pages sends `Access-Control-Allow-Origin: *`, which lets any site read the
+// app's files with fetch; nothing needs that, so the Cloudflare rule removes it (a Medium finding in a ZAP scan, 2026-11-20).
+export const ABSENT = ['access-control-allow-origin'];
+
 /** What's wrong with a response's headers, one line each; none when they match. */
 export function headerProblems(got: Headers): string[] {
-  return Object.entries(HEADERS).flatMap(([name, want]) => {
+  const wrong = Object.entries(HEADERS).flatMap(([name, want]) => {
     const value = got.get(name);
     if (value === null) return [`${name} is missing`];
     return value === want ? [] : [`${name} is "${value}", expected "${want}"`];
   });
+  return [...wrong, ...ABSENT.filter((name) => got.has(name)).map((name) => `${name} is sent ("${got.get(name)}"), it shouldn't be`)];
 }
 
 /** Script tags in the page that aren't the app's own (a host or a proxy adding its own, such as an analytics beacon). */

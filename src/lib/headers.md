@@ -16,4 +16,7 @@ header rule. This file is the list that rule must match.
 - `strangerScripts` exists because Cloudflare can add its own scripts to the page (Web Analytics did, 2026-11-18).
   The policy blocks them, but they mustn't be there.
 - Imports `./csp.ts` with its extension, so Node can run the live check without a build.
+- `ABSENT` lists headers the rule removes: GitHub Pages sends `Access-Control-Allow-Origin: *` on every file, so
+  any site could read the app's files with fetch. Nothing needs it (the sealed app names no site), so the rule
+  removes it (ZAP scan, 2026-11-20). A header added to `ABSENT` needs a "Remove" line in the same Cloudflare rule.
 - Only features Chrome knows go in the Permissions-Policy: an unknown one (`bluetooth`) logs an error on every visit.
