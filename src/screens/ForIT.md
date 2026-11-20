@@ -15,3 +15,5 @@ jumps to a section when clicked; the data-flow drawing (inline SVG, one for each
   (the website's arrow did, first time round).
 - In the sealed file its links are copied rather than opened (`SealedLinks.svelte`), like every other link there.
 - Printing hides the header and the contents list.
+- Tables lay out by their headings: two columns, three with a narrow last one, or the ASVS table (a `Status` second
+  heading) with a narrow middle one. The first live version gave Status the wide column.

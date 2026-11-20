@@ -69,7 +69,7 @@
               {#each b.checks as c, j (j)}<li><h3>{j + 1}. {c.t}</h3><p>{@render line(c.d)}</p></li>{/each}
             </ol>
           {:else if 'table' in b}
-            <div class="table" class:three={b.table.head.length === 3} role="table">
+            <div class="table" class:three={b.table.head.length === 3} class:status={b.table.head[1] === 'Status'} role="table">
               <div class="row head" role="row">{#each b.table.head as h, j (j)}<span role="columnheader">{h}</span>{/each}</div>
               {#each b.table.rows as r, j (j)}
                 <div class="row" role="row">{#each r as cell, k (k)}<span role="cell">{@render line(cell)}</span>{/each}</div>
@@ -142,6 +142,7 @@
   .table { margin: 0 0 10px; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; font-size: 13px; }
   .row { display: grid; grid-template-columns: minmax(150px, 1.1fr) 2fr; gap: 12px; padding: 9px 14px; border-top: 1px solid #eee; }
   .table.three .row { grid-template-columns: minmax(150px, 1.1fr) 2fr minmax(110px, 0.9fr); }
+  .table.status .row { grid-template-columns: minmax(150px, 1.1fr) 110px 2fr; } /* the ASVS table: a short status in the middle */
   .row.head { border-top: 0; background: #f5f5f5; font-weight: 600; color: #3d3d3d; }
   .row span { min-width: 0; color: #3d3d3d; }
   .row span:first-child { color: var(--ink, #141414); }
@@ -164,7 +165,7 @@
   @media (max-width: 760px) {
     .page { flex-direction: column; gap: 16px; }
     nav { position: static; width: auto; }
-    .row, .table.three .row { grid-template-columns: 1fr; gap: 2px; }
+    .row, .table.three .row, .table.status .row { grid-template-columns: 1fr; gap: 2px; }
   }
   @media print {
     header, nav { display: none; }

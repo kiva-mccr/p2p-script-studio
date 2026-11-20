@@ -14,6 +14,10 @@ test('For IT: the ? menu opens it, and its contents stay put, jump to a section 
   await expect(page.getByRole('cell', { name: 'p2p-script-studio.kivamccr.xyz', exact: true })).toBeVisible();
   await expect(page.getByRole('cell', { name: 'IndexedDB script-studio-history' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Print or save as PDF' })).toBeVisible();
+  // The ASVS table's Status column is the narrow one, its How column the wide one.
+  const status = (await page.getByRole('columnheader', { name: 'Status' }).boundingBox())!;
+  const how = (await page.getByRole('columnheader', { name: 'How' }).boundingBox())!;
+  expect(status.width).toBeLessThan(how.width / 2);
 
   // A click jumps to the section and lights it; the contents are still in view, top left.
   await nav.getByRole('button', { name: 'Browser policies' }).click();
