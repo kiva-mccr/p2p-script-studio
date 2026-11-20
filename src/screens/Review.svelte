@@ -123,10 +123,10 @@
   });
   const plural = (n: number, what: string) => `${n} ${n === 1 ? 'row' : 'rows'} ${what}`;
   const sinceText = $derived.by(() => {
-    if (!since || !reviewedAt) return { what: '', when: '' };
+    if (!since || !reviewedAt) return { what: '', who: '', when: '' };
     const parts = [since.changed.size && plural(since.changed.size, 'changed'), since.removed.length && plural(since.removed.length, 'removed')];
     const verb = reviewedAt.note.startsWith('Approved') ? 'approved it' : 'sent it back';
-    return { what: parts.filter(Boolean).join(' · ') || 'Nothing changed', when: `since ${reviewedAt.who} ${verb} · ${at(Date.parse(reviewedAt.when))}` };
+    return { what: parts.filter(Boolean).join(' · ') || 'Nothing changed', who: reviewedAt.who, when: ` ${verb} · ${at(Date.parse(reviewedAt.when))}` };
   });
   // Only changed rows: each run of unchanged rows folds to one line, shown at its first row.
   const folds = $derived.by(() => {
@@ -178,8 +178,8 @@
     {#if sent && !hideSent}
       <div class="sent" data-tour="review-note" role="note" aria-label="Note from {sent.who}" in:grow>
         <div>
-          <p class="from"><b>{sent.who}</b> sent this for review · {at(Date.parse(sent.when))}</p>
-          <p class="message">{sent.message}</p>
+          <p class="from"><b data-hide>{sent.who}</b> sent this for review · {at(Date.parse(sent.when))}</p>
+          <p class="message" data-hide>{sent.message}</p>
         </div>
         <button class="fold" aria-expanded="true" onclick={() => (hideSent = true)}>Hide</button>
       </div>
@@ -191,7 +191,7 @@
       <div class="changes" class:off={!marking} data-tour="review-changed" role="group" aria-label="What's changed">
         <label class="tick"><input type="checkbox" bind:checked={marking} onchange={() => keep('review-changes', marking ? '' : 'off')} /> What's changed</label>
         {#if marking}
-          <span class="what"><b>{sinceText.what}</b> {sinceText.when}</span>
+          <span class="what"><b>{sinceText.what}</b> since <span data-hide>{sinceText.who}</span>{sinceText.when}</span>
           {#if since.changed.size || since.removed.length}
             <label class="tick"><input type="checkbox" bind:checked={onlyChanged} /> Only changed rows</label>
             <label class="tick"><input type="checkbox" bind:checked={showEdits} onchange={() => keep('review-edits', showEdits ? '1' : '')} /> Show the edits</label>
@@ -205,7 +205,7 @@
     {@render removedRows('')}
     {#each script.blocks as block, i (i)}
       {#if block.type === 'section'}
-        <h3 class="section"><span>{block.title}</span>{#if words.get(block)}<span class="time" title="{words.get(block)} words at {speaking.wpm} words a minute">{clock((words.get(block)! / speaking.wpm) * 60)}</span>{/if}</h3>
+        <h3 class="section"><span data-hide>{block.title}</span>{#if words.get(block)}<span class="time" title="{words.get(block)} words at {speaking.wpm} words a minute">{clock((words.get(block)! / speaking.wpm) * 60)}</span>{/if}</h3>
       {:else if folds.label.has(block.id)}
         <p class="folded">{folds.label.get(block.id)}</p>
         {@render removedRows(block.id)}
@@ -226,7 +226,7 @@
             {:else}
               <span>{n}</span>
             {/if}
-            {#if was !== undefined}<span class="tag" data-keep title={by ? `${by.who} · ${at(Date.parse(by.when))}` : undefined}>{was ? 'Changed' : 'New'}</span>{/if}
+            {#if was !== undefined}<span class="tag" title={by ? `${by.who} · ${at(Date.parse(by.when))}` : undefined}>{was ? 'Changed' : 'New'}</span>{/if}
             {#if by}
               <span class="by-who" data-hide>{by.who}</span>
               <button class="seen" aria-label="Seen, row {n}" title="Seen: clear this mark" onclick={() => visit?.onSeen(block.id)}>✓</button>
@@ -238,16 +238,16 @@
             {#snippet cell()}
               <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
               <p class="cell {field}" aria-label="{name}, row {n}" data-row={block.id} data-field={field}
-                onmouseup={(e) => picker?.look(block.id, field, e.currentTarget)}>{@html toHtml(text(block, field))}</p>
+                data-hide onmouseup={(e) => picker?.look(block.id, field, e.currentTarget)}>{@html toHtml(text(block, field))}</p>
             {/snippet}
             {#snippet content()}
               <!-- Who says the row (#221), above its dialogue; none is the narrator. -->
-              {#if field === 'dialogue' && block.speaker}<div><p class="who">{block.speaker}</p>{@render shown()}</div>{:else}{@render shown()}{/if}
+              {#if field === 'dialogue' && block.speaker}<div><p class="who" data-hide>{block.speaker}</p>{@render shown()}</div>{:else}{@render shown()}{/if}
             {/snippet}
             {#snippet shown()}
               {#if edits && was && text(was, field) !== text(block, field)}
                 <!-- Show the edits (RV-4): the old text struck through above the new, as in History. -->
-                <div class="edited"><p class="was {field}" aria-label="{name} before, row {n}">{@html toHtml(text(was, field))}</p>{@render cell()}</div>
+                <div class="edited"><p class="was {field}" aria-label="{name} before, row {n}" data-hide>{@html toHtml(text(was, field))}</p>{@render cell()}</div>
               {:else}
                 {@render cell()}
               {/if}
@@ -275,7 +275,7 @@
           {/each}
           {#if flagged.get(block.id)}
             {@const flag = flagged.get(block.id)!}
-            <p class="flag-note" aria-label="Flag, row {n}"><FlagIcon size={13} /><span>{flag.text || 'Flagged'}</span><span class="by">{flag.who}</span></p>
+            <p class="flag-note" aria-label="Flag, row {n}"><FlagIcon size={13} /><span>{#if flag.text}<span data-hide>{flag.text}</span>{:else}Flagged{/if}</span><span class="by" data-hide>{flag.who}</span></p>
           {/if}
         </div>
         {@render removedRows(block.id)}
@@ -293,7 +293,7 @@
 <!-- Rows removed since the last review (RV-4): one grey struck line each, where they were. -->
 {#snippet removedRows(after: string)}
   {#each removedAfter.get(after) ?? [] as row (row.id)}
-    <p class="removed grid" style:grid-template-columns={grid}><span class="tag">Removed</span><span class="gone"><s>{plain(row.dialogue || row.onScreen || row.files.join(', ')) || '(empty row)'}</s>{#if visitBy(row.id)}{' · '}{visitBy(row.id)?.who}{/if}</span></p>
+    <p class="removed grid" style:grid-template-columns={grid}><span class="tag">Removed</span><span class="gone"><s>{#if plain(row.dialogue || row.onScreen || row.files.join(', '))}<span data-hide>{plain(row.dialogue || row.onScreen || row.files.join(', '))}</span>{:else}(empty row){/if}</s>{#if visitBy(row.id)}{' · '}<span data-hide>{visitBy(row.id)?.who}</span>{/if}</span></p>
   {/each}
 {/snippet}
 

@@ -66,7 +66,7 @@
 <svelte:window bind:innerWidth={vw} bind:innerHeight={vh} />
 
 {#snippet buttons()}
-  <span class="time" data-keep>{clock(time)} / {clock(total)}</span>
+  <span class="time">{clock(time)} / {clock(total)}</span>
   <button aria-label={big ? 'Make the preview small' : 'Make the preview big'} title={big ? 'Make the preview small' : 'Make the preview big'} onclick={() => (big = !big)}>{big ? '⤡' : '⤢'}</button>
   <button aria-label="Close the preview" title="Close the preview" onclick={onClose}>✕</button>
 {/snippet}
@@ -82,7 +82,7 @@
   {/if}
   <div class="screen">
     <PreviewShot {paths} {urls} {upright} />
-    {#if card}<span class="pcard" class:ph={placeholder}>{card}</span>{/if}
+    {#if card}<span class="pcard" class:ph={placeholder} data-hide>{card}</span>{/if}
     <span class="tag">{tag}</span>
   </div>
   {#if big}

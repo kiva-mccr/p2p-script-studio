@@ -110,7 +110,7 @@
     {:else}
       <span class="icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><path d="M4 1.5h5.5L13 5v9.5H4z"></path><path d="M9.5 1.5V5H13"></path></svg></span>
     {/if}
-    <span class="name"><span>{item.name}</span><span class="size">{sizeText(size)}</span></span>
+    <span class="name"><span data-hide>{item.name}</span><span class="size">{sizeText(size)}</span></span>
     <button type="button" class="remove" aria-label="Remove {item.name}" onclick={remove}>×</button>
   </li>
 {/snippet}

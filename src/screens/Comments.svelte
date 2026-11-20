@@ -130,7 +130,7 @@
 <svelte:window onkeydown={stepKeys} />
 {#snippet backed(n: SentNote, head: string)}
   <div class="back" role="note" aria-label="Note from {n.by}">
-    <p><b>{n.by}</b>{head} · {ago(Date.parse(n.made))}</p>
+    <p><b data-hide>{n.by}</b>{head} · {ago(Date.parse(n.made))}</p>
     {#if shownText(n).trim()}<div class="message"><NoteText text={shownText(n)} onflip={(i) => flip(n, i)} /></div>{/if}
   </div>
 {/snippet}

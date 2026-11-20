@@ -132,28 +132,28 @@
 <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_noninteractive_element_interactions -->
 <article class="card" data-id={t.comment.id} class:active class:done={t.resolved} class:held={t.held && !recent} aria-label="{suggestion ? 'Suggestion' : 'Comment'} by {t.comment.who}"
   onclick={onActivate}>
-  <div class="who"><span><strong data-hide>{t.comment.who}</strong> <span data-keep>{suggestion ? 'suggested' : 'commented'} · {where}</span></span><span>{@render time(t.comment)}</span></div>
-  {#if t.back}<p class="back-tag">Back from hold · put on hold by {t.back}</p>{/if}
-  {#if gone && !t.decision && !t.gone}<p class="quiet">On text that has since changed: “{t.comment.quote}”</p>{/if}
+  <div class="who"><span><strong data-hide>{t.comment.who}</strong> <span>{suggestion ? 'suggested' : 'commented'} · {where}</span></span><span>{@render time(t.comment)}</span></div>
+  {#if t.back}<p class="back-tag">Back from hold · put on hold by <span data-hide>{t.back}</span></p>{/if}
+  {#if gone && !t.decision && !t.gone}<p class="quiet">On text that has since changed: “<span data-hide>{t.comment.quote}</span>”</p>{/if}
   {#if editing === t.comment.id}
-    {#if t.comment.quote}<blockquote>{t.comment.quote}</blockquote>{/if}
+    {#if t.comment.quote}<blockquote data-hide>{t.comment.quote}</blockquote>{/if}
     {@render editor(t.comment, suggestion ? 'Replace with' : 'Edit comment')}
   {:else if suggestion}
-    <p class="text">Replace “<span class="old">{t.comment.quote}</span>” with “<span class="new">{t.comment.replace}</span>”.</p>
+    <p class="text">Replace “<span class="old" data-hide>{t.comment.quote}</span>” with “<span class="new" data-hide>{t.comment.replace}</span>”.</p>
     {#if t.comment.text}
       <button type="button" class="why" class:open={whyShown} aria-expanded={whyShown} onclick={() => (whyShown = !whyShown)}>
-        <span class="chev" aria-hidden="true">›</span><span class="why-text"><b>Why:</b> {t.comment.text}</span>
+        <span class="chev" aria-hidden="true">›</span><span class="why-text"><b>Why:</b> <span data-hide>{t.comment.text}</span></span>
       </button>
     {/if}
   {:else}
-    {#if t.comment.text}<p class="text">{t.comment.text}</p>{/if}
+    {#if t.comment.text}<p class="text" data-hide>{t.comment.text}</p>{/if}
     {#if t.comment.files?.length}<Attached {dir} files={t.comment.files} use={using(t.comment)} />{/if}
   {/if}
   {#if t.resolved && t.gone}
     <!-- Resolved by deleting its row or replacing its words (RV-24): what was there is kept. -->
     <div class="was">
       <span class="was-head">{t.gone.why === 'deleted' ? `Row ${t.gone.n}, as it was when deleted:` : 'The words it was on were changed:'}</span>
-      <s>{t.gone.was}</s>{t.gone.why === 'replaced' && t.gone.now ? ` → ${t.gone.now}` : ''}
+      <s data-hide>{t.gone.was}</s>{#if t.gone.why === 'replaced' && t.gone.now}{' → '}<span data-hide>{t.gone.now}</span>{/if}
     </div>
   {/if}
   {#each t.replies as r (r.id)}
@@ -161,8 +161,8 @@
       <p class="reply quiet">Reply deleted. <button class="link inline" onclick={() => restore(r)}>Undo</button></p>
     {:else}
       <div class="reply">
-        <div class="who"><strong>{r.who}</strong><span class="when">{@render time(r)}{#if mine(r) && editing !== r.id}<button class="link inline" onclick={() => startEdit(r)}>Edit</button><button class="link inline" onclick={() => remove(r)}>Delete</button>{/if}</span></div>
-        {#if editing === r.id}{@render editor(r, 'Edit reply')}{:else}{#if r.text}<p class="text">{r.text}</p>{/if}{#if r.files?.length}<Attached {dir} files={r.files} use={using(r)} />{/if}{/if}
+        <div class="who"><strong data-hide>{r.who}</strong><span class="when">{@render time(r)}{#if mine(r) && editing !== r.id}<button class="link inline" onclick={() => startEdit(r)}>Edit</button><button class="link inline" onclick={() => remove(r)}>Delete</button>{/if}</span></div>
+        {#if editing === r.id}{@render editor(r, 'Edit reply')}{:else}{#if r.text}<p class="text" data-hide>{r.text}</p>{/if}{#if r.files?.length}<Attached {dir} files={r.files} use={using(r)} />{/if}{/if}
       </div>
     {/if}
   {/each}
@@ -177,7 +177,7 @@
       <AttachBox {dir} bind:files={replyFiles} actions={buttons}><textarea bind:value={reply} aria-label="Reply" rows="2"></textarea></AttachBox>
     </form>
   {:else}
-    {#if t.held && !recent}<p class="quiet">On hold · {t.held.who}, {ago(Date.parse(t.held.when))}</p>{/if}
+    {#if t.held && !recent}<p class="quiet">On hold · <span data-hide>{t.held.who}</span>, {ago(Date.parse(t.held.when))}</p>{/if}
     <div class="actions">
       {#if t.held && recent}
         <span class="decided">On hold.</span>
@@ -203,7 +203,7 @@
         <span class="decided">Resolved.</span>
         <button class="link" onclick={() => onAdd({ kind: 'reopen', about: t.comment.id })}>Undo</button>
       {:else}
-        {#if t.gone}<span class="quiet gone">{t.gone.why === 'deleted' ? `Resolved when ${t.gone.who} deleted the row` : 'Resolved when the words were replaced'} · {ago(Date.parse(t.gone.when))}</span>{/if}
+        {#if t.gone}<span class="quiet gone"><span>{#if t.gone.why === 'deleted'}Resolved when <span data-hide>{t.gone.who}</span> deleted the row{:else}Resolved when the words were replaced{/if} · {ago(Date.parse(t.gone.when))}</span></span>{/if}
         <button class="link" onclick={() => onAdd({ kind: 'reopen', about: t.comment.id })}>Reopen</button>
       {/if}
     </div>

@@ -276,14 +276,14 @@
   <div class="screenplay">
     {#each script.blocks as block, i (block)}
       {#if block.type === 'section'}
-        {#if how.scenes}<p class="scene">{block.title.toUpperCase()}</p>{:else if notes}<p>{block.title}</p>{/if}
+        {#if how.scenes}<p class="scene" data-hide>{block.title.toUpperCase()}</p>{:else if notes}<p data-hide>{block.title}</p>{/if}
       {:else}
-        {@const about = [how.numbers && `Row ${numbers[i]}`, block.note.trim(), how.files && block.files.length && `Files: ${block.files.join(', ')}`].filter(Boolean)}
-        {#if notes && about.length}<p class="general">{about.join(' · ')}</p>{/if}
-        {#if block.onScreen.trim()}<p class="action">{@html toHtml(block.onScreen.trim())}</p>{/if}
+        {@const about = [how.numbers && { app: `Row ${numbers[i]}` }, block.note.trim() && { hide: block.note.trim() }, how.files && block.files.length && { app: 'Files: ', hide: block.files.join(', ') }].filter((a) => !!a)}
+        {#if notes && about.length}<p class="general">{#each about as a, k (k)}{k ? ' · ' : ''}{a.app ?? ''}{#if a.hide}<span data-hide>{a.hide}</span>{/if}{/each}</p>{/if}
+        {#if block.onScreen.trim()}<p class="action" data-hide>{@html toHtml(block.onScreen.trim())}</p>{/if}
         {#if block.dialogue.trim()}
-          <p class="speaker">{speakerName(block.speaker || how.speaker)}</p>
-          <p class="dialogue">{@html toHtml(block.dialogue.trim())}</p>
+          <p class="speaker">{#if block.speaker}<span data-hide>{speakerName(block.speaker)}</span>{:else}{speakerName(how.speaker)}{/if}</p>
+          <p class="dialogue" data-hide>{@html toHtml(block.dialogue.trim())}</p>
         {/if}
       {/if}
     {/each}
@@ -292,7 +292,7 @@
 
 <header>
   <nav class="crumbs" aria-label="Breadcrumb">
-    <a href="#/">{folder}</a>
+    <a href="#/"><span data-hide>{folder}</span></a>
     <span aria-hidden="true">/</span>
     <button class="title" onclick={onBack}><span data-hide>{title}</span></button>
     <span aria-hidden="true">/</span>
@@ -320,14 +320,14 @@
         </div>
       </div>
     {:else if format === 'fountain'}
-      <p class="caption">{name}.fountain</p>
+      <p class="caption"><span data-hide>{name}</span>.fountain</p>
       <div class="pair">
-        <pre class="file">{fountainText}</pre>
+        <pre class="file" data-hide>{fountainText}</pre>
         {@render look(fountain, false)}
       </div>
       <p class="caption">Left: the file as saved. Right: roughly how a screenplay app (Trelby, Highland) shows it.</p>
     {:else if format === 'fdx'}
-      <p class="caption">{name}.fdx</p>
+      <p class="caption"><span data-hide>{name}</span>.fdx</p>
       {@render look(fdx, true)}
       <p class="caption">Roughly how Final Draft shows it. The file itself is XML, so it isn't shown.</p>
     {:else if format === 'edit'}
@@ -346,7 +346,7 @@
         <p class="message">Reading the takes…</p>
       {/if}
     {:else}
-      <p class="caption">{name} voice-over.{voiceHow.mp3 ? `mp3 · 48 kHz mono · ${KBPS} kbps` : 'wav · 48 kHz mono'}{saved ? ` · ${sizeText(saved.size)}` : ''}</p>
+      <p class="caption"><span data-hide>{name}</span> voice-over.{voiceHow.mp3 ? `mp3 · 48 kHz mono · ${KBPS} kbps` : 'wav · 48 kHz mono'}{saved ? ` · ${sizeText(saved.size)}` : ''}</p>
       {#if failed}
         <p class="message" role="alert">{VOICE_FAILED}<CopyDetails message={VOICE_FAILED} /></p>
       {:else if !clips}
@@ -396,7 +396,7 @@
         <label class="text">{cast.length > 1 ? "Narrator's name" : 'Speaker name'} <input type="text" value={how.speaker} oninput={(e) => speaker(how, e.currentTarget.value)} /></label>
         {#if cast.length > 1}
           <!-- #221 (board 88): each speaker's rows and read time; rows with no speaker are the narrator's. -->
-          <ul class="cast" aria-label="Speakers">{#each cast as c (c.who)}<li><b>{c.who || `Narrator (${speakerName(how.speaker)})`}</b> {c.rows} {c.rows === 1 ? 'row' : 'rows'}, {clock(c.seconds)}</li>{/each}</ul>
+          <ul class="cast" aria-label="Speakers">{#each cast as c (c.who)}<li><b>{#if c.who}<span data-hide>{c.who}</span>{:else}Narrator ({speakerName(how.speaker)}){/if}</b> {c.rows} {c.rows === 1 ? 'row' : 'rows'}, {clock(c.seconds)}</li>{/each}</ul>
         {/if}
         <label><input type="checkbox" bind:checked={how.scenes} /> Sections as scene headings</label>
         {#if format === 'fountain'}

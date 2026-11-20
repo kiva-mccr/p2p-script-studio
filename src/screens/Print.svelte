@@ -80,12 +80,12 @@
 <div class="sheet" class:print-view={!onScreen} bind:this={page} style:font-size="{10 * scale}pt">
   <div class="top">
     <div>
-      <h1>{title}</h1>
-      {#if authors}<p>{authors}</p>{/if}
+      <h1 data-hide>{title}</h1>
+      {#if authors}<p data-hide>{authors}</p>{/if}
     </div>
     <p class="stand">{stand}<br />{today}</p>
   </div>
-  {#if script.intro}<p class="note">{script.intro}</p>{/if}
+  {#if script.intro}<p class="note" data-hide>{script.intro}</p>{/if}
   <table>
     <thead><tr>
       <th style:width="{width.num}%">#</th>
@@ -95,27 +95,27 @@
     <tbody>
       {#each script.blocks as block, i (block)}
         {#if block.type === 'section'}
-          <tr class="section"><td colspan={cols.length + (column ? 2 : 1)}>{block.title}</td></tr>
+          <tr class="section"><td colspan={cols.length + (column ? 2 : 1)} data-hide>{block.title}</td></tr>
         {:else}
           <tr>
             <td class="num">{numbers[i]}</td>
             {#each cols as c, k (c.id)}
               <td class={c.id}>
                 <!-- A row's note goes in the first column that prints. -->
-                {#if k === 0 && block.note}<p class="note">{block.note}</p>{/if}
+                {#if k === 0 && block.note}<p class="note" data-hide>{block.note}</p>{/if}
                 {#if c.id === 'dialogue'}
-                  {#if block.speaker}<p class="who">{block.speaker}</p>{/if}
-                  <div class="text">{@html toHtml(block.dialogue)}</div>
+                  {#if block.speaker}<p class="who" data-hide>{block.speaker}</p>{/if}
+                  <div class="text" data-hide>{@html toHtml(block.dialogue)}</div>
                 {:else if c.id === 'screen'}
-                  <div class="text">{@html toHtml(block.onScreen)}</div>
+                  <div class="text" data-hide>{@html toHtml(block.onScreen)}</div>
                 {:else}
                   {#each block.files as line, j (j + line)}
                     {@const ref = readFileRef(line)}
                     {@const src = preview(line)}
                     <div class:words={ref.kind === 'words'}>
                       {#if src}<img {src} alt="" />{/if}
-                      {ref.kind === 'words' ? `To find: ${ref.label}` : ref.label}
-                      {#if ref.kind === 'link' && ref.label !== ref.target}<span class="target">{ref.target}</span>{/if}
+                      {#if ref.kind === 'words'}{'To find: '}{/if}<span data-hide>{ref.label}</span>
+                      {#if ref.kind === 'link' && ref.label !== ref.target}<span class="target" data-hide>{ref.target}</span>{/if}
                     </div>
                   {/each}
                 {/if}
@@ -131,7 +131,7 @@
   {#if credits.length}
     <section class="credits">
       <h2>Credits</h2>
-      {#each credits as credit (credit.id)}<p><span>{credit.name}</span><span class="role">{credit.role}</span></p>{/each}
+      {#each credits as credit (credit.id)}<p><span data-hide>{credit.name}</span><span class="role" data-hide>{credit.role}</span></p>{/each}
     </section>
   {/if}
   {#if lines}

@@ -388,7 +388,7 @@ test('Cover leaves "commented" on a comment card, but covers who wrote it (issue
   await card.locator('.who strong').click();
   const picture = page.getByRole('region', { name: 'Feedback' }).getByRole('img', { name: 'The part, outlined' });
   await expect(picture).toBeVisible();
-  expect(await greyAt(picture, card.locator('.who strong'), [card.locator('.who strong'), card.locator('.who [data-keep]'), card.locator('p.text')]))
+  expect(await greyAt(picture, card.locator('.who strong'), [card.locator('.who strong'), card.locator('.who > span > span').first(), card.locator('p.text')]))
     .toEqual([true, false, true]); // the name, "commented · row 4", the comment's words
 });
 

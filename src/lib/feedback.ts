@@ -176,8 +176,6 @@ export function plainText(title: string, body: string): string {
   return `${title}\n\n${body.replace('<!-- Paste the picture here: Ctrl+V -->', '(no picture)')}`;
 }
 
-// Kept clear of covering: the app's own controls, whose words are the app's, not the script's (unless `data-hide`).
-const CONTROLS = 'button, [role="button"], [role="tab"], label, select, option, summary, th';
 // Fully opaque, so nothing can be read back out of it (a blur can be undone).
 // `!important`, since the copy carries each element's own styles inline.
 const BOX = ['background:#a3a3a3', 'color:transparent', '-webkit-text-fill-color:transparent', 'border-radius:4px', 'text-shadow:none',
@@ -186,18 +184,18 @@ const BOX = ['background:#a3a3a3', 'color:transparent', '-webkit-text-fill-color
 /** Every letter as an x, spaces kept: the box keeps the words' shape, and the real text is not in the copy at all. */
 const masked = (text: string) => text.replace(/\S/g, 'x');
 
-/** True when this element's own words are covered: the script's words, and people's names. */
-function covered(el: Element): boolean {
-  if (el.closest('[data-hide]')) return true; // a name, even on a button ("Ana · 3 h ago")
-  if (el.closest('[data-keep]')) return false; // the app's own words outside controls ("In review", "Saved")
-  if (el.closest('[contenteditable="true"]')) return true;
-  // A control's own words are the app's ("Clear", "Choose a file…", issue #257); one that shows the script's words or a
-  // name (a file's chip, an asset's label) holds them in a `data-hide` span.
-  return !el.closest(CONTROLS);
+/** True when this element's own words are covered: only what is marked as the script's or a person's (`data-hide`),
+ * and what is typed in place. Everything else is the app's own and shows (AP-65: an allow-list, so a new heading,
+ * time or help line is never covered by default). */
+export function covered(el: Element): boolean {
+  return !!el.closest('[data-hide], [contenteditable="true"]');
 }
 
-/** Covers the words in a copy of the page (the picture's) with solid grey boxes: the script's words, its pictures and
- * people's names, but not the app's controls nor what is marked `data-keep`. */
+const PICTURE = /^(IMG|VIDEO|CANVAS|PICTURE|IFRAME)$/;
+const typed = (h: HTMLInputElement) => h.tagName === 'TEXTAREA' || (h.tagName === 'INPUT' && !/^(checkbox|radio|range|button|submit|color|file)$/.test(h.type));
+
+/** Covers the words in a copy of the page (the picture's) with solid grey boxes: what is marked `data-hide` (the
+ * script's words, file names, comments, people's names), what is typed in a text box, and every picture. */
 export function coverWords(root: Element) {
   const doc = root.ownerDocument;
   const box = (text: string, line = false) => {
@@ -210,7 +208,7 @@ export function coverWords(root: Element) {
   for (const el of [root, ...root.querySelectorAll('*')]) {
     if (!('style' in el)) continue; // the copy's elements may come from another document, so no instanceof
     const h = el as HTMLInputElement;
-    if (/^(IMG|VIDEO|CANVAS|PICTURE|IFRAME)$/.test(h.tagName) && !h.closest('[data-keep]')) {
+    if (PICTURE.test(h.tagName)) {
       // A picture (a file's preview, a video's still, the timeline's) becomes a grey box of the same size.
       const stand = doc.createElement('div');
       stand.setAttribute('style', h.getAttribute('style') ?? '');
@@ -222,8 +220,7 @@ export function coverWords(root: Element) {
       h.replaceWith(stand);
       continue;
     }
-    const typed = h.tagName === 'TEXTAREA' || (h.tagName === 'INPUT' && !/^(checkbox|radio|range|button|submit|color|file)$/.test(h.type));
-    if (!typed) continue;
+    if (!typed(h)) continue;
     // A text box becomes a box of the same look holding its words as grey boxes, line by line.
     const stand = doc.createElement('div');
     stand.setAttribute('style', h.getAttribute('style') ?? '');
@@ -232,15 +229,41 @@ export function coverWords(root: Element) {
     if (h.value.trim()) stand.append(box(h.value));
     h.replaceWith(stand);
   }
-  const walker = doc.createTreeWalker(root, 4 /* text */);
-  const texts: Text[] = [];
-  while (walker.nextNode()) texts.push(walker.currentNode as Text);
-  for (const t of texts) {
-    const parent = t.parentElement;
-    if (!t.data.trim() || !parent || parent.tagName === 'STYLE' || parent.tagName === 'SCRIPT' || !covered(parent)) continue;
+  for (const t of texts(root)) {
+    const parent = t.parentElement!;
+    if (!covered(parent)) continue;
     t.replaceWith(box(t.data, /^(nowrap|pre)$/.test(parent.style.whiteSpace)));
   }
 }
+
+/** The text nodes with words in them, outside style and script. */
+function texts(root: Element): Text[] {
+  const walker = root.ownerDocument.createTreeWalker(root, 4 /* text */);
+  const found: Text[] = [];
+  while (walker.nextNode()) {
+    const t = walker.currentNode as Text;
+    const parent = t.parentElement;
+    if (t.data.trim() && parent && parent.tagName !== 'STYLE' && parent.tagName !== 'SCRIPT') found.push(t);
+  }
+  return found;
+}
+
+/** Words on screen and the `.svelte` file that shows them. */
+type Words = { text: string; file: string };
+
+/** What Cover would hide and show of the words on screen now, outside Feedback's own panel (for the every-screen
+ * test, tests/e2e/cover.spec.ts, through `window.studioCoverPlan`). */
+export function coverPlan(root: Element = document.body): { hidden: Words[]; shown: Words[] } {
+  const plan = { hidden: [] as Words[], shown: [] as Words[] };
+  for (const t of texts(root)) {
+    const parent = t.parentElement!;
+    if (parent.closest('[data-feedback-ui]') || !parent.getClientRects().length || getComputedStyle(parent).visibility === 'hidden') continue;
+    const words = { text: t.data.replace(/\s+/g, ' ').trim(), file: parent.closest('[data-c]')?.getAttribute('data-c') ?? '' };
+    (covered(parent) ? plan.hidden : plan.shown).push(words);
+  }
+  return plan;
+}
+if (typeof window !== 'undefined') (window as unknown as { studioCoverPlan?: typeof coverPlan }).studioCoverPlan = coverPlan;
 
 const GAP = 10;
 const EDGE = 8;

@@ -85,7 +85,7 @@
       <h1>Open this in Chrome or Edge</h1>
       <p class="lead">Script Studio works in Chrome or Microsoft Edge on a computer. Other browsers and phones can't open a folder.</p>
     {:else if reopening && remembered}
-      <h1>Welcome back{savedName ? `, ${savedName}` : ''}</h1>
+      <h1>Welcome back{#if savedName}, <span data-hide>{savedName}</span>{/if}</h1>
       <p class="lead">The browser asks once more before opening your scripts folder.</p>
       <button class="primary" onclick={reopen}>Open <span data-hide>{remembered.name}</span></button>
       <button class="link" onclick={() => (reopening = false)}>Choose a different folder</button>

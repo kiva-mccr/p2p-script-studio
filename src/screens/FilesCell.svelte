@@ -213,17 +213,17 @@
     {#if !waiting || previewKind(ref.target) === 'audio'}
     <span class="chip">
       {#if ref.kind === 'link'}
-        <a href={ref.target} target="_blank" rel="noopener noreferrer" title={ref.target}>{ref.label}</a>
+        <a href={ref.target} target="_blank" rel="noopener noreferrer" title={ref.target}><span data-hide>{ref.label}</span></a>
       {:else if ref.kind === 'path'}
         <button class="open" title={ref.target} onclick={() => openAsset(ref.target)}><span data-hide>{ref.label}</span>{#if sizes[ref.target] !== undefined && (previews[ref.target] === null || !previewKind(ref.target))}<span class="kind">{` · ${kindName(ref.target)}, ${sizeText(sizes[ref.target])}`}</span>{/if}</button>
       {:else}
-        <span class="words">{ref.label}</span>
+        <span class="words" data-hide>{ref.label}</span>
       {/if}
       {@render remove(ref.label, i)}
     </span>
     {/if}
     {/if}
-    {#if copied?.line === line}<span class="copied">Copied from {copied.from}</span>
+    {#if copied?.line === line}<span class="copied">Copied from <span data-hide>{copied.from}</span></span>
     {:else if came?.line === line}<span class="copied">From {came.from}</span>{/if}
     {/if}
   {/each}
@@ -245,7 +245,7 @@
     </form>
   {:else}
     <span class="add-line">
-      <button class="add" data-keep bind:this={addButton} onclick={() => (adding = true)}>+ Add</button>
+      <button class="add" bind:this={addButton} onclick={() => (adding = true)}>+ Add</button>
       <span class="help paste-hint">or paste a picture (Ctrl+V)</span>
     </span>
   {/if}

@@ -124,7 +124,7 @@
       {/if}
       {#each shown as g (g.folder)}
         <section aria-label={g.title}>
-          <h3>{#if onAdd}{g.title}{:else}<a href={routeHash([g.folder])} onclick={onClose}>{g.title}</a>{/if}{#if !g.here}{' '}<span>· {g.status === 'in review' ? 'In review' : g.status[0].toUpperCase() + g.status.slice(1)}</span>{/if}</h3>
+          <h3>{#if onAdd}{@render title(g)}{:else}<a href={routeHash([g.folder])} onclick={onClose}>{@render title(g)}</a>{/if}{#if !g.here}{' '}<span>· {g.status === 'in review' ? 'In review' : g.status[0].toUpperCase() + g.status.slice(1)}</span>{/if}</h3>
           <div class="grid">
             {#each g.files as f (f.kind + f.target)}
               {@const src = thumb(g, f)}
@@ -132,7 +132,7 @@
               <button class="tile" class:on aria-pressed={onAdd ? on : undefined}
                 onclick={() => (onAdd ? (picked = { group: g, file: f }) : open(g, f))} ondblclick={add}>
                 <span class="pic">{#if src}<img {src} alt="" onerror={(e) => ((e.currentTarget as HTMLElement).hidden = true)} />{:else}{kindOf(f)}{/if}</span>
-                <span class="name" title={f.name}>{f.name}</span>
+                <span class="name" title={f.name} data-hide>{f.name}</span>
                 <span class="uses">{usesOf(g, f)}</span>
               </button>
             {/each}
@@ -151,6 +151,10 @@
     </div>
   </div>
 </div>
+
+
+<!-- A script's title is covered in Feedback's picture; "In this script" is the app's. -->
+{#snippet title(g: SharedScript)}{#if g.here}{g.title}{:else}<span data-hide>{g.title}</span>{/if}{/snippet}
 
 <style>
   .backdrop { position: fixed; inset: 0; z-index: 20; display: flex; justify-content: center; align-items: flex-start;

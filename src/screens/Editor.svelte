@@ -155,15 +155,15 @@
   // What is still open, shown before Approve (RV-5, mock-up 20): flags, open comments and suggestions, then missing files.
   const loose = $derived.by(() => {
     const numbers = new Map(script ? rows(script).map((row, i) => [row.id, i + 1]) : []);
-    const items: Loose[] = [...flagged.values()].map((f) => ({ id: `flag:${f.row}`, head: `Flag · ${f.who} · row ${numbers.get(f.row)}`, text: f.text || 'No note' }));
+    const items: Loose[] = [...flagged.values()].map((f) => ({ id: `flag:${f.row}`, head: 'Flag', who: f.who, after: ` · row ${numbers.get(f.row)}`, text: f.text || 'No note', own: !!f.text }));
     items.push(...allThreads.filter((t) => !t.resolved).map((t) => {
       const n = numbers.get(t.comment.row ?? '');
       const suggestion = t.comment.kind === 'suggestion';
-      return { id: t.comment.id, head: `${suggestion ? 'Suggestion' : 'Comment'} · ${t.comment.who} · ${n ? `row ${n}` : 'a deleted row'}${t.held ? ' · on hold' : ''}`,
-        text: suggestion ? `“${t.comment.replace}”` : t.comment.text ?? '' };
+      return { id: t.comment.id, head: suggestion ? 'Suggestion' : 'Comment', who: t.comment.who, after: ` · ${n ? `row ${n}` : 'a deleted row'}${t.held ? ' · on hold' : ''}`,
+        text: suggestion ? `“${t.comment.replace}”` : t.comment.text ?? '', own: true };
     }));
     const lost = lostFiles.size;
-    if (lost) items.push({ id: '', head: `${lost} ${lost === 1 ? 'file' : 'files'} missing`, text: [...lostFiles].map((f) => f.split('/').pop()).join(', ') });
+    if (lost) items.push({ id: '', head: `${lost} ${lost === 1 ? 'file' : 'files'} missing`, text: [...lostFiles].map((f) => f.split('/').pop()).join(', '), own: true });
     return items;
   });
   // Voice-over takes (AU-1): read with the script and with the 5 s check, so others' takes appear.
@@ -673,7 +673,7 @@
 <div class="toasts">
   {#if undo.shown}
     <div class="banner quiet" aria-live="polite" data-undo>
-      <p>{undo.shown.what}</p>
+      <p>{#if undo.shown.name}<span data-hide>{undo.shown.name}</span>{/if}{undo.shown.what}</p>
       <button class="outline" onclick={undoNow}>{undo.shown.label ?? 'Undo'}</button>
     </div>
   {/if}
@@ -703,13 +703,13 @@
 <main>
   {#if missing}
     <div class="empty">
-      <h1>No script called "{path.join(' / ')}"</h1>
-      <p>It isn't in {folder.name}. It may have been renamed, or the shared folder may still be bringing it to this computer.</p>
+      <h1>No script called "<span data-hide>{path.join(' / ')}</span>"</h1>
+      <p>It isn't in <span data-hide>{folder.name}</span>. It may have been renamed, or the shared folder may still be bringing it to this computer.</p>
       <p><a href="#/">Back to the list</a></p>
     </div>
   {:else if clash}
     <Conflict clashes={clash.merged.clashes} heading={clash.heading} mineLabel={clash.mineLabel}
-      theirsLabel={clash.theirsLabel} combined={clash.combined} onSave={(picks) => file.resolve(picks)} />
+      theirsLabel={clash.theirsLabel} combined={clash.combined} name={clash.name} onSave={(picks) => file.resolve(picks)} />
   {:else if script && dir && mode === 'review'}
     {#if showVisit && marks}{@render visitBar(marks)}{/if}
     <Review {dir} {script} {notes} {ends} {flagged} me={name} {sent} {reviewedAt} visit={reviewedAt ? null : marks} {voice} {player} {canPlay} onPlayFrom={play} onNotice={(m) => (notice = m)} onAdd={note} onApply={apply} />

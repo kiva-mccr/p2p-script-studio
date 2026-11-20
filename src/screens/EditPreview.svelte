@@ -24,6 +24,9 @@
     return list;
   });
   const isCard = (n: string) => plan.media.get(n)?.kind === 'card';
+  // A file named after one of the script's (a copy, a drawn .svg, a video's last frame) is covered in Feedback's
+  // picture; the app's own (take-1.wav, row-2-collage.png) are not.
+  const own = (n: string) => ['copy', 'png', 'last'].includes(plan.media.get(n)?.kind ?? '');
   const label = (n: string) => {
     const s = plan.media.get(n);
     return s?.kind === 'card' ? `Card: ${s.text}` : n;
@@ -41,7 +44,7 @@
   const fps = $derived(editFps(how));
 </script>
 
-<p class="caption">{[`${name}.zip`, frame && `${frame.width} × ${frame.height}`, fps && `${fps} fps`, clock(plan.total)].filter(Boolean).join(' · ')}</p>
+<p class="caption"><span data-hide>{name}</span>{[`.zip`, frame && `${frame.width} × ${frame.height}`, fps && `${fps} fps`, clock(plan.total)].filter(Boolean).join(' · ')}</p>
 {#if !plan.total}
   <p class="message" role="alert">The timeline is empty: write some dialogue or record a take first.</p>
 {:else}
@@ -69,7 +72,7 @@
           {#if plan.sections.length}
             <div class="lane h-sections">
               {#each plan.sections as g (g.start)}
-                <span class="section" style:left="{pct(g.start)}%" style:width="calc({pct(g.seconds)}% - 2px)" title="{g.title} · from row {g.row} at {clock(g.start)}">{g.title}</span>
+                <span class="section" style:left="{pct(g.start)}%" style:width="calc({pct(g.seconds)}% - 2px)" title="{g.title} · from row {g.row} at {clock(g.start)}"><span data-hide>{g.title}</span></span>
               {/each}
             </div>
           {/if}
@@ -81,7 +84,7 @@
               {#each track as item, j (j)}
                 {@const text = label(item.name)}
                 {@const show = fits(item.seconds, text)}
-                <span class="clip" class:card={isCard(item.name)} class:bare={!show} class:tiny={px(item.seconds) < 10} style:left="{pct(item.start)}%" style:width={width(item.seconds)} title="{text} · {clock(item.seconds)}">{show ? text : ''}</span>
+                <span class="clip" class:card={isCard(item.name)} class:bare={!show} class:tiny={px(item.seconds) < 10} style:left="{pct(item.start)}%" style:width={width(item.seconds)} title="{text} · {clock(item.seconds)}">{#if show}{#if isCard(item.name)}Card: <span data-hide>{text.slice(6)}</span>{:else}{@render fileName(item.name)}{/if}{/if}</span>
               {/each}
             </div>
           {/each}
@@ -94,7 +97,7 @@
           </div>
           {#if plan.captions.length}
             <div class="lane h-short">
-              {#each plan.captions as c, j (j)}{@const show = fits(c.seconds, c.text)}<span class="clip words" class:bare={!show} class:tiny={px(c.seconds) < 10} style:left="{pct(c.start)}%" style:width={width(c.seconds)} title={c.text}>{show ? c.text : ''}</span>{/each}
+              {#each plan.captions as c, j (j)}{@const show = fits(c.seconds, c.text)}<span class="clip words" class:bare={!show} class:tiny={px(c.seconds) < 10} style:left="{pct(c.start)}%" style:width={width(c.seconds)} title={c.text}>{#if show}<span data-hide>{c.text}</span>{/if}</span>{/each}
             </div>
           {/if}
         </div>
@@ -107,23 +110,23 @@
     <div class="box">
       <h3>In the .zip</h3>
       <ul class="list">
-        <li>{name}.xml</li>
-        {#if plan.captions.length}<li>{name}.srt</li>{/if}
+        <li><span data-hide>{name}</span>.xml</li>
+        {#if plan.captions.length}<li><span data-hide>{name}</span>.srt</li>{/if}
         <li>media/</li>
         {#each runs as run (run[0][0])}
           {@const first = run[0][0]}
           {#if run.length < FOLD_FROM}
-            {#each run as [file, source] (file)}<li class="in">{file} <span>{from(source)}</span></li>{/each}
+            {#each run as [file, source] (file)}<li class="in">{@render fileName(file)} <span>{from(source)}</span></li>{/each}
           {:else}
             {@const open = !!unfolded[first]}
             <li class="in">
               <button class="run" aria-expanded={open} title={open ? 'Fold these files' : 'Show every file'} onclick={() => (unfolded[first] = !open)}>
                 {#if open}
-                  {#each run as [file, source] (file)}<span class="line">{file} <span>{from(source)}</span></span>{/each}
+                  {#each run as [file, source] (file)}<span class="line">{@render fileName(file)} <span>{from(source)}</span></span>{/each}
                 {:else}
-                  <span class="line">{first}</span>
+                  <span class="line">{@render fileName(first)}</span>
                   <span class="line more">↓ <b>{run.length} files</b></span>
-                  <span class="line">{run.at(-1)![0]} <span>{from(run[0][1], true)}</span></span>
+                  <span class="line">{@render fileName(run.at(-1)![0])} <span>{from(run[0][1], true)}</span></span>
                 {/if}
               </button>
             </li>
@@ -136,11 +139,14 @@
       <p class="help"><b>Resolve:</b> unzip, then File › Import › Timeline… and pick the .xml. Leave "Automatically import source clips" ticked.</p>
       <p class="help"><b>Premiere Pro:</b> unzip, then File › Import… and pick the .xml. If it asks where the media is, point to the media folder once.</p>
       {#each plan.links as l, i (i)}
-        <p class="warn">Row {l.row}'s link ({l.label}) isn't in the zip: it's named in row {l.row}'s marker.</p>
+        <p class="warn">Row {l.row}'s link (<span data-hide>{l.label}</span>) isn't in the zip: it's named in row {l.row}'s marker.</p>
       {/each}
     </div>
   </div>
 {/if}
+
+
+{#snippet fileName(file: string)}{#if own(file)}<span data-hide>{file}</span>{:else}{file}{/if}{/snippet}
 
 <style>
   .caption { margin: 0 0 8px; font-size: 13px; color: var(--muted); }

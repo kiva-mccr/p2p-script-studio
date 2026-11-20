@@ -1,8 +1,8 @@
 # `src/lib/historycomments.ts`
 
 Comments in History (RV-6, board 48): `placeComments` puts each comment and suggestion on one version, under the
-cell it led to change, or on the version current when it was made if nothing has changed it since. `stateText` is
-the label History shows (Open, Resolved by Sam, Accepted by Sam …).
+cell it led to change, or on the version current when it was made if nothing has changed it since. `stateParts` is
+the label History shows (Open, Resolved by Sam, Accepted by Sam …), with who apart so Feedback's Cover hides only the name.
 
 - **Used by:** `screens/History.svelte`. **Tests:** `tests/unit/historycomments.test.ts`, `tests/e2e/history.spec.ts`.
 

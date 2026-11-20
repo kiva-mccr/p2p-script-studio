@@ -168,7 +168,7 @@
   <textarea bind:this={box} bind:value aria-label={label} {placeholder} oninput={input} onkeydown={keydown} onpaste={paste}
     onfocus={() => (focused = true)} onblur={() => ((focused = false), (selecting = false))}
     onmouseup={look} onkeyup={look} onselect={look}></textarea>
-  <div class="shown" aria-hidden="true" use:math={html}>{@html html}</div>
+  <div class="shown" aria-hidden="true" data-hide use:math={html}>{@html html}</div>
 </div>
 
 <style>

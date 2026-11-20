@@ -8,7 +8,8 @@ its label, the time, ⤢ and ✕. Its own file so Timeline.svelte doesn't grow.
 
 ## Rules and pitfalls
 
-- The clock (time / total) is `data-keep`, so Feedback's Cover leaves it readable (issue #334).
+- The clock (time / total) is the app's, so Feedback's Cover leaves it readable (issue #334); the card's words are
+  `data-hide` (lib/feedback.md).
 - Three places: `.docked` in the open drawer, right of the tracks (220 px, upright 140 px); folded, `position:
   absolute` above the drawer's right end, capped by `--room` (the screen's height less the top bar, `--drawer` and its
   gap and bar) so upright never runs off the top of a short window; `.big`, `position: fixed` at the kept box.

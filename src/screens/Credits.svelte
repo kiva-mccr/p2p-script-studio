@@ -157,8 +157,8 @@
         {@const person = byId.get(credit.id)}
         <div class="credit">
           <div class="who">
-            <b>{person?.name ?? credit.name}</b>
-            <span>{person ? contactLine(person) || 'No contact details yet' : ''}</span>
+            <b data-hide>{person?.name ?? credit.name}</b>
+            <span>{#if person}{#if contactLine(person)}<span data-hide>{contactLine(person)}</span>{:else}No contact details yet{/if}{/if}</span>
           </div>
           <label class="blurb">On this script
             <input value={credit.role} placeholder="What they did, or their role" aria-label="What {credit.name} did on this script"
@@ -196,7 +196,7 @@
           <ul aria-label="People in the folder">
             {#each pickable as person (person.id)}
               <li><button onclick={() => add(person)}>
-                <b>{person.name}</b><span class="role">{person.role}</span><span class="on">On {scripts(person.id)}</span>
+                <b data-hide>{person.name}</b><span class="role" data-hide>{person.role}</span><span class="on">On {scripts(person.id)}</span>
               </button></li>
             {:else}
               <li class="none">{query.trim() ? `Nobody in the folder matches "${query.trim()}".` : 'Everyone in the folder is in the credits.'}</li>

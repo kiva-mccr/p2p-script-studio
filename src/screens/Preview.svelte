@@ -69,7 +69,7 @@
 {:else if preview.kind === 'text' || preview.kind === 'word'}
   <button type="button" class="lines" class:mono={preview.kind === 'text'} aria-label="Open {name}" onclick={onOpen}>
     <span class="label">{preview.label}</span>
-    {#each preview.lines as line, i (i)}<span class="line">{line}</span>{/each}
+    {#each preview.lines as line, i (i)}<span class="line" data-hide>{line}</span>{/each}
     {#if preview.more}<span class="line more">…</span>{/if}
   </button>
 {/if}

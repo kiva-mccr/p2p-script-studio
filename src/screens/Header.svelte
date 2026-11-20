@@ -1,6 +1,7 @@
 <script lang="ts" module>
   // Something still open, listed before Approve (RV-5): a comment or suggestion (its id), or missing files (id '').
-  export type Loose = { id: string; head: string; text: string };
+  // `who` sits between `head` and `after`, and `text` is the note's or the files' own words: both covered in Feedback's picture.
+  export type Loose = { id: string; head: string; who?: string; after?: string; text: string; own?: boolean };
 </script>
 
 <script lang="ts">
@@ -141,11 +142,11 @@
     <a href="#/" class="back" aria-label="Back to {folder}" title="Back to {folder}">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /></svg>
     </a>
-    <span class="title" title={title}>{title}</span>
+    <span class="title" title={title} data-hide>{title}</span>
     <!-- Beside the title, where Word and Google Docs put it (AP-16, the user's pick): it is about the script, not an action. -->
-    {#if ready}<span class="status" class:bad role="status" data-tour="saved" data-keep title={status === 'failed' ? problem : undefined}>{shownStatus}</span>{#if status === 'failed'}<CopyDetails message={SAVE_FAILED} />{/if}{/if}
+    {#if ready}<span class="status" class:bad role="status" data-tour="saved" title={status === 'failed' ? problem : undefined}>{shownStatus}</span>{#if status === 'failed'}<CopyDetails message={SAVE_FAILED} />{/if}{/if}
     <!-- The length follows Saved as one grey line (mock-up 30, A), and steps aside for a red message. -->
-    {#if ready && voiceText && !bad}<span class="voice" data-keep title={voiceText.includes('/') ? 'Voice-over recorded so far / the whole script (takes, plus read time for the rest)' : 'Read time of the whole script'}>{voiceText}</span>{/if}
+    {#if ready && voiceText && !bad}<span class="voice" title={voiceText.includes('/') ? 'Voice-over recorded so far / the whole script (takes, plus read time for the rest)' : 'Read time of the whole script'}>{voiceText}</span>{/if}
     <!-- The browser took back its OK to edit the folder: only a click can ask again (mock-up 18, option A). -->
     {#if ready && status === 'locked'}<button class="allow" onclick={onAllow}>Allow editing</button>{/if}
   </nav>
@@ -181,7 +182,7 @@
               <p class="lead">{loose.length} {loose.length === 1 ? 'thing is' : 'things are'} still open</p>
               <div class="loose">
                 {#each loose as item (item.id)}
-                  <button onclick={() => ((menu = ''), onLoose(item.id))}><b>{item.head}</b><span>{item.text}</span></button>
+                  <button onclick={() => ((menu = ''), onLoose(item.id))}><b>{item.head}{#if item.who}{' · '}<span data-hide>{item.who}</span>{/if}{item.after ?? ''}</b><span>{#if item.own}<span data-hide>{item.text}</span>{:else}{item.text}{/if}</span></button>
                 {/each}
               </div>
               <p class="quiet help">You can still approve. They stay open in Review.</p>
@@ -216,7 +217,7 @@
           {/if}
         </span>
       {/if}
-      {#if reviewStatus === 'approved' || (reviewStatus === 'in review' && mode !== 'review')}<span class="state" data-keep title={stateAge?.title}><span>{reviewStatus === 'approved' ? 'Approved' : 'In review'}</span>{#if stateAge}<span class="age">{stateAge.age}</span>{/if}</span>{/if}
+      {#if reviewStatus === 'approved' || (reviewStatus === 'in review' && mode !== 'review')}<span class="state" title={stateAge?.title}><span>{reviewStatus === 'approved' ? 'Approved' : 'In review'}</span>{#if stateAge}<span class="age">{stateAge.age}</span>{/if}</span>{/if}
       {#if play}
         <button class="outline play" class:started={play.time} onclick={onPlay}
           aria-label={!play.time ? 'Play the script' : play.on ? 'Pause the script' : 'Carry on playing the script'}>
@@ -241,7 +242,7 @@
               <span class="label">Teams message</span>
               <!-- inert: its links are only a picture of the message, not to be followed or tabbed to here. -->
               <div class="teams" aria-label="How it looks in Teams" inert>
-                {#if preview}{@html preview.html}{:else}<p class="waiting">…</p>{/if}
+                {#if preview}<div data-hide>{@html preview.html}</div>{:else}<p class="waiting">…</p>{/if}
               </div>
               <button class="outline small teams-copy" onclick={copyTeams}>{copied === 'teams' ? 'Copied, paste it in Teams' : 'Copy for Teams'}</button>
             </div>

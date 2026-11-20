@@ -169,7 +169,7 @@
           <button type="button" aria-pressed={suggesting} onclick={() => suggest(true)}>Suggest a change</button>
         </div>
       {/if}
-      {#if target.quote}<blockquote>{target.quote}</blockquote>{/if}
+      {#if target.quote}<blockquote data-hide>{target.quote}</blockquote>{/if}
       {#snippet typing()}
         <textarea bind:this={box} bind:value={draft} oninput={() => (draftMissing = '')} aria-label={suggesting ? 'Replace with' : 'Comment'} rows="3"></textarea>
         {#if draftMissing}<p class="missing" role="alert">{draftMissing}</p>{/if}

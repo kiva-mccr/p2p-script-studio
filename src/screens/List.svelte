@@ -100,7 +100,7 @@
 <svelte:window onfocus={load} onkeydown={(e) => e.key === 'Escape' && (menu = false)} onclick={(e) => menu && !(e.target as Element).closest('.split') && (menu = false)} />
 
 <header>
-  <span class="folder">{folder.name}</span>
+  <span class="folder" data-hide>{folder.name}</span>
   <button class="link" onclick={onChangeFolder}>Change folder</button>
   <button class="outline small" onclick={() => (browsing = true)}>Files</button>
   <button class="outline small" onclick={() => (meeting = true)}>People</button>
@@ -140,7 +140,7 @@
         <button class="primary small" type="submit">Create</button>
         <button class="link" type="button" onclick={() => { adding = false; addError = ''; }}>Cancel</button>
       </div>
-      {#if from}<p class="from">From the {from.title} template</p>{/if}
+      {#if from}<p class="from">From the <span data-hide>{from.title}</span> template</p>{/if}
       {#if addError}<p class="error" role="alert">{addError}<CopyDetails message={addError} /></p>{/if}
     </form>
   {/if}
@@ -175,11 +175,11 @@
           {@const long = lengthOf(script)}
           {@const me = script.counts?.mine}
           <a class="row" href={routeHash(script.path)} data-name={script.path[0]} use:watch>
-            <span class="title-cell"><span class="title">{script.title}</span>{#if script.counts?.flagged}<span class="flagged"><FlagIcon size={12} />{script.counts.flagged} flagged</span>{/if}{#if script.counts?.missing}<span class="missing">{script.counts.missing} missing</span>{/if}{#if me?.review}<span class="mine"><svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"></path><circle cx="12" cy="12" r="3"></circle></svg>Your review</span>{/if}{#if me?.replies}<span class="mine"><svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.8 7L3 21l2-6.2A8 8 0 1 1 21 12z"></path></svg>{me.replies === 1 ? '1 reply' : `${me.replies} replies`}</span>{/if}{#if me?.back}<span class="mine"><svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5M4 9h11a5 5 0 0 1 0 10h-3"></path></svg>Sent back to you</span>{/if}{#if me?.finds}<span class="mine"><svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path></svg>{me.finds} to find</span>{/if}</span>
+            <span class="title-cell"><span class="title" data-hide>{script.title}</span>{#if script.counts?.flagged}<span class="flagged"><FlagIcon size={12} />{script.counts.flagged} flagged</span>{/if}{#if script.counts?.missing}<span class="missing">{script.counts.missing} missing</span>{/if}{#if me?.review}<span class="mine"><svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"></path><circle cx="12" cy="12" r="3"></circle></svg>Your review</span>{/if}{#if me?.replies}<span class="mine"><svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.8 7L3 21l2-6.2A8 8 0 1 1 21 12z"></path></svg>{me.replies === 1 ? '1 reply' : `${me.replies} replies`}</span>{/if}{#if me?.back}<span class="mine"><svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5M4 9h11a5 5 0 0 1 0 10h-3"></path></svg>Sent back to you</span>{/if}{#if me?.finds}<span class="mine"><svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path></svg>{me.finds} to find</span>{/if}</span>
             {#if script.template}
-              <span class="status" data-keep><span class="dot template" aria-hidden="true"></span>Template</span>
+              <span class="status"><span class="dot template" aria-hidden="true"></span>Template</span>
             {:else}
-              <span class="status" data-keep><span class="dot {script.status.replace(' ', '-')}" aria-hidden="true"></span>{label[script.status] ?? script.status}</span>
+              <span class="status"><span class="dot {script.status.replace(' ', '-')}" aria-hidden="true"></span>{label[script.status] ?? script.status}</span>
             {/if}
             <span class="length" title={long ? (long.recorded ? 'Recorded voice-over, every row' : `Read time at ${speaking.wpm} words a minute`) : undefined}>
               {long?.text ?? ''}{#if script.counts?.voice}<MicRing voice={script.counts.voice} />{/if}

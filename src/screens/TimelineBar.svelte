@@ -15,7 +15,7 @@
   <div class="line">
     <button class="main" aria-expanded={open} aria-label="{name} after row {n}, {after.seconds} seconds" onclick={onToggle}>
       <span class="name">{after.kind === 'hold' ? '❚❚ Hold' : 'Placeholder'}</span>
-      <span class="what">{after.kind === 'hold' ? 'The last picture stays on screen, in silence' : after.label || 'Still to find'}</span>
+      <span class="what">{#if after.kind === 'hold'}The last picture stays on screen, in silence{:else if after.label}<span data-hide>{after.label}</span>{:else}Still to find{/if}</span>
       <span class="len">{after.seconds} s</span>
     </button>
     <button class="x" aria-label="Remove this {name.toLowerCase()}" title="Remove" onclick={onRemove}>✕</button>

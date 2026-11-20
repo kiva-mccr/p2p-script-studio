@@ -55,7 +55,7 @@
       await removePerson(root, person, me);
       people = people!.filter((p) => p.id !== person.id);
       open = '';
-      undo.offer({ what: `${person.name} removed from the folder.`, back: async () => {
+      undo.offer({ name: person.name, what: ' removed from the folder.', back: async () => {
         await savePerson(root, person, me);
         people = [...(people ?? []), person].sort((a, b) => a.name.localeCompare(b.name));
       } });
@@ -77,13 +77,13 @@
   <div class="window" role="dialog" aria-modal="true" aria-labelledby="people-title" tabindex="-1">
     <div class="top">
       <h2 id="people-title">People</h2>
-      <span class="count">{people ? `${people.length} in ${root.name}` : ''}</span>
+      <span class="count">{#if people}{people.length} in <span data-hide>{root.name}</span>{/if}</span>
       <button class="close" aria-label="Close" onclick={close}>×</button>
     </div>
     <div class="body">
       {#if error}<p class="error" role="alert">{error}<CopyDetails message={error} /></p>{/if}
       {#if undo.shown}
-        <div class="undo" aria-live="polite" data-undo><p>{undo.shown.what}</p><button class="outline" onclick={() => undo.take().catch((e) => (error = problem("They couldn't be put back. If the shared folder is still syncing, wait a moment and try again.", 'putting a person back', e)))}>Undo</button></div>
+        <div class="undo" aria-live="polite" data-undo><p>{#if undo.shown.name}<span data-hide>{undo.shown.name}</span>{/if}{undo.shown.what}</p><button class="outline" onclick={() => undo.take().catch((e) => (error = problem("They couldn't be put back. If the shared folder is still syncing, wait a moment and try again.", 'putting a person back', e)))}>Undo</button></div>
       {/if}
       {#if people && !people.length && !error}
         <p class="empty">Nobody yet.<span class="help"> People are added from a script: ⋯, then Credits.</span></p>
@@ -92,11 +92,11 @@
         {@const scripts = on.get(person.id) ?? []}
         <div class="person">
           <button class="name" aria-expanded={open === person.id} onclick={() => toggle(person.id)}>
-            <b>{person.name}</b><span class="on">{count(person.id)}</span>
+            <b data-hide>{person.name}</b><span class="on">{count(person.id)}</span>
           </button>
-          <span class="role">{person.role || 'No usual role'}</span>
+          <span class="role">{#if person.role}<span data-hide>{person.role}</span>{:else}No usual role{/if}</span>
           <span class="reach">
-            {#if person.email}<a href="mailto:{person.email}">{person.email}</a>{/if}
+            {#if person.email}<a href="mailto:{person.email}"><span data-hide>{person.email}</span></a>{/if}
             {#if person.linkedin}<a href={linkedinUrl(person.linkedin)} target="_blank" rel="noopener">LinkedIn</a>{/if}
             {#if !person.email && !person.linkedin}No contact details yet{/if}
           </span>
@@ -105,10 +105,10 @@
               <Contact bind:this={contact} {root} {person} {me} uses={`${scripts.length} ${scripts.length === 1 ? 'script' : 'scripts'}`} onSaved={saved} />
               {#if scripts.length}
                 <p class="credited">Credited on
-                  {#each scripts as info, i (info.path.join('/'))}{i ? ', ' : ' '}<a href={routeHash(info.path)}>{info.title}</a>{/each}
+                  {#each scripts as info, i (info.path.join('/'))}{i ? ', ' : ' '}<a href={routeHash(info.path)}><span data-hide>{info.title}</span></a>{/each}
                 </p>
               {:else}
-                <p class="credited">No script credits {person.name}.
+                <p class="credited">No script credits <span data-hide>{person.name}</span>.
                   <button class="link" onclick={() => remove(person)}>Remove from the folder</button></p>
               {/if}
             </div>

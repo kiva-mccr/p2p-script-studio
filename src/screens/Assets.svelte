@@ -98,14 +98,14 @@
     </span>
     <span class="name">
       {#if kind === 'find'}
-        {bare(asset.label)}
+        <span data-hide>{bare(asset.label)}</span>
       {:else}
         <button class="open" onclick={() => open(asset)}><span data-hide>{asset.label}</span></button>
-        <span class="where">{asset.kind === 'link' ? asset.target.replace(/^https?:\/\//, '') : asset.target}</span>
+        <span class="where" data-hide>{asset.kind === 'link' ? asset.target.replace(/^https?:\/\//, '') : asset.target}</span>
       {/if}
     </span>
     {#if kind === 'here' && words.get(asset.rows[0])}
-      <span class="excerpt" title={words.get(asset.rows[0])}>{words.get(asset.rows[0])}</span>
+      <span class="excerpt" title={words.get(asset.rows[0])} data-hide>{words.get(asset.rows[0])}</span>
     {/if}
     {#if kind === 'find'}<Finders who={asset.who} what={bare(asset.label)} people={folderPeople} onSet={(names) => assign(asset, names)} />{/if}
     <span class="rows">
@@ -128,14 +128,14 @@
   {:else if byRow}
     <div class="box" data-tour="assets-list">
       {#each rows as row, i (row.n)}
-        {#if row.section && row.section !== rows[i - 1]?.section}<h2>{row.section}</h2>{/if}
+        {#if row.section && row.section !== rows[i - 1]?.section}<h2 data-hide>{row.section}</h2>{/if}
         {#if row.assets.length}
           <div class="by-row">
             <button class="jump" data-tour="assets-jump" onclick={() => onJump(row.n)}>Row {row.n}</button>
             <ul>
               {#each row.assets as asset (asset.line)}
                 {#if asset.kind === 'words'}
-                  <li class="find">To find: {bare(asset.label)}{asset.who.length ? ` · ${asset.who.join(', ')}` : ''}</li>
+                  <li class="find">To find: <span data-hide>{bare(asset.label)}</span>{#if asset.who.length}{' · '}<span data-hide>{asset.who.join(', ')}</span>{/if}</li>
                 {:else if asset.kind === 'path' && missing.has(asset.target)}
                   <li class="lost"><button class="open" onclick={() => open(asset)}><span data-hide>{asset.label}</span></button> · missing</li>
                 {:else}
