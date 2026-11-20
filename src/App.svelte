@@ -12,6 +12,7 @@
   import Feedback from './screens/Feedback.svelte';
   import { exampleBar } from './lib/examplebar.svelte';
   import DownloadSealed from './screens/DownloadSealed.svelte';
+  import ForIT from './screens/ForIT.svelte';
   import SealedLinks from './screens/SealedLinks.svelte';
   import { example as exampleAsk } from './lib/help.svelte';
 
@@ -20,9 +21,11 @@
   let review = $state(false); // a shared link: the script opens on Review (RV-10)
   let downloading = $state(false); // the Download sealed page (SE-10), from the ? menu on the website
   const DOWNLOAD = '#download-sealed';
+  let forIt = $state(false); // the For IT page (SE-8), from the ? menu, on the website and in the sealed app
   function onHash() {
     downloading = !__SEALED__ && location.hash === DOWNLOAD;
-    route = downloading ? [] : parseRoute(location.hash);
+    forIt = location.hash === '#for-it';
+    route = downloading || forIt ? [] : parseRoute(location.hash);
     review = opensReview(location.hash);
     // The mark is dropped from the address once read, so a reload after moving to Write stays there.
     if (review) history.replaceState(null, '', location.pathname + location.search + routeHash(route));
@@ -177,6 +180,8 @@
 
 {#if downloading}
   <DownloadSealed onBack={() => (history.length > 1 ? history.back() : (location.hash = ''))} />
+{:else if forIt}
+  <ForIT onBack={() => (history.length > 1 ? history.back() : (location.hash = ''))} />
 {:else if example}
   <div class="example" bind:offsetHeight={exampleBar.height}>
     <p><b>Example script.</b> Try anything: your changes stay in this browser and are never shared.</p>

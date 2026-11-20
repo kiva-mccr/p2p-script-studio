@@ -3,7 +3,7 @@
 The ? at the right end of every top bar (SB-5, board 77; on every screen since issue #219): a menu with Feedback…
 (starts Feedback mode, AP-48), See the example (issue #239, left out while in it), GitHub (with GitHub's mark, #232) and "Version: PR #176" (the live version, AP-28: links to its pull request, the title and time on hover).
 These used to float in the bottom corners, over the script and the timeline's drawer. On the website it also has
-Download sealed (SE-10); in the sealed app GitHub and the download go, and the version is plain text marked sealed.
+Download sealed (SE-10), and For IT (SE-8, here and in the sealed app); in the sealed app GitHub and the download go, and the version is plain text marked sealed.
 
 - **Used by:** `screens/Header.svelte` (a script's bar), `screens/List.svelte`, `screens/Setup.svelte`,
   `screens/DownloadSealed.svelte`, `screens/Export.svelte`, `screens/Teleprompter.svelte`. `tone`: `main` on a screen

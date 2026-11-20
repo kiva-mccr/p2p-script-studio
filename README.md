@@ -30,6 +30,12 @@ on its first open, or later in its Settings. It's checked file by file and kept 
 GitHub's build attestation, and a daily check compares the live files against it. How to check it yourself:
 [docs/security.md](docs/security.md#se-7-checking-what-the-site-serves).
 
+**For IT:** ? › For IT is one page to read, print or send on: where the data goes, what the app asks permission for,
+the one address it connects to, what the browser keeps, how to check it, the Chrome and Edge policies IT can set, and
+the OWASP ASVS level 1 map. Its contents stay on the left as you scroll. The same text is
+[docs/for-it.md](docs/for-it.md), the full ASVS map is [docs/asvs.md](docs/asvs.md), and problems are reported
+privately as [SECURITY.md](SECURITY.md) says.
+
 Status: a first working version. What it does today:
 
 - **First time:** type your name and choose your team's scripts folder ("Before you start" explains putting it on this

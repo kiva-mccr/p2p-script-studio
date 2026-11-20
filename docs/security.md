@@ -56,7 +56,8 @@ X-Content-Type-Options (-5) are lost: about 55 at best.
 7. **SE-7** Proof of what's running (the sealed file's attestation is done with SE-10): GitHub build attestations and a
    published list of the live files' SHA-256. Done 2026-11-20 (see below).
 8. **SE-8** IT pack: `SECURITY.md`, a "For IT" page (data flow, permissions, network addresses, what the browser
-   keeps, how to check it), an OWASP ASVS level 1 map, and the Edge/Chrome policies IT can set.
+   keeps, how to check it), an OWASP ASVS level 1 map, and the Edge/Chrome policies IT can set. Done 2026-11-20:
+   ? › For IT (docs/for-it.md), SECURITY.md, docs/asvs.md.
 
 ## SE-2: supply chain, how it works
 

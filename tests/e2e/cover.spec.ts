@@ -151,6 +151,9 @@ test('Cover hides the script and names on every screen, and none of the app\'s o
   await page.keyboard.press('Escape');
   await more(page, 'Teleprompter');
   await check(page, 'Teleprompter');
+  await page.goto('./#for-it');
+  await expect(page.getByRole('heading', { name: 'Where the data goes' })).toBeVisible();
+  await check(page, 'For IT');
 
   expect(problems).toEqual([]);
 });
