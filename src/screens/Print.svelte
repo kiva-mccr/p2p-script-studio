@@ -148,7 +148,9 @@
 <style>
   /* On screen the print version is never seen; when printing, it is all that is seen. */
   @media screen { .print-view { display: none; } }
-  @media print { :global(#app > :not(.print-view)) { display: none !important; } }
+  /* Only while a print view is mounted: every screen's styles are in one stylesheet, so a bare #app > :not(.print-view)
+     blanked every other page printed, For IT's among them (#365). */
+  @media print { :global(#app:has(> .print-view) > :not(.print-view)) { display: none !important; } }
   .sheet { font: 10pt/1.5 Inter, system-ui, sans-serif; color: #141414; }
   .top { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding-bottom: 8px; border-bottom: 1.5px solid #141414; }
   /* Sizes in em, so the text size choice scales them all. */

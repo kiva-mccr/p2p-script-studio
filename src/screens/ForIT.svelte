@@ -43,7 +43,7 @@
   <HelpMenu />
 </header>
 
-<div class="page">
+<div class="page for-it">
   <nav aria-label="On this page">
     <span class="nav-title">On this page</span>
     {#each sections as s (s.id)}
@@ -169,6 +169,8 @@
   }
   @media print {
     header, nav { display: none; }
+    /* Anything else on the app's top level (Feedback, a message pinned in place) stays off the paper (#365). */
+    :global(#app:has(> .for-it) > :not(.for-it)) { display: none !important; }
     .page { display: block; max-width: none; padding: 0; }
     section { break-inside: avoid-page; }
     a { color: inherit; }

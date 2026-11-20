@@ -11,7 +11,8 @@ printing (the browser's print window makes the PDF, "Save as PDF"), and with `on
 ## Rules and pitfalls
 
 - `onScreen` drops the `print-view` class (so it shows on screen and never prints) and the `@page` footer style.
-- For printing it is mounted only while printing; when printing, `#app > :not(.print-view)` is hidden, so the editor, the
+- For printing it is mounted only while printing; when printing, `#app:has(> .print-view) > :not(.print-view)` is hidden
+  (the `:has` matters: all screens' styles share one stylesheet, and without it every other page printed blank, #365), so the editor, the
   messages and the GitHub link never print. It must stay a direct child of `#app` (Editor's top level).
 - `onReady` waits for the image previews and equations, or the print window shows the page half drawn. A missing
   or broken image is hidden, never waited for.
