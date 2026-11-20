@@ -332,6 +332,6 @@ speech models pinned in `src/lib/models.lock.json` beside the site, and their zi
 a new pin: run "Pin the speech models" in Actions and commit what it prints). The live site's security headers
 (added by Cloudflare) are checked daily against `src/lib/headers.ts`: `node --experimental-strip-types scripts/livecheck.ts`.
 Supply chain (SE-2, docs/security.md): Actions are pinned to commit hashes (a test checks), Dependabot proposes updates
-monthly, CodeQL and OpenSSF Scorecard run in Actions, and Tests fails on `npm audit --omit=dev`.
+monthly, CodeQL (GitHub's Default setup) and OpenSSF Scorecard (Actions) scan the repo, and Tests fails on `npm audit --omit=dev`.
 
 License: MIT.
