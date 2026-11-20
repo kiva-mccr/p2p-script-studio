@@ -1317,7 +1317,14 @@ the team writes leaves their computers.
   attestation beside the sealed file's; the live check downloads every file but the models and compares, and the
   models' lines against their pins. How to check (bash, PowerShell, `gh attestation verify`): docs/security.md. A build
   of main matched all 88 live files byte for byte, so IT can rebuild it too.
-- [ ] **SE-6** and **SE-8**: offline app (replaced by SE-10), the IT pack. The plan and decisions: docs/security.md.
+- [x] **SE-8** The IT pack (board 93, agreed by the user, with a contents list that stays pinned top left, lights the
+  section being read and jumps to it). Done 2026-11-20: ? › For IT on the website and in the sealed file
+  (`screens/ForIT.svelte`, its text in `lib/forit.ts`, docs/for-it.md made from it): in short, where the data goes,
+  permissions, addresses (also Cloudflare's error-report address), what the browser keeps, five checks, Chrome/Edge
+  policies, an ASVS summary, reporting; Print or save as PDF. `SECURITY.md` (private reports, an answer within 5
+  working days, fix times), `docs/asvs.md` (all 70 ASVS 5.0 level 1 requirements). A unit test fails when the code
+  keeps something in the browser the page doesn't list, or docs/for-it.md drifts.
+- [ ] **SE-6**: offline app, replaced by SE-10.
 
 ## Last (the user's order: these wait until everything above is done)
 

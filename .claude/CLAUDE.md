@@ -87,7 +87,7 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
   Then (the user, 2026-11-16): Ctrl+Z for everything: UX-14 (the script's text, done), then UX-15 (takes, flags, done). UX-16 (Undo toast 5 s, gone when you carry on, done).
   Then security (the user, 2026-11-18, issue #267): SE-1 (Content Security Policy, done), SE-4 (headers via
   Cloudflare, done), SE-9 (integrity hashes, done); then (the user, 2026-11-20, in order): SE-2 (supply chain, done), SE-3 (untrusted script files, done), SE-7 (sha256sums.txt, done), SE-8
-  (docs/security.md).
+  (For IT, SECURITY.md, docs/asvs.md, board 93, done).
   Then (the user, 2026-11-18, ahead of boards 82 and 83): SE-10, the sealed app to download (done), then SE-5 (speech
   models from the app, and as the sealed file's second download, done). Then the example in the sealed app,
   kept in IndexedDB (the user's pick, 2026-11-19, done).
@@ -138,6 +138,8 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
 - Script files are untrusted (SE-3): script text reaches HTML only through `toHtml` (or another escaper); links only
   http(s); a folder file opens through `openFile` (lib/openfile.md), never a blob: tab of its own type.
   `untrusted.spec.ts` / `untrusted.test.ts` hold the attacks: a new place script text is shown gets a line there.
+- For IT (SE-8) is made from `lib/forit.ts`: a new IndexedDB database, a script-naming storage key or a new address goes
+  there, and `UPDATE_DOCS=1 npx vitest run forit` rewrites docs/for-it.md (the test fails until it matches).
 - The built page has a Content Security Policy (SE-1, lib/csp.md). e2e specs import `test` from `./base`, which fails
   a test on any policy refusal; a feature that needs a new source adds the narrowest one in `lib/csp.ts`, with why.
 
@@ -248,4 +250,6 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
   Chromium's mouse and keys were used.
 - The 5 s give-up on the remembered folder (blank page on Fedora, 2026-11-19): the hang was only faked in tests
   (a permission check that never answers); which call hung on Kiva's Chrome is unseen.
+- For IT (SE-8): the browser policies it lists (FileSystemRead/WriteAskForUrls, the guard settings, AudioCaptureAllowedUrls)
+  were never set on a real managed Chrome or Edge here; printing it was only seen as test Chromium's page.
 - Allow editing (AP-25) after Chrome really takes back access: tests fake the lost OK; how long Chrome waits is unseen.
