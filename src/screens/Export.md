@@ -27,8 +27,10 @@ Print… or Save on the right. Back to the script, the title in the breadcrumb, 
 - Esc goes back, but not from a text field (the speaker name).
 - Printing still goes through the Editor (`onPrint`): it mounts the real `Print.svelte` at the top level, which
   the print CSS needs. The preview's own Print sits inside this screen, hidden when printing.
-- Print's preview is drawn at the printed width (a Letter page less Print's margins: 725 px, 965 px landscape) and
-  shrunk with `zoom` to fit the box, so the columns wrap as they will on paper. Change both if Print's margins change.
+- Print's preview is one Letter page in CSS px (816 × 1056, turned for landscape) with Print's margins as padding
+  (53, 45 and 60 px: the 725 / 965 px the rows print at), shrunk with `zoom` to fit the box's width and 75% of the
+  window's height, never under 60% so the words stay readable. Change both if Print's margins change. The page keeps
+  the paper's shape: Notes lines take room at its foot and the rows scroll above them (issue #356).
 - Fountain's two previews (the file and the look) share one height cap, so both are `box-sizing: border-box`; without
   it the file's padding and border made it 34 px taller (issue #236).
 - Under Print… a help line says to pick "Microsoft Print to PDF" if words can't be selected in the PDF (issue #266:

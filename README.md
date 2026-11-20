@@ -142,7 +142,8 @@ Status: a first working version. What it does today:
   blank Notes column on each row or Notes lines at the foot of every page (2 to 8 lines), and set the text size. Untick any of the three
   columns (for example to print the dialogue only); the others widen to fill the page, Dialogue first, then Notes.
   Pick Portrait or Landscape for the page: landscape gives the columns more room, and the print window opens already
-  turned.
+  turned. The preview shows one page at the paper's shape; with Notes lines on, they take room at its foot and the rows
+  scroll above them.
 - **Fountain:** saves the script as a `.fountain` file for Trelby, Highland and other screenplay programs.
   Sections become scene headings, each row's dialogue is spoken by its speaker (NARRATOR when it has none), the On screen column is the action, and row
   numbers, notes and files are kept as Fountain notes. The title page carries the version and status. Settings: the

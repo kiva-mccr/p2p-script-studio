@@ -322,7 +322,10 @@ and suggestions, keeps every version, and exports them for production.
   "Notes space at the end" became "Notes lines on every page"; the lines sit at the foot of every printed page,
   above the footer (on the last page too), with a small "Notes" heading, full page width; 4 lines to start, − / +
   for 2 to 8, remembered. Printed as a fixed block Chrome repeats on each page, with a table footer as tall keeping
-  the rows clear of it.
+  the rows clear of it. Issue #356 (2026-11-20): Chrome stops repeating a table footer taller than a quarter of the
+  page, so 5 or more lines in landscape (or 8 at a bigger text size) printed over the rows; the room is now the rows'
+  bottom padding, cloned onto every page. The preview became one page at the paper's shape, the lines at its foot and
+  the rows scrolling in what they leave.
 - [x] **EX-16** Print: collapse columns (asked by the user): choose which of the three columns print (for example the
   dialogue only, or no Images & files), and the rest widen to fill the page; kept with Print's other choices. Mock-up:
   board 38, built as drawn: "Columns to print" ticks at the top of Print's settings, all on by default; the last one

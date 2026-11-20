@@ -25,9 +25,13 @@ printing (the browser's print window makes the PDF, "Save as PDF"), and with `on
 - `white-space: pre-wrap` sits on an inner `.text` only: on the cell it printed the template's spaces before the text.
 - Column widths are set on the `<th>`s (`table-layout: fixed` takes them from the first row); a row's note goes in
   the first column that prints, and a section's `colspan` follows the columns printed.
-- The Notes lines (EX-15) are `position: fixed` when printing, which Chrome repeats at the bottom of every page;
-  a `<tfoot>` row just as tall (`.room`, same `--lines` height) repeats too and keeps the rows clear of them, also on
-  the last page. Both heights come from one CSS rule, so they can't drift apart. On screen they show once, after the rows.
+- The Notes lines (EX-15) are `position: fixed` when printing, which Chrome repeats at the bottom of every page.
+  The rows (`.rows`) keep clear of them with a bottom padding just as tall (`.room`, same `--lines` height) and
+  `box-decoration-break: clone`, which gives every page that padding. Never a repeated `<tfoot>` (issue #356): Chrome
+  stops repeating one taller than a quarter of the page, so 5+ lines in landscape printed over the rows. Neither
+  `@page` margin room (a fixed block below the page area moves to the next page) nor a margin-box image or background
+  (no full width; backgrounds don't print by default) worked.
+- `onScreen` (the export preview) makes the sheet a column that fills its page: the rows scroll, the lines sit under them.
 - Tests replace `window.print` and look at the page with `emulateMedia({ media: 'print' })`.
 - The credits (AP-31, `credits`) follow the rows, names and blurbs only; the export's Credits switch passes none.
 - A picture linked from another site is never shown (SE-1, the user's pick): only its link. See lib/csp.md.
