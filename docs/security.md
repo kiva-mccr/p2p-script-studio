@@ -30,8 +30,8 @@ X-Content-Type-Options (-5) are lost: about 55 at best.
 
 1. **SE-1** Content Security Policy (meta tag), runtime from the app, every e2e test checks the policy. Done.
 2. **SE-2** Supply chain: Dependabot alerts and updates, CodeQL, secret scanning with push protection, Actions
-   pinned to commit hashes, `npm audit --omit=dev` in Tests, OpenSSF Scorecard. Today's audit: KaTeX (fixed in
-   0.19) and sharp (Node only, never shipped to browsers).
+   pinned to commit hashes, `npm audit --omit=dev` in Tests, OpenSSF Scorecard. Done 2026-11-20 (see below).
+   Its audit found KaTeX (updated to 0.19.1) and sharp (Node only, never shipped to browsers; overridden to 0.35.5).
 3. **SE-3** Untrusted script files: review every place script text becomes HTML (formatting, links, equations,
    previews); tests that try to sneak in a script, a `javascript:` link or an `onerror` attribute (OWASP ASVS V5).
 4. **SE-4** Security headers. Done 2026-11-18, through Cloudflare (D1); COEP waits for SE-5: HSTS, `frame-ancestors 'none'`, nosniff, Referrer-Policy, a
@@ -49,6 +49,26 @@ X-Content-Type-Options (-5) are lost: about 55 at best.
 7. **SE-7** Proof of what's running (the sealed file's attestation is done with SE-10): GitHub build attestations and a published list of the live files' SHA-256.
 8. **SE-8** IT pack: `SECURITY.md`, a "For IT" page (data flow, permissions, network addresses, what the browser
    keeps, how to check it), an OWASP ASVS level 1 map, and the Edge/Chrome policies IT can set.
+
+## SE-2: supply chain, how it works
+
+- **Actions pinned.** Every `uses:` names a commit hash with its version as a comment
+  (`actions/checkout@<40 hex> # v5.1.0`): a tag can be moved to other code, a hash can't. Dependabot updates both.
+  Checkouts keep no token on disk (`persist-credentials: false`) and every workflow names its permissions.
+  `tests/unit/supplychain.test.ts` fails on a new unpinned action. To pin one: `git ls-remote https://github.com/<owner>/<repo> 'refs/tags/<tag>' 'refs/tags/<tag>^{}'`
+  (the `^{}` line, when there is one, is the commit).
+- **Dependabot** (`.github/dependabot.yml`): routine updates once a month, one grouped pull request for npm and one for
+  Actions, only for versions out a week. `@playwright/test` (pinned to the test container's Chromium) and TypeScript 7
+  (not supported by svelte-check yet) are left out.
+- **npm audit** in Tests checks only what ships to browsers (`--omit=dev`). A new advisory fails every pull request:
+  update the package, or, when it never reaches the browser (like sharp, transformers.js's Node-only image library),
+  pin a fixed version under `overrides` in package.json.
+- **CodeQL** (`codeql.yml`) scans the app's TypeScript and the workflows on pull requests, pushes to main and weekly.
+  **Scorecard** (`scorecard.yml`) rates the repo's habits weekly and after pushes; both report under Security › Code
+  scanning, and Scorecard's results are public at scorecard.dev.
+- **Repo settings** (only the owner can change them), Settings › Advanced Security (or Code security): Dependabot
+  alerts, Dependabot security updates, Secret scanning with Push protection, all on. CodeQL's "Default setup" must stay
+  off: the workflow is the advanced setup, and GitHub refuses results from both.
 
 ## Decisions
 

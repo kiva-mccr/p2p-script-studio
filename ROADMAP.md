@@ -1294,7 +1294,13 @@ the team writes leaves their computers.
   2026-11-19: a card under the top bar of Open your scripts folder (and the list), "Add the speech models?" with
   Import the models file… and Not now, shown once on that computer (kept in IndexedDB) and only when no models are
   kept. Its note says Settings › Speech models has them later. `screens/ModelsOffer.svelte`.
-- [ ] **SE-2**, **SE-3**, **SE-6** to **SE-8**: supply chain checks, untrusted script files, offline app, proof of
+- [x] **SE-2** Supply chain checks (no mock-up: nothing visible). Done 2026-11-20: every Action pinned to a commit
+  hash (version as a comment, checkouts keep no token, each workflow names its permissions; a unit test holds it);
+  `.github/dependabot.yml` (npm and Actions, monthly, grouped, a week's cooldown); CodeQL (`codeql.yml`, the app's
+  code and the workflows) and OpenSSF Scorecard (`scorecard.yml`); `npm audit --omit=dev` in Tests. To pass it:
+  KaTeX 0.19.1, and sharp (Node only, pulled in by transformers.js, never shipped) overridden to 0.35.5. Dependabot
+  alerts and security updates, secret scanning and push protection are repo settings (docs/security.md).
+- [ ] **SE-3**, **SE-6** to **SE-8**: untrusted script files, untrusted script files, offline app, proof of
   what's running, the IT pack. The plan and decisions:
   docs/security.md.
 
