@@ -16,6 +16,12 @@ updates:
       # svelte-check doesn't support TypeScript 7 yet (CLAUDE.md).
       - dependency-name: typescript
         update-types: ['version-update:semver-major']
+      # The speech models' library: a major version waits for SE-12 (checked with the real models).
+      - dependency-name: '@huggingface/transformers'
+        update-types: ['version-update:semver-major']
+      # Node's types follow the Node that Tests and the deploy run (22).
+      - dependency-name: '@types/node'
+        update-types: ['version-update:semver-major']
   - package-ecosystem: github-actions
     directory: /
     schedule: { interval: monthly }
