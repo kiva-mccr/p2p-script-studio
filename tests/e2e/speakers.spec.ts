@@ -48,11 +48,21 @@ test('a short name in Credits adds a Speaker column; a row is said by them, save
   await expect(first).toHaveAccessibleName('Speaker, row 1: Jojo. Click to change');
   await expect.poll(() => readFile(page, 'Rain/script.md')).toContain('Speaker: Jojo\n');
 
-  // The column folds away like the others; a dot says the row has a speaker.
+  // Folded (#361, board 95 B), a row keeps only its speaker's dot, no outline and no name; the name shows on hover and
+  // a click still goes to the next speaker. A narrator row is empty.
   await page.getByRole('button', { name: 'Fold Speaker away' }).click();
-  await expect(first).toHaveCount(0);
-  await expect(page.locator('[data-row="aaaaa"] [title="Speaker has something here"]')).toBeVisible();
+  await expect(first).toHaveAttribute('title', 'Jojo');
+  await expect(first).toHaveText('J');
+  await expect(first.locator('[data-hide]')).toHaveText('J'); // Feedback's Cover hides the initial
+  await expect(first).toHaveCSS('border-top-width', '0px');
+  expect((await first.boundingBox())!.width).toBeLessThanOrEqual(28);
+  await expect(page.getByRole('button', { name: /^Speaker, row 2:/ })).toHaveCount(0);
+  await first.click();
+  await expect(page.getByRole('button', { name: /^Speaker, row 1:/ })).toHaveCount(0);
+  await page.keyboard.press('Control+z');
+  await expect(first).toHaveAccessibleName('Speaker, row 1: Jojo. Click to change');
   await page.getByRole('button', { name: 'Show Speaker' }).click();
+  await expect(first).toContainText('Jojo');
 
   // Fountain: each row under its speaker, the rest under the narrator; the card counts each one's rows and time.
   await page.getByRole('button', { name: 'Export / Share' }).click();

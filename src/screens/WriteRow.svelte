@@ -170,7 +170,11 @@
     {/if}
   </div>
   {#if cast}
-    {#if folded.has('speaker')}{@render dot(!!block.speaker, 'Speaker')}{:else}
+    {#if folded.has('speaker')}
+      <!-- #361 (board 95, B): folded, only the speaker's dot, no outline; still a click to the next speaker, the name on hover. -->
+      <span class="dot">{#if block.speaker}<button class="speaker folded" title={who} aria-label="Speaker, row {n}: {who}. Click to change" onclick={nextSpeaker}
+        class:gone={!cast.includes(block.speaker)}><span class="initial" aria-hidden="true" style:background={tint} data-hide>{who[0].toUpperCase()}</span></button>{/if}</span>
+    {:else}
       <div>
         <button class="speaker" title="Who says this row: click to change" aria-label="Speaker, row {n}: {who}. Click to change" onclick={nextSpeaker}
           class:narrator={!block.speaker} class:gone={block.speaker && !cast.includes(block.speaker)}>
@@ -363,6 +367,8 @@
   .speaker.narrator, .speaker.gone { color: var(--muted); }
   .initial { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%;
     color: #fff; font-size: 10px; font-weight: 600; }
+  .speaker.folded { min-height: 28px; margin: -2px 0 0; padding: 0 4px; border: 0; background: none; }
+  .speaker.folded:hover .initial { box-shadow: 0 0 0 2px #fff, 0 0 0 3px #c4c4c4; }
   .speaker .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .flag-note { grid-column: var(--notes-from) / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 10px;
     padding: 2px 4px 2px 12px; border-radius: 8px; background: #fff7ed; color: var(--flag); font-size: 13px; }
