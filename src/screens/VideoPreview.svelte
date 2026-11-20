@@ -91,7 +91,7 @@
   }
 </script>
 
-<p class="caption">{name}.{made && !made.mp4 ? 'webm' : 'mp4'} · {size.width} × {size.height} · {fpsName} fps · {clock(plan.total)} · about {megabytes(plan.total, videoBits(how, size))} MB</p>
+<p class="caption"><span data-hide>{name}</span>.{made && !made.mp4 ? 'webm' : 'mp4'} · {size.width} × {size.height} · {fpsName} fps · {clock(plan.total)} · about {megabytes(plan.total, videoBits(how, size))} MB</p>
 <div class="box">
   <div class="screen" style:aspect-ratio="{size.width} / {size.height}" style:width="min(100%, 720px, {Math.round((427 * size.width) / size.height)}px)">
     {#if made && watching}
@@ -108,7 +108,7 @@
         title="{clock(item.start)} to {clock(item.start + item.seconds)} · {label(item.name)}" onclick={() => pick(i)}>
         <span class="in">
           {#if source?.kind === 'card'}<span class="thumb grey"></span>{:else if thumbs[thumbOf(item.name) ?? '']}<img class="thumb" src={thumbs[thumbOf(item.name) ?? '']} alt="" />{/if}
-          <span class="name">{label(item.name)}</span>
+          <span class="name">{#if source?.kind === 'collage'}{label(item.name)}{:else}<span data-hide>{label(item.name)}</span>{/if}</span>
         </span>
       </button>
     {/each}

@@ -81,9 +81,9 @@ function rowBodies(source: string): Map<string, string> {
 }
 const oneRow = (id: string, body: string) => rows(parseScript(`## <!-- id: ${id} -->${body}`))[0];
 
-// What History shows for a thread's state.
-export function stateText(t: Thread): string {
-  if (t.decision) return `${t.decision === 'accepted' ? 'Accepted' : 'Rejected'}${t.by ? ` by ${t.by}` : ''}`;
-  if (t.held) return `On hold by ${t.held.who}`;
-  return t.resolved ? `Resolved${t.by ? ` by ${t.by}` : ''}` : 'Open';
+// What History shows for a thread's state, and who, kept apart so Feedback's Cover hides only the name.
+export function stateParts(t: Thread): { what: string; by?: string } {
+  if (t.decision) return { what: t.decision === 'accepted' ? 'Accepted' : 'Rejected', by: t.by };
+  if (t.held) return { what: 'On hold', by: t.held.who };
+  return t.resolved ? { what: 'Resolved', by: t.by } : { what: 'Open' };
 }

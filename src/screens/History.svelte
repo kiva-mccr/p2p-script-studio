@@ -5,7 +5,7 @@
   import { changes, holdEnds, isOfficial, isSend, listVersions, nextName, officialName, seriesOf, summary, versionNames, type Version } from '../lib/history';
   import { threads, type Note, type Thread } from '../lib/comments';
   import { renderMath, toHtml } from '../lib/format';
-  import { cellKey, placeComments, stateText } from '../lib/historycomments';
+  import { cellKey, placeComments, stateParts } from '../lib/historycomments';
   import { parseScript, rows } from '../lib/script';
   import { at } from '../lib/when';
   import Attached from './Attached.svelte';
@@ -194,10 +194,9 @@
     return n ? `row ${n}, ${t.comment.on === 'timeline' ? 'on the timeline' : FIELD[t.comment.field ?? 'dialogue']}` : 'a removed row';
   }
   // An accepted suggestion says so in its change's header.
-  function heading(where: string, list: Thread[] | undefined): string {
-    const t = list?.find((t) => t.decision === 'accepted');
-    return t ? `${where} · ${t.comment.who}’s suggestion, accepted${t.by ? ` by ${t.by}` : ''}` : where;
-  }
+  const accepted = (list: Thread[] | undefined) => list?.find((t) => t.decision === 'accepted');
+  // A change's words, unless it is the app's own: a status, or what stands for nothing.
+  const theScripts = (change: { where: string }, text: string) => change.where !== 'Status' && !['(empty)', '(none)', '(new file)'].includes(text);
 </script>
 
 {#if error}
@@ -211,10 +210,10 @@
     {@const c = commentCount(i)}
     <button class="entry" class:official={n} class:picked={i === picked} aria-current={i === picked ? 'true' : undefined}
       onclick={() => (picked = i)}>
-      <span class="note">{#if n}<span class="tag version-tag {seriesOf(n)}">{n}</span>{version.note}{:else}{title(i)}{/if}</span>
-      <span class="meta">{version.kind === 'official' ? 'Published by ' : ''}{version.who} · {at(Date.parse(version.when))}{c ? ` · ${c === 1 ? '1 comment' : `${c} comments`}` : ''}</span>
-      {#if version.message}<span class="message">{version.message}</span>{/if}
-      {#each version.notes ?? [] as n (n.id)}<span class="message"><b>{n.by}:</b> {n.text}</span>{/each}
+      <span class="note">{#if n}<span class="tag version-tag {seriesOf(n)}">{n}</span>{@render note(version)}{:else}{title(i)}{/if}</span>
+      <span class="meta">{version.kind === 'official' ? 'Published by ' : ''}<span data-hide>{version.who}</span>{` · `}{at(Date.parse(version.when))}{c ? ` · ${c === 1 ? '1 comment' : `${c} comments`}` : ''}</span>
+      {#if version.message}<span class="message" data-hide>{version.message}</span>{/if}
+      {#each version.notes ?? [] as n (n.id)}<span class="message"><b><span data-hide>{n.by}</span>:</b> <span data-hide>{n.text}</span></span>{/each}
     </button>
   {/snippet}
   <div class="history">
@@ -266,13 +265,13 @@
         </form>
       {/if}
       <div class="top">
-        <h2>{title(picked)}</h2>
+        <h2>{#if names.get(selected.id)}{names.get(selected.id)} · {@render note(selected)}{:else}{title(picked)}{/if}</h2>
         {#if picked > 0}
           <button class="outline" onclick={() => onRestore(selected)}>Restore this version</button>
         {/if}
       </div>
       <p class="meta">
-        {selected.kind === 'official' ? 'Published by ' : ''}{selected.who} · {at(Date.parse(selected.when))}{before(picked)
+        {selected.kind === 'official' ? 'Published by ' : ''}<span data-hide>{selected.who}</span>{` · `}{at(Date.parse(selected.when))}{before(picked)
           ? ` · changes compared with ${comparedWith ?? 'the version before'}`
           : ''}
         {#if picked === 0}<br />This is the current version.{/if}
@@ -280,13 +279,13 @@
       {#snippet thread(t: Thread, inRest: boolean)}
         {@const suggestion = t.comment.kind === 'suggestion'}
         <div class="comment" role="group" aria-label="{suggestion ? 'Suggestion' : 'Comment'} by {t.comment.who}">
-          <div class="who"><span><strong>{t.comment.who}</strong> {suggestion ? 'suggested' : 'commented'}{inRest ? ` · ${cell(t)}` : ''} · {at(Date.parse(t.comment.when))}{t.comment.edited ? ' · edited' : ''}</span><span class="state">{stateText(t)}</span></div>
+          <div class="who"><span><strong data-hide>{t.comment.who}</strong> {suggestion ? 'suggested' : 'commented'}{inRest ? ` · ${cell(t)}` : ''} · {at(Date.parse(t.comment.when))}{t.comment.edited ? ' · edited' : ''}</span><span class="state">{@render state(t)}</span></div>
           {#if suggestion}
-            <p class="text">Replace “<span class="was">{t.comment.quote}</span>” with “<span class="is">{t.comment.replace}</span>”.</p>
-            {#if t.comment.text}<p class="text why"><b>Why:</b> {t.comment.text}</p>{/if}
+            <p class="text">Replace “<span class="was" data-hide>{t.comment.quote}</span>” with “<span class="is" data-hide>{t.comment.replace}</span>”.</p>
+            {#if t.comment.text}<p class="text why"><b>Why:</b> <span data-hide>{t.comment.text}</span></p>{/if}
           {:else}
-            {#if t.comment.quote}<blockquote>{t.comment.quote}</blockquote>{/if}
-            {#if t.comment.text}<p class="text">{t.comment.text}</p>{/if}
+            {#if t.comment.quote}<blockquote data-hide>{t.comment.quote}</blockquote>{/if}
+            {#if t.comment.text}<p class="text" data-hide>{t.comment.text}</p>{/if}
             {#if t.comment.files?.length}<Attached {dir} files={t.comment.files} />{/if}
           {/if}
           {#if t.replies.length}
@@ -297,8 +296,8 @@
             {#if shown}
               {#each t.replies as r (r.id)}
                 <div class="reply">
-                  <div class="who"><span><strong>{r.who}</strong> · {at(Date.parse(r.when))}{r.edited ? ' · edited' : ''}</span></div>
-                  {#if r.text}<p class="text">{r.text}</p>{/if}
+                  <div class="who"><span><strong data-hide>{r.who}</strong> · {at(Date.parse(r.when))}{r.edited ? ' · edited' : ''}</span></div>
+                  {#if r.text}<p class="text" data-hide>{r.text}</p>{/if}
                   {#if r.files?.length}<Attached {dir} files={r.files} />{/if}
                 </div>
               {/each}
@@ -309,10 +308,10 @@
       {/snippet}
       {#each selectedChanges as change, i (i)}
         <div class="change" data-tour="changes">
-          <div class="where">{heading(change.where, why.under.get(i))}</div>
+          <div class="where">{change.where}{#if accepted(why.under.get(i))}{@const t = accepted(why.under.get(i))!}{' · '}<span data-hide>{t.comment.who}</span>’s suggestion, accepted{#if t.by}{' by '}<span data-hide>{t.by}</span>{/if}{/if}</div>
           <div class="body">
-            {#if change.old}<p class="old"><span class="sign" aria-label="Removed">−</span><span class="struck" use:math={change.old}>{@html toHtml(change.old)}</span></p>{/if}
-            {#if change.new}<p class="new"><span class="sign" aria-label="Added">+</span><span use:math={change.new}>{@html toHtml(change.new)}</span></p>{/if}
+            {#if change.old}<p class="old"><span class="sign" aria-label="Removed">−</span><span class="struck" data-hide={theScripts(change, change.old) || undefined} use:math={change.old}>{@html toHtml(change.old)}</span></p>{/if}
+            {#if change.new}<p class="new"><span class="sign" aria-label="Added">+</span><span data-hide={theScripts(change, change.new) || undefined} use:math={change.new}>{@html toHtml(change.new)}</span></p>{/if}
           </div>
           {#if why.under.get(i)?.length}
             <div class="why">{#each why.under.get(i)! as t (t.comment.id)}{@render thread(t, false)}{/each}</div>
@@ -330,6 +329,12 @@
     </section>
   </div>
 {/if}
+
+
+<!-- A published version's name is the person's own ("Final for recording"); other notes are the app's ("Sent for review"). -->
+{#snippet note(v: Version)}{#if v.kind === 'official'}<span data-hide>{v.note}</span>{:else}{v.note}{/if}{/snippet}
+
+{#snippet state(t: Thread)}{@const p = stateParts(t)}{p.what}{#if p.by}{' by '}<span data-hide>{p.by}</span>{/if}{/snippet}
 
 <style>
   .history { display: flex; flex-wrap: wrap; gap: 40px; align-items: flex-start; }

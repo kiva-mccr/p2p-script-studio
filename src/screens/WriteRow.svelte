@@ -113,7 +113,7 @@
 <div class="row grid" style:grid-template-columns={columns} class:here class:lit class:stepped={flag && stepped} class:talking
   class:visited={by} class:visit-on={by && visit?.on === block.id} style:--down="{(said.length ? 34 : 0) + (by ? 58 : 0)}px" style:--notes-from={cast ? 4 : 3}
   data-row={block.id} data-block={i} data-visit={by ? block.id : undefined} data-tour="row">
-  <div class="num" data-keep>
+  <div class="num">
     {#if canPlay}
       {#if here && player.on}
         <button class="from" aria-label="Pause at row {n}" title="Pause" onclick={() => player.toggle()}>❚❚</button>
@@ -174,14 +174,14 @@
       <div>
         <button class="speaker" title="Who says this row: click to change" aria-label="Speaker, row {n}: {who}. Click to change" onclick={nextSpeaker}
           class:narrator={!block.speaker} class:gone={block.speaker && !cast.includes(block.speaker)}>
-          <span class="initial" aria-hidden="true" style:background={tint}>{who[0].toUpperCase()}</span><span class="name">{who}</span>
+          <span class="initial" aria-hidden="true" style:background={tint} data-hide={block.speaker ? true : undefined}>{who[0].toUpperCase()}</span><span class="name" data-hide={block.speaker ? true : undefined}>{who}</span>
         </button>
       </div>
     {/if}
   {/if}
   {#if folded.has('dialogue')}{@render dot(block.dialogue !== '', 'Dialogue')}{:else}
   <div>
-    {#if block.note}<p class="note">{block.note}</p>{/if}
+    {#if block.note}<p class="note" data-hide>{block.note}</p>{/if}
     {#if visit?.edits && was && was.dialogue !== block.dialogue}{@render before(was.dialogue, 'Dialogue', n)}{/if}
     <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
     <div class="dialogue" onclick={(e) => e.target instanceof HTMLTextAreaElement && clickQuote('dialogue', e.target)}><TextField bind:value={block.dialogue} oninput={onChange} label="Dialogue, row {n}" placeholder="What is said"
@@ -214,7 +214,7 @@
   {#if folded.has('files')}{@render dot(block.files.length > 0, 'Images & files')}{:else}
     <FilesCell files={block.files} {dir} {root} here={folderName} row={n ?? 0} {onNotice} {came}
       onChange={(files) => { block.files = files; onChange(); }}
-      onRemoved={(label, before) => onUndo({ what: `${label} removed from row ${n}.`, back: () => { block.files = before; onChange(); } })} />
+      onRemoved={(label, before) => onUndo({ name: label, what: ` removed from row ${n}.`, back: () => { block.files = before; onChange(); } })} />
   {/if}
   {#if flag}
     <div class="flag-note">
@@ -226,7 +226,7 @@
       {#if !flag.text}
         <button class="chip" onclick={() => onFlag(block.id, 'Needs a source')}>Needs a source</button>
       {/if}
-      <span class="by">{flag.who}</span>
+      <span class="by" data-hide>{flag.who}</span>
       {#if flagCount > 1}
         <span class="steps" role="group" aria-label="Flag {flagAt} of {flagCount}">
           <button data-step="-1" aria-label="Previous flag" title="Previous flag" onclick={() => onStepFlag(-1)}>‹</button>
@@ -246,7 +246,7 @@
 
 <!-- Show the edits (RV-15): the old words in their own line above the box, never inside it, so typing is as ever. -->
 {#snippet before(text: string, name: string, n: number | undefined)}
-  <p class="was" aria-label="{name} before, row {n}">{@html toHtml(text) || '(empty)'}</p>
+  <p class="was" aria-label="{name} before, row {n}">{#if text}<span data-hide>{@html toHtml(text)}</span>{:else}(empty){/if}</p>
 {/snippet}
 
 <!-- Before you started (AP-38, board 54): under a cell you changed, its words as they were when the script was opened,

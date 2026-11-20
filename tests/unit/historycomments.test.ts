@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import example from '../../docs/example/Episode 03 - How Photosynthesis Works/script.md?raw';
 import { threads, type Note } from '../../src/lib/comments';
 import type { Version } from '../../src/lib/history';
-import { placeComments, stateText } from '../../src/lib/historycomments';
+import { placeComments, stateParts } from '../../src/lib/historycomments';
 
 const version = (id: string, parent: string, when: string, text: string): Version => ({
   v: 1, id, parents: parent ? [parent] : [], who: 'Sam', when: `2026-11-09T${when}Z`, kind: 'edit', note: '', sha256: '', text,
@@ -104,8 +104,8 @@ describe('placeComments for the shown versions only (PF-4)', () => {
   });
 });
 
-describe('stateText', () => {
-  it('says where a comment or suggestion stands, and who decided', () => {
+describe('stateParts', () => {
+  it('says where a comment or suggestion stands, and who decided, apart (Cover hides the name)', () => {
     const list = threads([
       note('a', 'comment', '10:00:00'),
       note('b', 'comment', '10:01:00'),
@@ -113,6 +113,6 @@ describe('stateText', () => {
       note('r', 'resolve', '10:03:00', { about: 'b', who: 'Sam' }),
       note('k', 'accept', '10:04:00', { about: 's', who: 'Sam' }),
     ]);
-    expect(list.map(stateText)).toEqual(['Accepted by Sam', 'Resolved by Sam', 'Open']);
+    expect(list.map(stateParts)).toEqual([{ what: 'Accepted', by: 'Sam' }, { what: 'Resolved', by: 'Sam' }, { what: 'Open' }]);
   });
 });

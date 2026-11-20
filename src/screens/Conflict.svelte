@@ -9,6 +9,7 @@
     mineLabel,
     theirsLabel,
     combined,
+    name = '',
     onSave,
   }: {
     clashes: Clash[];
@@ -16,6 +17,7 @@
     mineLabel: string; // "Yours"
     theirsLabel: string; // "Sam's"
     combined: string; // "Also combined: row 2 (only Sam changed it)…", or empty
+    name?: string; // "Sam", or the copy's file name: covered in Feedback's picture wherever it shows
     onSave: (picks: Record<string, Side>) => void;
   } = $props();
 
@@ -26,7 +28,7 @@
 <div class="conflict">
   <div class="banner">
     <div>
-      <h1>{heading}</h1>
+      <h1>{@render named(heading)}</h1>
       <p>
         Rows only one of you changed are already combined. Pick whose version to keep for the
         {clashes.length === 1 ? 'one place' : `${clashes.length} places`} you both changed. Nothing is lost: both
@@ -45,16 +47,19 @@
         {#each [['mine', mineLabel, clash.mine], ['theirs', theirsLabel, clash.theirs]] as [side, label, text] (side)}
           <button class="side" class:on={picks[clash.key] === side} aria-pressed={picks[clash.key] === side}
             onclick={() => (picks[clash.key] = side as Side)}>
-            <span class="label">{label}<span class="tag">{picks[clash.key] === side ? 'Keeping this' : 'Keep this'}</span></span>
-            <span class="text">{text}</span>
+            <span class="label"><span>{@render named(label)}</span><span class="tag">{picks[clash.key] === side ? 'Keeping this' : 'Keep this'}</span></span>
+            <span class="text" data-hide>{text}</span>
           </button>
         {/each}
       </div>
     </section>
   {/each}
 
-  {#if combined}<p class="also">{combined}</p>{/if}
+  {#if combined}<p class="also">{@render named(combined)}</p>{/if}
 </div>
+
+
+{#snippet named(text: string)}{#if name}{#each text.split(name) as piece, i (i)}{#if i}<span data-hide>{name}</span>{/if}{piece}{/each}{:else}{text}{/if}{/snippet}
 
 <style>
   .conflict { display: flex; flex-direction: column; gap: 20px; }

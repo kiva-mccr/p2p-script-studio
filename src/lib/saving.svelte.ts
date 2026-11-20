@@ -39,7 +39,8 @@ const STALE_AFTER = 60 * 1000; // a change this much older than script.md was su
 export const SAVE_FAILED = "Couldn't save, trying again";
 export type Status = 'saved' | 'waiting' | 'saving' | 'failed' | 'conflict' | 'locked';
 
-export type Clash = { merged: Merged; heading: string; mineLabel: string; theirsLabel: string; combined: string; copy?: string };
+// `name`: the other person's or the copy's name, wherever it shows, covered in Feedback's picture.
+export type Clash = { merged: Merged; heading: string; mineLabel: string; theirsLabel: string; combined: string; copy?: string; name?: string };
 
 
 export class Saving {
@@ -154,7 +155,7 @@ export class Saving {
         const copy = await (await (await dir.getFileHandle(name)).getFile()).text();
         return this.#offer(merge(this.last?.text ?? text, text, copy), {
           heading: 'Two copies of this script were found', mineLabel: 'script.md', theirsLabel: name,
-          mineName: 'script.md', theirsName: name, copy: name,
+          mineName: 'script.md', theirsName: name, copy: name, name,
         });
       }
     } catch {
@@ -163,14 +164,14 @@ export class Saving {
   }
 
   // Shows a combination, or takes it straight away when nothing clashes.
-  async #offer(merged: Merged, o: { heading: string; mineLabel: string; theirsLabel: string; mineName: string; theirsName: string; copy?: string }) {
+  async #offer(merged: Merged, o: { heading: string; mineLabel: string; theirsLabel: string; mineName: string; theirsName: string; copy?: string; name?: string }) {
     if (!merged.clashes.length) return this.#take(merged.text({}), o.copy);
     const parts = [
       ...merged.onlyTheirs.map((n) => `row ${n} (only ${o.theirsName} changed it)`),
       ...merged.onlyMine.map((n) => `row ${n} (only ${o.mineName} changed it)`),
     ];
     this.clash = {
-      merged, heading: o.heading, mineLabel: o.mineLabel, theirsLabel: o.theirsLabel, copy: o.copy,
+      merged, heading: o.heading, mineLabel: o.mineLabel, theirsLabel: o.theirsLabel, copy: o.copy, name: o.name,
       combined: parts.length ? `Also combined: ${parts.join(', ')}.` : '',
     };
     this.status = 'conflict';
@@ -223,7 +224,7 @@ export class Saving {
       if (stale && merged.clashes.length) merged = { ...merged, clashes: [], text: () => merged.text(Object.fromEntries(merged.clashes.map((c) => [c.key, 'mine']))) };
       const who = fileName(change.who) === fileName(this.name()) ? 'You, earlier,' : change.who;
       if (merged.clashes.length) {
-        await this.#offer(merged, { heading: `${who} and you both changed the same place`, mineLabel: 'Yours', theirsLabel: this.#label(change.who), mineName: 'you', theirsName: change.who });
+        await this.#offer(merged, { heading: `${who} and you both changed the same place`, mineLabel: 'Yours', theirsLabel: this.#label(change.who), mineName: 'you', theirsName: change.who, name: change.who });
       } else this.#show(merged.text({}));
     }
     if (folded) setTimeout(() => this.folding === folded && (this.folding = ''), 800); // long enough to be seen

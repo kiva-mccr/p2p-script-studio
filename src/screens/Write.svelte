@@ -447,7 +447,7 @@
     <Find bind:this={finder} {script} {table} bind:titles onUnfold={unfold} {onChange} {onDeleted} onClose={() => (finding = false)} />
   </div>
 {/if}
-{#if script.intro}<p class="note">{script.intro}</p>{/if}
+{#if script.intro}<p class="note" data-hide>{script.intro}</p>{/if}
 {#if flagIds.length}
   <div class="flags">
     <span role="group" aria-label="Flags">
@@ -469,7 +469,7 @@
     {#if block.type === 'section'}
       <div class="section" data-block={i}>
         <span class="title-box" class:found={titles.has(i)}>
-          {#if titles.has(i)}<span class="title-marks" aria-hidden="true">{#each titlePieces(block.title, titles.get(i)!) as p, k (k)}{#if p.mark}<mark class:on={p.on}>{p.text}</mark>{:else}{p.text}{/if}{/each}</span>{/if}
+          {#if titles.has(i)}<span class="title-marks" aria-hidden="true" data-hide>{#each titlePieces(block.title, titles.get(i)!) as p, k (k)}{#if p.mark}<mark class:on={p.on}>{p.text}</mark>{:else}{p.text}{/if}{/each}</span>{/if}
           <input class="section-title" bind:value={block.title} oninput={() => onChange()} onblur={() => left(block)}
             use:focusIf={fresh === block} placeholder="New section" aria-label="Section title" />
         </span>
@@ -510,7 +510,7 @@
 {#snippet removedRows(after: string)}
   {#each removedAfter.get(after) ?? [] as row (row)}
     {#if row.type === 'row'}
-      <p class="removed"><span class="tag">Removed</span><span class="gone"><s>{plain(row.dialogue || row.onScreen || row.files.join(', ')) || '(empty row)'}</s> · {visit?.by.get(row.id)?.who}</span></p>
+      <p class="removed"><span class="tag">Removed</span><span class="gone"><s>{#if plain(row.dialogue || row.onScreen || row.files.join(', '))}<span data-hide>{plain(row.dialogue || row.onScreen || row.files.join(', '))}</span>{:else}(empty row){/if}</s> · <span data-hide>{visit?.by.get(row.id)?.who}</span></span></p>
     {/if}
   {/each}
 {/snippet}

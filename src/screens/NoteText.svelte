@@ -14,7 +14,7 @@
   }
 </script>
 
-<div class="shown" use:math={lines}>
+<div class="shown" data-hide use:math={lines}>
   {#each lines as l, i (i)}
     {#if l.tick !== undefined}
       <label class="tick" class:done={l.tick} class:still={!onflip}>

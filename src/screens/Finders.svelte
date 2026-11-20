@@ -42,7 +42,7 @@
 
 <span class="finders">
   {#each who as name (name)}
-    <span class="person">{name}<button aria-label={`Take ${name} off ${what}`} onclick={() => onSet(who.filter((w) => w !== name))}>×</button></span>
+    <span class="person"><span data-hide>{name}</span><button aria-label={`Take ${name} off ${what}`} onclick={() => onSet(who.filter((w) => w !== name))}>×</button></span>
   {/each}
   {#if !open}<button class="add" onclick={start}>+ Who</button>{/if}
 </span>
@@ -52,12 +52,12 @@
     <form onsubmit={addTyped}>
       <!-- svelte-ignore a11y_autofocus -->
       <label>Who finds or films it <input bind:value={query} placeholder="Find or type a name" maxlength="80" autofocus /></label>
-      {#if typed && !known}<button class="primary" type="submit">Add "{typed}"</button>{/if}
+      {#if typed && !known}<button class="primary" type="submit"><span>Add "<span data-hide>{typed}</span>"</span></button>{/if}
       <button class="outline" type="button" onclick={() => (open = false)}>Cancel</button>
     </form>
     <ul aria-label="People in the folder">
       {#each pickable as person (person.id)}
-        <li><button onclick={() => add(person.name)}><b>{person.name}</b><span class="role">{person.role}</span></button></li>
+        <li><button onclick={() => add(person.name)}><b data-hide>{person.name}</b><span class="role" data-hide>{person.role}</span></button></li>
       {:else}
         <li class="none">{failed ? "The folder's people couldn't be read. Type a name instead." : query.trim() ? `Nobody in the folder matches "${query.trim()}".` : everyone.length ? 'Everyone in the folder is on it.' : 'Nobody in the folder yet. Type a name, or add people in Credits.'}</li>
       {/each}

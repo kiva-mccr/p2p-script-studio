@@ -501,7 +501,7 @@
       <div class="scroll" id={tracksId} use:fit use:inView use:tracksBox>
         <div class="tracks" style:width="{zoom * 100}%">
           <!-- svelte-ignore a11y_no_static_element_interactions -->
-          <div class="ruler" class:grab={!!now} aria-hidden="true" data-keep onpointerdown={grab} onpointermove={move} onpointerup={drop} onpointercancel={drop}>
+          <div class="ruler" class:grab={!!now} aria-hidden="true" onpointerdown={grab} onpointermove={move} onpointerup={drop} onpointercancel={drop}>
             {#each ticks as t (t)}<span style:left="{pct(t)}%">{clock(t)}</span>{/each}
           </div>
           <div class="lane">
@@ -588,7 +588,7 @@
             {#each files as f (f.path)}
               {@const on = !c.without.includes(f.path)}
               <button class="pick" class:off={!on} aria-pressed={on} onclick={() => toggle(selRow, f.path)}>
-                <span class="mini">{@render picture(f.path)}</span>{on ? '✓' : '○'} {f.path.split('/').at(-1)}{#if f.timelineOnly}<span class="muted"> · timeline only</span>{/if}
+                <span class="mini">{@render picture(f.path)}</span><span>{on ? '✓' : '○'} <span data-hide>{f.path.split('/').at(-1)}</span></span>{#if f.timelineOnly}<span class="muted"> · timeline only</span>{/if}
               </button>
             {/each}
             <button class="add" onclick={() => picker?.click()}>+ Add a picture</button>
@@ -614,7 +614,7 @@
                   <button class="word" class:cut={cuts.includes(i)} class:quiet={quiet === i} onmouseleave={() => (quiet = -1)}
                     aria-pressed={cuts.includes(i)} disabled={i === 0}
                     title={i === 0 ? 'Picture 1 starts here' : cuts.includes(i) ? `Picture ${n + 1} starts just before “${w}”: click to take the cut off` : `Cut just before “${w}”`}
-                    onclick={() => { quiet = i; toggleCut(selRow, i, block.picks.length - 1); }}>{w}</button>
+                    onclick={() => { quiet = i; toggleCut(selRow, i, block.picks.length - 1); }}><span data-hide>{w}</span></button>
                 {/each}
               </span>
               <span class="help">{block.picks.length} pictures: up to {block.picks.length - 1} cuts. Each starts the next picture just before its word; without them they share the time equally.</span>
@@ -645,7 +645,7 @@
   {#if isVideo(path) && stills[path]}
     <span class="still"><img src={stills[path]} alt="" /><span class="badge" aria-hidden="true">▶</span></span>
   {:else if isVideo(path)}
-    <span class="vid" aria-hidden="true">▶ {path.split('/').at(-1)}</span>
+    <span class="vid" aria-hidden="true"><span>▶ <span data-hide>{path.split('/').at(-1)}</span></span></span>
   {:else if urls[path]}
     <img src={urls[path]} alt="" />
   {:else}

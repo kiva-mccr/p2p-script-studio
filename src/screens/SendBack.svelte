@@ -61,7 +61,7 @@
 <p class="lead">Notes for the writer</p>
 {#each others as n (n.id)}
   <div class="note" role="note" aria-label="{n.by}'s note">
-    <p class="by"><b>{n.by}</b> · {ago(Date.parse(n.made))}</p>
+    <p class="by"><b data-hide>{n.by}</b> · {ago(Date.parse(n.made))}</p>
     <NoteText text={n.text} />
   </div>
 {/each}

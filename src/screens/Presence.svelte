@@ -37,7 +37,7 @@
       <div class="list" role="region" aria-label="Who has been here">
         <p class="head">Who has been here</p>
         {#each seen as person (person.who)}
-          <p class="person"><span class="mark {person.state}" aria-hidden="true"></span><b>{person.who}</b><span class="when">{seenWhen(person, now)}</span></p>
+          <p class="person"><span class="mark {person.state}" aria-hidden="true"></span><b data-hide>{person.who}</b><span class="when">{seenWhen(person, now)}</span></p>
         {/each}
         <p class="foot">Anyone who opened this script in the last 30 days.</p>
       </div>

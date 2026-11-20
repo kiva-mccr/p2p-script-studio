@@ -12,8 +12,8 @@ offers its pictures, Sequence or Collage, + Add a picture (only for the timeline
 ## Rules and pitfalls
 
 - Feedback's Cover (lib/feedback.md): the section titles, a block's On screen words, a placeholder's label and the hover
-  text are buttons' words but the script's, so they sit in `data-hide`; the ruler is `data-keep` (its times name nobody,
-  issue #334: it was the other way round).
+  text, the cut words and the picked pictures' names are the script's, so they sit in `data-hide`; the ruler's times
+  are the app's and show (issue #334).
 - A row with no picture and no On screen words shows a small icon (a picture with a line through it), centred in its
   block (#264); its words "No picture" are in the block's hover text and name instead. The icon is drawn in `currentColor`.
 - The hover text (UX-8) lines up with the block's right edge (`.tip.end`) when it would run past the timeline's box or

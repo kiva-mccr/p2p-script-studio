@@ -263,11 +263,11 @@
     <div class="text" class:mirror style:font-size="{size}px">
       {#each script.blocks as block, i (block)}
         {#if block.type === 'section'}
-          <p class="section">{block.title}</p>
+          <p class="section" data-hide>{block.title}</p>
         {:else if byBlock.has(i)}
-          <p class="line" class:past={byBlock.get(i)!.start + byBlock.get(i)!.words <= read}
+          <p class="line" data-hide class:past={byBlock.get(i)!.start + byBlock.get(i)!.words <= read}
             bind:this={lineEls[i]} use:wordSpans={byBlock.get(i)!}>{@html toHtml(block.dialogue)}</p>
-          {#if cues && block.onScreen.trim()}<p class="cue">[ {plain(block.onScreen)} ]</p>{/if}
+          {#if cues && block.onScreen.trim()}<p class="cue">[ <span data-hide>{plain(block.onScreen)}</span> ]</p>{/if}
         {/if}
       {/each}
     </div>

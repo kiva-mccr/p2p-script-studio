@@ -71,12 +71,12 @@
         <span class="num">{r + 1}</span>
         {#if i >= 0}
           {@const seconds = lined[i].samples.length / rate}
-          <button class="row" class:silent={lined[i].silent} onclick={() => from(i)}><span data-hide>{row.dialogue.trim() || '(no dialogue)'}</span></button>
+          <button class="row" class:silent={lined[i].silent} onclick={() => from(i)}>{#if row.dialogue.trim()}<span data-hide>{row.dialogue.trim()}</span>{:else}(no dialogue){/if}</button>
           <span class="missing">{lined[i].silent ? 'no take yet, silence' : ''}</span>
           {@render wave(waves[i], i === lit ? (now - starts[i]) / seconds : null)}
           <span>{clock(seconds)}</span>
         {:else}
-          <span class="left">{row.dialogue.trim() || '(no dialogue)'}</span>
+          <span class="left">{#if row.dialogue.trim()}<span data-hide>{row.dialogue.trim()}</span>{:else}(no dialogue){/if}</span>
           <span class="missing">no take yet, left out</span>
           {@render wave('', null)}
           <span class="left">–</span>

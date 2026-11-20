@@ -515,6 +515,11 @@ and suggestions, keeps every version, and exports them for production.
 - [x] **AP-64** The tour's Feedback step lights the outlined row (issue #328, board 92 agreed by the user): the row with
   the orange outline is lit instead of dimmed, and the tour's card always sits on top of the outline, below or above
   the row, clear of Feedback's strip. Done 2026-11-19.
+- [x] **AP-65** Feedback's Cover rewritten as an allow-list (the user, 2026-11-20: spot fixes weren't working): it covers
+  only what is marked as the script's or a person's (its words, comments and notes, file names, titles, names and
+  roles), typed text and pictures; everything the app itself says shows. A test opens every screen, panel and menu of
+  the example in feedback mode and fails if any of the example's words show or any of the app's own are covered.
+  Done 2026-11-20.
 - [x] **AP-60** Versions named by what made them (issue #240, board 87 agreed by the user): official versions are r1,
   r2 … (sent for review), w1, w2 … (published by hand in History while writing) and ap1, ap2 … (approved), each
   letter counted on its own; r blue, w amber, ap green. Approve now makes a version too, always (even with nothing
