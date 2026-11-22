@@ -662,6 +662,14 @@ and suggestions, keeps every version, and exports them for production.
   seen on the row's hover like the row tools, picks a .wav, .mp3, .m4a or .webm as the row's take. It is copied into
   the script's takes like a recording, gets the same clean-up and cut-on-a-word timing, and its name shows on the take
   ("from narration-row4.mp3"). Undo keeps the old take, as for a recording; a file that isn't sound says so in the page.
+- [x] **AU-11** Even out voice-over loudness (asked by the user, 2026-11-22: takes started loud and tapered off).
+  Agreed on board 97, with the words under the level taken off ("get rid of too loud too quiet sentences"): takes
+  record with Chrome's auto gain and echo cancellation off (auto gain turned the voice down after the first loud
+  words); "Make every take equally loud" becomes "Even out the loudness": every take at -16 LUFS (BS.1770, peaks under
+  -1 dBFS) and a slow ride inside each take (a gain every half second from the speech within a second of it, at most
+  6 dB, held through pauses), kept in the take's JSON beside the crop, the recording kept whole; takes from before
+  are measured again once when the script opens. A live level beside "● Recording": grey too quiet, green good, red
+  too loud, a tick holding the loudest moment for a second.
 
 - [x] **RV-12** Use an attached file in the script (suggested while drawing RV-11; agreed on board 49 with the
   user's two changes: every attached file, not only images, and only in Write). In Write's Comments tab, each file on

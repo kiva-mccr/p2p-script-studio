@@ -25,6 +25,13 @@ describe('openMic', () => {
     expect(get.mock.calls[1][0].audio.noiseSuppression).toBe(false);
   });
 
+  it('records with auto gain and echo cancellation off, so takes no longer fade (AU-11)', async () => {
+    const get = vi.fn().mockResolvedValue(stream);
+    await openMic('', get);
+    await openMic('yeti', get);
+    for (const [c] of get.mock.calls) expect(c.audio).toMatchObject({ autoGainControl: false, echoCancellation: false });
+  });
+
   it('falls back to the default when the picked mic is unplugged, and says so', async () => {
     for (const name of ['OverconstrainedError', 'NotFoundError']) {
       const get = vi.fn().mockRejectedValueOnce(err(name)).mockResolvedValue(stream);

@@ -8,7 +8,7 @@ const made = new Map<string, Promise<number[] | null>>();
 
 // Up to `bars` peaks from 0 to 1, or null when the take can't be read (still syncing).
 export function waveform(dir: FileSystemDirectoryHandle, id: string, take: Take, bars = 200): Promise<number[] | null> {
-  const key = `${id}:${take.at}:${take.from ?? ''}:${take.to ?? ''}`;
+  const key = `${id}:${take.at}:${take.from ?? ''}:${take.to ?? ''}:${take.ride?.length ?? ''}`;
   let peaks = made.get(key);
   if (!peaks) {
     peaks = takeFile(dir, id)

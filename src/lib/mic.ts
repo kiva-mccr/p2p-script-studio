@@ -44,8 +44,10 @@ export function micsFrom(devices: Device[]): Mic[] {
 // The stream from the chosen mic. If it is unplugged (or gone), the default records instead and `fellBack` says so,
 // so the take is never lost. Any other error (blocked, no mic at all) is thrown as it is.
 // noise: the browser's own noise reduction, in Edge and Chrome alike (Settings > Voice-over, AU-4).
+// Auto gain and echo cancellation are off (AU-11): auto gain turned takes down after the first loud words, so they
+// started loud and faded; echo cancellation is for calls. The app evens out the loudness itself.
 export async function openMic(id: string, get: GetStream, noise = true): Promise<{ stream: MediaStream; fellBack: boolean }> {
-  const AUDIO = { echoCancellation: true, noiseSuppression: noise };
+  const AUDIO = { echoCancellation: false, autoGainControl: false, noiseSuppression: noise };
   if (!id) return { stream: await get({ audio: AUDIO }), fellBack: false };
   try {
     return { stream: await get({ audio: { ...AUDIO, deviceId: { exact: id } } }), fellBack: false };

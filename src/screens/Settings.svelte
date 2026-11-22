@@ -118,9 +118,8 @@
       <label class="check"><input type="checkbox" checked={cleaning.noise} onchange={(e) => setCleaning({ noise: e.currentTarget.checked })} />
         <span>Reduce background noise<small class="help">Edge's and Chrome's own noise reduction. A good mic in a quiet room may sound better without it.</small></span></label>
       <label class="check"><input type="checkbox" checked={cleaning.level} onchange={(e) => setCleaning({ level: e.currentTarget.checked })} />
-        <span>Make every take equally loud<small class="help">So one row isn't louder than the next when the script plays or is joined into one file.</small></span></label>
-      <p class="hint help">The recording itself is kept whole, so turning these off later brings it all back. Takes recorded before
-        these switches play as they are.</p>
+        <span>Even out the loudness<small class="help">Every take as loud as the next, and the end of a take as loud as its start. Pauses aren't raised.</small></span></label>
+      <p class="hint help">The recording itself is kept whole, so turning these off later brings it all back.</p>
       <h3 class="next">Read time</h3>
       <label for="speed">Speaking speed</label>
       <div class="speed">

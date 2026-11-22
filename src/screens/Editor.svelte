@@ -277,6 +277,7 @@
       if (file.dir) notes = await listNotes(file.dir).catch(() => []);
       await readCounts();
       if (file.dir) await voice.load(file.dir);
+      if (file.dir) void voice.levelAll(file.dir); // takes from before AU-11 even out too
       takesAt = Date.now();
       // Half a tick of slack: roundAt is set a moment after its tick, so `>= ALONE_EVERY` alone would skip one more tick.
       checker = setInterval(() => (file.editors.length || Date.now() - roundAt >= ALONE_EVERY - CHECK_EVERY / 2) && checkOutside(), CHECK_EVERY);
@@ -559,6 +560,7 @@
     takesDue = false;
     takesAt = Date.now();
     await voice.load(dir);
+    void voice.levelAll(dir);
   }
 
   // A row or section was deleted in Write (or a paste made rows): the blocks as they were, for Undo.
