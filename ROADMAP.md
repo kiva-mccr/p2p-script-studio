@@ -662,6 +662,10 @@ and suggestions, keeps every version, and exports them for production.
   seen on the row's hover like the row tools, picks a .wav, .mp3, .m4a or .webm as the row's take. It is copied into
   the script's takes like a recording, gets the same clean-up and cut-on-a-word timing, and its name shows on the take
   ("from narration-row4.mp3"). Undo keeps the old take, as for a recording; a file that isn't sound says so in the page.
+- [ ] **AU-12** Soften mouth clicks and turn breaths down in takes (asked by the user, 2026-11-22; board 96, waiting
+  for the user). Two switches in Settings > Voice-over, both on: clicks found as spikes a few ms long and filled in from
+  the sound either side (de-click), breaths in the gaps between phrases played about 12 dB quieter, never cut. Like the
+  crop, applied when played, joined or exported; the webm stays whole, so old takes get it too. No model, no download.
 
 - [x] **RV-12** Use an attached file in the script (suggested while drawing RV-11; agreed on board 49 with the
   user's two changes: every attached file, not only images, and only in Write). In Write's Comments tab, each file on
