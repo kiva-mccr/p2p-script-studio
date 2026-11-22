@@ -1,7 +1,7 @@
 // Voice-over per line (AU-1, mock-up 13): one take per row, recorded in the browser and kept in the script's folder
 // as voice/row-<id>.webm, beside voice/row-<id>.json (who, when, how long). By the row's id, so moving a row keeps
 // its take. OneDrive shares them like any asset; nothing is uploaded anywhere else.
-import { cleaning, measure, span, type Measure } from './cleanup.svelte';
+import { cleaning, measure, rideAt, RIDE, span, type Measure } from './cleanup.svelte';
 import { chosenMic, openMic } from './mic';
 import { countWords } from './readtime.svelte';
 import { decoder } from './voiceexport';
@@ -19,8 +19,9 @@ import { hear } from './hear';
 // file: the sound file it came from, when it was brought in rather than recorded (#228).
 export type Take = { by: string; at: number; seconds: number; text: string; words?: [string, number][]; file?: string } & Partial<Measure>;
 export type Held = { take: Take; sound: Blob }; // a take kept in memory for Undo (UX-1, UX-2)
-// fellBack: the mic picked in Settings wasn't there, so the default is recording (AU-3).
-export type Recording = { stop: () => Promise<Blob>; fellBack?: boolean };
+// fellBack: the mic picked in Settings wasn't there, so the default is recording (AU-3). level: how loud the mic is
+// right now, in dBFS (its loudest sample of the last moment), for the live level (AU-11).
+export type Recording = { stop: () => Promise<Blob>; fellBack?: boolean; level?: () => number };
 
 const FOLDER = 'voice';
 const CUE = 1000; // ms the ring takes to fill before the cue to read
@@ -45,11 +46,24 @@ export async function record(): Promise<Recording> {
   const parts: Blob[] = [];
   recorder.ondataavailable = (e) => e.data.size && parts.push(e.data);
   recorder.start();
+  // The live level (AU-11): what the mic hears, before any clean-up.
+  const meter = new AudioContext();
+  const analyser = meter.createAnalyser();
+  analyser.fftSize = 2048;
+  meter.createMediaStreamSource(stream).connect(analyser);
+  const samples = new Float32Array(analyser.fftSize);
   return {
     fellBack,
+    level: () => {
+      analyser.getFloatTimeDomainData(samples);
+      let top = 0;
+      for (const v of samples) top = Math.max(top, Math.abs(v));
+      return top > 0 ? 20 * Math.log10(top) : -Infinity;
+    },
     stop: () =>
       new Promise((resolve) => {
         recorder.onstop = () => {
+          meter.close().catch(() => {});
           stream.getTracks().forEach((t) => t.stop());
           resolve(new Blob(parts, { type: recorder.mimeType || 'audio/webm' }));
         };
@@ -87,23 +101,28 @@ export function rowLength(takes: Record<string, Take>, wpm: number) {
   };
 }
 
-// A take's sound, ready to play its cropped part at its gain (as set in Settings). Through Web Audio, so the crop is
-// exact and the gain can go above 1. Pause and carry on by suspending its own context.
+// A take's sound, ready to play its cropped part at its gain and ride (as set in Settings). Through Web Audio, so the
+// crop is exact and the gain can go above 1 and follow the ride. Pause and carry on by suspending its own context.
 export class Sound {
   onended: (() => void) | null = null;
   duration: number; // seconds it plays
   #ctx: AudioContext;
   #source: AudioBufferSourceNode;
   #from: number;
+  #gain: number;
+  #ride: number[] | null;
+  #level: GainNode;
   #started = false;
   #at = 0; // the context's time when it started
 
   private constructor(ctx: AudioContext, buffer: AudioBuffer, take: Take) {
-    const { from, to, gain } = span(take);
+    const { from, to, gain, ride } = span(take);
     this.#ctx = ctx;
     this.#from = from;
+    this.#gain = gain;
+    this.#ride = ride;
     this.duration = Math.max(0, Math.min(buffer.duration, to ?? buffer.duration) - from);
-    const level = ctx.createGain();
+    const level = (this.#level = ctx.createGain());
     level.gain.value = gain;
     level.connect(ctx.destination);
     this.#source = ctx.createBufferSource();
@@ -133,11 +152,26 @@ export class Sound {
       this.#started = true;
       this.#at = this.#ctx.currentTime - skip;
       this.#source.start(0, this.#from + skip, this.duration - skip);
+      this.#follow(skip);
     }
     await this.#ctx.resume();
   }
 
   pause() { this.#ctx.suspend(); }
+
+  // The ride (AU-11), as points on the gain from `skip` seconds into the take: the context's clock stops while paused,
+  // so they stay in step with the sound.
+  #follow(skip: number) {
+    const ride = this.#ride;
+    if (!ride) return;
+    const gain = this.#level.gain;
+    const now = this.#ctx.currentTime;
+    gain.setValueAtTime(this.#gain * rideAt(ride, this.#from + skip), now);
+    for (let i = 0; i < ride.length; i++) {
+      const t = (i + 0.5) * RIDE - this.#from; // seconds into the take
+      if (t > skip && t < this.duration) gain.linearRampToValueAtTime(this.#gain * ride[i], now + t - skip);
+    }
+  }
 
   close() {
     this.onended = null;
@@ -200,6 +234,8 @@ function readTake(text: string): Take | null {
   if (typeof take.seconds !== 'number') return null;
   const found: Take = { by: String(take.by ?? ''), at: Number(take.at) || 0, seconds: take.seconds, text: String(take.text ?? '') };
   if ([take.from, take.to, take.gain].every((n) => typeof n === 'number')) Object.assign(found, { from: take.from, to: take.to, gain: take.gain });
+  // AU-11: the ride, kept only if every step is a number.
+  if (found.gain && Array.isArray(take.ride) && take.ride.length && take.ride.every((n: unknown) => typeof n === 'number' && n > 0)) found.ride = take.ride;
   // SB-8: the heard words, kept only if every one is a word and a time.
   if (Array.isArray(take.words) && take.words.every((w: unknown) => Array.isArray(w) && typeof w[0] === 'string' && typeof w[1] === 'number'))
     found.words = take.words;
@@ -234,6 +270,39 @@ export class VoiceOver {
   async load(dir: FileSystemDirectoryHandle) {
     const next = await readTakes(dir);
     if (JSON.stringify(next) !== JSON.stringify(this.takes)) this.takes = next;
+  }
+
+  // How loud the mic is right now while recording, in dBFS (AU-11); null when not known (or not recording).
+  level(): number | null {
+    return this.#take?.level?.() ?? null;
+  }
+
+  // Takes measured before AU-11 (no ride) are measured again, one at a time, and their notes kept, so they even out
+  // too. Once per take a visit: one that can't be read or has nothing heard isn't tried again until the next.
+  #levelled = new Set<string>();
+  #levelling = false;
+  async levelAll(dir: FileSystemDirectoryHandle) {
+    if (this.#levelling) return;
+    this.#levelling = true;
+    try {
+      for (;;) {
+        const id = Object.keys(this.takes).find((id) => !this.takes[id].ride && !this.#levelled.has(id) && id !== this.recording);
+        if (!id) return;
+        this.#levelled.add(id);
+        const take = this.takes[id];
+        const found = await measureTake(await takeFile(dir, id).catch(() => new Blob()));
+        const now = this.takes[id];
+        if (!found || !now || now.at !== take.at) continue;
+        const next = { ...now, ...found };
+        await write(await subdir(dir, FOLDER), `row-${id}.json`, JSON.stringify(next));
+        await announce(dir, 'take');
+        this.takes = { ...this.takes, [id]: next };
+      }
+    } catch {
+      // The folder can't be written (read-only, or access lost): left for the next visit.
+    } finally {
+      this.#levelling = false;
+    }
   }
 
   // True when the mic picked in Settings wasn't there and the default is recording instead.

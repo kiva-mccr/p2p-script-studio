@@ -256,10 +256,13 @@ Status: a first working version. What it does today:
   is marked "(default)" and is used until you pick another. If the picked one is unplugged, the take is recorded with
   the default microphone and the page says so.
   Clicking the mic records at once: a red ring fills round it for a second, then it turns into ■, your cue to read
-  (Esc while the ring fills throws the new take away). The silence before your first word and after your last, and
-  the click of the mouse, are cropped off; hover a take's ▶ to see how much. Settings > Voice-over switches the
-  clean-up: crop the silence, the browser's noise reduction, and making every take equally loud. The recording itself is
-  kept whole, so turning crop or loudness off brings it back.
+  (Esc while the ring fills throws the new take away). While you read, a small bar beside "● Recording" shows the
+  mic's level: grey too quiet, green good, red too loud. The mic records without the browser's automatic gain, which
+  made takes start loud and fade. The silence before your first word and after your last, and the click of the
+  mouse, are cropped off; hover a take's ▶ to see how much. Settings > Voice-over switches the clean-up: crop the
+  silence, the browser's noise reduction, and evening out the loudness (every take at -16 LUFS, and the end of a take
+  as loud as its start, moved at most 2x and slowly, pauses never raised; takes from before are measured again when the
+  script opens). The recording itself is kept whole, so turning crop or loudness off brings it back.
 - **Play the script:** once a row has a take, ▶ Play in the top bar goes through the script line by line and plays
   each take in time; the line being spoken is tinted and the page follows it, until you scroll yourself: then a
   "↓ Back to row 6" button under the top bar takes you back and follows again. A row with no take waits in silence
