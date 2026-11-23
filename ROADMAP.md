@@ -1200,10 +1200,20 @@ and suggestions, keeps every version, and exports them for production.
   shows as editing up to a minute longer, and the keeper hands over a minute later. Built 2026-11-15 as specified
   (`HERE_EVERY`, `FRESH_FOR`); measured in perf/pf-18 of the project files.
 - [ ] **AP-68** A mobile version (asked by the user, 2026-11-23): the app on phones (and tablets), not only Chrome
-  and Edge on desktop. Not designed yet; mock-ups and what it should do on a phone (read and comment, or write too)
-  come first. Open questions: phone browsers can't open a shared folder (File System Access API is desktop only),
-  so it needs another way to reach the scripts; it changes the settled "Chrome and Edge on desktop only" (Decisions),
-  so the user decides that before it's built. Follow my voice on a Pixel 8 (issue #24) is a related shelved bug.
+  and Edge on desktop. Phone browsers can't open a shared folder (File System Access API is desktop only), so it needs
+  another way to reach the scripts. Approach discussed with the user (2026-11-23):
+  - An installable PWA (add to home screen), not an App Store app: no Apple developer account or review.
+  - Storage: the browser's private storage (OPFS) on the phone, plus pickers that connect to cloud services:
+    GitHub (the best fit: scripts are Markdown and versions map to commits), Google Drive (its Picker with the
+    `drive.file` scope, so the app sees only files it's given) and OneDrive (Microsoft Graph's file picker, which
+    needs an app registration).
+  - Network drives only over WebDAV or through a helper server: browsers can't reach SMB shares.
+  Changes to what's settled, for the user to decide before it's built: the cloud connections mean a sign-in and the
+  scripts going through those services, against "no sign-in" and the local-only folder (Guardrails, Decisions), and
+  "Chrome and Edge on desktop only" (Decisions); the policy (SE-1) and For IT (SE-8) gain their addresses. Pitfall:
+  iPhone (Safari) may clear a PWA's storage after weeks without use, so work kept only in OPFS can be lost there.
+  Mock-ups and what it does on a phone (read and comment, or write too) come first. Follow my voice on a Pixel 8
+  (issue #24) is a related shelved bug.
 - [ ] **AP-69** A wiki feature (asked by the user, 2026-11-23): not described yet. What it holds (for example the team's
   shared notes, style guide and how-tos, beside the scripts) and where it lives (the shared folder, so nothing goes in
   this public repo) are to be agreed with the user, then a mock-up, before it's built.
