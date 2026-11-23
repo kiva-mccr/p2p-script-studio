@@ -1199,6 +1199,11 @@ and suggestions, keeps every version, and exports them for production.
   and a removal), with "gone" after 3 minutes instead of 2. Half the heartbeat traffic. Trade-off: a closed laptop
   shows as editing up to a minute longer, and the keeper hands over a minute later. Built 2026-11-15 as specified
   (`HERE_EVERY`, `FRESH_FOR`); measured in perf/pf-18 of the project files.
+- [ ] **AP-68** A mobile version (asked by the user, 2026-11-23): the app on phones (and tablets), not only Chrome
+  and Edge on desktop. Not designed yet; mock-ups and what it should do on a phone (read and comment, or write too)
+  come first. Open questions: phone browsers can't open a shared folder (File System Access API is desktop only),
+  so it needs another way to reach the scripts; it changes the settled "Chrome and Edge on desktop only" (Decisions),
+  so the user decides that before it's built. Follow my voice on a Pixel 8 (issue #24) is a related shelved bug.
 
 ### UI audit (asked by the user, 2026-11-15)
 
