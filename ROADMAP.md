@@ -671,8 +671,8 @@ and suggestions, keeps every version, and exports them for production.
   are measured again once when the script opens. A live level beside "● Recording": grey too quiet, green good, red
   too loud, a tick holding the loudest moment for a second.
 - [ ] **AU-12** Soften mouth clicks and turn breaths down in takes (asked by the user, 2026-11-22; board 96). Shelved
-  by the user (2026-11-25): no real takes to tune it on, and worried it could harm the sound. Two switches in Settings
-  > Voice-over, both on: clicks found as spikes a few ms long and filled in from the sound either side (de-click),
+  by the user (2026-11-25): no real takes to tune it on, and worried it could harm the sound. Two switches in
+  Settings > Voice-over, both on: clicks found as spikes a few ms long and filled in from the sound either side (de-click),
   breaths in the gaps between phrases played about 12 dB quieter, never cut. Like the crop, applied when played,
   joined or exported; the webm stays whole, so old takes get it too. No model, no download.
 
