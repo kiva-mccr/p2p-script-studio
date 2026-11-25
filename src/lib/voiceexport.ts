@@ -1,6 +1,6 @@
 // Voice-over out of the app (asked by the user, for their work): every row's take in row order, joined in one WAV
 // file (the user's choice over a file per row). WAV because video editors don't take the browser's webm recordings.
-import { span } from './cleanup.svelte';
+import { rideAt, span } from './cleanup.svelte';
 import type { Script } from './script';
 import { subdir } from './dirs';
 
@@ -38,11 +38,13 @@ export async function readTake(voice: FileSystemDirectoryHandle, id: string) {
   }
 }
 
-// A take's samples cropped and made louder as set in Settings (AU-4), like Play plays it.
-export function cleaned(samples: Float32Array, take: { seconds?: number; from?: number; to?: number; gain?: number }, rate: number): Float32Array {
-  const { from, to, gain } = span({ ...take, seconds: Number(take.seconds) || 0 });
+// A take's samples cropped and evened out as set in Settings (AU-4, AU-11), like Play plays it.
+export function cleaned(samples: Float32Array, take: { seconds?: number; from?: number; to?: number; gain?: number; ride?: number[] }, rate: number): Float32Array {
+  const { from, to, gain, ride } = span({ ...take, seconds: Number(take.seconds) || 0 });
   const part = samples.subarray(Math.round(from * rate), to === null ? samples.length : Math.round(to * rate));
-  return gain === 1 ? part : part.map((v) => Math.max(-1, Math.min(1, v * gain)));
+  if (gain === 1 && !ride) return part;
+  const start = Math.round(from * rate) / rate;
+  return part.map((v, i) => Math.max(-1, Math.min(1, v * gain * (ride ? rideAt(ride, start + i / rate) : 1))));
 }
 
 export function decoder(rate: number) {

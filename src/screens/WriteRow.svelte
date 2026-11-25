@@ -6,6 +6,7 @@
 <script lang="ts">
   import { problem } from '../lib/problems';
   import { clock } from '../lib/readtime.svelte';
+  import LevelMeter from './LevelMeter.svelte';
   import type { Row } from '../lib/script';
   import { toHtml } from '../lib/format';
   import type { Marks } from '../lib/visit';
@@ -193,7 +194,8 @@
     {@render started('dialogue', 'Dialogue')}
     {#if recording}
       {#if voice.cue}<p class="take" role="status">Getting ready…</p>
-      {:else}<p class="take rec" role="status">● Recording {block.speaker ? `${block.speaker}, ` : ''}{clock((now - voice.started) / 1000)} · ■ stops</p>{/if}
+      {:else}<p class="take rec"><span role="status">● Recording {block.speaker ? `${block.speaker}, ` : ''}{clock((now - voice.started) / 1000)} · ■ stops</span>
+        <LevelMeter level={() => voice.level()} /></p>{/if}
     {:else if take}
       <Take {take} dialogue={block.dialogue} n={n ?? 0} {sounding} at={here ? player.at : voice.playing === block.id ? voice.at : 0}
         onPlay={play}

@@ -17,6 +17,7 @@ default when it isn't there).
 - The id is asked for `exact`, so a mic that's gone fails with OverconstrainedError (not always a DOMException) or
   NotFoundError; `openMic` then records with the default and says `fellBack`. Any other error (blocked) is thrown.
 - The name is kept beside the id so the notice and the drop-down can name a mic that is unplugged.
-- `openMic`'s `noise` turns the browser's noise reduction on or off (Settings, AU-4); echo cancellation stays on.
+- `openMic`'s `noise` turns the browser's noise reduction on or off (Settings, AU-4). Auto gain and echo cancellation
+  are off (AU-11): Chrome's auto gain turned takes down after the first loud words, so they faded.
 - Tests stand in with `window.studioMics` (the browser's device list, run through `micsFrom`); `window.studioRecord` is handed the picked id.
 - Never tried with real microphones here: the test browser has none.

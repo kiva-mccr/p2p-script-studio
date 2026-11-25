@@ -662,10 +662,19 @@ and suggestions, keeps every version, and exports them for production.
   seen on the row's hover like the row tools, picks a .wav, .mp3, .m4a or .webm as the row's take. It is copied into
   the script's takes like a recording, gets the same clean-up and cut-on-a-word timing, and its name shows on the take
   ("from narration-row4.mp3"). Undo keeps the old take, as for a recording; a file that isn't sound says so in the page.
-- [ ] **AU-12** Soften mouth clicks and turn breaths down in takes (asked by the user, 2026-11-22; board 96, waiting
-  for the user). Two switches in Settings > Voice-over, both on: clicks found as spikes a few ms long and filled in from
-  the sound either side (de-click), breaths in the gaps between phrases played about 12 dB quieter, never cut. Like the
-  crop, applied when played, joined or exported; the webm stays whole, so old takes get it too. No model, no download.
+- [x] **AU-11** Even out voice-over loudness (asked by the user, 2026-11-22: takes started loud and tapered off).
+  Agreed on board 97, with the words under the level taken off ("get rid of too loud too quiet sentences"): takes
+  record with Chrome's auto gain and echo cancellation off (auto gain turned the voice down after the first loud
+  words); "Make every take equally loud" becomes "Even out the loudness": every take at -16 LUFS (BS.1770, peaks under
+  -1 dBFS) and a slow ride inside each take (a gain every half second from the speech within a second of it, at most
+  6 dB, held through pauses), kept in the take's JSON beside the crop, the recording kept whole; takes from before
+  are measured again once when the script opens. A live level beside "● Recording": grey too quiet, green good, red
+  too loud, a tick holding the loudest moment for a second.
+- [ ] **AU-12** Soften mouth clicks and turn breaths down in takes (asked by the user, 2026-11-22; board 96). Shelved
+  by the user (2026-11-25): no real takes to tune it on, and worried it could harm the sound. Two switches in Settings
+  > Voice-over, both on: clicks found as spikes a few ms long and filled in from the sound either side (de-click),
+  breaths in the gaps between phrases played about 12 dB quieter, never cut. Like the crop, applied when played,
+  joined or exported; the webm stays whole, so old takes get it too. No model, no download.
 
 - [x] **RV-12** Use an attached file in the script (suggested while drawing RV-11; agreed on board 49 with the
   user's two changes: every attached file, not only images, and only in Write). In Write's Comments tab, each file on
@@ -1195,6 +1204,24 @@ and suggestions, keeps every version, and exports them for production.
   and a removal), with "gone" after 3 minutes instead of 2. Half the heartbeat traffic. Trade-off: a closed laptop
   shows as editing up to a minute longer, and the keeper hands over a minute later. Built 2026-11-15 as specified
   (`HERE_EVERY`, `FRESH_FOR`); measured in perf/pf-18 of the project files.
+- [ ] **AP-68** A mobile version (asked by the user, 2026-11-23): the app on phones (and tablets), not only Chrome
+  and Edge on desktop. Phone browsers can't open a shared folder (File System Access API is desktop only), so it needs
+  another way to reach the scripts. Approach discussed with the user (2026-11-23):
+  - An installable PWA (add to home screen), not an App Store app: no Apple developer account or review.
+  - Storage: the browser's private storage (OPFS) on the phone, plus pickers that connect to cloud services:
+    GitHub (the best fit: scripts are Markdown and versions map to commits), Google Drive (its Picker with the
+    `drive.file` scope, so the app sees only files it's given) and OneDrive (Microsoft Graph's file picker, which
+    needs an app registration).
+  - Network drives only over WebDAV or through a helper server: browsers can't reach SMB shares.
+  Changes to what's settled, for the user to decide before it's built: the cloud connections mean a sign-in and the
+  scripts going through those services, against "no sign-in" and the local-only folder (Guardrails, Decisions), and
+  "Chrome and Edge on desktop only" (Decisions); the policy (SE-1) and For IT (SE-8) gain their addresses. Pitfall:
+  iPhone (Safari) may clear a PWA's storage after weeks without use, so work kept only in OPFS can be lost there.
+  Mock-ups and what it does on a phone (read and comment, or write too) come first. Follow my voice on a Pixel 8
+  (issue #24) is a related shelved bug.
+- [ ] **AP-69** A wiki feature (asked by the user, 2026-11-23): not described yet. What it holds (for example the team's
+  shared notes, style guide and how-tos, beside the scripts) and where it lives (the shared folder, so nothing goes in
+  this public repo) are to be agreed with the user, then a mock-up, before it's built.
 
 ### UI audit (asked by the user, 2026-11-15)
 

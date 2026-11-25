@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { measure, span } from '../../src/lib/cleanup.svelte';
+import { measure, rideAt, span } from '../../src/lib/cleanup.svelte';
 import { cleaned } from '../../src/lib/voiceexport';
 import { plan } from '../../src/lib/play.svelte';
 import { wpm } from '../../src/lib/voice.svelte';
@@ -49,6 +49,38 @@ describe('measure', () => {
     expect(m.to).toBeCloseTo(3.65, 1);
   });
 
+  it('aims the speech at -16 LUFS: a take measured louder or quieter lands at the same loudness', () => {
+    const quiet = measure(sound([[0.5, 0], [3, 0.05], [0.5, 0]]), RATE)!;
+    const loud = measure(sound([[0.5, 0], [3, 0.2], [0.5, 0]]), RATE)!;
+    expect(quiet.gain * 0.05).toBeCloseTo(loud.gain * 0.2, 2);
+  });
+
+  it('evens out a take that starts loud and fades (AU-11)', () => {
+    // Three seconds loud, three quieter, three quieter still (to a quarter), with pauses between.
+    const m = measure(sound([[0.3, 0], [3, 0.4], [0.3, 0], [3, 0.2], [0.3, 0], [3, 0.1], [0.3, 0]]), RATE)!;
+    const at = (t: number) => rideAt(m.ride, t);
+    expect(at(1.5)).toBeLessThan(1); // the loud start comes down
+    expect(at(8.4)).toBeGreaterThan(1.5); // the faded end comes up
+    // Played with its ride, the start and end are within 3 dB of each other (they were 12 dB apart).
+    expect(Math.abs(20 * Math.log10((0.4 * at(1.5)) / (0.1 * at(8.4))))).toBeLessThan(3);
+  });
+
+  it('raises or lowers a part at most 2x, and holds through a pause', () => {
+    const m = measure(sound([[0.3, 0], [3, 0.5], [2, 0], [3, 0.02], [0.3, 0]]), RATE)!;
+    expect(Math.max(...m.ride!)).toBeLessThanOrEqual(2);
+    expect(Math.min(...m.ride!)).toBeGreaterThanOrEqual(0.5);
+    // The middle of the pause holds the level of the speech before it, not a boost of its own.
+    expect(rideAt(m.ride, 4.3)).toBeLessThanOrEqual(rideAt(m.ride, 2) + 0.05);
+  });
+
+  it('never pushes a sample past -1 dBFS with the ride', () => {
+    const samples = sound([[0.3, 0], [2, 0.6], [2, 0.15], [0.3, 0]]);
+    const m = measure(samples, RATE)!;
+    let top = 0;
+    samples.forEach((v, i) => (top = Math.max(top, Math.abs(v) * m.gain * rideAt(m.ride, i / RATE))));
+    expect(top).toBeLessThanOrEqual(0.9);
+  });
+
   it('finds nothing in silence', () => {
     expect(measure(sound([[1, 0]]), RATE)).toBeNull();
     expect(measure(new Float32Array(0), RATE)).toBeNull();
@@ -60,12 +92,14 @@ describe('span', () => {
   const all = { crop: true, noise: true, level: true };
 
   it('plays the measured part at its gain', () => {
-    expect(span(take, all)).toEqual({ from: 1, to: 3.5, gain: 2, seconds: 2.5, cut: 2.5 });
+    expect(span(take, all)).toEqual({ from: 1, to: 3.5, gain: 2, ride: null, seconds: 2.5, cut: 2.5 });
+    expect(span({ ...take, ride: [1, 2] }, all).ride).toEqual([1, 2]);
+    expect(span({ ...take, ride: [1, 2] }, { ...all, level: false }).ride).toBeNull();
   });
 
   it('plays the whole take with the switches off, or a take that was never measured', () => {
-    expect(span(take, { ...all, crop: false, level: false })).toEqual({ from: 0, to: null, gain: 1, seconds: 5, cut: 0 });
-    expect(span({ seconds: 5 }, all)).toEqual({ from: 0, to: null, gain: 1, seconds: 5, cut: 0 });
+    expect(span(take, { ...all, crop: false, level: false })).toEqual({ from: 0, to: null, gain: 1, ride: null, seconds: 5, cut: 0 });
+    expect(span({ seconds: 5 }, all)).toEqual({ from: 0, to: null, gain: 1, ride: null, seconds: 5, cut: 0 });
   });
 
   it('times the take, its words a minute and Play the script by the cropped part', () => {
@@ -82,5 +116,13 @@ describe('cleaned', () => {
     const out = cleaned(samples, { seconds: 4, from: 1, to: 3, gain: 2 }, 10);
     expect(out.length).toBe(20);
     expect(out[0]).toBeCloseTo(0.2);
+  });
+
+  it('follows the ride (AU-11): the end of a faded take comes up as Play plays it', () => {
+    const samples = Float32Array.from({ length: 40 }, () => 0.1);
+    // At 10 samples a second: the ride is 1 for the first second, then 2.
+    const out = cleaned(samples, { seconds: 4, from: 0, to: 4, gain: 1, ride: [1, 1, 2, 2, 2, 2, 2, 2] }, 10);
+    expect(out[0]).toBeCloseTo(0.1);
+    expect(out[30]).toBeCloseTo(0.2);
   });
 });

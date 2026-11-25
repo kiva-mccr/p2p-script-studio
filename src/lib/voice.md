@@ -48,3 +48,9 @@ id as state, with start, stop, play, current, remove and load), `readTakes` (a f
   as they are to row-<id>.webm, whatever the file was (mp3, m4a, wav): every reader decodes by content
   (`decodeAudioData`), never by the name, so keep it that way. `seconds` is the decoded length, not timed.
 - Never tried with a real microphone here: the test browser has none.
+- AU-11: `measure` also gives `ride` (the loudness inside the take), kept in the JSON; `readTake` keeps it only when
+  every step is a positive number. `Sound` ramps its gain node through the ride from where it starts (`#follow`); the
+  context's clock stops while paused, so the ramps stay in step. `levelAll` measures again, one at a time, the takes
+  with no ride (from before), once a visit, and writes their JSON only if the take wasn't recorded again meanwhile.
+- AU-11: `record` hangs an AnalyserNode on the mic for the live level (`level`, the loudest sample of the last
+  ~40 ms in dBFS); its AudioContext closes with the recording. Tests' fake recordings may give their own `level`.
