@@ -375,7 +375,11 @@ and suggestions, keeps every version, and exports them for production.
 ## Phase 5: later (asked by the user; mock-ups agreed before any of these is built)
 
 - [ ] **HI-2** A graph view of the changes: versions as a timeline or tree, showing who changed what and where two
-  saves were combined.
+  saves were combined. With it (the user, 2026-11-25): **Bring this back** in History, to put a single row or edit
+  from an older version back into the current script. Today History only restores the whole script, Write's "Put it
+  back" only covers the current visit, and picking per field happens only during a save clash. Bringing one back is
+  an ordinary edit: undoable (the Undo toast and Ctrl+Z) and it never loses the current text (that stays in
+  History). Mock-up first (board 98).
 - [x] **SB-1** Animatic / storyboard timeline: the rows' images laid out in order along a timeline, with timings.
   More from the user: a timeline view on the Write page, at the very bottom of the script while editing or
   reviewing, and locked to the bottom of the screen while the script plays (AU-2). Later it holds the photos of a
