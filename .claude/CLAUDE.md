@@ -257,3 +257,6 @@ Run through `.claude/CHECKLIST.md`. Keep README.md current in the same commit as
 - For IT (SE-8): the browser policies it lists (FileSystemRead/WriteAskForUrls, the guard settings, AudioCaptureAllowedUrls)
   were never set on a real managed Chrome or Edge here; printing it was only seen as test Chromium's page.
 - Allow editing (AP-25) after Chrome really takes back access: tests fake the lost OK; how long Chrome waits is unseen.
+
+## Shared preferences
+Before starting work, read Kiva's cross-project preferences at https://raw.githubusercontent.com/kiva-mccr/claude-preferences/main/PREFERENCES.md (or the kiva-mccr/claude-preferences repo if private) and follow them unless this file says otherwise.
